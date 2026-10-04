@@ -4,7 +4,8 @@ import * as acorn from 'acorn';
 
 const DASH = String.fromCharCode(0x2014);
 const TEXT = new Set(['.js', '.mjs', '.css', '.html', '.svg', '.md', '.json', '.yml', '.txt']);
-const SKIP = new Set(['node_modules', '.git']);
+const SKIP = new Set(['node_modules', '.git', 'vendor']);
+const VENDORED = (name) => /\.min\.(js|css|mjs)$/.test(name);
 const problems = [];
 
 async function walk(dir) {
@@ -12,7 +13,7 @@ async function walk(dir) {
     if (SKIP.has(entry.name)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) await walk(path);
-    else if (TEXT.has(extname(entry.name))) await check(path);
+    else if (TEXT.has(extname(entry.name)) && !VENDORED(entry.name)) await check(path);
   }
 }
 
