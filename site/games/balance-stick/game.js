@@ -1,4 +1,6 @@
 (() => {
+  const SIMPLE = Curio.simple;
+  const GOAL = 30;
   const stage = document.getElementById('stage');
   const cv = document.getElementById('cv');
   const g = cv.getContext('2d');
@@ -71,7 +73,24 @@
   }
   const buzz = (ms) => { try { navigator.vibrate?.(ms); } catch {} };
 
-  let mode = data.mode;
+  let mode = SIMPLE ? 'single' : data.mode;
+  let won = false, chatT = 0, chatCool = 0, lastWarn = 0;
+  const CHAT = {
+    start: ['And they are off! A beautiful grip on that stick.', 'Welcome back to Stick Sports Network. The stick is upright. For now.', 'The athlete approaches the stick. The stick looks nervous.', 'Here we go. Absolutely nothing can go wrong. Famous last words.'],
+    wobble: ['OH NO. Oh no no no. Oh. Fine. Recovered.', 'A wobble! The crowd gasps! One man faints!', 'That was close. My coffee is on the ceiling.', 'Lean, lean, LEAN. Okay, save. What a save.', 'The stick is considering its options.'],
+    gust: ['A gust! The wind has entered the chat.', 'Wind from the left. Rude.', 'That gust came out of nowhere. Like my uncle.', 'The weather is trying to win this one.'],
+    steady: ['Rock solid. You could hang a coat on this.', 'Textbook form. Kids, take notes.', 'The stick is enjoying itself. Look at it go.', 'Smooth. Buttery. A balanced breakfast.', 'I have seen statues wobble more.'],
+    storm: ['It is raining sideways and still that stick stands.', 'Lightning! Thunder! A small stick! Incredible scenes!', 'Hurricane conditions. Officially. I checked.']
+  };
+  const RANKS = [[0, 'Wet Noodle'], [2, 'Toddler Holding a Spoon'], [5, 'Waiter on Day One'], [10, 'Plate Spinner (Trainee)'], [15, 'Circus Intern'], [22, 'Professional Pole Person'], [30, 'Juggler Emeritus'], [45, 'Weather Defier'], [60, 'Stick Whisperer']];
+  const rankOf = (sec) => RANKS.filter((r) => sec >= r[0]).pop()[1];
+  function chat(kind, force) {
+    if (!force && chatCool > 0) return;
+    const el = $('chat'); if (!el) return;
+    el.textContent = Curio.pick(CHAT[kind]);
+    el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
+    chatCool = 3.2;
+  }
   let W = 0, H = 0, floorY = 0, pivotY = 0;
   let state = 'idle';
   let x = 0, v = 0, a = 0, target = 0, keyDir = 0;
@@ -263,6 +282,11 @@
       }
     }
     if (state === 'run') {
+      chatCool -= dt; chatT -= dt;
+      if (Math.abs(p1) > .62 && clock - lastWarn > 2) { lastWarn = clock; chat('wobble'); }
+      else if (gust && chatCool <= 0 && Math.random() < dt * 2) chat('gust');
+      else if (chatT <= 0) { chatT = Curio.rand(5, 8); chat(skyLv > 2.6 ? 'storm' : 'steady'); }
+      if (SIMPLE && t >= GOAL) { won = true; state = 'over'; banner('FLAGPOLE!'); showOver(); return; }
       updateStars();
       const li = levelIndex();
       if (li !== lvIdx) { lvIdx = li; levelEl.textContent = LEVELS[li][1]; levelEl.classList.remove('is-pop'); void levelEl.offsetWidth; levelEl.classList.add('is-pop'); if (li > 0 && mode !== 'zen') { banner(LEVELS[li][1]); tone(440, .3, 'triangle', .06, 0, 220); } }
@@ -465,6 +489,8 @@
     t = 0; acc = 0; wind = 0; gust = null; nextGust = 6; streaks = []; shake = 0; fallT = 0; bounces = 0;
     stars = []; starCount = 0; nextStarAt = .8; gustsSurvived = 0; usedPointer = false; nextMilestone = 10; lvIdx = 0; parts = [];
     v = 0; a = 0; x = Math.max(30, Math.min(W - 30, target || W / 2)); target = x;
+    won = false; chatCool = 0; chatT = 4;
+    setTimeout(() => chat('start', true), 150);
     const s = Math.random() < .5 ? -1 : 1;
     p1 = s * .025; w1 = 0; p2 = s * .04; w2 = 0; bend1 = bend2 = 0;
     gustEl.classList.remove('is-on');
@@ -503,6 +529,7 @@
       return 'Tip: lean a little, then move under it to recover.';
     }
     if (mode === 'zen') return s >= 60 ? 'Pure calm. The stick and you are one.' : 'Breathe in, breathe out, try again.';
+    if (SIMPLE && won) return 'Thirty seconds! The stick has been promoted to flagpole. It would like a small flag and some respect.';
     if (s >= 60) return 'You survived the hurricane. Juggling school next?';
     if (s >= 30) return 'Steady hands through a proper storm.';
     if (s >= 15) return 'Nice balance! The wind is not impressed, but we are.';
@@ -571,13 +598,16 @@
     save();
     const isPB = b.isNew && prev != null;
     $('best').textContent = bestText(mode);
-    $('cEmoji').textContent = isPB ? '🏆' : mode === 'double' ? '🔥' : mode === 'stars' ? '⭐' : mode === 'zen' ? '🧘' : '🪵';
+    $('cEmoji').textContent = won ? '🏁' : isPB ? '🏆' : mode === 'double' ? '🔥' : mode === 'stars' ? '⭐' : mode === 'zen' ? '🧘' : '🪵';
+    if (won) { Curio.confetti(); [523, 659, 784, 1046, 1318].forEach((f, j) => tone(f, .16, 'triangle', .08, j * .09)); }
     $('cTitle').textContent = mode === 'stars' ? `⭐ ${starCount}` : fmt(s) + 's';
     $('cNew').innerHTML = isPB ? '<span class="bs-new">New best!</span>' : '';
     $('cText').textContent = comment(s) + (isPB ? '' : ` Best: ${bestText(mode)}.`);
+    $('cRank').textContent = mode === 'stars' || mode === 'zen' ? '' : `Official rank: ${won ? 'Flagpole Engineer' : rankOf(s)}`;
+    const ch = $('chat'); if (ch) { ch.textContent = won ? 'UNBELIEVABLE. Thirty seconds. Someone get this stick a flag!' : s < 3 ? 'And it is down already. We barely had time to say hello.' : s < 15 ? 'Down it goes! A brave effort from a brave stick.' : 'TIMBER! What a run. Tremendous stuff.'; ch.classList.remove('is-on'); void ch.offsetWidth; ch.classList.add('is-on'); }
     const rs = $('rStats'); rs.hidden = false; rs.innerHTML = '';
     [[fmt(s) + 's', 'Time'], [mode === 'zen' ? 'Zen' : LEVELS[levelIndex()][1].replace('!', ''), 'Reached'], [gustsSurvived, 'Gusts survived']].concat(mode === 'stars' ? [[starCount, 'Stars']] : []).forEach(([val, l]) => {
-      const d = document.createElement('div'); d.className = 'c-stat';
+      const d = document.createElement('div'); d.className = 'bs-stat';
       const bb = document.createElement('b'); bb.textContent = val; const sp = document.createElement('span'); sp.textContent = l;
       d.append(bb, sp); rs.append(d);
     });
@@ -615,15 +645,17 @@
 
   function setMode(m) {
     if (state === 'run' || state === 'falling') return;
-    mode = m; data.mode = m; save();
+    if (SIMPLE) m = 'single';
+    mode = m; if (!SIMPLE) { data.mode = m; save(); }
     document.querySelectorAll('#modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
-    $('sub').textContent = SUBS[m];
+    $('sub').textContent = SIMPLE ? `Balance the stick for ${GOAL} seconds and it becomes a flagpole. Move left and right under it as it tips.` : SUBS[m];
     $('best').textContent = bestText(m);
     state = 'idle'; t = 0; p1 = p2 = w1 = w2 = bend1 = bend2 = 0; streaks = []; wind = 0; stars = []; skyLv = levelIndex(); rain = [];
     stage.classList.remove('is-over', 'is-run', 'is-falling');
     stage.classList.toggle('is-dark', dark() || skyLv > 2.6);
     $('cEmoji').textContent = { single: '🥢', double: '🔥', stars: '⭐', zen: '🧘' }[m];
     $('cTitle').textContent = 'Ready?';
+    $('cRank').textContent = SIMPLE ? `Goal: ${GOAL} seconds. Make the stick a flagpole.` : '';
     $('cNew').innerHTML = '';
     $('rStats').hidden = true; $('rChips').innerHTML = ''; $('spark').hidden = true; $('share').hidden = true; $('extra').hidden = true;
     $('cText').textContent = m === 'double' ? 'Hard mode. The top stick swings on its own hinge.' : m === 'stars' ? 'Stars appear near the tip. Lean into them to collect.' : 'Mouse: just move. Touch: drag anywhere. Keyboard: arrow keys.';
@@ -675,7 +707,7 @@
   $('showHow').addEventListener('click', () => showExtra('how'));
   $('share').addEventListener('click', () => {
     const line = mode === 'stars' ? `caught ${starCount} stars in ${fmt(t)}s` : `balanced for ${fmt(t)}s (${mode})`;
-    const txt = `Zoble Balance the Stick 🥢\nI ${line}, reached ${LEVELS[levelIndex()][1].replace('!', '')}.`;
+    const txt = `Zoble Balance the Stick 🥢\nI ${line}, reached ${LEVELS[levelIndex()][1].replace('!', '')}. Rank: ${won ? 'Flagpole Engineer' : rankOf(t)}.`;
     navigator.clipboard?.writeText(txt).then(() => Curio.toast('Result copied!'), () => Curio.toast(line));
   });
   document.addEventListener('keydown', (e) => {

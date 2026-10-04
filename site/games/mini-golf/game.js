@@ -454,7 +454,24 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
         return pool.slice(0, 3);
     }
-    let mode = 'round', courseId = 'meadow', round = [];
+    const SIMPLE = Curio.simple;
+    let mode = SIMPLE ? 'simple' : 'round', courseId = 'meadow', round = [];
+    if (S.aim !== 'point' && S.aim !== 'sling') S.aim = matchMedia('(pointer: fine)').matches ? 'point' : 'sling';
+    const QUIPS = {
+        ace: ['The ducks are applauding. Ducks cannot applaud. And yet.', 'Somebody call the newspaper. The very local one.', 'That ball had a dream and a plan.', 'Witnesses report a small gasp from the windmill.'],
+        under: ['Lovely. The flag is blushing.', 'Smooth as a buttered windmill.', 'Your caddie is crying. You do not have a caddie. I am crying.', 'The hole saw you coming and simply gave up.'],
+        par: ['Par. Respectable. Your gran would approve.', 'Exactly as planned. Allegedly.', 'Textbook. A very boring textbook.', 'Solid. Like a garden gnome.'],
+        bogey: ['The windmill says it was nothing personal.', 'Close enough for mini golf.', 'One extra. Nobody saw. Except the ducks.', 'A scenic route. Very relaxing.'],
+        worse: ['The ball has filed a complaint.', 'You and the hole are no longer on speaking terms.', 'That was less golf and more pinball.', 'The flag looked away. Out of kindness.'],
+        picked: ['Ten strokes. The ball has been escorted from the premises.', 'We picked it up for you. The ball needed a break.']
+    };
+    const SIMPLE_END = [
+        [-9, 'Mini golf legend', 'Three holes, zero mercy. The windmill has asked for your autograph and also for you to leave.'],
+        [-1, 'Under par!', 'The groundskeeper has named a gnome after you. It is the ugly one, but still.'],
+        [0, 'Dead on par', 'Perfectly average in every way. The ducks nod at you. Ducks do not nod lightly.'],
+        [3, 'Holiday golfer', 'A few extra putts, a lot of fun. The ice cream stand is to your left.'],
+        [99, 'Windmill victim', 'The windmill wins this time. It always wins. It has been winning since 1987.']
+    ];
     let holeI, strokes, card, ball, last, phase, phaseT, drag, aim, banner, ripples, rot, sinkT, stopT, flagWave, penalties, shake = 0, simT = 0;
     let layers = null, layerKey = '';
     const A = Arcade({
@@ -463,7 +480,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         capture: ['Enter', 'r', '[', ']'],
         size: (w, h) => (w >= h * 0.95 ? { w: CW, h: CH } : { w: CH, h: CW })
     });
-    const bestKey = () => (mode === 'daily' ? 'daily-' + today() : 'course-' + courseId);
+    const bestKey = () => (mode === 'simple' ? 'simple3' : mode === 'daily' ? 'daily-' + today() : 'course-' + courseId);
     A.showBest = () => {
         if (mode === 'practice') { const b = S.holeBest[cur().course.id + cur().idx]; A.hud('best', b == null ? '-' : b); return; }
         const b = Curio.getBest(bestKey()); A.hud('best', b == null ? '-' : b);
@@ -474,7 +491,8 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     const hole = () => cur().hole;
     const course = () => cur().course;
     function buildRound() {
-        if (mode === 'daily') round = dailyRound();
+        if (mode === 'simple') { const c = COURSES[0]; round = [0, 5, 6].map((i) => ({ course: c, hole: c.holes[i], idx: i })); }
+        else if (mode === 'daily') round = dailyRound();
         else { const c = COURSES.find((x) => x.id === courseId) || COURSES[0]; round = c.holes.map((h, i) => ({ course: c, hole: h, idx: i })); }
     }
     function segsOf(poly) {
@@ -745,7 +763,8 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             save();
         }
         const label = picked ? 'Picked up' : nameFor(n, h.par);
-        banner = { t: 2.6, title: label, sub: `${n} stroke${n === 1 ? '' : 's'} on a par ${h.par}`, big: true, card: mode !== 'practice' };
+        const qk = picked ? 'picked' : n === 1 ? 'ace' : n < h.par ? 'under' : n === h.par ? 'par' : n === h.par + 1 ? 'bogey' : 'worse';
+        banner = { t: 2.6, title: label, sub: `${n} stroke${n === 1 ? '' : 's'} on a par ${h.par}`, big: true, card: mode !== 'practice', quip: Curio.pick(QUIPS[qk]) };
         phase = 'between';
         phaseT = 2.6;
         if (n === 1) { Curio.confetti(); navigator.vibrate?.([30, 40, 30, 40, 60]); }
@@ -759,6 +778,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         const tot = card.reduce((s, c) => s + c, 0), par = totalPar(round.length), rel = tot - par;
         S.stats.rounds++;
         if (mode === 'daily') { award('daily'); S.daily[today()] = Math.min(S.daily[today()] ?? 99, tot); }
+        else if (mode === 'simple') { }
         else {
             S.done[courseId] = Math.min(S.done[courseId] ?? 999, tot);
             award(courseId);
@@ -770,6 +790,15 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         A.bestKey = bestKey();
         fillCard();
         const where = mode === 'daily' ? 'today’s 3-hole challenge' : course().name;
+        const up = document.querySelector('[data-mg-adv]');
+        if (up) up.hidden = mode !== 'simple';
+        if (mode === 'simple') {
+            const e = SIMPLE_END.find((x) => rel <= x[0]);
+            A.over({ title: e[1], emoji: rel <= 0 ? '🏆' : rel <= 3 ? '🍦' : '🌀', msg: `${tot} strokes on three holes, par ${par} (${rel > 0 ? '+' + rel : rel === 0 ? 'even' : rel}). ${e[2]}` });
+            if (rel <= 0) Curio.confetti();
+            paintBadges(document.querySelector('[data-o="badges"]'), unlocked.splice(0));
+            return;
+        }
         A.over({
             title: rel < 0 ? 'Under par!' : rel === 0 ? 'Right on par' : 'Round complete',
             emoji: rel <= 0 ? '🏆' : '⛳',
@@ -923,9 +952,23 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         }
     }
     function toWorld(p) { return rot ? { x: p.y, y: CH - p.x } : { x: p.x, y: p.y }; }
-    function pointer(type, p) {
+    function pointAim(w) {
+        aim.a = Math.atan2(w.y - ball.y, w.x - ball.x);
+        aim.p = Math.max(0.06, Math.min(1, Math.hypot(w.x - ball.x, w.y - ball.y) / 300));
+        aim.kb = true;
+    }
+    A.canvas.addEventListener('pointermove', (e) => {
+        if (S.aim !== 'point' || e.pointerType !== 'mouse' || A.state !== 'play' || phase !== 'aim' || (drag && !drag.pending)) return;
+        pointAim(toWorld(A.toLogical(e)));
+    });
+    function pointer(type, p, e) {
         if (type === 'cancel') { drag = null; return; }
         const w = toWorld(p);
+        if (S.aim === 'point' && e && e.pointerType === 'mouse') {
+            if (type === 'down' && phase === 'aim') { pointAim(w); shoot(aim.a, aim.p); }
+            drag = null;
+            return;
+        }
         if (type === 'down') {
             drag = phase === 'aim' ? { x0: w.x, y0: w.y, x: w.x, y: w.y } : { pending: true, x: w.x, y: w.y };
             aim.kb = false;
@@ -1524,7 +1567,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             const a = Math.min(1, banner.t * 2, (banner.big ? 2.6 : 2.2) - banner.t + 0.6);
             const pop = 1 + Math.max(0, (banner.big ? 2.6 : 2.2) - banner.t < 0.25 ? 0.25 - ((banner.big ? 2.6 : 2.2) - banner.t) : 0);
             g.globalAlpha = Math.max(0, Math.min(1, a));
-            const bw = Math.min(W - 30, banner.card ? 440 : 340), bh = banner.card ? 150 : 84;
+            const bw = Math.min(W - 30, banner.card ? 440 : 340), bh = (banner.card ? 150 : 84) + (banner.quip ? 26 : 0);
             const by = Hh * 0.5 - bh / 2;
             g.save();
             g.translate(W / 2, Hh / 2);
@@ -1563,6 +1606,11 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                     g.fillText('par ' + par, x, by + 134);
                 }
             }
+            if (banner.quip) {
+                g.font = `italic 600 13px ${FONT}`;
+                g.fillStyle = '#ffe9a8';
+                g.fillText(banner.quip, W / 2, by + bh - 14, bw - 24);
+            }
             g.restore();
             g.globalAlpha = 1;
         }
@@ -1570,7 +1618,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             g.textAlign = 'center';
             g.font = `700 14px ${FONT}`;
             g.fillStyle = 'rgba(255,255,255,.92)';
-            g.fillText(mode === 'practice' ? 'Practice: [ ] change hole, R restarts it' : Curio.touchpad ? 'Click, pull back, click again to putt' : 'Drag back from anywhere, release to putt', W / 2, Hh - 14);
+            g.fillText(mode === 'practice' ? 'Practice: [ ] change hole, R restarts it' : S.aim === 'point' && !document.body.classList.contains('arc-touch') ? 'Point where to putt (further = harder), then click' : Curio.touchpad ? 'Click, pull back, click again to putt' : 'Drag back from anywhere, release to putt', W / 2, Hh - 14);
         }
     }
     const canvas = A.canvas;
@@ -1591,7 +1639,8 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         });
         const db = document.querySelector('[data-daily-best]');
         if (db) db.textContent = S.daily[today()] != null ? `Today: ${S.daily[today()]}` : 'Three random holes, same for everyone today';
-        document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === (mode === 'practice' ? 'practice' : 'round'))));
+        document.querySelectorAll('[data-aim]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.aim === S.aim)));
+        document.querySelectorAll('[data-gm]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.gm === (mode === 'practice' ? 'practice' : 'round'))));
         const sk = document.querySelector('[data-skins]');
         if (sk) sk.innerHTML = SKINS.map((s) => {
             const ok = !s.need || S.ach[s.need];
@@ -1610,8 +1659,11 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         const c = e.target.closest('[data-course]');
         if (c) { courseId = c.dataset.course; if (mode === 'daily') mode = 'round'; A.start(); return; }
         if (e.target.closest('[data-daily]')) { mode = 'daily'; A.start(); return; }
-        const m = e.target.closest('[data-mode]');
-        if (m) { mode = m.dataset.mode; paintMenu(); A.beep(520, 0.04, 'triangle', 0.05); return; }
+        const am = e.target.closest('[data-aim]');
+        if (am) { S.aim = am.dataset.aim; save(); paintMenu(); A.beep(600, 0.04, 'triangle', 0.05); return; }
+        if (e.target.closest('[data-mg-adv]')) { Curio.setMode('advanced'); return; }
+        const m = e.target.closest('[data-gm]');
+        if (m) { mode = m.dataset.gm; paintMenu(); A.beep(520, 0.04, 'triangle', 0.05); return; }
         const s = e.target.closest('[data-skin]');
         if (s && !s.disabled) { S.skin = s.dataset.skin; save(); paintMenu(); A.beep(700, 0.05, 'triangle', 0.06); return; }
         const j = e.target.closest('[data-mg-prac]');
@@ -1678,7 +1730,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             return { name: h.name, par: h.par, found, shots };
         }
     });
-    if (!Curio.touchpad && matchMedia('(pointer: fine)').matches && !Curio.store.get('tpTip', false)) { Curio.store.set('tpTip', true); setTimeout(() => Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar to putt with click, pull, click'), 1800); }
+    if (S.aim === 'sling' && !Curio.touchpad && matchMedia('(pointer: fine)').matches && !Curio.store.get('tpTip', false)) { Curio.store.set('tpTip', true); setTimeout(() => Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar to putt with click, pull, click'), 1800); }
     rot = false;
     buildRound();
     holeI = 0;

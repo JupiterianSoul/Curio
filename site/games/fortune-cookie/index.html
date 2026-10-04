@@ -9,15 +9,19 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="fortune-cookie">
+<body data-game="fortune-cookie" data-modes>
   <main class="c-wrap fc">
-    <h1 class="c-title">Fortune Cookie</h1>
-    <p class="c-sub">Crack it open. Read your future. Collect all of them, because why not.</p>
+    <header class="fc-sign">
+      <div class="fc-sign__open" aria-hidden="true">Open late</div>
+      <h1 class="fc-neon">Fortune <span>Cookie</span></h1>
+      <p class="fc-sub" id="subLine">Crack it open. Read your future. Collect all of them, because why not.</p>
+    </header>
+    <div class="fc-jar" id="jar" aria-live="polite"></div>
     <div class="fc-stats">
-      <div class="c-stat"><b id="cracked">0</b><span>Cracked</span></div>
-      <div class="c-stat"><b id="found">0</b><span>Collected</span></div>
-      <div class="c-stat"><b id="golden">0</b><span>Golden</span></div>
-      <div class="c-stat"><b id="streak">0</b><span>Day streak</span></div>
+      <div class="fc-ticket"><b id="cracked">0</b><span>Cracked</span></div>
+      <div class="fc-ticket"><b id="found">0</b><span>Collected</span></div>
+      <div class="fc-ticket"><b id="golden">0</b><span>Golden</span></div>
+      <div class="fc-ticket"><b id="streak">0</b><span>Day streak</span></div>
     </div>
     <div class="fc-scene">
       <svg class="fc-bg" viewBox="0 0 680 380" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -68,12 +72,17 @@
       </button>
       <div class="fc-paper" id="paper" role="status" aria-live="polite"></div>
     </div>
+    <div class="fc-bill" id="bill" hidden role="dialog" aria-label="Your bill"></div>
     </div>
     <p class="fc-tip" id="tip">Tap the cookie to crack it.</p>
-    <div class="c-row fc-actions" id="actions" hidden>
-      <button class="c-btn c-btn--ghost" id="flip" type="button">🔄 Flip the slip</button>
-      <button class="c-btn c-btn--ghost" id="copy" type="button">📋 Copy to share</button>
-      <button class="c-btn" id="again" type="button">🥠 Another cookie</button>
+    <div class="fc-askrow">
+      <label for="ask">🔮 Ask the cookie a yes or no question <small>(optional, before you crack it)</small></label>
+      <input class="fc-input" id="ask" type="text" maxlength="90" autocomplete="off" placeholder="Will I ever find my other sock?">
+    </div>
+    <div class="fc-actions" id="actions" hidden>
+      <button class="fc-btn fc-btn--ghost" id="flip" type="button">🔄 Flip the slip</button>
+      <button class="fc-btn fc-btn--ghost" id="copy" type="button">📋 Copy to share</button>
+      <button class="fc-btn" id="again" type="button">🥠 Another cookie</button>
     </div>
     <section class="fc-kinds" aria-label="Cookie types">
       <div class="fc-kind" style="--k:#e5a54c"><i></i><b>Classic</b><small>Everyday wisdom</small></div>
@@ -85,11 +94,13 @@
     <section class="fc-book" aria-labelledby="bookTitle">
       <div class="fc-book__head">
         <h2 id="bookTitle">📖 Your fortune book</h2>
-        <span class="c-muted" id="bookCount"></span>
+        <span class="fc-muted" id="bookCount"></span>
       </div>
       <div class="fc-bar"><i id="bookBar"></i></div>
       <div class="fc-tabs" id="tabs" role="tablist"></div>
       <ul class="fc-list" id="list"></ul>
+      <h3 class="fc-wh">🔮 The oracle</h3>
+      <p class="fc-muted" id="oracleCount"></p>
       <h3 class="fc-wh">🀄 Words learned</h3>
       <div class="fc-words" id="words"></div>
     </section>

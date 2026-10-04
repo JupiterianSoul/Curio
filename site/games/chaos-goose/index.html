@@ -9,21 +9,22 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="chaos-goose">
+<body data-game="chaos-goose" data-modes>
   <header class="cg-top">
-    <div>
-      <h1 class="c-title">Chaos Goose</h1>
-      <p class="c-sub">A goose has entered your desktop. It does not want anything. It just wants <i>everything</i>.</p>
+    <div class="cg-poster">
+      <div class="cg-poster__tag">Wanted</div>
+      <h1 class="cg-title">Chaos Goose</h1>
+      <p class="cg-sub" id="subLine">A goose has entered your desktop. It does not want anything. It just wants <i>everything</i>.</p>
     </div>
     <div class="cg-tools" role="toolbar" aria-label="Goose tools">
-      <button class="c-btn c-btn--ghost" id="bread" type="button" aria-pressed="false">🍞 Throw bread</button>
-      <button class="c-btn c-btn--ghost" id="hat" type="button">🎩 Hat</button>
-      <button class="c-btn c-btn--ghost" id="honk" type="button">📯 Honk back</button>
-      <button class="c-btn c-btn--ghost" id="tidy" type="button">🧽 Tidy up</button>
-      <button class="c-btn c-btn--ghost" id="addGoose" type="button">➕ Goose</button>
-      <button class="c-btn c-btn--ghost" id="remGoose" type="button">➖ Goose</button>
-      <button class="c-btn c-btn--ghost" id="wallBtn" type="button">🖼️ Wallpaper</button>
-      <button class="c-btn" id="defend" type="button">🛡️ Defend mode</button>
+      <button class="cg-btn" id="bread" type="button" aria-pressed="false">🍞 Throw bread</button>
+      <button class="cg-btn" id="hat" type="button">🎩 Hat</button>
+      <button class="cg-btn" id="honk" type="button">📯 Honk back</button>
+      <button class="cg-btn" id="tidy" type="button">🧽 Tidy up</button>
+      <button class="cg-btn" id="addGoose" type="button">➕ Goose</button>
+      <button class="cg-btn" id="remGoose" type="button">➖ Goose</button>
+      <button class="cg-btn" id="wallBtn" type="button">🖼️ Wallpaper</button>
+      <button class="cg-btn cg-btn--go" id="defend" type="button">🛡️ Defend mode</button>
     </div>
   </header>
   <main class="cg-main">
@@ -37,22 +38,24 @@
       <div class="cg-puddle" id="puddle" aria-hidden="true"></div>
       <canvas class="cg-prints" id="prints" aria-hidden="true"></canvas>
       <div class="cg-taskbar" aria-hidden="true">
-        <span class="cg-start">⊞ Start</span>
+        <span class="cg-start">🪿 HONK</span>
         <span class="cg-task">📄 todo.txt</span>
         <span class="cg-tray"><span id="gooseCount">🪿 1</span><b id="clock">12:00</b></span>
       </div>
     </section>
     <aside class="cg-log" aria-label="Mischief log">
       <div class="cg-log__head">
-        <h2>📜 Mischief log</h2>
+        <h2>Rap sheet</h2>
         <div class="cg-chaos"><b id="chaos">0</b><span>chaos</span></div>
       </div>
       <div class="cg-stats" id="stats"></div>
+      <div class="cg-sheet" id="pranks" aria-label="Crimes witnessed"></div>
       <div class="cg-ach" id="ach" aria-label="Achievements"></div>
       <ol class="cg-entries" id="log" aria-live="polite"></ol>
     </aside>
   </main>
-  <p class="c-muted cg-keys">Keys: <span class="c-kbd">S</span> shoo the nearest goose, <span class="c-kbd">R</span> put one thing back, <span class="c-kbd">B</span> bread, <span class="c-kbd">H</span> hat, <span class="c-kbd">O</span> honk, <span class="c-kbd">T</span> tidy, <span class="c-kbd">+</span>/<span class="c-kbd">-</span> geese, <span class="c-kbd">W</span> wallpaper, <span class="c-kbd">D</span> defend.</p>
+  <p class="cg-keys cg-keys--simple">Keys: <span class="cg-kbd">S</span> shoo the nearest goose, <span class="cg-kbd">R</span> put one thing back, <span class="cg-kbd">B</span> bread, <span class="cg-kbd">H</span> hat, <span class="cg-kbd">O</span> honk back.</p>
+  <p class="cg-keys cg-keys--adv">Keys: <span class="cg-kbd">S</span> shoo the nearest goose, <span class="cg-kbd">R</span> put one thing back, <span class="cg-kbd">B</span> bread, <span class="cg-kbd">H</span> hat, <span class="cg-kbd">O</span> honk, <span class="cg-kbd">T</span> tidy, <span class="cg-kbd">+</span>/<span class="cg-kbd">-</span> geese, <span class="cg-kbd">W</span> wallpaper, <span class="cg-kbd">D</span> defend.</p>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
   <script src="game.js"></script>

@@ -9,11 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="terrible-ui">
+<body data-game="terrible-ui" data-modes>
   <main class="c-wrap tf">
     <header class="tf-head">
-      <h1 class="c-title">Terrible Forms</h1>
-      <p class="c-sub">Please create your account. Our designers worked very hard on these inputs. Please do not tell them anything.</p>
+      <div class="tf-dept"><span>Department of Terrible Forms</span><span>Form TF-27B / rev. 9</span></div>
+      <h1 class="tf-title">Terrible Forms</h1>
+      <p class="tf-sub" id="subLine">Please create your account. Our designers worked very hard on these inputs. Please do not tell them anything.</p>
+      <div class="tf-fine">Please write in BLOCK CAPITALS using black or blue ink. Do not write in this box. You wrote in the box.</div>
     </header>
     <div class="tf-mascot" id="mascot" data-state="idle" aria-hidden="true">
       <svg viewBox="0 0 90 110">
@@ -30,7 +32,7 @@
     </div>
     <div class="tf-progress" aria-hidden="true"><i id="bar"></i></div>
     <div class="tf-meta"><span id="stepLabel">Step 1 of 13</span><span id="timer">0:00</span></div>
-    <section class="c-card tf-card" id="card" aria-live="polite"></section>
+    <section class="tf-card" id="card" aria-live="polite"></section>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

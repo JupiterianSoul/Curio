@@ -8,10 +8,31 @@ body { overflow: hidden; }
 .bs-canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; cursor: grab; }
 .bs-stage.is-run .bs-canvas { cursor: none; }
 .bs-head { position: absolute; top: 12px; left: 0; right: 0; text-align: center; pointer-events: none; padding: 0 16px; transition: opacity .3s, transform .3s; }
-.bs-head .c-title { margin: 0 0 2px; color: #1d1b19; text-shadow: 0 2px 0 rgba(255, 255, 255, .5); }
-.bs-head .c-sub { margin: 0 0 8px; font-size: 15.5px; color: #3c3a37; font-weight: 600; }
-:root[data-theme="dark"] .bs-head .c-title, :root[data-theme="dark"] .bs-head .c-sub { color: #f3eee7; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bs-head .c-title, :root:not([data-theme="light"]) .bs-head .c-sub { color: #f3eee7; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); } }
+.bs-stage { --bs-red: #e3262f; --bs-navy: #0f2a5c; --bs-gold: #ffc629; --bs-tv: Impact, Haettenschweiler, "Arial Narrow Bold", "Franklin Gothic Medium", "Arial Black", sans-serif; --bs-ui: "Arial", "Helvetica Neue", system-ui, sans-serif; font-family: var(--bs-ui); }
+.bs-net { display: flex; width: max-content; margin: 0 auto; align-items: stretch; font: 900 12px var(--bs-ui); letter-spacing: .14em; text-transform: uppercase; background: var(--bs-navy); color: #fff; border-radius: 4px; overflow: hidden; box-shadow: 0 3px 0 rgba(0, 0, 0, .2); }
+.bs-net span { padding: 4px 10px; }
+.bs-live { background: var(--bs-red); position: relative; padding-left: 20px !important; }
+.bs-live::before { content: ''; position: absolute; left: 8px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #fff; animation: bs-blink 1.2s steps(1) infinite; }
+@keyframes bs-blink { 50% { opacity: 0; } }
+.bs-title { margin: 6px 0 4px; display: inline-block; font: 400 clamp(34px, 7vw, 56px)/1 var(--bs-tv); letter-spacing: .02em; text-transform: uppercase; color: #fff; background: linear-gradient(180deg, #ff3b45, var(--bs-red)); padding: 4px 22px 2px; transform: skewX(-10deg); box-shadow: 6px 6px 0 var(--bs-navy); text-shadow: 0 2px 0 rgba(0, 0, 0, .25); }
+.bs-sub { margin: 4px auto 8px; max-width: 560px; font: 700 15px/1.35 var(--bs-ui); color: #13213f; background: rgba(255, 255, 255, .75); display: inline-block; padding: 3px 10px; border-left: 4px solid var(--bs-gold); }
+html[data-mode="simple"] .bs-seg, html[data-mode="simple"] .bs-skins, html[data-mode="simple"] #showBadges { display: none !important; }
+.bs-ticker { position: absolute; left: 0; right: 0; bottom: max(62px, calc(env(safe-area-inset-bottom) + 56px)); display: flex; align-items: stretch; margin: 0 auto; width: min(94%, 640px); pointer-events: none; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); font: 700 14px/1.3 var(--bs-ui); }
+.bs-ticker b { background: var(--bs-red); color: #fff; padding: 7px 10px; font: 400 18px/1 var(--bs-tv); display: grid; place-items: center; letter-spacing: .06em; }
+.bs-ticker span { flex: 1; background: #fff; color: #13213f; padding: 7px 12px; border-top: 3px solid var(--bs-gold); text-align: left; }
+.bs-ticker span.is-on { animation: bs-tick .45s cubic-bezier(.2, 1.3, .4, 1); }
+@keyframes bs-tick { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.bs-btn { border: 0; border-radius: 4px; padding: 11px 20px; font: 400 19px/1 var(--bs-tv); letter-spacing: .05em; text-transform: uppercase; color: #fff; background: var(--bs-red); box-shadow: 4px 4px 0 var(--bs-navy); cursor: pointer; transform: skewX(-8deg); transition: transform .08s, box-shadow .08s; touch-action: manipulation; }
+.bs-btn:hover { transform: skewX(-8deg) translate(-1px, -1px); box-shadow: 5px 5px 0 var(--bs-navy); }
+.bs-btn:active { transform: skewX(-8deg) translate(3px, 3px); box-shadow: 0 0 0 var(--bs-navy); }
+.bs-btn:focus-visible { outline: 3px solid var(--bs-gold); outline-offset: 3px; }
+.bs-btn--ghost { background: #fff; color: var(--bs-navy); }
+.bs-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.bs-rank { display: inline-block; margin: 2px 0 8px; font: 400 16px var(--bs-tv); letter-spacing: .06em; text-transform: uppercase; color: var(--bs-navy); background: var(--bs-gold); padding: 4px 10px; transform: skewX(-8deg); }
+.bs-rank:empty { display: none; }
+.bs-stat { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
+.bs-stat b { font: 400 22px var(--bs-tv); color: var(--bs-navy); }
+.bs-stat span { font: 700 11px var(--bs-ui); text-transform: uppercase; letter-spacing: .08em; color: #5a6a8a; }
 .bs-stage.is-run .bs-head, .bs-stage.is-falling .bs-head { opacity: 0; transform: translateY(-20px); }
 .bs-stage.is-run .bs-head *, .bs-stage.is-falling .bs-head * { pointer-events: none !important; }
 .bs-seg { display: inline-flex; background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(6px); border-radius: 999px; padding: 4px; gap: 2px; pointer-events: auto; box-shadow: var(--shadow); flex-wrap: wrap; justify-content: center; }
@@ -25,7 +46,7 @@ body { overflow: hidden; }
 .bs-hud { position: absolute; top: 16px; left: 0; right: 0; text-align: center; pointer-events: none; opacity: 0; transition: opacity .3s; color: #1d1b19; }
 .bs-stage.is-dark .bs-hud { color: #fff; }
 .bs-stage.is-run .bs-hud, .bs-stage.is-falling .bs-hud { opacity: 1; }
-.bs-time { font-family: var(--mono); font-weight: 900; font-size: clamp(40px, 9vw, 68px); line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 rgba(255, 255, 255, .35); }
+.bs-time { display: inline-block; font: 400 clamp(40px, 9vw, 64px)/1 var(--bs-tv); letter-spacing: .03em; font-variant-numeric: tabular-nums; color: var(--bs-gold); background: var(--bs-navy); padding: 6px 18px 4px; border-bottom: 5px solid var(--bs-red); box-shadow: 0 6px 0 rgba(0, 0, 0, .2); text-shadow: none !important; }
 .bs-stage.is-dark .bs-time { text-shadow: 0 3px 8px rgba(0, 0, 0, .5); }
 .bs-level { margin-top: 6px; font-weight: 900; display: inline-block; padding: 3px 12px; border-radius: 999px; background: rgba(255, 255, 255, .55); color: #1d1b19; }
 .bs-level.is-pop { animation: bs-pulse .6s; }
@@ -36,19 +57,20 @@ body { overflow: hidden; }
 .bs-banner.is-on { animation: bs-banner 1.3s cubic-bezier(.2, 1.3, .4, 1) forwards; }
 .bs-card {
   position: absolute; left: 50%; top: 220px; transform: translateX(-50%); width: min(92vw, 400px); max-height: calc(100% - 240px); overflow: auto;
-  text-align: center; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); padding: 20px 18px;
+  --surface: #fff; --surface-2: #eef2fa; --ink: #13213f; --ink-2: #2c3a5c; --ink-3: #5a6a8a; --line: #c9d2e6; --accent: #e3262f; --accent-ink: #fff; --warn: #ffc629;
+  text-align: center; background: rgba(255, 255, 255, .96); color: #13213f; backdrop-filter: blur(8px); border: 0; border-top: 8px solid var(--bs-red); border-radius: 4px; box-shadow: 8px 8px 0 var(--bs-navy); padding: 18px 18px;
   animation: bs-pop .3s cubic-bezier(.2, 1.4, .4, 1);
 }
 .bs-card .bs-emoji { font-size: 46px; line-height: 1; }
-.bs-card h2 { margin: 6px 0 2px; font-size: 32px; font-weight: 900; font-family: var(--mono); letter-spacing: -.02em; }
+.bs-card h2 { margin: 6px 0 2px; font: 400 40px/1 var(--bs-tv); letter-spacing: .02em; color: var(--bs-navy); }
 .bs-card p { margin: 0 0 12px; color: var(--ink-2); }
 .bs-card .bs-new { display: inline-block; margin-bottom: 8px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
 .bs-rstats { display: flex; justify-content: center; gap: 6px 18px; flex-wrap: wrap; margin-bottom: 10px; }
-.bs-rstats .c-stat b { font-size: 20px; }
+
 .bs-chips { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
 .bs-chips span { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); border: 1px solid var(--warn); border-radius: 999px; padding: 3px 10px; font-weight: 800; font-size: 12.5px; animation: bs-pop2 .4s backwards; }
 .bs-spark { width: 100%; height: 50px; display: block; margin: 0 0 10px; }
-.bs-card .c-row { justify-content: center; }
+
 .bs-links { display: flex; gap: 12px; justify-content: center; margin-top: 10px; font-size: 13px; }
 .bs-links button { border: 0; background: none; color: var(--ink-3); font: inherit; font-weight: 800; cursor: pointer; text-decoration: underline; }
 .bs-badges { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; text-align: left; margin-top: 10px; }
@@ -57,15 +79,16 @@ body { overflow: hidden; }
 .bs-badge i { font-style: normal; font-size: 20px; }
 .bs-badge b { display: block; font-size: 12.5px; }
 .bs-foot { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 10px; padding: 0 16px; pointer-events: none; }
-.bs-best { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-weight: 800; box-shadow: var(--shadow); font-size: 14px; }
-.bs-best span { color: var(--ink-3); font-weight: 700; margin-right: 6px; }
+.bs-best { background: var(--bs-navy); color: #fff; border: 0; border-radius: 4px; padding: 7px 14px; font-weight: 800; box-shadow: var(--shadow); font-size: 14px; }
+.bs-best span { color: var(--bs-gold); font-weight: 700; margin-right: 6px; }
 @keyframes bs-pop { from { transform: translateX(-50%) scale(.85); opacity: 0; } }
 @keyframes bs-pop2 { from { transform: scale(.8); opacity: 0; } }
 @keyframes bs-pulse { 40% { transform: scale(1.3); } }
 @keyframes bs-banner { 0% { opacity: 0; transform: scale(.5); } 25% { opacity: 1; transform: scale(1.1); } 75% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: translateY(-20px); } }
 @media (max-width: 520px) {
-  .bs-head .c-title { font-size: 28px; }
-  .bs-head .c-sub { font-size: 13.5px; }
+  .bs-title { font-size: 30px; }
+  .bs-sub { font-size: 13px; }
+  .bs-ticker { font-size: 12.5px; }
   .bs-seg button { padding: 6px 9px; font-size: 13px; }
   .bs-skin { width: 36px; height: 36px; font-size: 18px; }
   .bs-card { padding: 12px 14px; }

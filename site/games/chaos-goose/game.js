@@ -1,4 +1,5 @@
 (() => {
+  const SIMPLE = Curio.simple;
   const $ = (s) => document.querySelector(s);
   const desk = $('#desk'), logEl = $('#log'), canvas = $('#prints'), puddle = $('#puddle');
   const pctx = canvas.getContext('2d');
@@ -159,13 +160,37 @@
     chaos100: ['🌪️', 'Total chaos', 'Reach 100 chaos'],
     defend: ['🛡️', 'Guardian', 'Finish a Defend round'],
     sgrade: ['🏆', 'Goose whisperer', 'Get an S in Defend'],
-    feral: ['😈', 'Feral tamer', 'Get an A or better on Feral']
+    feral: ['😈', 'Feral tamer', 'Get an A or better on Feral'],
+    pranks: ['📕', 'Full rap sheet', 'Witness every goose crime'],
+    popups: ['🪟', 'Pop-up survivor', 'Close 10 goose error messages'],
+    total: ['🪿', 'Total Goose', 'Score 70 chaos in one Simple round']
   };
+  const PRANKS = {
+    steal: ['🗂️', 'Grand theft file'], mug: ['☕', 'Coffee crime'], plant: ['🪴', 'Plant assault'], pencils: ['✏️', 'Pencil spill'],
+    mud: ['🟫', 'Mud art'], cursor: ['🖱️', 'Cursor heist'], bite: ['🦷', 'Finger nibble'], type: ['⌨️', 'Ghost typing'],
+    rename: ['🏷️', 'Identity fraud'], popup: ['🪟', 'Fake error'], nap: ['💤', 'Napping on duty'], hide: ['🫣', 'Hide and honk']
+  };
+  let pranksSeen = Curio.store.get('cg:pranks', {});
+  if (!pranksSeen || typeof pranksSeen !== 'object' || Array.isArray(pranksSeen)) pranksSeen = {};
+  function crime(id) {
+    const first = !pranksSeen[id];
+    pranksSeen[id] = (pranksSeen[id] || 0) + 1;
+    Curio.store.set('cg:pranks', pranksSeen);
+    if (first && !SIMPLE) { Curio.toast(`${PRANKS[id][0]} New crime on the rap sheet: ${PRANKS[id][1]}`, 2200); }
+    if (Object.keys(PRANKS).every((k) => pranksSeen[k])) award('pranks');
+    paintPranks();
+  }
+  function paintPranks() {
+    const el = $('#pranks'); if (!el) return;
+    const n = Object.keys(PRANKS).filter((k) => pranksSeen[k]).length;
+    el.innerHTML = `<div class="cg-sheet__h">Crimes witnessed <b>${n}/${Object.keys(PRANKS).length}</b></div><div class="cg-sheet__grid">${Object.entries(PRANKS).map(([k, [e, nm]]) => `<span class="${pranksSeen[k] ? 'on' : ''}" title="${pranksSeen[k] ? `${nm}: ${pranksSeen[k]} times` : 'Not witnessed yet'}">${pranksSeen[k] ? e : '?'}</span>`).join('')}</div>`;
+  }
   let ach = Curio.store.get('cg:ach', []);
   if (!Array.isArray(ach)) ach = [];
   let hatsSeen = Curio.store.get('cg:hats', []);
   if (!Array.isArray(hatsSeen)) hatsSeen = [];
   function award(id) {
+    if (SIMPLE && id !== 'total') return;
     if (ach.includes(id)) return;
     ach.push(id);
     Curio.store.set('cg:ach', ach);
@@ -272,6 +297,11 @@
     chase: ['Is now chasing you. You did this.', 'Has had ENOUGH. Coming for you.', 'Wings out. Neck out. Coming for you.'],
     shoo: ['Got shooed. Plotting revenge.', 'Was shooed. Felt nothing. Will return.', 'Fled. Will remember this.', 'Flapped away. Honked over its shoulder.'],
     bread: ['Ate bread. Forgave you. For now.', 'Accepted your bread offering. Peace, briefly.', 'Devoured the bread. Looked at you for more.', 'Ate bread. Do not feed the goose, says the note. The goose ate the note too. (It did not.)'],
+    type: ['Typed "%" into your to-do list. It is now legally binding.', 'Added "%" to your to-do list. Tapped every key with its beak. Twice.', 'Edited your to-do list: "%". Signed it HONK.'],
+    rename: ['Renamed "%" to "#". You will never find it again.', 'Changed "%" to "#". Called it a rebrand.', 'Renamed "%" to "#" for legal reasons.'],
+    popup: ['Opened a "%" pop-up. Nobody asked.', 'Invented a "%" message. It has buttons. They do nothing.', 'Summoned a "%" window from absolutely nowhere.'],
+    nap: ['Fell asleep on your desktop. Snores in HONK.', 'Took a power nap. Dreaming of bread and crime.', 'Napped for exactly three seconds. Woke up angrier.'],
+    hide: ['Hid behind your to-do list. Thinks you cannot see it. You can see it.', 'Went into hiding. The beak is sticking out.', 'Is hiding. Will jump out. Has no plan beyond that.'],
     wander: ['Waddled around with purpose. The purpose is unknown.', 'Paced back and forth like a tiny feathered CEO.', 'Looked directly at you. Then away. Then back.', 'Sat down for one second. Got back up. Too much to do.', 'Inspected your desktop icons. Unimpressed.', 'Stared at the window for a while. Judging.']
   };
   const line = (k, n) => Curio.pick(LINES[k]).replace('%', n || '');
@@ -280,7 +310,9 @@
   function chooseTask() {
     const free = ITEMS.filter((i) => i.kind === 'steal' && !geese.some((g) => g.held === i) && !i.drag);
     const knock = ITEMS.filter((i) => i.kind === 'knock' && !i.knocked && !i.drag);
-    const opts = [['wander', 3], ['honk', 1.6], ['steal', 4], ['knock', knock.length ? 2.2 : 0], ['mud', G.muddy > 0 ? .3 : 1.1], ['cursor', pointer.mouse && pointer.inside && !cursorStolen && Date.now() - pointer.t < 4000 ? 1 : 0]];
+    const named = ITEMS.filter((i) => i.icon && !i.renamed && !geese.some((g) => g.held === i) && !i.drag);
+    const opts = [['wander', 2.6], ['honk', 1.4], ['steal', 4], ['knock', knock.length ? 2.2 : 0], ['mud', G.muddy > 0 ? .3 : 1.1], ['cursor', pointer.mouse && pointer.inside && !cursorStolen && Date.now() - pointer.t < 4000 ? 1 : 0],
+      ['type', typed < 4 ? 1 : 0], ['rename', named.length ? 1 : 0], ['popup', desk.querySelectorAll('.cg-pop').length < 2 ? .9 : 0], ['nap', .45], ['hide', .4]];
     let r = Math.random() * opts.reduce((a, o) => a + o[1], 0);
     let pick = 'wander';
     for (const [k, w] of opts) { if ((r -= w) < 0) { pick = k; break; } }
@@ -295,7 +327,7 @@
       setTask([
         { t: 'walk', to: () => [it.x, it.y + 22], sp: 115, item: it },
         { t: 'peck', d: .35 },
-        { t: 'do', f: () => { if (it.drag) return setTask([]); grab(it); log(line('steal', it.label)); S.stolen++; chaos(3); honk(.6, 'honk!'); } },
+        { t: 'do', f: () => { if (it.drag) return setTask([]); grab(it); log(line('steal', it.label)); S.stolen++; chaos(3); honk(.6, 'honk!'); crime('steal'); } },
         { t: 'walk', to: () => dest, sp: 140 },
         { t: 'do', f: () => { if (G.held === it) { drop(); if (Math.random() < .5) log(line('drop', it.label)); } } },
         { t: 'wait', d: .6 }
@@ -308,13 +340,30 @@
         { t: 'face', dir: -side },
         { t: 'wait', d: .5 },
         { t: 'peck', d: .3 },
-        { t: 'do', f: () => { if (it.drag) return; knockOver(it); honk(1, 'HONK'); log(line(it.id)); S.knocked++; chaos(4); } },
+        { t: 'do', f: () => { if (it.drag) return; knockOver(it); honk(1, 'HONK'); log(line(it.id)); S.knocked++; chaos(4); crime(it.id); } },
         { t: 'wait', d: .9 }
       ]);
     } else if (pick === 'mud') {
-      setTask([{ t: 'walk', to: puddleXY, sp: 90 }, { t: 'stomp', d: 1.2 }, { t: 'do', f: () => { G.muddy = 60; log(line('mud')); chaos(2); } }, { t: 'walk', to: () => randSpot(), sp: 80 }]);
+      setTask([{ t: 'walk', to: puddleXY, sp: 90 }, { t: 'stomp', d: 1.2 }, { t: 'do', f: () => { G.muddy = 60; log(line('mud')); chaos(2); crime('mud'); } }, { t: 'walk', to: () => randSpot(), sp: 80 }]);
     } else if (pick === 'cursor') {
       startChase(false);
+    } else if (pick === 'type') {
+      const w = desk.querySelector('.cg-window');
+      const at = () => [w.offsetLeft + w.offsetWidth * rnd(.3, .7), Math.min(DH - FLOOR - 8, w.offsetTop + w.offsetHeight + G.W * .55)];
+      const spot = at();
+      setTask([{ t: 'walk', to: () => spot, sp: 100 }, { t: 'peck', d: .2 }, { t: 'wait', d: .1 }, { t: 'peck', d: .2 }, { t: 'wait', d: .1 }, { t: 'peck', d: .2 }, { t: 'do', f: () => typeTodo() }, { t: 'wait', d: .5 }]);
+    } else if (pick === 'rename' && named.length) {
+      const it = Curio.pick(named);
+      setTask([{ t: 'walk', to: () => [it.x, it.y + 22], sp: 105 }, { t: 'peck', d: .3 }, { t: 'peck', d: .3 }, { t: 'do', f: () => renameIt(it) }, { t: 'wait', d: .6 }]);
+    } else if (pick === 'popup') {
+      setTask([{ t: 'face', dir: Math.random() < .5 ? 1 : -1 }, { t: 'do', f: () => { honk(1, 'HONK.EXE'); popup(); } }, { t: 'wait', d: .8 }]);
+    } else if (pick === 'nap') {
+      const p = randSpot();
+      setTask([{ t: 'walk', to: () => p, sp: 70 }, { t: 'do', f: () => { G.napping = true; bubble('Zzz', 'zz'); log(line('nap')); chaos(1); crime('nap'); } }, { t: 'wait', d: 2.6 }, { t: 'do', f: () => { G.napping = false; honk(1.1, 'HONK!'); } }]);
+    } else if (pick === 'hide') {
+      const w = desk.querySelector('.cg-window');
+      const spot = [Math.min(DW - G.W * .6, w.offsetLeft + w.offsetWidth * .5), Math.min(DH - FLOOR - 8, w.offsetTop + w.offsetHeight * .7)];
+      setTask([{ t: 'walk', to: () => spot, sp: 120 }, { t: 'do', f: () => { G.hiding = true; log(line('hide')); chaos(2); crime('hide'); } }, { t: 'wait', d: 2.4 }, { t: 'do', f: () => { G.hiding = false; honk(1.3, 'BOO. HONK.'); } }, { t: 'walk', to: () => randSpot(), sp: 140 }]);
     } else {
       const p = randSpot();
       setTask([{ t: 'walk', to: () => p, sp: 70 }]);
@@ -340,13 +389,85 @@
       honk(1.2, 'HONK >:)');
       const dest = [pointer.x < DW / 2 ? DW - G.W * .7 : G.W * .7, rnd(G.W * 1.3, DH - FLOOR - 10)];
       setTask([{ t: 'walk', to: () => dest, sp: 150 }, { t: 'do', f: () => drop() }, { t: 'do', f: () => honk() }, { t: 'wait', d: 1 }]);
+      crime('cursor');
     } else {
       desk.classList.remove('shake'); void desk.offsetWidth; desk.classList.add('shake');
       honk(1.3, 'HONK!!!');
-      log(line('bite')); chaos(5);
+      log(line('bite')); chaos(5); crime('bite');
       if (navigator.vibrate) try { navigator.vibrate(60); } catch {}
       setTask([{ t: 'wait', d: .6 }, { t: 'walk', to: () => randSpot(), sp: 110 }]);
     }
+  }
+
+  let typed = 0, popsClosed = Curio.store.get('cg:pops', 0) | 0;
+  const TODO = [['honk', 'buy goose a hat', 'steal bread'], ['HONK HONK HONK', 'give goose the car keys', 'cancel all meetings (goose)'], ['bread', 'become CEO (goose)', 'sell the house, buy bread'], ['apologise to goose', 'h o n k', 'why is the goose typing']];
+  const todoBase = desk.querySelector('.cg-window__body').innerHTML;
+  function typeTodo() {
+    const body = desk.querySelector('.cg-window__body');
+    const t = Curio.pick(TODO[Math.min(TODO.length - 1, typed)]);
+    typed++;
+    const ln = document.createElement('span'); ln.className = 'cg-typed'; ln.textContent = `${5 + typed}. ${t}`;
+    body.append(document.createElement('br'), ln);
+    honk(.7, 'tap tap honk');
+    log(line('type', t));
+    chaos(3); crime('type');
+  }
+  const RENAMES = { docs: 'Honkuments', bin: 'Bread Bin', homework: 'homework_HONK.txt', taxes: 'taxes_goose_owes_nothing.xls', cat: 'goose.jpg', secret: 'OPENED (by goose)' };
+  function renameIt(it) {
+    if (it.drag || geese.some((g) => g.held === it)) return;
+    it.renamed = true;
+    const span = it.el.querySelector('span');
+    span.textContent = RENAMES[it.id] || 'honk';
+    it.el.classList.add('renamed');
+    honk(.8, 'honk :)');
+    log(line('rename', it.label).replace('#', RENAMES[it.id] || 'honk'));
+    chaos(3); crime('rename');
+  }
+  const POPS = [
+    ['goose.exe', 'Are you sure you want to HONK?', ['Honk', 'Also honk']],
+    ['System', 'Your files have been honked. Send 3 bread to unhonk them.', ['Pay in bread', 'Never']],
+    ['Error 404', 'Peace and quiet not found.', ['OK', 'OK but louder']],
+    ['Update', 'A goose is installing updates. Do not turn off your goose.', ['Fine']],
+    ['Warning', 'Low disk space. The goose is sitting on it.', ['Move goose', 'Respect goose']],
+    ['goose.exe', 'goose.exe has stopped responding. It is just staring now.', ['Wait', 'Stare back']],
+    ['Antivirus', '1 threat detected: GOOSE. Quarantine failed. The goose ate the quarantine.', ['Panic', 'Accept fate']],
+    ['Calendar', 'Reminder: HONK in 5 minutes. HONK in 4 minutes. HONK.', ['Snooze', 'HONK']],
+    ['Printer', 'Printer is out of paper. Goose is out of patience.', ['Retry']],
+    ['Mail', 'You have 1 new message from: goose. Subject: honk. Attachment: honk.zip', ['Open', 'Delete (it will come back)']]
+  ];
+  function popup() {
+    const [title, text, btns] = Curio.pick(POPS);
+    const el = document.createElement('div');
+    el.className = 'cg-pop'; el.setAttribute('role', 'alertdialog'); el.setAttribute('aria-label', title);
+    el.innerHTML = `<div class="cg-pop__bar"><span></span><button type="button" aria-label="Close">×</button></div><div class="cg-pop__body"><i>🪿</i><p></p></div><div class="cg-pop__btns">${btns.map(() => '<button type="button"></button>').join('')}</div>`;
+    el.querySelector('.cg-pop__bar span').textContent = title;
+    el.querySelector('p').textContent = text;
+    el.querySelectorAll('.cg-pop__btns button').forEach((b, i) => { b.textContent = btns[i]; });
+    desk.append(el);
+    const w = el.offsetWidth, h = el.offsetHeight;
+    el.style.left = rnd(8, Math.max(9, DW - w - 8)) + 'px';
+    el.style.top = rnd(8, Math.max(9, DH - FLOOR - h - 8)) + 'px';
+    el.addEventListener('pointerdown', (e) => e.stopPropagation());
+    el.addEventListener('click', (e) => {
+      if (!e.target.closest('button')) return;
+      el.classList.add('bye'); setTimeout(() => el.remove(), 200);
+      popsClosed++; Curio.store.set('cg:pops', popsClosed);
+      if (popsClosed >= 10) award('popups');
+      Curio.beep(Curio.pick([440, 523, 392]), .06, 'square', .05);
+      if (Math.random() < .3) log(Curio.pick(['You closed the pop-up. The goose opens a mental note.', 'You clicked a button. The goose wrote it down.', 'Pop-up dismissed. The goose is drafting a new one.']), true);
+    });
+    log(line('popup', title));
+    chaos(4); crime('popup');
+    Curio.beep(330, .12, 'square', .06);
+  }
+  function bubble(text, cls) {
+    const [bx, by] = beak();
+    const b = document.createElement('div');
+    b.className = 'cg-bubble' + (cls ? ' ' + cls : ''); b.textContent = text;
+    desk.append(b);
+    b.style.left = Math.max(4, Math.min(DW - b.offsetWidth - 4, bx - b.offsetWidth / 2)) + 'px';
+    b.style.top = Math.max(4, by - 56) + 'px';
+    setTimeout(() => b.remove(), 1600);
   }
 
   function grab(it) { G.held = it; it.el.classList.add('held'); it.moved = true; }
@@ -473,8 +594,10 @@
   });
   $('#tidy').addEventListener('click', () => {
     geese.forEach((g) => { G = g; if (G.held && G.held !== 'cursor') drop(); });
-    ITEMS.forEach((it) => { [it.x, it.y] = homeXY(it); it.knocked = false; it.moved = false; it.rot = it.note ? Curio.rand(-6, 6) : 0; placeItem(it); });
+    ITEMS.forEach((it) => { [it.x, it.y] = homeXY(it); it.knocked = false; it.moved = false; it.rot = it.note ? Curio.rand(-6, 6) : 0; if (it.renamed) { it.renamed = false; it.el.querySelector('span').textContent = it.label; it.el.classList.remove('renamed'); } placeItem(it); });
     pctx.clearRect(0, 0, DW, DH);
+    desk.querySelectorAll('.cg-pop').forEach((p) => p.remove());
+    desk.querySelector('.cg-window__body').innerHTML = todoBase; typed = 0;
     log('You tidied everything up. The goose saw. The goose remembers.', true);
     setTimeout(() => honk(1, 'HONK.'), 700);
   });
@@ -532,7 +655,7 @@
   window.addEventListener('keydown', (e) => {
     if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || document.querySelector('.curio-modal')) return;
     const k = e.key.toLowerCase();
-    const map = { b: '#bread', h: '#hat', o: '#honk', t: '#tidy', '+': '#addGoose', '=': '#addGoose', '-': '#remGoose', w: '#wallBtn', d: '#defend' };
+    const map = SIMPLE ? { b: '#bread', h: '#hat', o: '#honk' } : { b: '#bread', h: '#hat', o: '#honk', t: '#tidy', '+': '#addGoose', '=': '#addGoose', '-': '#remGoose', w: '#wallBtn', d: '#defend' };
     if (map[k]) { e.preventDefault(); $(map[k]).click(); }
     if (k === 'r') {
       e.preventDefault();
@@ -571,6 +694,9 @@
     const flap = G.flapT > 0 ? Math.sin(G.flapT * 40) * 30 - 20 : 0;
     G.wing.setAttribute('transform', `rotate(${flap} 30 70)`);
     G.el.classList.toggle('angry', G.annoy >= 2.5);
+    G.el.classList.toggle('napping', !!G.napping);
+    G.el.classList.toggle('hiding', !!G.hiding);
+    if (G.napping && Math.random() < .02) bubble('z', 'zz');
     if (G.held && G.held !== 'cursor') {
       const [bx, by] = beak();
       const it = G.held;
@@ -589,7 +715,7 @@
     G.speed = 0;
     if (!G.task.length) {
       G.idle -= dt;
-      if (G.idle <= 0) { G.idle = rnd(.3, 1.6) * (MODE.on ? DIFFS[MODE.diff].idle : 1); if (breads.length) goForBread(); else chooseTask(); }
+      if (G.idle <= 0) { G.idle = rnd(.3, 1.6) * (MODE.on ? DIFFS[MODE.diff].idle : SIMPLE ? .6 : 1); if (breads.length) goForBread(); else chooseTask(); }
     }
     const a = G.task[0];
     if (a) {
@@ -645,6 +771,7 @@
     if (!document.hidden) {
       for (const g of geese) { G = g; step(dt); render(); }
       if (MODE.on) modeTick(dt);
+      if (SR.on) simpleTick(dt);
     }
     requestAnimationFrame(loop);
   }
@@ -748,10 +875,76 @@
     log(`Defend round over: grade ${grade}, ${pts} points.`, true);
     const v = await Curio.modal({ emoji: grade === 'S' || grade === 'A' ? '🏆' : grade === 'D' ? '🪿' : '🛡️', title: `Grade ${grade} on ${d.name}`, body: `${pts} points (${Math.round(pct)}% of everything kept safe). ${r.isNew ? 'New personal best!' : `Best on ${d.name}: ${r.best}.`} ${quips[grade]}`, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Copy result', value: 'share' }, { label: 'Done', value: 'done' }] });
     if (v === 'again') startDefend();
-    if (v === 'share') { const t = `🪿 I defended my desktop from ${d.geese} goose${d.geese > 1 ? 'e' : ''} on ${d.name}: grade ${grade}, ${pts} points. Chaos Goose on Curio.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (e) { Curio.toast(t, 4000); } }
+    if (v === 'share') { const t = `🪿 I defended my desktop from ${d.geese} goose${d.geese > 1 ? 'e' : ''} on ${d.name}: grade ${grade}, ${pts} points. Chaos Goose on Zoble.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (e) { Curio.toast(t, 4000); } }
   }
   $('#defend').addEventListener('click', startDefend);
+
+  const SR = { on: false, t: 0, len: 60, tick: 0 };
+  const RANKS = [
+    [0, 'Suspiciously Calm', 'The goose did almost nothing. That is what worries us. It is planning something bigger.'],
+    [10, 'Mild Inconvenience', 'The goose rates this desktop two honks out of five. It will be back with friends.'],
+    [25, 'Feathered Menace', 'Your coffee will never be the same. Neither will you.'],
+    [45, 'Public Enemy No. 1', 'The goose has added itself to your contacts as "Mum".'],
+    [70, 'Total Goose', 'The goose now pays your rent. Not to you. To itself.']
+  ];
+  function paintSimpleHud() {
+    const hud = $('#hud');
+    hud.hidden = false;
+    const t = Math.max(0, Math.ceil(SR.len - SR.t));
+    hud.innerHTML = `<b>⏱ 0:${String(t).padStart(2, '0')}</b><span class="cg-meter" aria-label="Chaos ${S.chaos}"><i style="width:${Math.min(100, S.chaos / 70 * 100)}%"></i></span><span>🌪️ ${S.chaos}</span>`;
+    hud.classList.toggle('low', t <= 10);
+  }
+  function simpleTick(dt) {
+    SR.t += dt; SR.tick -= dt;
+    if (SR.tick <= 0) { SR.tick = .25; paintSimpleHud(); }
+    if (SR.t >= SR.len) endSimple();
+  }
+  function startSimple() {
+    $('#report')?.remove();
+    Object.keys(S).forEach((k) => { S[k] = 0; });
+    $('#chaos').textContent = 0; paintStats();
+    if (SR.started) $('#tidy').click();
+    SR.started = true; SR.on = true; SR.t = 0; SR.tick = 0;
+    geese.forEach((g) => { g.annoy = 0; });
+    paintSimpleHud();
+  }
+  function endSimple() {
+    SR.on = false;
+    paintSimpleHud();
+    const rank = RANKS.filter((r) => S.chaos >= r[0]).pop();
+    const r = Curio.best('simple-chaos', S.chaos);
+    if (S.chaos >= 70) { award('total'); Curio.confetti(); }
+    honk(1.3, 'HONK!!!');
+    const crimes = [['🗂️', 'things stolen', S.stolen], ['💥', 'things knocked over', S.knocked], ['📯', 'honks', S.honks], ['👋', 'times shooed', S.shoos], ['🍞', 'bread eaten', S.bread]].filter((c) => c[2] > 0);
+    const el = document.createElement('div');
+    el.className = 'cg-report'; el.id = 'report'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Incident report');
+    el.innerHTML = `<div class="cg-report__win"><div class="cg-pop__bar"><span>incident_report.txt</span></div><div class="cg-report__body">
+      <div class="cg-report__stamp">CASE CLOSED</div>
+      <small>Goose incident report · 60 seconds</small>
+      <h3></h3><p class="cg-report__quip"></p>
+      <div class="cg-report__score"><b>${S.chaos}</b><span>chaos${r.isNew && S.chaos > 0 ? ' · new record!' : r.best != null ? ` · best ${r.best}` : ''}</span></div>
+      <ul>${crimes.length ? crimes.map((c) => `<li>${c[0]} <b>${c[2]}</b> ${c[1]}</li>`).join('') : '<li>No crimes recorded. Yet.</li>'}</ul>
+      <div class="cg-report__btns"><button type="button" class="cg-btn cg-btn--go" data-r="again">Another 60 seconds</button><button type="button" class="cg-btn" data-r="adv">More geese (Advanced)</button><button type="button" class="cg-btn" data-r="share">Share</button></div>
+    </div></div>`;
+    el.querySelector('h3').textContent = rank[1];
+    el.querySelector('.cg-report__quip').textContent = rank[2];
+    el.addEventListener('pointerdown', (e) => e.stopPropagation());
+    el.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-r]'); if (!b) return;
+      if (b.dataset.r === 'again') startSimple();
+      if (b.dataset.r === 'adv') Curio.setMode('advanced');
+      if (b.dataset.r === 'share') { const t = `🪿 A goose caused ${S.chaos} chaos on my desktop in 60 seconds. Verdict: ${rank[1]}. Chaos Goose on Zoble.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (err) { Curio.toast(t, 4000); } }
+    });
+    desk.append(el);
+    log(`Incident report filed: ${rank[1]}, ${S.chaos} chaos.`, true);
+    el.querySelector('[data-r="again"]').focus({ preventScroll: true });
+  }
+  if (SIMPLE) {
+    $('#subLine').innerHTML = 'You have to look after a goose for <b>60 seconds</b>. Shoo it, feed it, drag your things back. It will not go well.';
+    setTimeout(startSimple, 1800);
+  }
+  paintPranks();
   paintAch();
   paintCount();
-  window.ChaosGoose = { get G() { return G; }, geese, ITEMS, S, MODE, chooseTask, throwBread, shoo, addGoose, endDefend };
+  window.ChaosGoose = { get G() { return G; }, geese, ITEMS, S, MODE, SR, chooseTask, throwBread, shoo, addGoose, endDefend, endSimple, popup, typeTodo, renameIt };
 })();

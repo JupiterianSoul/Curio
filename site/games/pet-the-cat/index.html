@@ -9,13 +9,20 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="pet-the-cat">
+<body data-game="pet-the-cat" data-modes>
   <main class="c-wrap pc">
-    <h1 class="c-title">Pet the Cat</h1>
-    <p class="c-sub">Slow, gentle strokes. Find the good spots. Read the room. The belly is a trap.</p>
+    <header class="pc-awning">
+      <div class="pc-awning__stripes" aria-hidden="true"></div>
+      <div class="pc-sign">
+        <small>The Purrfect Café · est. 9 lives ago</small>
+        <h1 class="pc-title">Pet the Cat</h1>
+        <p class="pc-sub" id="subLine">Slow, gentle strokes. Find the good spots. Read the room. The belly is a trap.</p>
+      </div>
+    </header>
     <div class="pc-meters">
       <div class="pc-meter"><span>💗 Purr</span><div class="pc-bar"><i id="purrBar"></i></div></div>
       <div class="pc-meter"><span>🧘 Patience</span><div class="pc-bar pc-bar--pat"><i id="patBar"></i></div></div>
+      <div class="pc-meter pc-meter--nap"><span>😴 Nap-o-meter</span><div class="pc-bar pc-bar--nap"><i id="napBar"></i></div></div>
     </div>
     <div class="pc-mood" id="mood" aria-live="polite">🐱 Curious</div>
     <div class="pc-roster" id="roster" role="group" aria-label="Your cats"></div>
@@ -38,6 +45,7 @@
       </svg>
     <div class="pc-stage" id="stage" role="img" aria-label="A large orange cat. Move your pointer or finger across it to pet it.">
       <div class="pc-rug" aria-hidden="true"></div>
+      <div class="pc-think" id="think" aria-live="polite"></div>
       <svg id="svg" viewBox="0 0 400 440" aria-hidden="true">
         <defs>
           <clipPath id="eyeL"><ellipse cx="158" cy="150" rx="24" ry="26"/></clipPath>
@@ -94,23 +102,24 @@
       <div class="pc-laser" id="laser" aria-hidden="true"></div>
       <div class="pc-yarn" id="yarn" hidden aria-hidden="true"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="17" fill="#ec407a" stroke="#ad1457" stroke-width="2"/><path d="M6 14q14 4 28 -4M5 22q16 6 30 -6M9 30q12 2 24 -12M14 6q4 14 -2 30M24 4q6 16 0 32" stroke="#f8bbd0" stroke-width="2" fill="none"/></svg></div>
     </div>
+    <div class="pc-end" id="end" hidden role="dialog" aria-label="Result"></div>
     </div>
-    <p class="pc-hint c-muted" id="hint">Stroke the cat with your mouse or finger. Click it once so you can hear it purr.</p>
-    <div class="c-row pc-actions">
-      <button class="c-btn" id="treat" type="button">🐟 Give a treat</button>
-      <button class="c-btn c-btn--ghost" id="blink" type="button">😌 Slow blink</button>
-      <button class="c-btn c-btn--ghost" id="laserBtn" type="button" aria-pressed="false">🔴 Laser pointer</button>
-      <button class="c-btn c-btn--ghost" id="yarnBtn" type="button">🧶 Yarn ball</button>
+    <p class="pc-hint" id="hint">Stroke the cat with your mouse or finger. Click it once so you can hear it purr.</p>
+    <div class="pc-actions">
+      <button class="pc-btn" id="treat" type="button">🐟 Give a treat</button>
+      <button class="pc-btn pc-btn--ghost" id="blink" type="button">😌 Slow blink</button>
+      <button class="pc-btn pc-btn--ghost" id="laserBtn" type="button" aria-pressed="false">🔴 Laser pointer</button>
+      <button class="pc-btn pc-btn--ghost" id="yarnBtn" type="button">🧶 Yarn ball</button>
     </div>
     <div class="pc-stats">
-      <div class="c-stat"><b id="sPets">0</b><span>Pets</span></div>
-      <div class="c-stat"><b id="sTreats">0</b><span>Treats</span></div>
-      <div class="c-stat"><b id="sCatch">0</b><span>Dots caught</span></div>
-      <div class="c-stat"><b id="sYarn">0</b><span>Swats</span></div>
-      <div class="c-stat"><b id="sBites">0</b><span>Bites</span></div>
+      <div class="pc-stat"><b id="sPets">0</b><span>Pets</span></div>
+      <div class="pc-stat"><b id="sTreats">0</b><span>Treats</span></div>
+      <div class="pc-stat"><b id="sCatch">0</b><span>Dots caught</span></div>
+      <div class="pc-stat"><b id="sYarn">0</b><span>Swats</span></div>
+      <div class="pc-stat"><b id="sBites">0</b><span>Bites</span></div>
     </div>
     <div class="pc-ach" id="ach" aria-label="Achievements"></div>
-    <p class="c-muted pc-how">Every cat has a secret favourite spot. Keep a cat blissed out (purr bar full) for a few seconds to earn a bond heart. Bond hearts bring new cats to visit.</p>
+    <p class="pc-how">Every cat has a secret favourite spot. Keep a cat blissed out (purr bar full) for a few seconds to earn a bond heart. Bond hearts bring new cats to visit.</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

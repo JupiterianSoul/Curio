@@ -285,5 +285,90 @@ window.BTN_DATA = (() => {
     { id: 'themes', emoji: '🎨', name: 'Redecorator', desc: 'Try all three room styles.' }
   ];
 
-  return { chapters, blueLines, redHurt, fakeLines, runLines, holdHint, idleLines, encore, postLines, endings, achievements };
+  achievements.push(
+    { id: 'owl', emoji: '🦉', name: 'Night Shift', desc: 'Press the button between midnight and 5am.' },
+    { id: 'patient', emoji: '🪑', name: 'Still Here', desc: 'Get the narrator to check on you because you went quiet.' },
+    { id: 'speedy', emoji: '🏎️', name: 'Speed Reader', desc: 'Finish a story in under four minutes.' },
+    { id: 'blue3', emoji: '🫣', name: 'Two-Timer', desc: 'Go back to the red button after betraying it.' }
+  );
+  idleLines.push(
+    'I counted the ceiling tiles. There are none. It\'s a button.',
+    'Pixel has knocked something off the shelf. It was the shelf.',
+    'If you\'re making tea, I take mine with no hands.',
+    'I\'ve started a small podcast in here. It\'s about pressing.'
+  );
+  postLines.push(
+    'Every press after the ending goes into a small jar. The jar is for emergencies.',
+    'The credits are rolling. They are very short. They say "you".',
+    'Gerald would like to thank the academy.'
+  );
+  fakeLines.push(
+    'That\'s a jelly bean. Pixel has been stockpiling.',
+    'That one is a ladybird. She is offended.'
+  );
+  Object.assign(encore, {
+    50: 'Fifty! Half a century! Of pressing!',
+    250: 'Two hundred and fifty. I\'d bake you a cake but I\'d have to press myself to preheat.',
+    500: 'Five hundred. Gerald grew a new leaf in your honour.',
+    777: 'Seven seven seven. The room smells faintly of slot machine.'
+  });
+
+  const simple = {
+    chapters: [
+      {
+        id: 's1', title: 'Do Not Press', sub: 'The short version',
+        beats: [
+          { t: 'Hey. HEY. It literally says do not press.' },
+          { t: 'You pressed it again. On purpose. I saw your little arrow do it.' },
+          { t: 'Okay. New rule. Ten more presses, then we both walk away with dignity.', n: 2 },
+          { t: 'That was one. I am counting. I have nothing else to do. I live in a button.', n: 2 },
+          { t: 'Fine. If you\'re staying, I\'m getting a light bulb.', n: 2, room: ['+bulb'], sfx: 'magic' },
+          { t: 'Oh no. Now I can see the room. It\'s beige. It was always beige.', n: 2 },
+          { t: 'Let\'s get a cat. Rooms are better with a cat.', n: 2, room: ['+cat'], sfx: 'meow' },
+          { t: 'This is Pixel. Pixel has watched you press. Pixel is judging you.', n: 2 },
+          { t: 'You want to press me? Catch me first!', n: 2, mode: 'run' },
+          { t: 'Too slow! Over here!', n: 2 },
+          { t: 'You chased a button around a room. Your ancestors crossed oceans for this.', n: 2, mode: '' },
+          { t: 'Shh. Pixel is napping. Do NOT press for four seconds. That\'s the whole game now.', n: 1, room: ['+sleep'], mode: 'wait', sec: 4, fail: ['You pressed it. You absolutely pressed it. Four quiet seconds, please.', 'The cat twitched. Again. Hands in your lap.', 'Do not press is a SENTENCE, not a suggestion. Again.'] },
+          { t: 'You did it! She sleeps. I\'m welling up. Buttons can\'t cry, it\'s a gasket thing.', n: 1, room: ['-sleep'], mode: '' },
+          { t: 'Okay, quick, while she\'s asleep: twelve presses in four seconds. Go go go!', n: 1, mode: 'mash', count: 12, sec: 4, fail: ['Too slow! Your finger is on holiday. Again!', 'Nearly! Pretend it\'s an elevator and you\'re late!'] },
+          { t: 'Incredible. The finest pressing of the decade. A small crowd of dust has gathered.', n: 1, mode: '' },
+          { t: 'Okay. That was the ten. Well over the ten. Time for the big question.', n: 2 },
+          {
+            choice: {
+              q: 'So. What do you think the button actually does?',
+              opts: [
+                { label: 'It launches something', ending: 'bells' },
+                { label: 'Nothing. It does nothing', ending: 'doug' },
+                { label: 'Finally obey the sign', ending: 'paw' }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    endings: {
+      bells: {
+        emoji: '🔔', title: 'Ding Dong', art: 'bells', hint: 'Guess that it launches something.',
+        text: ['"Launch something? Ha. No. Press it one more time and I\'ll show you."', 'You press. Across town, four thousand doorbells ring at exactly the same moment.', 'Four thousand people open their doors. Nobody is there. "Every press," whispers the narrator. "Every single one."']
+      },
+      doug: {
+        emoji: '📠', title: 'Doug', art: 'doug', hint: 'Decide it does nothing.',
+        text: ['"Nothing," you say. The narrator goes very quiet.', '"Correct," it says. "Mostly. Each press also sends one fax to a man called Doug."', 'Somewhere, Doug stands knee deep in paper, reading the word "press" for the 61st time.']
+      },
+      paw: {
+        emoji: '🐾', title: 'Do Not Press', art: 'paw', hint: 'Do what the sign says. Eventually.',
+        text: ['For the first time all day, you do not press the button.', 'Silence. Then a small, soft paw reaches up and presses it for you.', '"Oh," says the narrator. "Hello, Pixel. You know the rules." Pixel does not. Pixel never will.']
+      }
+    },
+    postLines: [
+      'The story is over. You are pressing out of pure spite now.',
+      'Doug just got another fax. Probably.',
+      'Pixel is asleep again. On the button. Somehow.',
+      'There are nine endings in the long version. Advanced mode. Top bar. Just saying.',
+      'Encore! The crowd of dust goes wild.'
+    ]
+  };
+
+  return { chapters, blueLines, redHurt, fakeLines, runLines, holdHint, idleLines, encore, postLines, endings, achievements, simple };
 })();

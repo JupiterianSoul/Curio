@@ -1,4 +1,5 @@
 (() => {
+  const SIMPLE = Curio.simple;
   const $ = (s) => document.querySelector(s);
   const stage = $('#stage'), svg = $('#svg'), laserEl = $('#laser'), hint = $('#hint');
   const el = (id) => document.getElementById(id);
@@ -56,7 +57,7 @@
   const saveCats = () => Curio.store.set('pc:cats', cats);
   const totalBond = () => CATS.reduce((a, c) => a + (cats.bond[c.id] || 0), 0);
   const unlockedCat = (i) => i === 0 || totalBond() >= i * 2;
-  let CAT = CATS.find((c) => c.id === cats.cur) || CATS[0];
+  let CAT = SIMPLE ? CATS[0] : CATS.find((c) => c.id === cats.cur) || CATS[0];
   if (!unlockedCat(CATS.indexOf(CAT))) CAT = CATS[0];
   function applyCat() {
     const c = CAT.c;
@@ -99,7 +100,7 @@
   const ACH = { bliss: ['😻', 'Pure bliss'], fav: ['🎯', 'Found a sweet spot'], allfav: ['🗺️', 'Knows every cat'], allcats: ['🏠', 'Full house'], bff: ['💞', 'Best friends'], yarn: ['🧶', 'Yarn champion'], bitten: ['🩹', 'Did not read the room'], hunter: ['🔴', 'Laser master'] };
   let ach = Curio.store.get('pc:ach', []);
   if (!Array.isArray(ach)) ach = [];
-  function award(id) { if (ach.includes(id)) return; ach.push(id); Curio.store.set('pc:ach', ach); Curio.toast(`${ACH[id][0]} ${ACH[id][1]}`, 2400); paintAch(); }
+  function award(id) { if (SIMPLE || ach.includes(id)) return; ach.push(id); Curio.store.set('pc:ach', ach); Curio.toast(`${ACH[id][0]} ${ACH[id][1]}`, 2400); paintAch(); }
   function paintAch() { $('#ach').innerHTML = Object.entries(ACH).map(([id, [e, n]]) => `<span class="${ach.includes(id) ? 'on' : ''}" title="${n}">${e}</span>`).join(''); }
 
   let audio = null;
@@ -315,6 +316,7 @@
   function bite() {
     S.bite = 1; stats.bites++; saveStats();
     if (stats.bites >= 5) award('bitten');
+    if (SIMPLE && !ended) { sessionBites++; if (sessionBites >= 3) setTimeout(() => endSimple('bite'), 900); else think(sessionBites === 1 ? 'Strike one. I keep a list.' : 'Strike two. My lawyer is a raccoon.'); }
     noiseBurst(.55, 'highpass', 2600, .5);
     stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
     fx('word', Curio.pick(['CHOMP!', 'BITE!', 'HISSS!', 'NOM (angry)']), pointer ? pointer.sx : 200, pointer ? pointer.sy : 200);
@@ -341,7 +343,26 @@
 
     const asleep = !S.laser && S.idle > 28 && S.purr < 60;
     const sleepy = !S.laser && S.idle > 14;
-    let mood;
+    let mood, mk;
+    if (S.bite) mk = 'annoyed';
+    else if (S.sulk > 0) mk = 'sulk';
+    else if (S.laser) mk = 'hunting';
+    else if (S.eat > 0) mk = 'munching';
+    else if (S.irr > 62) mk = 'annoyed';
+    else if (S.irr > 35) mk = 'twitchy';
+    else if (asleep) mk = 'asleep';
+    else if (S.purr > 72) mk = 'bliss';
+    else if (S.purr > 30) mk = 'happy';
+    else if (sleepy) mk = 'sleepy';
+    else mk = 'curious';
+    S.mk = mk;
+    thinkT -= dt;
+    if (thinkT <= 0) { thinkT = Curio.rand(5, 9); think(); }
+    if (SIMPLE && !ended) {
+      if (S.purr >= 88 && !S.bite) napT += dt; else napT = Math.max(0, napT - dt * .4);
+      $('#napBar').style.width = Math.min(100, napT / NAP * 100) + '%';
+      if (napT >= NAP) endSimple('nap');
+    }
     if (S.bite) mood = '😾 CHOMP';
     else if (S.sulk > 0) mood = '😤 Sulking';
     else if (S.laser) mood = S.pounce > 0 ? '🐾 POUNCE!' : '😼 Hunting';
@@ -519,6 +540,84 @@
     pb.style.backgroundColor = pat > 60 ? 'var(--good)' : pat > 30 ? 'var(--warn)' : 'var(--bad)';
   }
 
+  const THOUGHTS = {
+    curious: ['who are you. what do you want. do you have ham', 'I could knock something off a shelf right now. I will not. Probably.', 'your hand smells like a sandwich', 'is that a bird? no. is it a bird now?', 'I have been awake for nine minutes. I need a nap.'],
+    happy: ['this human is acceptable', 'ok yes. there. THERE.', 'I will allow seven more pets', 'I am putting you in my will. You get the box.', 'do not stop. that is an order.'],
+    bliss: ['I am a puddle now', 'I have forgotten what the floor is', 'you may live here now', 'motor running at one hundred percent', 'brrrrrrrrrrrrrr', 'I love you. I will deny this later.'],
+    twitchy: ['careful', 'the tail is a warning system. it is warning.', 'one more and I start a podcast about you', 'I am counting. you are on four.'],
+    annoyed: ['I will remember this', 'I know where you sleep', 'this is going in my diary', 'you have been reported to the cat council'],
+    sulk: ['I am not talking to you', 'I am staring at the wall on purpose', 'that was assault, legally', 'I will forgive you in one to six business days'],
+    asleep: ['zzz... ham... zzz', 'dreaming of 3am zoomies', 'zzz... the red dot... it is mine... zzz', 'zzz... knock it off the table... zzz'],
+    sleepy: ['so... sleepy...', 'my eyes are just resting', 'loaf mode engaged', 'five more minutes. or hours.'],
+    hunting: ['the dot. THE DOT.', 'I have trained my whole life for this', 'it mocks me', 'I will end you, small red sun'],
+    munching: ['nom', 'best day of my life', 'this changes everything', 'more fish. immediately.', 'I would die for you. briefly.']
+  };
+  const CAT_THOUGHTS = {
+    biscuit: ['is it dinner. it feels like dinner', 'I can hear the treat bag from three rooms away'],
+    mochi: ['I am a cloud with feet', 'please do not vacuum me again'],
+    shadow: ['I was never here', 'I am the night. also I am hungry.'],
+    earl: ['Good evening. Pets at the back, please.', 'I am wearing a tuxedo and you are wearing whatever that is'],
+    pebble: ['warm spot detected', 'I sat on your laptop earlier. you are welcome.'],
+    duchess: ['you may now kiss the paw', 'I have staff for this', 'I was a queen in a past life. Also this life.'],
+    patches: ['three colours, zero chill', 'one of my moods likes you. guess which.']
+  };
+  let thinkT = 3, napT = 0, ended = false, sessionBites = 0, startT = performance.now();
+  const NAP = 6;
+  function think(text) {
+    const b = $('#think'); if (!b) return;
+    const k = S.mk || 'curious';
+    let pool = THOUGHTS[k] || THOUGHTS.curious;
+    if ((k === 'curious' || k === 'happy') && Math.random() < .35) pool = CAT_THOUGHTS[CAT.id] || pool;
+    b.textContent = text || Curio.pick(pool);
+    b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
+  }
+  function endSimple(why) {
+    if (ended) return;
+    ended = true;
+    const secs = Math.round((performance.now() - startT) / 1000);
+    const box = $('#end');
+    const nap = why === 'nap';
+    if (nap) { S.purr = 50; S.idle = 40; Curio.confetti(); [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, .14, 'triangle', .07), i * 110)); }
+    else { [300, 240, 180].forEach((f, i) => setTimeout(() => Curio.beep(f, .16, 'square', .05), i * 120)); }
+    const r = nap ? Curio.best('nap-time', secs, false) : null;
+    box.innerHTML = `<div class="pc-end__card"><div class="pc-end__badge">${nap ? '😴' : '⚖️'}</div><small>${nap ? 'Mission accomplished' : 'Case closed'}</small><h2>${nap ? 'Biscuit is asleep. On your hand.' : 'Biscuit has filed a restraining order.'}</h2><p>${nap ? 'You can never move again. This is your life now. Cancel your plans. Learn to love this chair.' : 'Three bites. The court has ruled in favour of the cat. You must stay 50 metres from the belly at all times.'}</p><div class="pc-end__stats"><span><b>${secs}s</b>time</span><span><b>${sessionBites}</b>bites</span>${r ? `<span><b>${r.best}s</b>${r.isNew ? 'new best' : 'best'}</span>` : ''}</div><div class="pc-end__btns"><button type="button" class="pc-btn" id="endAgain">${nap ? 'Pet again' : 'Try gentler'}</button><button type="button" class="pc-btn pc-btn--ghost" id="endAdv">Meet all seven cats (Advanced)</button></div></div>`;
+    box.hidden = false;
+    think(nap ? 'zzz... this is my human now... zzz' : 'objection sustained');
+    box.querySelector('#endAgain').addEventListener('click', () => { box.hidden = true; ended = false; napT = 0; sessionBites = 0; startT = performance.now(); Object.assign(S, { purr: 0, irr: 0, sulk: 0, idle: 0, bellyT: 0 }); });
+    box.querySelector('#endAdv').addEventListener('click', () => Curio.setMode('advanced'));
+    box.querySelector('#endAgain').focus({ preventScroll: true });
+  }
+
+  const KZ = { head: [200, 100], cheeks: [128, 190], chin: [200, 232], back: [272, 300] };
+  let kzone = 'cheeks', kAnim = 0;
+  function keyStroke(dir) {
+    if (S.laser || ended) return;
+    const [zx, zy] = KZ[kzone];
+    const r = stage.getBoundingClientRect(), k = r.width / 400;
+    const span = 34 * dir;
+    const t0 = performance.now();
+    cancelAnimationFrame(kAnim);
+    lastPt = null;
+    const stepK = (now) => {
+      const f = Math.min(1, (now - t0) / 380);
+      const sx = zx - span + span * 2 * f, sy = zy + Math.sin(f * Math.PI) * 4;
+      onMove({ clientX: r.left + sx * k, clientY: r.top + sy * k, pointerType: 'mouse', isPrimary: true });
+      if (f < 1) kAnim = requestAnimationFrame(stepK);
+    };
+    kAnim = requestAnimationFrame(stepK);
+  }
+  window.addEventListener('keydown', (e) => {
+    if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName || '') || document.querySelector('.curio-modal')) return;
+    const zk = { 1: 'head', 2: 'cheeks', 3: 'chin', 4: 'back' }[e.key];
+    if (zk) { kzone = zk; hint.textContent = `Keyboard petting: ${zk}. Tap the arrow keys slowly to stroke.`; return; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) keyStroke(e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1); return; }
+    const k = e.key.toLowerCase();
+    if (k === 't') $('#treat').click();
+    if (k === 'b') $('#blink').click();
+    if (!SIMPLE && k === 'l') $('#laserBtn').click();
+    if (!SIMPLE && k === 'y') $('#yarnBtn').click();
+  });
+
   let last = performance.now();
   function loop(now) {
     const dt = Math.min(.05, (now - last) / 1000); last = now;
@@ -532,5 +631,9 @@
   const tickRoom = () => { const h = new Date().getHours(); $('#room').classList.toggle('is-night', h >= 20 || h < 6); };
   tickRoom(); setInterval(tickRoom, 60000);
   requestAnimationFrame(loop);
-  window.PetCat = { S, stats, cats, startYarn };
+  if (SIMPLE) {
+    $('#subLine').textContent = 'Biscuit needs a nap. Pet him to sleep: keep the purr bar full. Three bites and you are out.';
+    hint.textContent = 'Stroke slowly with your mouse, touchpad or finger. Or press 1 to 4 for a spot and tap the arrow keys.';
+  }
+  window.PetCat = { S, stats, cats, startYarn, endSimple, think };
 })();

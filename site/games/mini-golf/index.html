@@ -149,11 +149,38 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
 .mg-badge i { font-style: normal; margin-right: 4px; }
 .mg-badge.is-on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
 .mg-badge.is-on i { color: var(--warn); }
+html[data-mode="simple"] .mg-adv-only, html[data-mode="advanced"] .mg-simple-only { display: none !important; }
+.arc-wrap { --mg-red: #d7263d; --mg-green: #1f7a3a; --mg-cream: #fff6dc; --mg-gold: #ffc53d; --mg-ink: #1e2a1c; --mg-sign: "Cooper Black", "Cooper Std", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif; }
+.arc-wrap .arc-card {
+  --surface: var(--mg-cream); --surface-2: #f3e6bf; --ink: var(--mg-ink); --ink-2: #3b4a36; --ink-3: #6a7660; --line: #d9c58f; --accent: var(--mg-red); --accent-ink: #fff; --good: #1f7a3a; --bad: #c0392b; --warn: #d99a00;
+  background: var(--mg-cream); color: var(--mg-ink); border: 4px solid var(--mg-green); border-radius: 22px; padding: 18px 18px 16px; box-shadow: 0 0 0 4px var(--mg-cream), 0 0 0 8px var(--mg-red), 0 16px 34px rgba(0, 0, 0, .3);
+  background-image: radial-gradient(circle, rgba(31, 122, 58, .07) 0 2px, transparent 2.5px); background-size: 18px 18px;
+}
+.arc-wrap .arc-card .c-title { font-family: var(--mg-sign); font-weight: 900; color: var(--mg-red); letter-spacing: .01em; text-shadow: 2px 2px 0 var(--mg-gold), 4px 4px 0 var(--mg-green); }
+.arc-wrap .arc-card .c-sub { font-family: var(--mg-sign); color: #3b4a36; }
+.mg-logo { font-size: clamp(36px, 8vw, 52px) !important; transform: rotate(-3deg); }
+.mg-marquee { display: inline-block; font: 800 11px var(--mg-sign); letter-spacing: .14em; text-transform: uppercase; color: #fff; background: var(--mg-green); padding: 4px 12px; border-radius: 999px; margin: 6px 0 2px; }
+.arc-wrap .c-btn { font-family: var(--mg-sign); border: 0; border-radius: 999px; padding: 10px 18px; background: var(--mg-red); color: #fff; box-shadow: 0 4px 0 #8f1424; cursor: pointer; font-size: 15px; text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+.arc-wrap .c-btn:not(:disabled):active { padding: 10px 18px; transform: translateY(3px); box-shadow: 0 1px 0 #8f1424; }
+.arc-wrap .c-btn--ghost { background: #fff; color: var(--mg-green); box-shadow: 0 4px 0 #b9a76c; text-shadow: none; }
+.arc-wrap .c-btn--ghost:not(:disabled):active { box-shadow: 0 1px 0 #b9a76c; }
+.arc-wrap .c-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.mg-advbtn { background: var(--mg-green) !important; box-shadow: 0 4px 0 #0f4a22 !important; }
+.mg-advbtn[hidden] { display: none; }
+.mg-tee { font-size: 22px !important; padding: 14px 34px !important; margin: 4px 0 10px; animation: mg-bob 1.8s ease-in-out infinite; }
+@keyframes mg-bob { 50% { transform: translateY(-3px) rotate(-1deg); } }
+.mg-aimrow { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 0 0 10px; }
+.mg-aimrow .arc-label { margin: 0; }
+.arc-wrap .arc-hud .c-stat { background: #fff; color: var(--mg-ink); border: 2px solid var(--mg-green); border-top-width: 8px; border-radius: 6px; padding: 2px 8px 3px; box-shadow: 0 3px 0 rgba(0, 0, 0, .15); }
+.arc-wrap .arc-hud .c-stat b { color: var(--mg-ink); font-family: var(--mg-sign); }
+.arc-wrap .arc-hud .c-stat span { color: #5b6a55; }
+.arc-wrap .arc-iconbtn { background: var(--mg-cream); border: 2px solid var(--mg-green); color: var(--mg-green); }
+.arc-wrap .arc-big { font-family: var(--mg-sign); color: var(--mg-green); }
 .mg-badge.is-new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
 @media (max-width: 420px) { .mg-course { grid-template-columns: 32px 1fr; padding: 8px; } .mg-course svg { width: 32px; height: 32px; } .mg-course b { font-size: 13px; } }
   </style>
 </head>
-<body data-game="mini-golf" class="arc">
+<body data-game="mini-golf" class="arc" data-modes>
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="hole">0</b><span>Hole</span></div>
@@ -182,23 +209,27 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
             <circle class="mg-heroball" cx="66" cy="92" r="6" fill="#fff"/>
             <g fill="#2f7d32"><circle cx="30" cy="66" r="12"/><circle cx="42" cy="70" r="10"/><circle cx="292" cy="62" r="11"/></g>
           </svg>
-          <h1 class="c-title">Mini Golf</h1>
-          <p class="c-sub">Thirty-six holes over four themed courses. Lowest score wins, ducks optional.</p>
-          <div class="arc-seg" role="group" aria-label="Mode"><button type="button" data-mode="round" aria-pressed="true">Full round</button><button type="button" data-mode="practice" aria-pressed="false">Practice</button></div>
-          <div class="mg-courses">
+          <div class="mg-marquee" aria-hidden="true">Est. 1987 · Open till the windmill stops</div>
+          <h1 class="c-title mg-logo">Mini Golf</h1>
+          <p class="c-sub mg-adv-only">Thirty-six holes over four themed courses. Lowest score wins, ducks optional.</p>
+          <p class="c-sub mg-simple-only">Three holes. One windmill. A pinball machine that thinks it is a golf course. Lowest score wins.</p>
+          <button type="button" class="c-btn mg-tee mg-simple-only" data-act="start">⛳ Tee off</button>
+          <div class="mg-aimrow"><span class="arc-label">Aim</span><div class="arc-seg" role="group" aria-label="Aim style"><button type="button" data-aim="point" aria-pressed="true">🖱️ Point and click</button><button type="button" data-aim="sling" aria-pressed="false">🎯 Slingshot</button></div></div>
+          <div class="arc-seg mg-adv-only" role="group" aria-label="Mode"><button type="button" data-gm="round" aria-pressed="true">Full round</button><button type="button" data-gm="practice" aria-pressed="false">Practice</button></div>
+          <div class="mg-courses mg-adv-only">
             <button type="button" class="mg-course mg-c-meadow" data-course="meadow"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#5fd068"/><circle cx="18" cy="20" r="9" fill="#2f7d32"/><circle cx="27" cy="17" r="8" fill="#3f9f45"/><ellipse cx="30" cy="34" rx="9" ry="4" fill="#3ba7e6"/></svg><b>Meadow Links</b><small data-cbest>Par 27</small></button>
             <button type="button" class="mg-course mg-c-canyon" data-course="canyon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#e9a25f"/><path d="M8 36L20 14l8 10 4-5 9 17z" fill="#a65a30"/><path d="M20 14l3 6-6 1z" fill="#ff6a1a"/><rect x="31" y="22" width="5" height="14" rx="2.5" fill="#3fa463"/><path d="M8 38h32" stroke="#ff4d12" stroke-width="4" stroke-linecap="round"/></svg><b>Lava Canyon</b><small data-cbest>Par 28</small></button>
             <button type="button" class="mg-course mg-c-glacier" data-course="glacier"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#cfe9f7"/><path d="M6 36L20 12l8 12 5-6 10 18z" fill="#7fa6c0"/><path d="M20 12l5 8-4 2-4-3z" fill="#fff"/><path d="M14 40l4-9 4 9z" fill="#2f7a5c"/></svg><b>Glacier Peak</b><small data-cbest>Par 28</small></button>
             <button type="button" class="mg-course mg-c-cosmos" data-course="cosmos"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#221a48"/><circle cx="22" cy="24" r="9" fill="#8a6bff"/><ellipse cx="22" cy="24" rx="16" ry="4" fill="none" stroke="#58e6ff" stroke-width="2" transform="rotate(-20 22 24)"/><circle cx="36" cy="12" r="1.5" fill="#fff"/><circle cx="12" cy="36" r="1.2" fill="#fff"/></svg><b>Cosmic Course</b><small data-cbest>Par 29</small></button>
           </div>
-          <button type="button" class="mg-daily" data-daily><span class="mg-daily__cal" aria-hidden="true"><i></i></span><span><b>Daily challenge</b><small data-daily-best>Three random holes</small></span></button>
-          <div class="mg-skins"><span class="arc-label">Ball</span><div data-skins class="mg-skinrow"></div></div>
-          <details class="mg-more">
+          <button type="button" class="mg-daily mg-adv-only" data-daily><span class="mg-daily__cal" aria-hidden="true"><i></i></span><span><b>Daily challenge</b><small data-daily-best>Three random holes</small></span></button>
+          <div class="mg-skins mg-adv-only"><span class="arc-label">Ball</span><div data-skins class="mg-skinrow"></div></div>
+          <details class="mg-more mg-adv-only">
             <summary>Stats and badges <span data-badge-count></span></summary>
             <div class="mg-stats" data-stats></div>
             <div class="mg-badges" data-badges></div>
           </details>
-          <p class="arc-help"><b>Drag back</b> from anywhere and let go to putt, like a slingshot. Touchpad mode (top bar): click, pull back, click again · <span class="c-kbd">←</span> <span class="c-kbd">→</span> aim (<span class="c-kbd">Shift</span> for fine), <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> power, <span class="c-kbd">Space</span> putt · <span class="c-kbd">P</span> pause<br>Hazards cost a stroke. Ten strokes and the ball is picked up.</p>
+          <p class="arc-help"><b>Point and click</b>: aim at a spot, the further away the harder, one click putts. <b>Slingshot</b>: drag back from anywhere and let go to putt. Touchpad mode (top bar): click, pull back, click again · <span class="c-kbd">←</span> <span class="c-kbd">→</span> aim (<span class="c-kbd">Shift</span> for fine), <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> power, <span class="c-kbd">Space</span> putt · <span class="c-kbd">P</span> pause<br>Hazards cost a stroke. Ten strokes and the ball is picked up.</p>
         </div>
       </section>
       <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
@@ -225,6 +256,7 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
           <div class="c-row">
             <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
             <button class="c-btn c-btn--ghost" type="button" data-share>Share</button>
+            <button class="c-btn mg-advbtn" type="button" data-mg-adv hidden>All 36 holes (Advanced)</button>
             <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
           </div>
         </div>

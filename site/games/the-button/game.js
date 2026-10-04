@@ -1,10 +1,12 @@
 (() => {
   const D = window.BTN_DATA;
+  const SIMPLE = Curio.simple;
+  if (SIMPLE) { D.chapters = D.simple.chapters; D.endings = D.simple.endings; D.postLines = D.simple.postLines; }
   const $ = (s) => document.querySelector(s);
   const scene = $('#scene'), wrap = $('#wrap'), btn = $('#btn'), lineEl = $('#line'), ava = $('#ava');
   const choicesEl = $('#choices'), decoysEl = $('#decoys'), fxEl = $('#fx'), ring = $('#ring'), ringFg = $('#ringFg');
   const blue = $('#blue'), panel = $('#panel');
-  const KEY = 'button:v2';
+  const KEY = SIMPLE ? 'button:simple:v1' : 'button:v2';
   const DECOR = ['bulb', 'rug', 'plant', 'window', 'painting', 'clock', 'shelf', 'lamp'];
   const ENDING_IDS = Object.keys(D.endings);
   const RING = 289;
@@ -17,7 +19,7 @@
   function load() {
     const raw = Curio.store.get(KEY, null);
     if (!raw || typeof raw !== 'object' || raw.v !== 2) {
-      const old = Number(Curio.store.get('button:count', 0)) || 0;
+      const old = SIMPLE ? 0 : Number(Curio.store.get('button:count', 0)) || 0;
       return fresh({ total: old });
     }
     const s = Object.assign(fresh(), raw);
@@ -345,6 +347,8 @@
     const px = r.left - sr.left + r.width / 2, py = r.top - sr.top + r.height / 2;
     wave(px, py);
     if (S.total === 1) unlock('first');
+    if (new Date().getHours() < 5) unlock('owl');
+    if (S.lastBlue) unlock('blue3');
     if (S.total >= 100) unlock('p100');
     if (S.total >= 1000) unlock('p1000');
     if (S.total >= 5000) unlock('p5000');
@@ -403,15 +407,15 @@
     const chs = D.chapters.length, c = D.chapters[S.ch];
     const f = S.ended ? 1 : (S.ch + Math.max(0, S.bi + 1) / c.beats.length) / chs;
     $('#progBar').style.width = (f * 100).toFixed(1) + '%';
-    $('#progTxt').textContent = S.ended ? 'Story complete: ' + D.endings[S.ended].title : `Chapter ${S.ch + 1} of ${chs}: ${c.title}`;
-    $('#chap').textContent = S.ended ? 'Epilogue' : S.bi < 0 && S.ch === 0 ? 'Prologue' : `Chapter ${S.ch + 1} · ${c.title}`;
+    $('#progTxt').textContent = S.ended ? 'Story complete: ' + D.endings[S.ended].title : SIMPLE ? `Story ${Math.round(f * 100)}% pressed` : `Chapter ${S.ch + 1} of ${chs}: ${c.title}`;
+    $('#chap').textContent = S.ended ? 'Epilogue' : S.bi < 0 && S.ch === 0 ? 'Prologue' : SIMPLE ? c.title : `Chapter ${S.ch + 1} · ${c.title}`;
     $('#endCount').textContent = `${Object.keys(S.endings).length}/${ENDING_IDS.length}`;
     $('#achCount').textContent = `${Object.keys(S.ach).length}/${D.achievements.length}`;
   }
 
   let badgeQ = [], badgeOn = false;
   function unlock(id) {
-    if (S.ach[id]) return;
+    if (SIMPLE || S.ach[id]) return;
     const a = D.achievements.find((x) => x.id === id); if (!a) return;
     S.ach[id] = Date.now(); save();
     badgeQ.push(a); if (!badgeOn) nextBadge();
@@ -439,6 +443,9 @@
     launch: () => `<rect width="560" height="190" fill="#050818"/>${starsSvg(70)}<circle cx="470" cy="150" r="40" fill="#2f7fd8"/><path d="M445 140 q10 -12 22 -2 q4 12 -8 14z" fill="#5cbf6a"/><g class="ea-rise" transform="translate(250 30)"><path d="M30 0 C55 20 60 60 55 100 H5 C0 60 5 20 30 0Z" fill="#e9eef7"/><circle cx="30" cy="45" r="13" fill="#4aa0ff" stroke="#9db0cf" stroke-width="4"/><path d="M5 80 L-12 112 L8 104Z M55 80 L72 112 L52 104Z" fill="#e0241b"/><path d="M14 102 Q30 150 46 102Z" fill="#ffb347"/><path d="M20 102 Q30 132 40 102Z" fill="#ffe08a"/></g>`,
     friends: () => `<rect width="560" height="190" fill="#1a1440"/>${starsSvg(30)}${[[280, 70], [255, 48], [232, 50], [218, 68], [224, 92], [244, 112], [264, 130], [280, 145], [296, 130], [316, 112], [336, 92], [342, 68], [328, 50], [305, 48]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#ffd447" opacity=".95"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin="${i * .15}s" repeatCount="indefinite"/></circle>`).join('')}<g transform="translate(0 20)">${btnArt(130, 140, 22, ...RED)}</g>`,
     truth: () => `<defs><radialGradient id="tg"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#ff5a36" stop-opacity="0"/></radialGradient></defs><rect width="560" height="190" fill="#2a0d12"/><circle cx="280" cy="95" r="150" fill="url(#tg)" opacity=".6"/><g class="ea-spin" style="transform-origin:280px 95px">${Array.from({ length: 16 }, (_, i) => `<rect x="278" y="5" width="4" height="34" rx="2" fill="#ffd447" transform="rotate(${i * 22.5} 280 95)"/>`).join('')}</g>${btnArt(280, 92, 40, ...RED)}`,
+    bells: () => `<rect width="560" height="190" fill="#ffcf5a"/>${[40, 150, 260, 370, 480].map((x, i) => `<g transform="translate(${x} ${70 + (i % 2) * 14})"><path d="M0 40 L40 8 L80 40Z" fill="${['#e0241b', '#2f6fd8', '#3c8a6e', '#9b6bd6', '#e05a47'][i]}"/><rect x="8" y="40" width="64" height="90" fill="#fff4dc"/><rect x="30" y="72" width="20" height="58" fill="#3a2c22"/><circle cx="45" cy="100" r="2" fill="#ffd447"/><g class="ea-float"><text x="40" y="-6" text-anchor="middle" font-size="16" font-weight="900" fill="#1d1b19">DING</text></g></g>`).join('')}<g transform="translate(280 30)">${btnArt(0, 0, 16, ...RED)}</g>`,
+    doug: () => `<rect width="560" height="190" fill="#e9eef7"/><rect x="0" y="150" width="560" height="40" fill="#c9d3e3"/>${Array.from({ length: 14 }, (_, i) => `<rect x="${150 + i * 19}" y="${150 - (i % 4) * 9}" width="50" height="7" fill="#fff" stroke="#9aa7bd" transform="rotate(${(i * 37) % 30 - 15} ${170 + i * 19} 150)"/>`).join('')}<g transform="translate(220 60)"><rect width="120" height="60" rx="8" fill="#6b625a"/><rect x="14" y="-8" width="92" height="14" fill="#fff"/><g class="ea-rise"><rect x="24" y="-40" width="72" height="40" fill="#fff" stroke="#9aa7bd"/><text x="60" y="-16" text-anchor="middle" font-size="14" font-weight="900" fill="#1d1b19">PRESS</text></g><circle cx="100" cy="40" r="6" fill="#e0241b"/></g><g transform="translate(430 96)"><circle r="14" fill="#3a2c22" cy="-6"/><rect x="-14" y="8" width="28" height="44" rx="10" fill="#4a8fd6"/><path d="M-8 -10 q8 6 16 0" stroke="#fff" stroke-width="2" fill="none"/></g><text x="430" y="70" text-anchor="middle" font-size="13" font-weight="900" fill="#3a2c22">Doug</text>`,
+    paw: () => `<rect width="560" height="190" fill="#3b3532"/><circle cx="280" cy="120" r="140" fill="#5c5550" opacity=".5"/>${btnArt(280, 130, 44, ...RED)}<g class="ea-float"><path d="M250 0 C250 50 262 82 280 96 C298 82 310 50 310 0Z" fill="#e08a3c"/><ellipse cx="280" cy="98" rx="24" ry="16" fill="#f2a65a"/><circle cx="266" cy="112" r="6" fill="#ffc2d1"/><circle cx="280" cy="116" r="6" fill="#ffc2d1"/><circle cx="294" cy="112" r="6" fill="#ffc2d1"/></g><text x="280" y="180" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" opacity=".8">DO NOT PRESS</text>`,
     other: () => `<rect width="560" height="190" fill="#0d3d80"/><circle cx="280" cy="95" r="110" fill="#1f6fd6" opacity=".5"/><g class="ea-float">${btnArt(280, 90, 44, '#8cc8ff', '#1f6fd6', '#0d3d80')}</g><g opacity=".7">${btnArt(470, 160, 12, ...RED)}</g>`
   };
 
@@ -457,6 +464,7 @@
     const found = Object.keys(S.endings).length;
     if (found >= 4) unlock('end4');
     if (found >= ENDING_IDS.length) unlock('endall');
+    if (Date.now() - S.started < 240000) unlock('speedy');
     save(); paintHud();
     say(e.text[2]);
     $('#endArt').innerHTML = `<svg viewBox="0 0 560 190" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${e.title}">${ART[e.art]()}</svg>`;
@@ -465,7 +473,9 @@
     const tx = $('#endText'); tx.innerHTML = '';
     e.text.forEach((p) => { const el = document.createElement('p'); el.textContent = p; tx.append(el); });
     const mins = Math.max(1, Math.round((Date.now() - S.started) / 60000));
-    $('#endStats').innerHTML = `<div class="c-stat"><b>${Curio.fmt(S.presses)}</b><span>Presses</span></div><div class="c-stat"><b>${mins}m</b><span>Story time</span></div><div class="c-stat"><b>${found}/${ENDING_IDS.length}</b><span>Endings</span></div>`;
+    $('#endStats').innerHTML = `<div class="bt-stat"><b>${Curio.fmt(S.presses)}</b><span>Presses</span></div><div class="bt-stat"><b>${mins}m</b><span>Story time</span></div><div class="bt-stat"><b>${found}/${ENDING_IDS.length}</b><span>Endings</span></div>`;
+    $('#endGallery').style.gridTemplateColumns = `repeat(${Math.min(ENDING_IDS.length, innerWidth < 640 ? 5 : 9)}, 1fr)`;
+    $('#endUp').hidden = !SIMPLE;
     $('#endGallery').innerHTML = ENDING_IDS.map((k) => `<i class="${S.endings[k] ? '' : 'lock'}${k === id ? ' now' : ''}" title="${S.endings[k] ? D.endings[k].title : 'Locked: ' + D.endings[k].hint}">${S.endings[k] ? D.endings[k].emoji : '?'}</i>`).join('');
     $('#end').hidden = false;
     sfx('ending'); buzz([40, 60, 40, 60, 120]);
@@ -478,13 +488,14 @@
     save();
     $('#end').hidden = true;
     setMode('', true); applyRoom(); renderChoices(); paintHud();
-    say(Object.keys(S.endings).length ? 'Hello? Oh. I have the strangest feeling we\'ve done this before. Anyway: there is a button.' : 'There is a button. You know what to do.');
+    say(SIMPLE ? (Object.keys(S.endings).length ? 'Back again? The sign still says do not press. It has not changed its mind.' : 'There is a button. It says do not press. You know what to do.') : Object.keys(S.endings).length ? 'Hello? Oh. I have the strangest feeling we\'ve done this before. Anyway: there is a button.' : 'There is a button. You know what to do.');
     if (!panel.hidden) renderPanel(panel.dataset.p);
   }
 
   function shareText() {
     const found = Object.keys(S.endings).length;
     const last = S.ended ? `I reached the "${D.endings[S.ended].title}" ending` : `I'm on chapter ${S.ch + 1}`;
+    if (SIMPLE) return `🔴 The Button (Simple): ${last} after ${Curio.fmt(S.presses)} presses. ${found}/${ENDING_IDS.length} short endings found. Zoble`;
     return `🔴 The Button: ${last} after ${Curio.fmt(S.presses)} presses. ${found}/${ENDING_IDS.length} endings found, ${Curio.fmt(S.total)} presses all-time. Zoble`;
   }
   async function share() {
@@ -500,21 +511,21 @@
       S.log.forEach((l) => { if (!by.length || by[by.length - 1].c !== l.c) by.push({ c: l.c, items: [] }); by[by.length - 1].items.push(l); });
       panel.innerHTML = '<h3>📜 The story so far</h3><div class="bt-log"></div>';
       const box = panel.querySelector('.bt-log');
-      if (!by.length) box.innerHTML = '<p class="c-muted">Nothing yet. Press the button.</p>';
+      if (!by.length) box.innerHTML = '<p class="bt-muted">Nothing yet. Press the button.</p>';
       by.forEach((g) => {
         const h = document.createElement('h4'); h.textContent = `Chapter ${g.c + 1} · ${D.chapters[g.c]?.title || ''}`; box.append(h);
         g.items.forEach((l) => { const el = document.createElement('p'); el.textContent = l.t; if (l.k) el.className = 'is-choice'; box.append(el); });
       });
       panel.scrollTop = panel.scrollHeight;
     } else if (p === 'endings') {
-      panel.innerHTML = `<h3>🚪 Endings · ${Object.keys(S.endings).length} of ${ENDING_IDS.length}</h3><p class="c-muted" style="margin:0 0 10px">Different choices unlock different endings. Some only appear if you made certain choices earlier.</p><div class="bt-grid">${ENDING_IDS.map((k) => {
+      panel.innerHTML = `<h3>🚪 Endings · ${Object.keys(S.endings).length} of ${ENDING_IDS.length}</h3><p class="bt-muted" style="margin:0 0 10px">Different choices unlock different endings. Some only appear if you made certain choices earlier.</p><div class="bt-grid">${ENDING_IDS.map((k) => {
         const e = D.endings[k], got = S.endings[k];
         return `<div class="bt-tile ${got ? 'got' : 'locked'}"><i>${got ? e.emoji : '🔒'}</i><b>${got ? e.title : '???'}</b><span>${got ? 'Reached ' + got + (got === 1 ? ' time' : ' times') : 'Hint: ' + e.hint}</span></div>`;
       }).join('')}</div>`;
     } else if (p === 'ach') {
       panel.innerHTML = `<h3>🏆 Badges · ${Object.keys(S.ach).length} of ${D.achievements.length}</h3><div class="bt-grid">${D.achievements.map((a) => `<div class="bt-tile ${S.ach[a.id] ? 'got' : 'locked'}"><i>${a.emoji}</i><b>${a.name}</b><span>${a.desc}</span></div>`).join('')}</div>`;
     } else if (p === 'help') {
-      panel.innerHTML = `<h3>❓ How it works</h3><div class="bt-help"><p>Press the button. The narrator who lives inside it will tell you a story, five chapters long. Your presses power the room: watch it fill up with furniture, light and a very opinionated cat.</p><ul><li>When choices appear, pick one (or press <span class="c-kbd">1</span> to <span class="c-kbd">8</span>). Choices change the room, the lines and which endings you can reach.</li><li>Some moments need something different: catching, finding, holding, waiting or mashing. The narrator will tell you what to do.</li><li><span class="c-kbd">Space</span> or <span class="c-kbd">Enter</span> presses the button. Holding works with Space too. On a touchpad, turn on Touchpad mode in the top bar: click once to hold, click again to let go.</li><li>There are nine endings. After one, start a new story and choose differently. Your endings, badges and all-time presses are kept.</li></ul><p class="c-muted">Progress saves automatically on this device.</p></div>`;
+      panel.innerHTML = `<h3>❓ How it works</h3><div class="bt-help"><p>Press the button. The narrator who lives inside it will tell you a story, five chapters long. Your presses power the room: watch it fill up with furniture, light and a very opinionated cat.</p><ul><li>When choices appear, pick one (or press <span class="bt-kbd">1</span> to <span class="bt-kbd">8</span>). Choices change the room, the lines and which endings you can reach.</li><li>Some moments need something different: catching, finding, holding, waiting or mashing. The narrator will tell you what to do.</li><li><span class="bt-kbd">Space</span> or <span class="bt-kbd">Enter</span> presses the button. Holding works with Space too. On a touchpad, turn on Touchpad mode in the top bar: click once to hold, click again to let go.</li><li>There are nine endings. After one, start a new story and choose differently. Your endings, badges and all-time presses are kept.</li></ul><p class="bt-muted">Progress saves automatically on this device.</p></div>`;
     }
   }
   document.querySelectorAll('.bt-tab[data-panel]').forEach((t) => t.addEventListener('click', () => {
@@ -531,6 +542,7 @@
     if (v) newStory();
   });
   $('#endNew').addEventListener('click', newStory);
+  $('#endUp').addEventListener('click', () => Curio.setMode('advanced'));
   $('#endKeep').addEventListener('click', () => { $('#end').hidden = true; btn.focus({ preventScroll: true }); });
 
   btn.addEventListener('click', (e) => { if (S.mode === 'hold' && e.detail !== 0) return; press(e); });
@@ -594,7 +606,7 @@
     clock();
     if (new Date().getSeconds() === 0) sky();
     if (!S.ended && !S.choice && S.mode !== 'wait' && S.mode !== 'hold' && $('#start').hidden && $('#end').hidden && !idleSaid && S.presses > 0 && performance.now() - lastPress > 30000) {
-      idleSaid = true; say(Curio.pick(D.idleLines));
+      idleSaid = true; say(Curio.pick(D.idleLines)); unlock('patient');
     }
   }, 1000);
 
@@ -611,6 +623,12 @@
   window.addEventListener('resize', () => { if (S.mode === 'run') moveRandom(); if (S.mode === 'decoys') placeDecoys(); });
 
   function boot() {
+    if (SIMPLE) {
+      $('#btnTxt').textContent = 'DO NOT PRESS';
+      $('#subLine').textContent = 'It says do not press. Three endings, about two minutes. One very judgemental cat.';
+      $('#startKick').textContent = 'A very short story about pressing';
+      $('#startText').textContent = 'There is a button. It says DO NOT PRESS. You will press it. Three endings, about two minutes.';
+    }
     applyRoom(); sky(); clock(); paintHud();
     const st = $('#start');
     if (S.mode) {
@@ -621,18 +639,18 @@
       $('#startGo').textContent = 'Continue';
       $('#startNew').hidden = false;
     } else if (S.ended) {
-      $('#startText').textContent = `Last time you reached the "${D.endings[S.ended].title}" ending. ${Object.keys(S.endings).length} of ${ENDING_IDS.length} found. Ready for another story?`;
+      $('#startText').textContent = `Last time you reached the "${D.endings[S.ended].title}" ending. ${Object.keys(S.endings).length} of ${ENDING_IDS.length} found. Ready for another ${SIMPLE ? 'go' : 'story'}?`;
       $('#startGo').textContent = 'New story';
     }
     st.hidden = false;
     lineEl.textContent = '';
-    say(S.presses ? 'Oh! You\'re back.' : 'There is a button. You know what to do.');
+    say(S.presses ? 'Oh! You\'re back.' : SIMPLE ? 'There is a button. It says do not press. Please respect the button.' : 'There is a button. You know what to do.');
   }
   $('#startGo').addEventListener('click', () => {
     $('#start').hidden = true; audio();
     if (S.ended) { newStory(); }
     else if (S.presses > 0) { say(S.choice ? beatAt(S.ch, S.bi).choice.q : `Where were we? Ah, yes: "${S.lastLine || 'press the button'}"`); renderChoices(); }
-    else say('There is a button. You know what to do.');
+    else say(SIMPLE ? 'There is a button. It says do not press. You know what to do.' : 'There is a button. You know what to do.');
     btn.focus({ preventScroll: true });
   });
   $('#startNew').addEventListener('click', () => { $('#start').hidden = true; newStory(); btn.focus({ preventScroll: true }); });

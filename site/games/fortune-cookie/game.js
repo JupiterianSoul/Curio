@@ -1,6 +1,10 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const C = window.Curio;
+  const SIMPLE = C.simple;
+  const JAR = 5;
+  const ORACLE = window.FC_ORACLE || [];
+  let session = [];
   const KINDS = {
     classic: { name: 'Classic', fill: 'url(#dough)', crumb: '#d9953a', w: 62 },
     advice: { name: 'Chocolate', fill: 'url(#chocDough)', crumb: '#5a2e14', w: 12 },
@@ -18,7 +22,9 @@
   const WORDS = window.FC_WORDS;
   const BY = Object.fromEntries(ALL.map((f) => [f.id, f]));
   const clean = (t) => t.replace(/^GOLDEN FORTUNE: /, '');
-  let state = Object.assign({ found: [], cracked: 0, words: [], lastDaily: '', streak: 0 }, C.store.get('fc:state', {}) || {});
+  let state = Object.assign({ found: [], cracked: 0, words: [], lastDaily: '', streak: 0, oracle: [], asked: 0 }, C.store.get('fc:state', {}) || {});
+  if (!Array.isArray(state.oracle)) state.oracle = [];
+  if (typeof state.asked !== 'number') state.asked = 0;
   state.found = (Array.isArray(state.found) ? state.found : []).filter((id) => BY[id]);
   state.words = (Array.isArray(state.words) ? state.words : []).filter((i) => WORDS[i]);
   if (typeof state.cracked !== 'number') state.cracked = 0;
@@ -29,7 +35,7 @@
   const hashStr = (s) => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 
   function rollKind() {
-    daily = state.lastDaily !== dayKey();
+    daily = !SIMPLE && state.lastDaily !== dayKey();
     if (daily) kind = 'classic';
     else if (state.cracked > 0 && state.cracked % 25 === 24) kind = 'gold';
     else if (Math.random() < 0.06) kind = 'gold';
@@ -123,6 +129,19 @@
       if (isNew) tags.push(['NEW', 'new']);
       tags.forEach(([t, c]) => { const s = document.createElement('span'); s.className = 'tag t-' + c; s.textContent = t; front.append(s); });
       const p = document.createElement('p'); p.textContent = clean(f.t); front.append(p);
+      const q = !SIMPLE && $('#ask') ? $('#ask').value.trim() : '';
+      if (q) {
+        const oi = C.randInt(0, ORACLE.length - 1);
+        if (!state.oracle.includes(oi)) state.oracle.push(oi);
+        state.asked++;
+        save();
+        const o = document.createElement('div'); o.className = 'fc-oracle';
+        o.innerHTML = '<small>You asked</small><em></em><small>The cookie answers</small><strong></strong>';
+        o.querySelector('em').textContent = `"${q.slice(0, 90)}"`;
+        o.querySelector('strong').textContent = ORACLE[oi];
+        front.append(o);
+        $('#ask').value = '';
+      }
       const n = document.createElement('div'); n.className = 'nums';
       n.innerHTML = '<small>Lucky numbers</small>' + current.nums.map((x) => `<b>${x}</b>`).join('');
       front.append(n);
@@ -137,6 +156,11 @@
       if (f.kind === 'gold') C.confetti();
       tip.textContent = daily ? `Daily cookie cracked. Streak: ${state.streak} day${state.streak === 1 ? '' : 's'}.` : isNew ? `New fortune! ${state.found.length} of ${ALL.length} collected.` : 'You have seen this one before. The universe is repeating itself.';
       actions.hidden = false;
+      if (SIMPLE) {
+        session.push(f);
+        paintJar();
+        if (session.length >= JAR) { $('#again').textContent = '🧾 The bill, please'; tip.textContent = 'That was the last cookie in the jar. Time to settle up.'; }
+      }
       paint(f.id);
       checkAch();
       if (state.found.length === ALL.length && isNew) {
@@ -159,7 +183,27 @@
     cookie.focus({ preventScroll: true });
   }
   cookie.addEventListener('click', crack);
-  $('#again').addEventListener('click', reset);
+  $('#again').addEventListener('click', () => { if (SIMPLE && session.length >= JAR) bill(); else reset(); });
+  function paintJar() {
+    const j = $('#jar'); if (!j) return;
+    j.innerHTML = Array.from({ length: JAR }, (_, i) => `<i class="${i < session.length ? 'gone' : ''}" aria-hidden="true"></i>`).join('') + `<span>${JAR - session.length} cookie${JAR - session.length === 1 ? '' : 's'} left in the jar</span>`;
+  }
+  function bill() {
+    const box = $('#bill');
+    const total = session.reduce((a, f) => a + clean(f.t).length, 0);
+    const finale = C.pick(window.FC_FINALES || ['The jar is empty.']);
+    const r = C.best('jars', (C.getBest('jars') || 0) + 1);
+    box.innerHTML = `<div class="fc-bill__paper"><b class="fc-bill__shop">Golden Crumb Takeaway</b><small>Order #${C.randInt(100, 999)} · table for one · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><h2>Your future, itemised</h2><ol></ol><div class="fc-bill__line"><span>Words of wisdom</span><span>${total}</span></div><div class="fc-bill__line"><span>Crumbs on floor</span><span>${C.randInt(40, 400)}</span></div><div class="fc-bill__line fc-bill__total"><span>TOTAL</span><span>1 future</span></div><p class="fc-bill__fin"></p><small>No refunds. Futures are final. Jars emptied: ${r.best}</small><div class="fc-bill__btns"><button type="button" class="fc-btn" id="newJar">🫙 New jar</button><button type="button" class="fc-btn fc-btn--ghost" id="toAdv">📖 Fortune book (Advanced)</button></div></div>`;
+    const ol = box.querySelector('ol');
+    session.forEach((f) => { const li = document.createElement('li'); li.textContent = clean(f.t); ol.append(li); });
+    box.querySelector('.fc-bill__fin').textContent = finale;
+    box.hidden = false;
+    C.confetti();
+    [392, 523, 659, 784, 1046].forEach((fr, i) => setTimeout(() => C.beep(fr, .12, 'triangle', .07), i * 90));
+    box.querySelector('#newJar').addEventListener('click', () => { session = []; box.hidden = true; $('#again').textContent = '🥠 Another cookie'; paintJar(); reset(); });
+    box.querySelector('#toAdv').addEventListener('click', () => C.setMode('advanced'));
+    box.querySelector('#newJar').focus({ preventScroll: true });
+  }
   $('#flip').addEventListener('click', () => { if (!current) return; paper.classList.toggle('flipped'); C.beep(700, .04, 'triangle', .05); });
   paper.addEventListener('click', () => { if (current) paper.classList.toggle('flipped'); });
   $('#copy').addEventListener('click', async () => {
@@ -176,7 +220,7 @@
   });
   window.addEventListener('keydown', (e) => {
     if (e.target !== document.body) return;
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); current ? reset() : crack(); }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!$('#bill').hidden) return; current ? (SIMPLE && session.length >= JAR ? bill() : reset()) : crack(); }
     if ((e.key === 'f' || e.key === 'F') && current) paper.classList.toggle('flipped');
   });
 
@@ -188,7 +232,9 @@
     ['doom', '🌑', 'Cursed', () => state.found.filter((id) => BY[id].kind === 'misfortune').length >= 10],
     ['words', '🀄', '10 words', () => state.words.length >= 10],
     ['streak', '🔥', '3 day streak', () => state.streak >= 3],
-    ['hundred', '💯', '100 cracked', () => state.cracked >= 100]
+    ['hundred', '💯', '100 cracked', () => state.cracked >= 100],
+    ['oracle', '🔮', 'Asked 10 questions', () => state.asked >= 10],
+    ['seer', '👁️', '20 oracle answers', () => state.oracle.length >= 20]
   ];
   let ach = C.store.get('fc:ach', []);
   if (!Array.isArray(ach)) ach = [];
@@ -229,7 +275,12 @@
     const pool = ALL.filter((f) => filter === 'all' || f.kind === filter).length;
     const left = pool - ids.length;
     if (left && ids.length) { const li = document.createElement('li'); li.className = 'locked'; li.textContent = `🔒 ${left} more hiding in cookies`; list.append(li); }
+    if ($('#oracleCount')) $('#oracleCount').textContent = `${state.oracle.length} of ${ORACLE.length} oracle answers heard · ${state.asked} questions asked`;
     $('#words').innerHTML = WORDS.map((w, i) => state.words.includes(i) ? `<div class="on"><b lang="zh">${w[0]}</b><span>${w[1]}</span><small>${w[2]}</small></div>` : '<div><b>?</b><span>&nbsp;</span><small>&nbsp;</small></div>').join('');
+  }
+  if (SIMPLE) {
+    $('#subLine').textContent = 'Five cookies in the jar. Crack them, read your future, then ask for the bill.';
+    paintJar();
   }
   rollKind(); paint(); checkAch();
   window.FortuneCookie = { crack, reset, state, ALL };

@@ -9,11 +9,11 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="the-button">
+<body data-game="the-button" data-modes>
   <main class="c-wrap bt-wrap">
     <header class="bt-head">
-      <h1 class="c-title">The Button</h1>
-      <p class="c-sub">Whatever you do, keep pressing. Your choices change the room, the story and the ending.</p>
+      <h1 class="bt-title"><span>The Button</span></h1>
+      <p class="bt-sub" id="subLine">Whatever you do, keep pressing. Your choices change the room, the story and the ending.</p>
     </header>
 
     <section class="bt-talk" id="talk" aria-live="polite">
@@ -27,6 +27,7 @@
       </div>
     </section>
 
+    <div class="bt-frame"><i class="bt-rivet r1"></i><i class="bt-rivet r2"></i><i class="bt-rivet r3"></i><i class="bt-rivet r4"></i>
     <section class="bt-scene" id="scene" data-theme="plain" aria-label="The room around the button">
       <div class="bt-wall"><div class="bt-paper"></div><div class="bt-stars" id="stars"></div></div>
       <div class="bt-floor"></div>
@@ -88,16 +89,18 @@
 
       <div class="bt-start" id="start" hidden>
         <div class="bt-start__box">
-          <div class="bt-start__kicker">An interactive story about pressing</div>
+          <div class="bt-start__kicker" id="startKick">An interactive story about pressing</div>
           <h2>There is a button.</h2>
           <p id="startText">Press it. Make choices. Decorate the room. Mind the cat. Nine endings are waiting.</p>
-          <div class="c-row">
-            <button class="c-btn" id="startGo" type="button">Begin</button>
-            <button class="c-btn c-btn--ghost" id="startNew" type="button" hidden>New story</button>
+          <div class="bt-row">
+            <button class="bt-cta" id="startGo" type="button">Begin</button>
+            <button class="bt-cta bt-cta--ghost" id="startNew" type="button" hidden>New story</button>
           </div>
         </div>
       </div>
     </section>
+    <div class="bt-hazard" aria-hidden="true"><span>Press responsibly</span></div>
+    </div>
 
     <div class="bt-hud">
       <div class="bt-count"><b id="count">0</b><span>presses this story</span></div>
@@ -113,7 +116,7 @@
       <button class="bt-tab" type="button" id="share">🔗 <span>Share</span></button>
       <button class="bt-tab" type="button" id="reset">↺ <span>Restart</span></button>
     </nav>
-    <section class="c-card bt-panel" id="panel" hidden></section>
+    <section class="bt-panel" id="panel" hidden></section>
   </main>
 
   <div class="bt-end" id="end" hidden>
@@ -124,10 +127,11 @@
       <div class="bt-end__text" id="endText"></div>
       <div class="bt-end__stats" id="endStats"></div>
       <div class="bt-end__gallery" id="endGallery"></div>
-      <div class="c-row">
-        <button class="c-btn" id="endNew" type="button">New story</button>
-        <button class="c-btn c-btn--ghost" id="endKeep" type="button">Keep pressing</button>
-        <button class="c-btn c-btn--ghost" id="endShare" type="button">Share</button>
+      <div class="bt-row">
+        <button class="bt-cta" id="endNew" type="button">New story</button>
+        <button class="bt-cta bt-cta--blue" id="endUp" type="button" hidden>Play the full story</button>
+        <button class="bt-cta bt-cta--ghost" id="endKeep" type="button">Keep pressing</button>
+        <button class="bt-cta bt-cta--ghost" id="endShare" type="button">Share</button>
       </div>
     </div>
   </div>

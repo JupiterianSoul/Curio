@@ -1,4 +1,5 @@
 (() => {
+  const SIMPLE = Curio.simple;
   const $ = (s) => document.querySelector(s);
   const card = $('#card');
   const h = (tag, attrs = {}, ...kids) => {
@@ -36,6 +37,8 @@
     { key: 'Newsletters', title: 'Email preferences', desc: 'Please make sure you are NOT subscribed to anything. Read carefully.', build: newsletters },
     { key: 'Call time', title: 'Best time to call you', desc: 'Drag around the clock to set the time. The hour hand runs backwards, for balance.', build: backClock },
     { key: 'Photo', title: 'Profile photo', desc: 'We only accept hand-drawn portraits. Our pen is a little wobbly. Draw yourself in the box.', build: drawPhoto },
+    { key: 'Username', title: 'Choose a username', desc: 'Pick something unique. Our system will check if it is available. It will not be.', build: username },
+    { key: 'Cookies', title: 'Cookie preferences', desc: 'We value your privacy. That is why we share it with 847 trusted partners. Please reject the cookies to continue. If you can.', build: cookies },
     { key: 'Confirmed', title: 'Submit', desc: 'Almost done. We just need to double-check a couple of things.', build: confirmChain }
   ];
   const ALL_STEPS = STEPS.slice();
@@ -59,6 +62,8 @@
     Newsletters: ['Double negatives are a feature.', 'Read it twice. Then once more.'],
     'Call time': ['Clockwise is so last century.', 'Any time is fine. We will call at 3am anyway.'],
     Photo: ['Picasso started somewhere.', 'Stick figures accepted. Mostly.'],
+    Username: ['Every name is taken. Even the ones nobody wants.', 'Have you tried adding numbers? Lots of numbers?'],
+    Cookies: ['Reject All is shy. Like the checkbox. They are friends.', 'Our lawyers say this is fine. Our lawyers are cookies.'],
     Confirmed: ['Are you sure you are sure?', 'Almost there. Probably.']
   };
   let mistakes = 0, mode = 'full', photoURL = null;
@@ -68,7 +73,7 @@
     card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     const field = h('div', { class: 'tf-field' });
     const msg = h('div', { class: 'tf-msg', role: 'status' });
-    const next = h('button', { class: 'c-btn', type: 'button', text: idx === STEPS.length - 1 ? 'Submit' : 'Next →' });
+    const next = h('button', { class: 'tf-btn', type: 'button', text: idx === STEPS.length - 1 ? 'Submit' : 'Next →' });
     next.disabled = true;
     card.append(h('h2', { text: s.title }), h('p', { class: 'tf-desc', text: s.desc }), field, msg);
     if (s.key !== 'Confirmed') card.append(h('div', { class: 'tf-foot' }, next));
@@ -147,7 +152,7 @@
   }
 
   function capsEmail(api) {
-    const inp = h('input', { class: 'c-input', type: 'text', inputmode: 'email', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', placeholder: 'YOU@EXAMPLE.COM', 'aria-label': 'Email in capital letters' });
+    const inp = h('input', { class: 'tf-input', type: 'text', inputmode: 'email', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', placeholder: 'YOU@EXAMPLE.COM', 'aria-label': 'Email in capital letters' });
     inp.style.fontSize = '20px'; inp.style.fontFamily = 'var(--mono)';
     api.field.append(inp);
     const RE = /^[A-Z0-9._%+-]+@[A-Z0-9-]+(\.[A-Z0-9-]+)*\.[A-Z]{2,}$/;
@@ -197,10 +202,10 @@
     const fmtP = (n) => { const s = String(Math.round(n)).padStart(10, '0'); return `(${s.slice(0, 3)}) ${s.slice(3, 6)}-${s.slice(6)}`; };
     const nudge = (d) => { r.value = Math.max(0, Math.min(MAX, +r.value + d)); upd(); };
     const row = h('div', { class: 'tf-row' },
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '−1,000,000', onclick: () => nudge(-1e6) }),
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '−1', onclick: () => nudge(-1) }),
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '+1', onclick: () => nudge(1) }),
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '+1,000,000', onclick: () => nudge(1e6) }));
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '−1,000,000', onclick: () => nudge(-1e6) }),
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '−1', onclick: () => nudge(-1) }),
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '+1', onclick: () => nudge(1) }),
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '+1,000,000', onclick: () => nudge(1e6) }));
     api.field.append(out, r, row);
     function upd() {
       out.textContent = fmtP(+r.value);
@@ -276,9 +281,9 @@
       else api.valid(false, null, '');
     };
     api.field.append(h('div', { class: 'tf-counter' },
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', 'aria-label': 'Minus one', text: '−', onclick: () => { n = Math.max(0, n - 1); upd(); Curio.beep(300, .04); } }),
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', 'aria-label': 'Minus one', text: '−', onclick: () => { n = Math.max(0, n - 1); upd(); Curio.beep(300, .04); } }),
       b,
-      h('button', { class: 'c-btn', type: 'button', 'aria-label': 'Plus a random amount', text: '+', onclick: () => { n += Curio.randInt(1, 7); upd(); Curio.beep(600, .04); } })));
+      h('button', { class: 'tf-btn', type: 'button', 'aria-label': 'Plus a random amount', text: '+', onclick: () => { n += Curio.randInt(1, 7); upd(); Curio.beep(600, .04); } })));
     upd();
   }
 
@@ -286,7 +291,7 @@
     const C = ['Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria', 'Bangladesh', 'Belgium', 'Bolivia', 'Brazil', 'Bulgaria', 'Cambodia', 'Canada', 'Chile', 'China', 'Colombia', 'Costa Rica', 'Croatia', 'Cuba', 'Czechia', 'Denmark', 'Ecuador', 'Egypt', 'Estonia', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Germany', 'Ghana', 'Greece', 'Guatemala', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kenya', 'Laos', 'Latvia', 'Lebanon', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malaysia', 'Mali', 'Malta', 'Mexico', 'Mongolia', 'Morocco', 'Nepal', 'Netherlands', 'New Zealand', 'Nigeria', 'Norway', 'Pakistan', 'Panama', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Rwanda', 'Senegal', 'Serbia', 'Singapore', 'Slovakia', 'Slovenia', 'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'Sweden', 'Switzerland', 'Tanzania', 'Thailand', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'United Kingdom', 'United States', 'Uruguay', 'Vietnam', 'Zambia', 'Zimbabwe'];
     const rev = (s) => s.toLowerCase().split('').reverse().join('');
     const sorted = C.slice().sort((a, b) => rev(a) < rev(b) ? -1 : 1);
-    const sel = h('select', { class: 'c-input tf-select', 'aria-label': 'Country' }, h('option', { value: '', text: 'Select your country (good luck)' }), sorted.map((c) => h('option', { value: c, text: c })));
+    const sel = h('select', { class: 'tf-input tf-select', 'aria-label': 'Country' }, h('option', { value: '', text: 'Select your country (good luck)' }), sorted.map((c) => h('option', { value: c, text: c })));
     api.field.append(sel);
     sel.addEventListener('change', () => {
       if (!sel.value) return api.valid(false, null, '');
@@ -297,8 +302,8 @@
   function zipHold(api) {
     let digits = [], cur = 0, timer = 0, holding = false;
     const disp = h('div', { class: 'tf-big' });
-    const btn = h('button', { class: 'c-btn tf-hold', type: 'button', text: 'Press and hold to dial' });
-    const back = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '⌫ Undo digit', onclick: () => { digits.pop(); paint(); } });
+    const btn = h('button', { class: 'tf-btn tf-hold', type: 'button', text: 'Press and hold to dial' });
+    const back = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '⌫ Undo digit', onclick: () => { digits.pop(); paint(); } });
     api.field.append(disp, btn, h('div', { class: 'tf-row' }, back));
     function paint() {
       const cells = [...digits.map(String)];
@@ -333,8 +338,8 @@
     const lo = Curio.randInt(4, 8) * 10, hi = lo + 10;
     const cv = h('canvas', { class: 'tf-rocket', width: 720, height: 440, role: 'img', 'aria-label': 'Rocket launcher. Drag to aim.' });
     const ang = h('input', { class: 'tf-range', type: 'range', min: 1, max: 89, step: 1, value: 20, 'aria-label': 'Launch angle' });
-    const launch = h('button', { class: 'c-btn', type: 'button', text: '🚀 Launch' });
-    const lab = h('span', { class: 'c-muted', style: 'font-weight:800' });
+    const launch = h('button', { class: 'tf-btn', type: 'button', text: '🚀 Launch' });
+    const lab = h('span', { class: 'tf-muted', style: 'font-weight:800' });
     api.field.append(h('div', {}, 'Target volume: ', h('span', { class: 'tf-target', text: `${lo}% to ${hi}%` })), cv, ang, h('div', { class: 'tf-row' }, lab, launch));
     const ctx = cv.getContext('2d');
     const W = 360, H = 220, GX = 30, GY = 190, RANGE = 300;
@@ -490,6 +495,88 @@
     api.field.append(wrap);
   }
 
+  function username(api) {
+    const inp = h('input', { class: 'tf-input', type: 'text', autocomplete: 'off', spellcheck: 'false', maxlength: '18', placeholder: 'e.g. coolperson', 'aria-label': 'Username' });
+    const sugs = h('div', { class: 'tf-sugs', role: 'group', 'aria-label': 'Suggested usernames' });
+    api.field.append(inp, sugs);
+    let tries = 0, timer = 0;
+    const clean = (v) => v.toLowerCase().replace(/[^a-z0-9_.]/g, '').slice(0, 14);
+    const ideas = (v) => Curio.shuffle([`${v}_${Curio.randInt(1000, 9999)}`, `${v}thesecond`, `xX_${v}_Xx`, `${v}_final_v2`, `not_${v}`, `${v}.exe`, `real_${v}_real`, `${v}${Curio.randInt(1900, 2030)}`, `${v}_but_tired`, `the_${v}_formerly_known`]).slice(0, 3);
+    function offer(v) {
+      sugs.innerHTML = '';
+      ideas(v).forEach((n) => sugs.append(h('button', { class: 'tf-chip', type: 'button', text: n, onclick: () => pick(n) })));
+    }
+    function pick(n) {
+      tries++;
+      if (tries < 2) { api.bad(`"${n}" is also taken. By you. In 2009. You forgot the password.`); offer(clean(inp.value) || 'user'); return; }
+      inp.value = n;
+      sugs.innerHTML = '';
+      api.valid(true, n, `"${n}" is available! It was the last one on Earth.`);
+      Curio.beep(880, .08, 'triangle', .08);
+    }
+    inp.addEventListener('input', () => {
+      clearTimeout(timer);
+      api.valid(false, null, '');
+      const v = clean(inp.value);
+      if (!v) { sugs.innerHTML = ''; return; }
+      api.say('Checking availability...');
+      timer = setTimeout(() => {
+        if (v.includes('goose')) api.bad('That username belongs to the goose. Nobody argues with the goose.');
+        else if (v.includes('formy')) api.bad('That is my name. Get your own name. Sorry. I am under a lot of pressure.');
+        else api.bad(Curio.pick([`"${v}" is taken.`, `"${v}" is taken. Someone got there first. In 1997.`, `"${v}" was taken five seconds ago. By a fridge.`, `"${v}" is reserved for royalty.`]));
+        offer(v);
+      }, 650);
+    });
+    return () => clearTimeout(timer);
+  }
+
+  function cookies(api) {
+    const banner = h('div', { class: 'tf-cookie' });
+    const text = h('p', { text: '🍪 This form uses cookies to improve your experience. Your experience will not improve.' });
+    const row = h('div', { class: 'tf-cookie__row' });
+    const yes = h('button', { class: 'tf-btn', type: 'button', text: 'Accept all' });
+    const no = h('button', { class: 'tf-btn tf-btn--ghost tf-cookie__no', type: 'button', text: 'Reject all' });
+    const list = h('div', { class: 'tf-partners' });
+    row.append(yes, no);
+    banner.append(text, row, list);
+    api.field.append(banner);
+    let shrink = 0, sneaky = false;
+    const PARTNERS = ['Goose Analytics Ltd', 'Bread Futures Inc.', 'Your Uncle', 'A Man Named Doug', 'Formy\'s Mum', 'The Cookie Monster (legal team)'];
+    yes.addEventListener('click', () => {
+      yes.style.fontSize = Math.min(19, 15 + shrink) + 'px';
+      api.bad(Curio.pick(['Accepting is not allowed. Please reject. We insist. Legally.', 'Thank you for accepting! Also: no. Reject them.', 'Bold. Wrong, but bold.']));
+    });
+    no.addEventListener('click', () => {
+      if (shrink < 4) {
+        shrink++;
+        no.style.transform = `scale(${1 - shrink * .17})`;
+        yes.style.transform = `scale(${1 + shrink * .08})`;
+        api.say(['Are you sure? The cookies have families.', 'The button is getting smaller. That is normal.', 'Nearly. Keep clicking the tiny button.', 'One more. It is the size of a crumb now.'][shrink - 1]);
+        Curio.beep(500 - shrink * 60, .05, 'square', .05);
+        return;
+      }
+      no.disabled = true; no.textContent = 'Rejected (mostly)';
+      text.textContent = 'Fine. Please untick each of our trusted partners individually.';
+      PARTNERS.forEach((p) => {
+        const lab = h('label', { class: 'tf-nl' });
+        const cb = h('input', { type: 'checkbox' }); cb.checked = true;
+        lab.append(cb, h('span', { text: p }));
+        cb.addEventListener('change', () => {
+          if (!cb.checked && !sneaky && p === 'Your Uncle') { sneaky = true; setTimeout(() => { cb.checked = true; api.say('Your Uncle has re-subscribed himself. He does that.', 'bad'); Curio.beep(200, .1, 'square', .05); check(); }, 500); }
+          check();
+        });
+        list.append(lab);
+      });
+      check();
+    });
+    function check() {
+      const on = [...list.querySelectorAll('input')].filter((c) => c.checked).length;
+      if (!list.children.length) return api.valid(false, null, '');
+      if (on) api.valid(false, null, `${on} partner${on === 1 ? '' : 's'} still watching.`);
+      else api.valid(true, 'Rejected. Mostly. Doug still knows.', 'All cookies rejected! We have kept a few. For us.');
+    }
+  }
+
   function confirmChain(api) {
     const Q = [
       ['Are you sure you want to submit?', true],
@@ -508,10 +595,10 @@
     function paint() {
       q.textContent = Q[i][0];
       row.innerHTML = '';
-      const yes = h('button', { class: 'c-btn', type: 'button', text: 'Yes' });
-      const no = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: 'No' });
+      const yes = h('button', { class: 'tf-btn', type: 'button', text: 'Yes' });
+      const no = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: 'No' });
       const order = Math.random() < .5 ? [yes, no] : [no, yes];
-      if (Math.random() < .5) { yes.className = 'c-btn c-btn--ghost'; no.className = 'c-btn'; }
+      if (Math.random() < .5) { yes.className = 'tf-btn tf-btn--ghost'; no.className = 'tf-btn'; }
       row.append(...order);
       const answer = (val) => {
         if (val === Q[i][1]) {
@@ -548,7 +635,7 @@
         return c;
       });
     }
-    const verify = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: 'Verify' });
+    const verify = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: 'Verify' });
     verify.addEventListener('click', () => {
       const ok = cells.every((c) => c.on === !!c.g);
       if (ok) { api.valid(true, 'Probably human', 'Verified! You know your waterfowl.'); verify.disabled = true; grid.querySelectorAll('button').forEach((b) => { b.disabled = true; }); }
@@ -612,8 +699,8 @@
       else api.valid(true, `${cats} cats (${cm} cm)`, `${cm} cm. A respectable cat tower.`);
     }
     api.field.append(stack, out, h('div', { class: 'tf-row' },
-      h('button', { class: 'c-btn', type: 'button', text: '+ Add a cat', onclick: () => { cats++; Curio.beep(880, .05, 'triangle', .06); paint(); } }),
-      h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '− Remove a cat', onclick: () => { cats = Math.max(0, cats - 1); paint(); } })));
+      h('button', { class: 'tf-btn', type: 'button', text: '+ Add a cat', onclick: () => { cats++; Curio.beep(880, .05, 'triangle', .06); paint(); } }),
+      h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '− Remove a cat', onclick: () => { cats = Math.max(0, cats - 1); paint(); } })));
     wander = setInterval(() => {
       if (document.hidden || cats < 2 || Math.random() > .45) return;
       cats--; paint(); api.say('A cat got bored and left. Cats do that.', 'bad'); Curio.beep(500, .08, 'sine', .05);
@@ -623,7 +710,7 @@
   }
 
   function alphaAnswer(api) {
-    const inp = h('input', { class: 'c-input', type: 'text', autocomplete: 'off', spellcheck: 'false', maxlength: '20', placeholder: 'e.g. Bello', 'aria-label': 'Security answer, letters in alphabetical order' });
+    const inp = h('input', { class: 'tf-input', type: 'text', autocomplete: 'off', spellcheck: 'false', maxlength: '20', placeholder: 'e.g. Bello', 'aria-label': 'Security answer, letters in alphabetical order' });
     inp.style.fontSize = '20px';
     const tiles = h('div', { class: 'tf-alpha' });
     api.field.append(inp, tiles);
@@ -666,7 +753,7 @@
       else api.valid(true, 'Unsubscribed (pending 6 to 8 weeks)', 'Unsubscribed from everything! Expect a confirmation email or twelve.');
     };
     boxes.forEach((b) => b.c.addEventListener('change', () => { Curio.beep(600, .03, 'square', .04); check(); }));
-    const hint = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '🔎 Show what I am subscribed to' });
+    const hint = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '🔎 Show what I am subscribed to' });
     hint.addEventListener('click', () => { wrap.classList.add('reveal'); mistakes++; hint.disabled = true; hint.textContent = 'Subscribed rows are highlighted'; });
     api.field.append(wrap, h('div', { class: 'tf-row' }, hint));
     check();
@@ -729,8 +816,8 @@
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    const clear = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '🧽 Start over', onclick: () => { paper(); ink = 0; api.valid(false, null, 'Fresh paper.'); } });
-    const auto = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '🎲 Sketch one for me', onclick: () => {
+    const clear = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '🧽 Start over', onclick: () => { paper(); ink = 0; api.valid(false, null, 'Fresh paper.'); } });
+    const auto = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '🎲 Sketch one for me', onclick: () => {
       g.strokeStyle = '#2b2b2b'; g.lineWidth = 3; g.lineCap = 'round';
       const w = () => Curio.rand(-3, 3);
       g.beginPath(); for (let a = 0; a <= 6.4; a += .2) g.lineTo(160 + Math.cos(a) * (70 + w()), 120 + Math.sin(a) * (84 + w())); g.stroke();
@@ -764,6 +851,7 @@
     clearInterval(timerId);
     const secs = (performance.now() - t0) / 1000;
     const res = Curio.best(mode === 'full' ? 'time' : `time-${mode}`, Math.round(secs), false);
+    const who = ANS.Name || ANS.Username || 'Mystery Person';
     mascot('happy', 'You did it! I am so proud. And a little scared.');
     $('#bar').style.width = '100%';
     $('#stepLabel').textContent = 'Submitted!';
@@ -772,7 +860,7 @@
     STEPS.forEach((s) => receipt.append(h('span', { text: s.key }), h('b', { text: ANS[s.key] ?? '?' })));
     const idCard = h('div', { class: 'tf-idcard' });
     const esc = (x) => String(x ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    idCard.innerHTML = `<div class="tf-id-top"><b>TERRIBLE CORP</b><span>MEMBER CARD</span></div><div class="tf-id-body"><div class="tf-id-photo">${photoURL ? `<img alt="Your hand-drawn portrait" src="${photoURL}">` : '<span>🙂</span>'}</div><div class="tf-id-info"><b>${esc(ANS.Name || 'Mystery Person')}</b><small>${esc(ANS.Email || 'NO@EMAIL.COM')}</small><small>${esc(ANS.Height || '')} ${ANS.Country ? '· ' + esc(ANS.Country) : ''}</small><small>Member since: ${new Date().toLocaleDateString('en-GB')}</small><em>${'★'.repeat(5)}</em></div></div><div class="tf-id-bar"></div><div class="tf-id-stamp">APPROVED<br><small>${mistakes} mistake${mistakes === 1 ? '' : 's'}</small></div>`;
+    idCard.innerHTML = `<div class="tf-id-top"><b>TERRIBLE CORP</b><span>MEMBER CARD</span></div><div class="tf-id-body"><div class="tf-id-photo">${photoURL ? `<img alt="Your hand-drawn portrait" src="${photoURL}">` : '<span>🙂</span>'}</div><div class="tf-id-info"><b>${esc(who)}</b><small>${esc(ANS.Email || 'NO@EMAIL.COM')}</small><small>${esc(ANS.Height || '')} ${ANS.Country ? '· ' + esc(ANS.Country) : ''}</small><small>Member since: ${new Date().toLocaleDateString('en-GB')}</small><em>${'★'.repeat(5)}</em></div></div><div class="tf-id-bar"></div><div class="tf-id-stamp">APPROVED<br><small>${mistakes} mistake${mistakes === 1 ? '' : 's'}</small></div>`;
     const grade = mistakes === 0 ? 'Flawless' : mistakes < 5 ? 'Composed' : mistakes < 15 ? 'Frustrated' : 'Furious';
     const ach = Curio.store.get('tf:ach', []);
     const got = (id) => { if (Array.isArray(ach) && !ach.includes(id)) { ach.push(id); Curio.toast(`🏅 ${id}`); } };
@@ -780,19 +868,34 @@
     if (secs < 180) got('Speed filler');
     if (mode === 'full') got('Full form survivor');
     if (mode === 'daily') got('Daily paperwork');
+    if (mode === 'quick') got('Quick paperwork');
+    if (mistakes >= 25) got('Professional complainer');
+    if (ANS.Username) got('Username secured');
     Curio.store.set('tf:ach', ach);
-    const share = h('button', { class: 'c-btn c-btn--ghost', type: 'button', text: '📋 Copy result', onclick: async () => { const t = `📨 I survived Terrible Forms (${mode}) in ${fmtTime(secs)} with ${mistakes} mistakes. Mood: ${grade}. Curio.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (e) { Curio.toast(t, 4000); } } });
+    const share = h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: '📋 Copy result', onclick: async () => { const t = `📨 I survived Terrible Forms (${mode}) in ${fmtTime(secs)} with ${mistakes} mistakes. Mood: ${grade}. Zoble`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (e) { Curio.toast(t, 4000); } } });
     card.append(h('div', { class: 'tf-done' },
       idCard,
       h('h2', { text: 'Form submitted!' }),
       h('p', { class: 'tf-desc', text: 'Your information has been sent straight into a black hole. We will be in touch. Never. Thank you for your patience.' }),
       h('div', { class: 'tf-stats' },
-        h('div', { class: 'c-stat' }, h('b', { text: fmtTime(secs) }), h('span', { text: 'Your time' })),
-        h('div', { class: 'c-stat' }, h('b', { text: fmtTime(res.best) }), h('span', { text: res.isNew ? 'New best!' : 'Best time' })),
-        h('div', { class: 'c-stat' }, h('b', { text: String(mistakes) }), h('span', { text: 'Mistakes' })),
-        h('div', { class: 'c-stat' }, h('b', { text: grade }), h('span', { text: 'Your mood' }))),
+        h('div', { class: 'tf-stat' }, h('b', { text: fmtTime(secs) }), h('span', { text: 'Your time' })),
+        h('div', { class: 'tf-stat' }, h('b', { text: fmtTime(res.best) }), h('span', { text: res.isNew ? 'New best!' : 'Best time' })),
+        h('div', { class: 'tf-stat' }, h('b', { text: String(mistakes) }), h('span', { text: 'Mistakes' })),
+        h('div', { class: 'tf-stat' }, h('b', { text: grade }), h('span', { text: 'Your mood' }))),
       h('details', { class: 'tf-rdet' }, h('summary', { text: 'Show everything we collected' }), receipt),
-      h('div', { class: 'c-row' }, h('button', { class: 'c-btn', type: 'button', text: 'Fill it out again', onclick: () => pickMode() }), share)));
+      SIMPLE ? null : h('div', { class: 'tf-btnrow' }, h('button', { class: 'tf-btn', type: 'button', text: 'Fill it out again', onclick: () => pickMode() }), share)));
+    if (SIMPLE) {
+      const oops = h('div', { class: 'tf-oops', role: 'status' },
+        h('b', { text: 'UPDATE FROM FORMY' }),
+        h('p', { text: 'I spilled coffee on your form. All of it. The card is fine though. The card was always going to be fine.' }),
+        h('p', { class: 'tf-oops__ask', text: 'Please fill it out again. Sorry. Sorry. Sorry.' }),
+        h('div', { class: 'tf-btnrow' },
+          h('button', { class: 'tf-btn', type: 'button', text: 'Fill it out again', onclick: () => start('simple') }),
+          h('button', { class: 'tf-btn tf-btn--ghost', type: 'button', text: 'More paperwork (Advanced)', onclick: () => Curio.setMode('advanced') }),
+          share));
+      card.querySelector('.tf-done').append(oops);
+      setTimeout(() => { oops.classList.add('on'); mascot('oops', 'Oh no. Oh no no no. I spilled something.'); Curio.beep(180, .25, 'sawtooth', .06); }, 1900);
+    }
     Curio.confetti();
     [523, 659, 784, 1046].forEach((f, k) => setTimeout(() => Curio.beep(f, .15, 'triangle', .1), k * 110));
   }
@@ -807,7 +910,8 @@
   function start(m) {
     mode = m || mode;
     STEPS.length = 0;
-    if (mode === 'quick') STEPS.push(...seededPick(String(Math.random()), 6));
+    if (mode === 'simple') STEPS.push(...['Email', 'Username', 'Terms', 'Human', 'Rating'].map((k) => ALL_STEPS.find((s) => s.key === k)));
+    else if (mode === 'quick') STEPS.push(...seededPick(String(Math.random()), 6));
     else if (mode === 'daily') { const d = new Date(); STEPS.push(...seededPick(`tf-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, 7)); }
     else STEPS.push(...ALL_STEPS.slice(0, -1));
     STEPS.push(ALL_STEPS[ALL_STEPS.length - 1]);
@@ -830,10 +934,22 @@
       h('div', { class: 'tf-modes' },
         opt('quick', '⚡', 'Quick form', '6 random fields', 'time-quick'),
         opt('daily', '📅', 'Daily form', '7 fields, same for everyone today', 'time-daily'),
-        opt('full', '🗄️', 'The full form', `All ${ALL_STEPS.length} steps. Bring snacks.`, 'time'))));
+        opt('full', '🗄️', 'The full form', `All ${ALL_STEPS.length} steps. Bring snacks.`, 'time')),
+      badgeShelf()));
     mascot('talk', 'Hi! I am Formy. I will be your form today. Sorry in advance.');
     if (!Curio.store.get('tf:tptip', false)) { Curio.store.set('tf:tptip', true); Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar. Click to start a drag, click again to let go.', 5000); }
   }
-  pickMode();
-  window.TerribleForms = { get idx() { return idx; }, ANS, STEPS, ALL_STEPS, start };
+  function badgeShelf() {
+    const all = [['Quick paperwork', '⚡'], ['Daily paperwork', '📅'], ['Full form survivor', '🗄️'], ['Flawless form', '✨'], ['Speed filler', '⏱️'], ['Username secured', '🏷️'], ['Professional complainer', '😤']];
+    const got = Curio.store.get('tf:ach', []);
+    const have = Array.isArray(got) ? got : [];
+    return h('div', { class: 'tf-shelf', 'aria-label': 'Badges' }, h('small', { text: `Badges ${all.filter((a) => have.includes(a[0])).length}/${all.length}` }),
+      h('div', {}, all.map(([n, e]) => h('span', { class: have.includes(n) ? 'on' : '', title: n, text: have.includes(n) ? e : '?' }))));
+  }
+  if (SIMPLE) {
+    $('#subLine').textContent = 'Five terrible fields stand between you and an account. How bad can it be? Very.';
+    mascot('talk', 'Hi! I am Formy. Five quick fields. I promise. I am lying.');
+    start('simple');
+  } else pickMode();
+  window.TerribleForms = { get idx() { return idx; }, ANS, STEPS, ALL_STEPS, start, finish, show, set idx(v) { idx = v; } };
 })();

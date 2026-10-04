@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="balance-stick">
+<body data-game="balance-stick" data-modes>
   <main class="c-wrap bs-stage" id="stage">
     <canvas class="bs-canvas" id="cv" role="img" aria-label="A stick balanced on a fingertip. Move your mouse or finger left and right to keep it upright. Arrow keys work too."></canvas>
     <div class="bs-head">
-      <h1 class="c-title">Balance the Stick</h1>
-      <p class="c-sub" id="sub">Keep the pole upright on your fingertip. Move left and right to catch it as it tips.</p>
+      <div class="bs-net"><span class="bs-live">Live</span><span>Stick Sports Network</span></div>
+      <h1 class="bs-title">Balance the Stick</h1>
+      <p class="bs-sub" id="sub">Keep the pole upright on your fingertip. Move left and right to catch it as it tips.</p>
       <div class="bs-seg" id="modes" role="group" aria-label="Mode">
         <button type="button" data-m="single">🥢 One stick</button>
         <button type="button" data-m="double">🔥 Double</button>
@@ -34,17 +35,19 @@
       <div class="bs-emoji" id="cEmoji">🥢</div>
       <h2 id="cTitle">Ready?</h2>
       <div id="cNew"></div>
+      <div class="bs-rank" id="cRank"></div>
       <p id="cText">Mouse: just move. Touch: drag anywhere. Keyboard: arrow keys.</p>
       <div class="bs-rstats" id="rStats" hidden></div>
       <div class="bs-chips" id="rChips"></div>
       <svg class="bs-spark" id="spark" viewBox="0 0 360 50" role="img" aria-label="Your recent runs" hidden></svg>
-      <div class="c-row">
-        <button class="c-btn" id="go" type="button">Start balancing</button>
-        <button class="c-btn c-btn--ghost" id="share" type="button" hidden>📋 Share</button>
+      <div class="bs-row">
+        <button class="bs-btn" id="go" type="button">Start balancing</button>
+        <button class="bs-btn bs-btn--ghost" id="share" type="button" hidden>📋 Share</button>
       </div>
       <div class="bs-links"><button type="button" id="showBadges">Badges <span id="badgeCount"></span></button><button type="button" id="showHow">How to play</button></div>
       <div id="extra" hidden></div>
     </div>
+    <div class="bs-ticker" aria-live="polite"><b>SSN</b><span id="chat">Welcome to Stick Sports Network. Tonight: one stick, one finger, zero chill.</span></div>
     <div class="bs-foot">
       <div class="bs-best"><span>Best</span><b id="best">-</b></div>
     </div>

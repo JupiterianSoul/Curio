@@ -133,3 +133,57 @@ window.FC_WORDS = [
   ['茶', 'chá', 'tea'], ['米饭', 'mǐfàn', 'cooked rice'], ['苹果', 'píngguǒ', 'apple'], ['饼干', 'bǐnggān', 'biscuit'], ['书', 'shū', 'book'],
   ['老师', 'lǎoshī', 'teacher'], ['学生', 'xuésheng', 'student'], ['快乐', 'kuàilè', 'happy'], ['幸运', 'xìngyùn', 'lucky'], ['爱', 'ài', 'love']
 ];
+
+window.FC_ORACLE = [
+  'Yes. But not on a Tuesday.',
+  'No. And the cookie is a little hurt that you asked.',
+  'Ask again after a snack.',
+  'Absolutely, if you believe in yourself and also in luck.',
+  'The cookie says no. The crumbs say maybe.',
+  'Yes, eventually. Like, eventually eventually.',
+  'Signs point to pizza.',
+  'That is a question for a bigger cookie.',
+  'Definitely. The cookie has never been more sure. It has been sure twice.',
+  'No. Try a different question. One about snacks.',
+  'Yes, but it will be weird.',
+  'Outlook good. Outlook crumbly.',
+  'Only if you say please.',
+  'The cookie is legally not allowed to answer that.',
+  'Yes. Tell nobody.',
+  'No, but in a nice way.',
+  'Maybe. The cookie flipped a smaller cookie.',
+  'Unclear. The cookie is still chewing.',
+  'Yes! Wait. No. Yes.',
+  'Not today. Possibly Thursday.',
+  'Ask your houseplant. It knows.',
+  'All signs point to yes, except one sign, which is a stop sign.',
+  'The answer is in your other pocket.',
+  'Yes, if you drink some water first.',
+  'No. The goose said so.',
+  'You already know the answer. The cookie is just here for moral support.',
+  'Very likely. The cookie would bet a crumb on it.',
+  'Concentrate and ask again. Louder.',
+  'Reply hazy. Wipe the cookie and try again.',
+  'Yes, and it will be the best thing that happens all week.',
+  'No comment. The cookie has a lawyer now.',
+  'In the long run, yes. In the short run, there is a queue.',
+  'A firm maybe.',
+  'No. But you will be fine with that.',
+  'Yes. The cookie is proud of you for asking.',
+  'The stars say yes. The stars are not qualified.',
+  'Without a doubt. Well, one small doubt.',
+  'Not in this cookie. Try the next one.',
+  'Yes, with sprinkles.',
+  'Absolutely not. Absolutely yes. The cookie is having a moment.'
+];
+
+window.FC_FINALES = [
+  'The jar is empty. The real fortune was the crumbs we made along the way.',
+  'Five cookies in one sitting. The cookies saw this coming.',
+  'Combined reading: you will be fine. Mostly. Probably. Eat a vegetable.',
+  'Statistically, one of these will come true. We will not say which.',
+  'Your five fortunes cancel each other out. Your future is now perfectly neutral. Congratulations?',
+  'The last slip says: "Stop eating cookies." It is too late. It was always too late.',
+  'Reading all five in order spells out a secret message. The message is "crunch".',
+  'The universe has reviewed your fortunes and given them three stars.'
+];
