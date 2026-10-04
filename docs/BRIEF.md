@@ -42,8 +42,8 @@ Each folder must contain:
 </html>
 ```
 
-`shared.js` injects a fixed top bar (height `var(--bar-h)`, 52px) with a link home, the
-title, mute, dark-mode and random-game buttons, and adds `padding-top` to body. Full-screen
+`shared.js` injects a fixed Zoble 98 title bar and menubar (height `var(--bar-h)`, 52px, see
+the Zoble 98 section below) and adds `padding-top` to body. Full-screen
 canvas games should size to `innerHeight - 52` (or use `calc(100dvh - var(--bar-h))`).
 
 ## Shared kit
@@ -135,3 +135,19 @@ You may use open-source libraries and tools (for example 98.css, physics engines
 - Prefer small, plain-script or ES-module builds that work without a build step. If a library needs bundling, bundle it once locally (npm, esbuild) and commit the bundled output, not node_modules.
 - Dev-only tools (fontTools, image tools, test helpers) are fine in `tools/` or your scratch folder; they never ship to `site/`.
 - The sweep check skips any `vendor/` folder and `*.min.js` / `*.min.css` files (third-party code keeps its licence comments). Everything you write yourself still follows the repo rules.
+
+## Zoble 98
+
+The site now looks like a late-90s desktop OS called Zoble 98. The full guide is `docs/DESIGN.md`; the short version for game builders:
+
+- Your page gets a title bar and a menubar on top, still exactly `var(--bar-h)` (52px). Size canvases with `calc(100dvh - var(--bar-h))` as before. Inside a desktop window there is no bar and `--bar-h` is `0px`, so the same CSS fills the window.
+- Tokens still work and every colour scheme defines them: `--bg` is the grey window face, `--surface` the white content area, `--accent` the selection colour, `--shadow` a raised 3D bevel, radius tokens are `0`. Use `Curio.isDark()` and `curio:theme` for canvas colours; High Contrast Black and Midnight are dark.
+- Fonts: `--font` is the Zoble 98 pixel font (crisp at 12, 24, 36, 48px), `--c-hand` its bold display cut, `--mono` is Courier New.
+- Use the kit for UI chrome: `.c-btn` (default push button), `.c-btn--ghost` (plain button), `.c-input` (sunken field), `.c-card` (raised panel), `.c-stat`, `.c-kbd`, `.c-title`. Wrap anything in `.z98` to get the full 98-style controls (checkboxes, radios, selects, sliders, group boxes with `fieldset`, tabs, tree view, progress bars); see DESIGN.md for markup.
+- Keep your game's own art and identity inside the window. Do not add your own top bar, overlays or mascots.
+- `Curio.modal` is now a dialog box (same API; add `icon: 'info' | 'warn' | 'question' | 'error'` if the emoji guess is wrong). `Curio.toast` is a small balloon that never blocks clicks.
+- Optional: `Curio.howTo(fn or 'text')` makes Help, How to play open your instructions. Otherwise the menu clicks your own "How to play" or "Rules" button if it finds one.
+- Simple and Advanced work as before; the switch lives in the menubar (direct page) or the window's View menu and menubar (desktop window).
+- Games are drawn as pixel icons from `thumb.svg` (centre square, 32px), so keep the subject in the middle of the thumbnail.
+- Never write the name of a real operating system or its maker in the UI, and never use their logos, fonts, sounds or icons.
+

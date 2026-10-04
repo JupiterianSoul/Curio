@@ -17,15 +17,19 @@
     .room.lit { background: #f6e7c8; color: #2a1c0f; }
     .room.lit::before { background: repeating-linear-gradient(90deg, rgba(120, 80, 30, .06) 0 2px, transparent 2px 90px), linear-gradient(#f9eccf, #ecd5a8 70%); }
     .inner { position: relative; z-index: 2; width: min(100%, 960px); margin: 0 auto; text-align: center; }
-    .sign { display: inline-block; font-family: var(--c-hand); font-size: clamp(30px, 6vw, 52px); line-height: 1; padding: 12px 22px 8px; border: 3px solid currentColor; border-radius: 8px; transform: rotate(-2deg); margin: 20px 0 6px; background: rgba(0, 0, 0, .12); }
-    .sign small { display: block; font-family: var(--c-type); font-size: 14px; margin-top: 6px; opacity: .8; }
-    .lede { font-family: var(--c-type); font-size: 15px; opacity: .85; max-width: 520px; margin: 14px auto 30px; }
+    .sign { display: inline-block; text-align: left; margin: 20px 0 6px; min-width: min(100%, 320px); color: var(--z-text); }
+    .sign .title-bar { background: linear-gradient(90deg, #800000, #e04020); }
+    .sign-body { display: flex; gap: 12px; align-items: center; padding: 10px 14px; }
+    .sign-body img { width: 32px; height: 32px; image-rendering: pixelated; }
+    .sign b { display: block; font: 700 36px/1 var(--c-hand); }
+    .sign small { display: block; font-size: 12px; margin-top: 4px; }
+    .lede { font-family: var(--font); font-size: 16px; opacity: .85; max-width: 520px; margin: 14px auto 30px; }
     .chain { position: absolute; z-index: 6; top: 0; right: 14%; width: 44px; display: flex; flex-direction: column; align-items: center; border: 0; background: none; padding: 0; cursor: pointer; color: inherit; }
     .chain__line { width: 3px; height: 120px; background: repeating-linear-gradient(#c9b27a 0 6px, #8a744a 6px 9px); }
-    .chain__knob { width: 22px; height: 22px; border-radius: 50%; background: #e9c75a; border: 3px solid #1b1830; box-shadow: 0 0 18px rgba(233, 199, 90, .5); }
+    .chain__knob { width: 18px; height: 18px; background: #e9c75a; border: 2px solid #1b1830; box-shadow: 0 0 0 2px #8a6a20, 0 0 18px rgba(233, 199, 90, .5); }
     .chain.pull { animation: pull .5s cubic-bezier(.3, 1.6, .5, 1); }
     @keyframes pull { 40% { transform: translateY(26px); } }
-    .chain__tag { margin-top: 6px; font-family: var(--c-hand); font-size: 15px; white-space: nowrap; }
+    .chain__tag { margin-top: 6px; font: 700 12px var(--font); white-space: nowrap; background: var(--z-info); color: #000; border: 1px solid #000; padding: 1px 5px; }
     .bulb { position: absolute; z-index: 6; top: 0; left: 50%; width: 2px; height: 50px; background: #6b5a3e; }
     .bulb::after { content: ""; position: absolute; top: 46px; left: -12px; width: 26px; height: 32px; border-radius: 50% 50% 46% 46%; background: #5a5040; border: 2px solid #1b1830; }
     .room.lit .bulb::after { background: #ffe58a; box-shadow: 0 0 60px 30px rgba(255, 220, 120, .55); }
@@ -39,34 +43,34 @@
     @keyframes jwob { 25% { transform: rotate(-9deg); } 75% { transform: rotate(8deg); } }
     @keyframes jfloat { 40%, 60% { transform: translateY(-60px) rotate(10deg); } }
     .jar svg { width: 100%; height: auto; display: block; overflow: visible; }
-    .jar span { display: block; font-family: var(--c-hand); font-size: 15px; line-height: 1.05; margin-top: 6px; min-height: 32px; }
+    .jar span { display: block; font: 700 12px var(--font); line-height: 1.05; margin-top: 6px; min-height: 32px; }
     .door { display: inline-flex; align-items: center; gap: 10px; margin-top: 44px; }
     .ghost { position: absolute; z-index: 3; right: 6%; bottom: 80px; width: 80px; opacity: .85; animation: boo 5s ease-in-out infinite; }
     @keyframes boo { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-16px, -12px); } }
-    .book { margin: 36px auto 0; max-width: 520px; background: rgba(0, 0, 0, .14); border: 2px dashed currentColor; border-radius: 12px; padding: 16px; }
-    .book h2 { font-family: var(--c-hand); font-weight: 400; font-size: 28px; margin: 0 0 6px; }
-    .book p { margin: 0 0 12px; font-size: 14.5px; opacity: .85; }
+    .book { margin: 36px auto 0; max-width: 520px; padding: 14px; color: var(--z-text); }
+    .book h2 { font: 700 18px var(--c-hand); margin: 0 0 6px; }
+    .book p { margin: 0 0 12px; font-size: 12px; }
     .marks { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 30px; margin-bottom: 12px; }
-    .marks i { width: 22px; height: 22px; border-radius: 50%; display: inline-block; border: 2px solid #1b1830; }
+    .marks i { width: 20px; height: 20px; display: inline-block; border: 2px solid #1b1830; box-shadow: inset 2px 2px rgba(255,255,255,.5), inset -2px -2px rgba(0,0,0,.25); }
     @media (max-width: 560px) { .jar { width: 84px; } .chain { right: 6%; } .chain__line { height: 90px; } }
   </style>
 </head>
-<body data-title="The back room">
+<body data-title="The back room" data-icon="door">
   <main class="room" id="room">
     <div class="wallpaper"></div>
     <div class="bulb" aria-hidden="true"></div>
     <button class="chain" id="chain" type="button" aria-label="Pull the light chain" aria-pressed="false"><span class="chain__line"></span><span class="chain__knob"></span><span class="chain__tag">pull</span></button>
     <div class="inner">
-      <div class="sign">Staff only<small>(that's you now)</small></div>
-      <p class="lede">This is where Zob keeps the things that did not fit on the shelves out front. It is a bit dark. You could look around with your torch, or find the light.</p>
+      <div class="sign window z98"><div class="title-bar"><div class="title-bar-text"><span>Notice</span></div></div><div class="sign-body"><img id="sign-ico" alt=""><div><b>Staff only</b><small>(that's you now)</small></div></div></div>
+      <p class="lede">This is where Zob keeps the things that did not fit on the desktop. It is a bit dark. You could look around with your torch, or find the light.</p>
       <div class="shelves" id="shelves"></div>
-      <section class="book">
+      <section class="book window z98">
         <h2>The visitors' wall</h2>
         <p>Leave a thumbprint. Only you can see it, but Zob counts them anyway.</p>
         <div class="marks" id="marks"></div>
         <button class="c-btn" id="mark" type="button">Press your thumb here</button>
       </section>
-      <a class="c-btn c-btn--ghost door" href="index.html">Back out to the cabinet</a>
+      <a class="c-btn c-btn--ghost door" href="index.html">Back to the desktop</a>
     </div>
     <div class="dark" id="dark" aria-hidden="true"></div>
   </main>
@@ -78,6 +82,7 @@
       const room = document.getElementById('room');
       const dark = document.getElementById('dark');
       C.unlock('snoop');
+      document.getElementById('sign-ico').src = C.px('warn', 32);
       const JARS = [
         ['A jar of Tuesday', 'Still a bit Tuesday-ish. Do not open on a Monday.', '#6fb7ff', 'wob'],
         ['One (1) sneeze', 'Collected in 2017. Bless it.', '#ffe58a', 'sneeze'],

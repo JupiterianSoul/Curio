@@ -1,142 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="z-wait">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Zoble · a cabinet of small wonders</title>
-  <meta name="description" content="A cabinet of free little games, toys and odd corners of the internet, printed in two inks. No sign-up, no ads, just poke at things.">
+  <title>Zoble 98</title>
+  <meta name="description" content="Zoble 98: a whole desktop of free little games, toys and odd corners of the internet. No sign-up, no ads, just poke at things.">
+  <meta name="theme-color" content="#008080">
   <link rel="icon" href="icon.svg">
-  <link rel="preload" href="zoble-hand.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="zoble-98.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="zoble-98-bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="hub.css">
 </head>
-<body data-nobar class="hub">
-  <a class="skip" href="#cabinet">Skip to the games</a>
-
-  <header class="mast wrap" id="top">
-    <div class="mast__line">
-      <span class="mast__vol" id="vol">Vol. 3</span>
-      <span class="mast__date" id="dateline" title="Printed fresh every time you visit"></span>
-      <div class="mast__tools">
-        <button class="tool" id="t-sound" type="button"></button>
-        <button class="tool" id="t-look" type="button" aria-label="Change theme" title="Change theme"></button>
-        <button class="tool" id="t-knobs" type="button" aria-label="Settings" title="Settings"></button>
-      </div>
-    </div>
-    <div class="mast__stage" id="stage">
-      <div class="sunspot" aria-hidden="true"></div>
-      <div class="sunspot sunspot--2" aria-hidden="true"></div>
-      <span class="doodle doodle--star1" aria-hidden="true"></span>
-      <span class="doodle doodle--star2" aria-hidden="true"></span>
-      <span class="doodle doodle--star3" aria-hidden="true"></span>
-      <h1 class="logo" id="logo" aria-label="Zoble"><span aria-hidden="true">Z</span><span aria-hidden="true">o</span><span aria-hidden="true">b</span><span aria-hidden="true">l</span><span aria-hidden="true">e</span></h1>
-      <button class="pimbox" id="pim" type="button" aria-label="Poke Zob, the little zoble who keeps the cabinet">
-        <span class="bubble" id="bubble" aria-live="polite"></span>
-        <span class="zzz" aria-hidden="true"><i>z</i><i>z</i><i>z</i></span>
-      </button>
-    </div>
-    <p class="mast__tag">A cabinet of <span class="hl"><b id="total">lots of</b> small wonders</span>: games, toys and odd little corners of the internet. No sign-up, no ads, nothing to win except bragging rights.</p>
-    <p class="mast__edition" id="edition"></p>
-  </header>
-
-  <div class="desk" id="desk">
-    <div class="desk__inner wrap">
-      <a class="desk__pim" href="#top" id="deskpim" aria-label="Back to the top"></a>
-      <span class="bubble bubble--desk" id="deskbubble" aria-live="polite"></span>
-      <label class="find" id="find">
-        <span class="c-sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search the cabinet</span>
-        <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Find a thing">
-        <span class="c-kbd" aria-hidden="true">/</span>
-        <button class="find__clear" id="clear" type="button" aria-label="Clear search"></button>
-      </label>
-      <button class="roll" id="roll" type="button" aria-label="Roll the die for a random game" title="Can't decide? Roll it. (R)"><span class="die" id="die" data-n="5"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Roll</span></button>
-    </div>
+<body data-nobar class="hub z98">
+  <a class="skip" href="#icons">Skip to the desktop icons</a>
+  <main class="desktop" id="desktop" aria-label="Zoble 98 desktop">
+    <h1 class="sr">Zoble 98</h1>
+    <div class="desk-bg" id="deskbg" aria-hidden="true"></div>
+    <div class="desk-icons" id="icons" role="group" aria-label="Desktop icons"></div>
+    <div class="windows" id="windows"></div>
+  </main>
+  <div class="taskbar" id="taskbar" role="toolbar" aria-label="Taskbar">
+    <button class="start" id="start" type="button" aria-haspopup="menu" aria-expanded="false"><img class="z-px" id="startlogo" alt="" width="16" height="16"><b id="startword">Start</b></button>
+    <span class="tb-sep" aria-hidden="true"></span>
+    <div class="quick" id="quick" role="group" aria-label="Quick launch"></div>
+    <span class="tb-sep tb-sep--q" aria-hidden="true"></span>
+    <div class="tasks" id="tasks" role="group" aria-label="Open windows"></div>
+    <div class="tray" id="tray" role="group" aria-label="Notification area"></div>
   </div>
-
-  <div class="wrap">
-    <nav class="views" id="views" aria-label="Views"></nav>
-    <nav class="cats" id="cats" aria-label="Drawers"></nav>
-    <p class="status" id="status"></p>
-    <div class="today" id="today">
-    <aside class="daily" id="daily" aria-labelledby="daily-h"></aside>
-    <section class="corner" id="corner" hidden aria-labelledby="corner-h">
-      <div class="corner__head"><h2 id="corner-h">Back for more?</h2><p>the last few things you poked</p></div>
-      <div class="line" id="line"></div>
-    </section>
-    </div>
-    <main class="cabinet" id="cabinet" tabindex="-1"></main>
-  </div>
-
-  <button class="uptop" id="uptop" type="button" aria-label="Fly back to the top"></button>
-
-  <footer class="foot">
-    <div class="floor" id="floor" aria-hidden="false">
-      <svg class="scene" viewBox="0 0 1240 170" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M0 151c120-3 260 2 400-1s300 3 450 0 280-2 390 1"/>
-        <path d="M60 157h40M210 160h60M520 158h30M900 159h70M1120 157h50" stroke-width="2" opacity=".5"/>
-        <g transform="translate(120 46)">
-          <path d="M14 66h52l-7 39H21z" fill="var(--accent)"/>
-          <path d="M10 60h60v8H10z" fill="var(--accent)"/>
-          <path d="M40 60c-2-20-14-30-30-34 10 12 14 22 18 34M40 60c0-26 6-42 22-56-4 18-10 34-14 56M40 60c4-16 14-24 30-26-10 8-16 16-22 26" fill="var(--good)"/>
-          <path d="M40 60c-6-12-16-18-28-18 8 6 14 12 18 18" fill="var(--good)"/>
-        </g>
-        <g transform="translate(300 92)">
-          <path d="M0 40h96v18H0z" fill="var(--c-pop)"/>
-          <path d="M8 22h84v18H8z" fill="var(--c-sun)" transform="rotate(-3 50 31)"/>
-          <path d="M-2 4h80v18H-2z" fill="var(--accent)" transform="rotate(2 38 13)"/>
-          <path d="M14 46v6M26 46v6M20 27v8M70 8v8" stroke-width="2"/>
-          <path d="M30 -2c4-10 16-12 22-4" stroke-width="2.5"/>
-          <circle cx="56" cy="-8" r="5" fill="var(--surface)"/>
-        </g>
-        <g transform="translate(560 78)">
-          <path d="M10 72V20c0-8 6-12 14-12h10" />
-          <path d="M210 72V40"/>
-          <path d="M10 48h200v16H10z" fill="var(--surface)"/>
-          <path d="M14 46c40-10 120-10 194 0l2 6c-60 8-140 8-196 2z" fill="var(--accent)" opacity=".85"/>
-          <path d="M20 30c10-6 28-6 38 2 2 6-8 10-20 10-12 0-20-4-18-12z" fill="var(--surface)"/>
-          <path d="M60 50c16 2 30 2 44 0M120 52c14 1 30 1 44-1" stroke-width="2" opacity=".6"/>
-        </g>
-        <g transform="translate(940 10)">
-          <path d="M40 140V40M22 142h36"/>
-          <path d="M14 40h52L54 4H26z" fill="var(--c-sun)"/>
-          <path d="M40 40v8" />
-          <circle cx="40" cy="58" r="40" fill="var(--c-sun)" stroke="none" opacity=".18"/>
-        </g>
-        <g transform="translate(1060 86)">
-          <path d="M0 18l52-4 4 50-54 2z" fill="#c9a26f"/>
-          <path d="M0 18l14-14 50-2-12 12M56 14l12-10 2 48-12 14" fill="#b88d58"/>
-          <path d="M14 36h26M18 46h18" stroke-width="2.5"/>
-        </g>
-        <g transform="translate(20 108)">
-          <path d="M0 42V10h44v32" fill="var(--surface-2)"/>
-          <path d="M0 26h44M22 10v32" stroke-width="2"/>
-          <circle cx="11" cy="18" r="2.5" fill="currentColor" stroke="none"/>
-        </g>
-      </svg>
-      <button class="bedpim" id="bedpim" type="button" aria-label="Wake up the sleeping Zob">
-        <span class="bubble" id="bedbubble"></span>
-        <span class="zzz" aria-hidden="true"><i>z</i><i>z</i><i>z</i></span>
-      </button>
-    </div>
-    <div class="foot__paper">
-      <div class="wrap">
-        <div class="foot__grid">
-          <div>
-            <p class="foot__big" id="foot-big">That's the whole cabinet.</p>
-            <p class="foot__colophon">Zoble is printed in two inks on recycled pixels. No ads, no accounts, no tracking, no cookies (we checked the jar). Your scores, favourites and stickers live in this browser and nowhere else.</p>
-          </div>
-          <ul class="foot__links">
-            <li><button type="button" id="f-book"></button></li>
-            <li><button type="button" id="f-knobs"></button></li>
-            <li><button type="button" id="f-roll"></button></li>
-            <li><a href="#top" id="f-home"></a></li>
-          </ul>
-        </div>
-        <p class="foot__fine"><span>Lettered by hand in Zoble Hand, a wobbly typeface drawn just for this cabinet.</span><span id="f-count"></span><a class="keyhole" href="backroom.html" id="keyhole" aria-label="A tiny keyhole. Where does it go?"></a></p>
-      </div>
-    </div>
-  </footer>
-
   <script src="games.js"></script>
   <script src="shared.js"></script>
   <script src="hub.js"></script>
