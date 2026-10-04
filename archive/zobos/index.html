@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" class="z-wait">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zoble · Zob's computer</title>
+  <meta name="description" content="Zoble: sit at Zob's desk and play on his computer. More than a hundred free little games, toys and odd corners of the internet. No sign-up, no ads, just poke at things.">
+  <meta name="theme-color" content="#f3dcbc">
+  <link rel="icon" href="icon.svg">
+  <link rel="preload" href="zoble-98.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="zoble-98-bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="zoble-hand.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="hub.css">
+  <link rel="stylesheet" href="desk.css">
+</head>
+<body data-nobar class="hub">
+  <a class="skip" href="#screen">Skip to Zob's screen</a>
+  <div class="room" id="room">
+    <h1 class="sr">Zoble: Zob's computer</h1>
+    <div class="crt" id="crt">
+      <div class="crt-shell">
+        <div class="crt-recess">
+          <div class="crt-screen z98" id="screen" tabindex="-1">
+            <main class="desktop" id="desktop" aria-label="ZobOS desktop">
+              <div class="desk-bg" id="deskbg" aria-hidden="true"></div>
+              <div class="desk-icons" id="icons" role="group" aria-label="Desktop icons"></div>
+              <div class="windows" id="windows"></div>
+            </main>
+            <div class="taskbar" id="taskbar" role="toolbar" aria-label="Taskbar">
+              <button class="start" id="start" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Zob menu"><img class="z-px" id="startlogo" alt="" width="16" height="16"><b id="startword">Zob</b></button>
+              <span class="tb-sep" aria-hidden="true"></span>
+              <div class="quick" id="quick" role="group" aria-label="Quick launch"></div>
+              <span class="tb-sep tb-sep--q" aria-hidden="true"></span>
+              <div class="tasks" id="tasks" role="group" aria-label="Open windows"></div>
+              <div class="tray" id="tray" role="group" aria-label="Notification area"></div>
+            </div>
+            <div class="crt-glass" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="crt-chin" id="chin"></div>
+      </div>
+    </div>
+    <div class="room-wall" id="wall"></div>
+    <div class="room-desk" id="front"></div>
+    <div class="room-zob" id="zobhome"></div>
+  </div>
+  <script src="games.js"></script>
+  <script src="shared.js"></script>
+  <script src="desk.js"></script>
+  <script src="explorer.js"></script>
+  <script src="hub.js"></script>
+</body>
+</html>

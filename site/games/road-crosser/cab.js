@@ -13,7 +13,7 @@
   const pad2 = (n) => String(n).padStart(2, '0');
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
   const ORD = ['1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH'];
-  const NAMES = ['ZOB', 'ACE', 'MAX', 'KAT', 'JOY', 'BOP', 'ZIG', 'LUX', 'RAD', 'PIP', 'DOT', 'JET', 'NEO', 'GUS', 'FOX', 'IVY', 'SAM', 'KIT', 'TEX', 'ROX'];
+  const NAMES = ['AAA', 'ACE', 'MAX', 'KAT', 'JOY', 'BOP', 'ZIG', 'LUX', 'RAD', 'PIP', 'DOT', 'JET', 'NEO', 'GUS', 'FOX', 'IVY', 'SAM', 'KIT', 'TEX', 'ROX'];
   const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!';
 
   const PIX = {
