@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hello, Operator · Zoble</title>
+  <meta name="description" content="Run the night shift at the world's busiest switchboard. Connect calls when it is daytime on the other end, and never wake anybody up.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="hello-operator" data-modes>
+  <main class="c-wrap ho">
+    <header class="ho-head">
+      <h1>Hello, <em>Operator</em></h1>
+      <p>Calls pour in from every corner of the planet. Put them through when it is daytime at the other end. Ring someone at 3 in the morning and you will hear about it.</p>
+    </header>
+    <section class="ho-start" id="start">
+      <div class="ho-memo">
+        <p class="ho-memo__tag">MEMO TO NEW OPERATORS</p>
+        <ul id="rules"></ul>
+        <button class="c-btn ho-go" type="button" id="go">Clock in</button>
+        <p class="ho-best" id="best"></p>
+      </div>
+    </section>
+    <section class="ho-desk" id="desk" hidden>
+      <div class="ho-top">
+        <div class="ho-clock"><small>Switchboard time (UTC)</small><b id="utc">00:00</b></div>
+        <div class="ho-stat"><small>Score</small><b id="score">0</b></div>
+        <div class="ho-stat"><small>Complaints</small><b id="strikes"></b></div>
+        <div class="ho-shift"><small>Shift</small><div class="ho-bar"><i id="shiftBar"></i></div></div>
+      </div>
+      <div class="ho-mapbox"><canvas id="map" role="img" aria-label="World map with day and night, showing the cities on the line"></canvas></div>
+      <div class="ho-board" id="board" aria-live="polite"></div>
+      <p class="ho-keys" id="keys">Keys: <span class="c-kbd">1</span> to <span class="c-kbd">4</span> pick a line, then <span class="c-kbd">C</span> connect or <span class="c-kbd">X</span> say they are asleep.</p>
+    </section>
+  </main>
+  <div class="ho-over" id="over" hidden>
+    <div class="ho-card" role="dialog" aria-modal="true" aria-labelledby="ovT">
+      <p class="ho-memo__tag">END OF SHIFT REPORT</p>
+      <h2 id="ovT"></h2>
+      <div class="ho-report" id="ovR"></div>
+      <p id="ovB"></p>
+      <div class="ho-cardbtns"><button class="c-btn" type="button" id="again">Another shift</button><button class="c-btn c-btn--ghost" type="button" id="share">Copy report</button></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="map.js"></script>
+  <script src="cities.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

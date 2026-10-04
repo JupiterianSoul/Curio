@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spy Radio · Zoble</title>
+  <meta name="description" content="A secret radio, a stack of coded messages and a signal that keeps fading. Decode the morse before it is gone.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="spy-radio" data-modes>
+  <main class="c-wrap sr">
+    <header class="sr-head">
+      <p class="sr-stamp">TOP SECRET</p>
+      <h1>Spy Radio</h1>
+      <p class="sr-sub" id="sub">Beeps come in. Letters go out. The signal will not wait for you.</p>
+    </header>
+
+    <section class="sr-menu" id="menu"></section>
+
+    <section class="sr-desk" id="desk" hidden>
+      <div class="sr-set">
+        <div class="sr-top">
+          <div class="sr-plate"><b>NIGHTJAR</b><span>MK II RECEIVER</span></div>
+          <div class="sr-lamp" id="lamp" aria-hidden="true"><i></i></div>
+          <div class="sr-meter">
+            <span>SIGNAL</span>
+            <div class="sr-sig" aria-hidden="true"><i id="sig"></i></div>
+            <b id="secs">0</b>
+          </div>
+        </div>
+        <div class="sr-info"><span id="what">Incoming</span><span id="wpm">10 WPM</span><span id="score"></span></div>
+        <div class="sr-tapebox"><canvas id="tape" role="img" aria-label="Paper tape printing the dots and dashes as they arrive"></canvas></div>
+        <div class="sr-slots" id="slots" aria-live="polite"></div>
+        <div class="sr-keyed" id="keyed" hidden></div>
+      </div>
+      <div class="sr-controls">
+        <button class="sr-ctl" type="button" id="repeat" title="Play it again from the start">Replay</button>
+        <button class="sr-ctl" type="button" id="peek" title="Peek at the codebook">Codebook</button>
+        <button class="sr-ctl sr-ctl--quit" type="button" id="quit">Abort</button>
+      </div>
+      <div class="sr-chart" id="chart" aria-label="Morse codebook"></div>
+      <div class="sr-keys" id="keys" role="group" aria-label="Letter keys"></div>
+      <div class="sr-keypad" id="keypad" hidden>
+        <button type="button" class="sr-pad sr-pad--dot" id="dot" aria-label="Dot"><i class="sr-g sr-g--dot"></i><small>dit . or J</small></button>
+        <button type="button" class="sr-pad sr-pad--dash" id="dash" aria-label="Dash"><i class="sr-g sr-g--dash"></i><small>dah - or K</small></button>
+        <button type="button" class="sr-pad sr-pad--gap" id="gap">Next letter<small>Space</small></button>
+        <button type="button" class="sr-pad sr-pad--del" id="del">Rub out<small>Backspace</small></button>
+      </div>
+    </section>
+
+    <section class="sr-overlay" id="card" hidden>
+      <div class="sr-file">
+        <p class="sr-file__tag" id="cardTag">MISSION</p>
+        <h2 id="cardTitle"></h2>
+        <p id="cardBody"></p>
+        <div class="sr-opts" id="cardOpts"></div>
+        <div class="sr-file__btns" id="cardBtns"></div>
+      </div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

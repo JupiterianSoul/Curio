@@ -35,12 +35,9 @@ window.CURIO_GAMES = [
   { slug: 'earth-layers', title: 'Dig to the Core', blurb: 'Tunnel 6,371 km to the centre of the Earth', emoji: '⛏️', color: '#8d4925', tag: 'explore' },
   { slug: 'speed-race', title: 'How Fast?', blurb: 'From a snail to the speed of light', emoji: '🏎️', color: '#c0392b', tag: 'explore' },
   { slug: 'hundred-people', title: 'If the World Were 100 People', blurb: 'The planet, shrunk to a village', emoji: '🧑‍🤝‍🧑', color: '#00897b', tag: 'explore' },
-  { slug: 'moon-phase', title: 'Moon Tonight', blurb: 'The moon phase for any date', emoji: '🌙', color: '#283593', tag: 'explore' },
   { slug: 'count-to-billion', title: 'What a Billion Looks Like', blurb: 'Millions, billions, trillions, visualised', emoji: '🔢', color: '#2e7d32', tag: 'explore' },
-  { slug: 'world-clock', title: 'World Clock', blurb: 'Day and night across the planet', emoji: '🕰️', color: '#0277bd', tag: 'explore' },
+  { slug: 'planet-passport', title: 'Planet Passport', blurb: 'Your age, weight and jump on every world', emoji: '🚀', color: '#151d45', tag: 'explore' },
 
-  { slug: 'planet-age', title: 'Age on Other Planets', blurb: 'How old are you on Mars?', emoji: '🔭', color: '#c0392b', tag: 'life' },
-  { slug: 'planet-weight', title: 'Weight on Other Planets', blurb: 'Weigh yourself on Jupiter', emoji: '⚖️', color: '#d35400', tag: 'life' },
   { slug: 'world-counter', title: 'World Right Now', blurb: 'Live estimates of the planet ticking by', emoji: '🌍', color: '#2980b9', tag: 'life' },
   { slug: 'your-birthday', title: 'Your Birthday', blurb: 'What was happening the day you were born', emoji: '🎈', color: '#d81b60', tag: 'life' },
   { slug: 'compound-interest', title: 'Get Rich Slowly', blurb: 'Watch compound interest snowball', emoji: '📊', color: '#388e3c', tag: 'life' },
@@ -50,7 +47,7 @@ window.CURIO_GAMES = [
   { slug: 'the-button', title: 'The Button', blurb: 'Whatever you do, keep pressing', emoji: '🔴', color: '#e74c3c', tag: 'absurd' },
   { slug: 'wreck-this-page', title: 'Wreck This Page', blurb: 'Turn a web page into a level and blow it up', emoji: '💥', color: '#272727', tag: 'absurd' },
   { slug: 'chaos-goose', title: 'Chaos Goose', blurb: 'A goose has entered the page', emoji: '🪿', color: '#a1662f', tag: 'absurd' },
-  { slug: 'useless-machine', title: 'Useless Machine', blurb: 'Flip the switch. It flips it back.', emoji: '🎛️', color: '#546e7a', tag: 'absurd' },
+  { slug: 'useless-machine', title: 'Useless Machine', blurb: 'Keep it switched on. It gets devious.', emoji: '🎛️', color: '#a5672f', tag: 'absurd' },
   { slug: 'terrible-ui', title: 'Terrible Forms', blurb: 'The worst inputs ever designed', emoji: '📝', color: '#ef6c00', tag: 'absurd' },
   { slug: 'fortune-cookie', title: 'Fortune Cookie', blurb: 'Crack one open', emoji: '🥠', color: '#f9a825', tag: 'absurd' },
   { slug: 'pet-the-cat', title: 'Pet the Cat', blurb: 'Purrs, headbutts, and sudden betrayal', emoji: '🐈', color: '#ff8a65', tag: 'absurd' },
@@ -59,6 +56,7 @@ window.CURIO_GAMES = [
   { slug: 'duck-mayor', title: 'Duck Mayor', blurb: 'Run a pond town, one swipe at a time', emoji: '🦆', color: '#2b7a99', tag: 'absurd' },
 
   { slug: 'balance-stick', title: 'Balance the Stick', blurb: 'Keep a pole upright on your cursor', emoji: '🥢', color: '#424242', tag: 'skill' },
+  { slug: 'spy-radio', title: 'Spy Radio', blurb: 'Decode the morse before the signal fades', emoji: '📻', color: '#2f3a2c', tag: 'skill' },
 
   { slug: 'higher-lower', title: 'Higher or Lower', blurb: 'Which country has more people?', emoji: '📈', color: '#00acc1', tag: 'brain' },
   { slug: 'timeline-game', title: 'Timeline', blurb: 'Put history in the right order', emoji: '📜', color: '#a1887f', tag: 'brain' },
@@ -67,6 +65,7 @@ window.CURIO_GAMES = [
   { slug: 'emoji-movies', title: 'Emoji Movies', blurb: 'Name the film from the emoji', emoji: '🎬', color: '#c62828', tag: 'brain' },
   { slug: 'anagram', title: 'Anagram', blurb: 'Unscramble the letters', emoji: '🔤', color: '#00796b', tag: 'brain' },
   { slug: 'true-or-false', title: 'True or False', blurb: 'Weird facts, real or fake?', emoji: '✅', color: '#43a047', tag: 'brain' },
+  { slug: 'hello-operator', title: 'Hello, Operator', blurb: 'Connect calls, never wake anyone up', emoji: '☎️', color: '#5a3a22', tag: 'brain' },
 
   { slug: 'mini-golf', title: 'Mini Golf', blurb: 'Nine holes of putting', emoji: '⛳', color: '#2e7d32', tag: 'arcade' },
   { slug: 'word-rain', title: 'Word Rain', blurb: 'Type the words before they land', emoji: '🌧️', color: '#37474f', tag: 'arcade' },
@@ -84,6 +83,7 @@ window.CURIO_GAMES = [
   { slug: 'block-puzzle', title: 'Block Fit', blurb: 'Place shapes, clear rows and columns', emoji: '🟪', color: '#5c6bc0', tag: 'puzzle' },
   { slug: 'unblock', title: 'Unblock', blurb: 'Slide the cars, free the red one', emoji: '🚗', color: '#e53935', tag: 'puzzle' },
   { slug: 'water-sort', title: 'Water Sort', blurb: 'Pour until every tube is one colour', emoji: '🧪', color: '#26a69a', tag: 'puzzle' },
+  { slug: 'fizzworks', title: 'Fizzworks', blurb: 'One spark, one perfect chain reaction', emoji: '💥', color: '#123c45', tag: 'puzzle' },
 
   { slug: 'falling-sand', title: 'Sand Lab', blurb: '150+ elements to mix, melt and explode', emoji: '⏳', color: '#c2a35b', tag: 'toy' },
   { slug: 'game-of-life', title: 'Game of Life', blurb: 'Conway\'s cellular automaton', emoji: '🦠', color: '#1b5e20', tag: 'toy' },
@@ -102,24 +102,17 @@ window.CURIO_GAMES = [
   { slug: 'draw-physics', title: 'Draw Physics', blurb: 'Whatever you draw becomes real', emoji: '✏️', color: '#ff7043', tag: 'toy' },
   { slug: 'ragdoll', title: 'Ragdoll Playground', blurb: 'Fling floppy people around', emoji: '🤸', color: '#e53935', tag: 'toy' },
   { slug: 'water-toy', title: 'Water Toy', blurb: 'Pour, splash and slosh', emoji: '💧', color: '#039be5', tag: 'toy' },
-  { slug: 'chain-reaction', title: 'Chain Reaction', blurb: 'One click, a hundred explosions', emoji: '💥', color: '#311b92', tag: 'toy' },
   { slug: 'paint-pour', title: 'Paint Pour', blurb: 'Swirl colours into fluid art', emoji: '🎨', color: '#d81b60', tag: 'toy' },
   { slug: 'slime', title: 'Slime', blurb: 'Poke, stretch and squish', emoji: '🟢', color: '#43a047', tag: 'toy' },
   { slug: 'kinetic-sand', title: 'Kinetic Sand', blurb: 'Slice the sand. So satisfying.', emoji: '🔪', color: '#f48fb1', tag: 'toy' },
-  { slug: 'pendulum-wave', title: 'Pendulum Wave', blurb: 'Fifteen pendulums, one hypnotic dance', emoji: '🪀', color: '#263238', tag: 'toy' },
   { slug: 'busy-bees', title: 'Busy Bees', blurb: 'Raise a colony, fill the comb, survive winter', emoji: '🐝', color: '#f5b324', tag: 'toy' },
 
   { slug: 'pixel-art', title: 'Pixel Art', blurb: 'Draw on a tiny grid, save a PNG', emoji: '👾', color: '#7b1fa2', tag: 'make' },
   { slug: 'kaleidoscope', title: 'Kaleidoscope', blurb: 'Symmetrical drawing', emoji: '❄️', color: '#00bcd4', tag: 'make' },
   { slug: 'piano', title: 'Piano', blurb: 'Play with your keyboard', emoji: '🎹', color: '#37474f', tag: 'make' },
   { slug: 'drum-machine', title: 'Beat Maker', blurb: 'Build a loop on a 16-step grid', emoji: '🥁', color: '#ad1457', tag: 'make' },
-  { slug: 'spin-wheel', title: 'Spin the Wheel', blurb: 'Let the wheel decide', emoji: '🎡', color: '#ff8f00', tag: 'make' },
-  { slug: 'morse-code', title: 'Morse Code', blurb: 'Translate and hear the beeps', emoji: '📡', color: '#5d4037', tag: 'make' },
   { slug: 'theremin', title: 'Theremin', blurb: 'Play music by waving the mouse', emoji: '🎻', color: '#3f51b5', tag: 'make' },
-  { slug: 'ascii-art', title: 'Text Art', blurb: 'Turn words into giant letters', emoji: '🔠', color: '#263238', tag: 'make' },
   { slug: 'avatar-maker', title: 'Face Maker', blurb: 'Build a little character', emoji: '🙂', color: '#ffb300', tag: 'make' },
-  { slug: 'palette-maker', title: 'Palette Maker', blurb: 'Generate pretty colour schemes', emoji: '🎨', color: '#ec407a', tag: 'make' },
-  { slug: 'name-generator', title: 'Name Generator', blurb: 'Fantasy, sci-fi, band and pet names', emoji: '🏷️', color: '#7b1fa2', tag: 'make' },
   { slug: 'pizza-maker', title: 'Pizza Maker', blurb: 'Stretch, sauce, top, bake', emoji: '🍕', color: '#00897b', tag: 'make' },
   { slug: 'tiny-town', title: 'Tiny Town', blurb: 'Click to grow a cosy little town', emoji: '🏘️', color: '#5c9ead', tag: 'make' },
   { slug: 'island-maker', title: 'Island Maker', blurb: 'Paint land, sea and forests', emoji: '🏝️', color: '#1e88e5', tag: 'make' },
@@ -137,12 +130,9 @@ window.CURIO_GAMES = [
   { slug: 'mirror-drawing', title: 'Mirror Drawing', blurb: 'Your hand goes left, the pen goes right', emoji: '🪞', color: '#5c6bc0', tag: 'draw' },
   { slug: 'etch-a-sketch', title: 'Etch Sketch', blurb: 'Two knobs, one line, shake to erase', emoji: '🔴', color: '#c62828', tag: 'draw' },
   { slug: 'colouring-book', title: 'Colouring Book', blurb: 'Fill in the lines, or don\'t', emoji: '🖍️', color: '#f06292', tag: 'draw' },
-  { slug: 'ink-painting', title: 'Ink Painting', blurb: 'Brush and ink on rice paper', emoji: '🖌️', color: '#424242', tag: 'draw' },
-  { slug: 'watercolor', title: 'Watercolour', blurb: 'Wet paint that blooms and bleeds', emoji: '💦', color: '#4fc3f7', tag: 'draw' },
-  { slug: 'graffiti', title: 'Graffiti Wall', blurb: 'Spray paint, drips and stencils', emoji: '🧱', color: '#7b1fa2', tag: 'draw' },
   { slug: 'flipbook', title: 'Flipbook', blurb: 'Draw frames, make an animation', emoji: '📒', color: '#ffa000', tag: 'draw' },
   { slug: 'doodle-prompts', title: 'Doodle Prompts', blurb: 'Twenty seconds to draw a narwhal', emoji: '⏲️', color: '#26a69a', tag: 'draw' },
-  { slug: 'chalk-art', title: 'Sidewalk Chalk', blurb: 'Dusty colour on warm pavement', emoji: '🌈', color: '#8d8d8d', tag: 'draw' }
+  { slug: 'happy-mediums', title: 'Happy Mediums', blurb: 'Chalk, watercolour, ink and spray in one studio', emoji: '🎨', color: '#b5651d', tag: 'draw' }
 ];
 
 window.CURIO_READY = window.CURIO_GAMES.filter((g) => !g.soon);

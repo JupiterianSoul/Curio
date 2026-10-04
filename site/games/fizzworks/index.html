@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fizzworks · Zoble</title>
+  <meta name="description" content="A lab tray full of fizzy little critters. One spark sets them off. Plan the perfect chain reaction across hand-made puzzle levels.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="fizzworks" data-modes>
+  <main class="c-wrap fz">
+    <header class="fz-head">
+      <h1>Fizz<span>works</span></h1>
+      <p>Every fizzer that pops sets off its neighbours. You get one spark, maybe two. Plan the chain, then light it.</p>
+    </header>
+    <div class="fz-hud">
+      <div class="fz-lvl"><small id="lvlNo">Level 1</small><b id="lvlName">First fizz</b></div>
+      <div class="fz-sparks" id="sparks" aria-label="Sparks left"></div>
+      <div class="fz-left"><b id="left">0</b><small>to pop</small></div>
+    </div>
+    <div class="fz-stage" id="stage">
+      <canvas id="tray" role="img" aria-label="The lab tray. Click to drop a spark; fizzers it touches pop and set off their neighbours."></canvas>
+      <div class="fz-banner" id="banner"></div>
+    </div>
+    <p class="fz-tip" id="tip"></p>
+    <div class="fz-bar">
+      <button class="c-btn c-btn--ghost" type="button" id="retry" title="Retry (R)">Retry</button>
+      <button class="c-btn c-btn--ghost" type="button" id="hint" title="Hint (H)">Hint</button>
+      <button class="c-btn c-btn--ghost" type="button" id="levels" title="Levels (L)">Levels</button>
+      <button class="c-btn c-btn--ghost" type="button" id="daily">Daily lab</button>
+    </div>
+    <details class="fz-legend">
+      <summary>What does each fizzer do?</summary>
+      <ul id="legend"></ul>
+    </details>
+    <p class="fz-keys">Keys: arrows aim, <span class="c-kbd">Enter</span> or <span class="c-kbd">Space</span> sparks, <span class="c-kbd">R</span> retry, <span class="c-kbd">H</span> hint, <span class="c-kbd">L</span> levels, <span class="c-kbd">N</span> next.</p>
+  </main>
+  <div class="fz-over" id="over" hidden>
+    <div class="fz-card" role="dialog" aria-modal="true" aria-labelledby="ovTitle">
+      <h2 id="ovTitle"></h2>
+      <p id="ovBody"></p>
+      <div class="fz-grid" id="ovGrid"></div>
+      <div class="fz-cardbtns" id="ovBtns"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="sim.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

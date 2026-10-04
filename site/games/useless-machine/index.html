@@ -4,23 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Useless Machine · Zoble</title>
-  <meta name="description" content="A box with one switch. Flip it on. The box flips it off. It has opinions about this.">
+  <meta name="description" content="A box with one switch and a lot of opinions. Keep it switched on for three seconds while it gets more and more devious.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="useless-machine">
+<body data-game="useless-machine" data-modes>
   <main class="c-wrap um">
-    <h1 class="c-title">Useless Machine</h1>
-    <p class="c-sub">It has one job: turning itself off. Flip the switch and see how it feels about you.</p>
-    <div class="um-stats">
-      <div class="c-stat"><b id="flips">0</b><span>Flips</span></div>
-      <div class="c-stat"><b id="met">0</b><span>Moods met</span></div>
-      <div class="c-stat"><b id="best">0</b><span>All-time flips</span></div>
-    </div>
-    <div class="um-moodrow">
-      <div class="um-mood" id="mood"><span>Mood:</span> 😌 Waiting patiently</div>
-      <div class="um-patience" title="How much patience the machine has left"><span>Patience</span><div class="um-pbar"><i id="pbar"></i></div></div>
+    <h1 class="um-title">Useless Machine</h1>
+    <p class="um-sub" id="sub">It wants to be off. You want it on. Keep the switch on for three seconds to beat each trick. It learns.</p>
+    <div class="um-hud">
+      <div class="um-trick"><small id="trickNo">Trick 1</small><b id="trickName">Polite</b></div>
+      <div class="um-pips" id="pips" aria-hidden="true"></div>
+      <button class="um-free" id="freeBtn" type="button">Free play</button>
     </div>
     <div class="um-room" id="room">
       <svg class="um-bg" viewBox="0 0 640 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -100,20 +96,45 @@
             <text x="284" y="124" font-family="sans-serif" font-size="10" font-weight="800" fill="#7a4a1f">OFF</text>
           </g>
           <g id="cover" transform="translate(80 0)" opacity="0"><path d="M236 142q0-44 29-44t29 44z" fill="#90caf9" stroke="#1565c0" stroke-width="2.5" opacity=".95"/><path d="M248 128q4-18 16-22" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+          <g id="led"><circle cx="302" cy="196" r="9" fill="#3b2a1a" stroke="#7a4a1f" stroke-width="2"/><circle id="ledOn" cx="302" cy="196" r="6" fill="#59ff7a" opacity="0"/><text x="302" y="217" text-anchor="middle" font-family="ui-monospace, monospace" font-size="8" font-weight="800" fill="#5a3a1a">POWER</text></g>
+          <circle id="ring" cx="265" cy="118" r="38" fill="none" stroke="#43c46b" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 999" transform="rotate(-90 265 118)"/>
+          <g id="lock" opacity="0"><path d="M256 114v-9a9 9 0 0 1 18 0v9" fill="none" stroke="#9aa3ab" stroke-width="4"/><rect x="249" y="112" width="32" height="26" rx="5" fill="#d4a017" stroke="#7a5a00" stroke-width="2"/><circle cx="265" cy="123" r="3.5" fill="#5a3a00"/><path d="M265 125v6" stroke="#5a3a00" stroke-width="3"/></g>
+          <g id="back" opacity="0"><path d="M70 150h260v140a16 16 0 0 1-16 16H86a16 16 0 0 1-16-16z" fill="#8a5a2e" stroke="#5a3414" stroke-width="3"/><path d="M90 170h220M90 200h220M90 230h220M90 260h220" stroke="#6e4522" stroke-width="2" opacity=".6"/><g transform="rotate(-6 200 230)"><rect x="160" y="196" width="80" height="62" fill="#fff59d" stroke="#d4c25a"/><text x="200" y="220" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="800" fill="#5a4a00">SECRET PIN</text><text id="pin" x="200" y="246" text-anchor="middle" font-family="ui-monospace, monospace" font-size="20" font-weight="900" fill="#c62828">000</text></g><text x="200" y="290" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#e0c9a8">THIS SIDE BACK</text></g>
+          <g id="decoys"></g>
         </g>
+        <g id="jar" opacity="0"><rect x="10" y="252" width="48" height="54" rx="10" fill="#cfe8ff" fill-opacity=".55" stroke="#8fb3cf" stroke-width="3"/><rect x="14" y="244" width="40" height="10" rx="3" fill="#c0392b"/><circle cx="24" cy="292" r="8" fill="#d9a066"/><circle cx="42" cy="286" r="8" fill="#d9a066"/><circle cx="32" cy="276" r="7" fill="#e0b07a"/></g>
+        <g id="cookie" opacity="0"><circle r="12" fill="#d9a066" stroke="#8a5a2a" stroke-width="2"/><circle cx="-4" cy="-3" r="2.2" fill="#5a3a1a"/><circle cx="5" cy="2" r="2.2" fill="#5a3a1a"/><circle cx="-1" cy="6" r="1.8" fill="#5a3a1a"/></g>
+        <g id="fly" opacity="0"><ellipse class="um-wing" cx="-4" cy="-6" rx="5" ry="3" fill="#d6ecff" opacity=".85"/><ellipse class="um-wing" cx="4" cy="-6" rx="5" ry="3" fill="#d6ecff" opacity=".85"/><ellipse rx="6" ry="4.5" fill="#222"/><circle cx="5" cy="-1" r="2" fill="#c62828"/></g>
+        <text id="zzz" x="196" y="96" font-family="system-ui, sans-serif" font-size="22" font-weight="900" fill="#6a5acd" opacity="0">z z z</text>
       </svg>
-      <button class="um-switch" id="sw" type="button" aria-label="Flip the switch on" aria-pressed="false"></button>
+      <button class="um-hit" id="sw" type="button" aria-label="Flip the switch"></button>
+      <button class="um-hit um-hit--lid" id="lidBtn" type="button" aria-label="Bonk the lid shut" hidden></button>
+      <button class="um-hit um-hit--d" data-d="0" type="button" aria-label="Left switch" hidden></button>
+      <button class="um-hit um-hit--d" data-d="1" type="button" aria-label="Middle switch" hidden></button>
+      <button class="um-hit um-hit--d" data-d="2" type="button" aria-label="Right switch" hidden></button>
     </div>
     </div>
-    <div class="um-skins" id="skins" role="group" aria-label="Box skins"></div>
-    <p class="c-muted um-hint">Tap the switch, or press <span class="c-kbd">Space</span>. There are many moods. Flip too fast and it loses patience. Leave it alone and it gets lonely.</p>
-    <h2 class="um-h">📔 Mood journal</h2>
-    <div class="um-dots" id="dots" aria-label="Moods you have met"></div>
-    <div class="um-ach" id="ach"></div>
+    <p class="um-hint" id="hint"></p>
+    <div class="um-tools" id="tools"></div>
+    <div class="um-row">
+      <button class="c-btn c-btn--ghost" id="retry" type="button">Restart this trick</button>
+      <button class="c-btn c-btn--ghost" id="tricks" type="button">All tricks</button>
+    </div>
+    <p class="um-keys">Keys: <span class="c-kbd">Space</span> flips the switch, <span class="c-kbd">B</span> bonks the lid, <span class="c-kbd">←</span> <span class="c-kbd">→</span> shoo the box, <span class="c-kbd">C</span> gives a cookie, number keys for the keypad.</p>
   </main>
   <div class="um-dark" id="dark"></div>
+  <div class="um-over" id="over" hidden>
+    <div class="um-card" role="dialog" aria-modal="true" aria-labelledby="ovT">
+      <div class="um-card__em" id="ovEm"></div>
+      <h2 id="ovT"></h2>
+      <p id="ovB"></p>
+      <div class="um-card__grid" id="ovG"></div>
+      <div class="um-card__btns" id="ovBtns"></div>
+    </div>
+  </div>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="moods.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

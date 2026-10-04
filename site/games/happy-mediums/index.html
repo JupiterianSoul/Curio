@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Happy Mediums · Zoble</title>
+  <meta name="description" content="One art studio, four mediums: sidewalk chalk, watercolour, ink and spray paint. Draw from prompts, take commissions, hang your best in the gallery.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="happy-mediums" data-modes data-medium="chalk">
+  <main class="hm">
+    <header class="hm-head">
+      <h1>Happy <em>Mediums</em></h1>
+      <p>One studio, four surfaces. Chalk on warm pavement, watercolour that blooms, ink that commits, and a wall nobody will report you for.</p>
+    </header>
+    <nav class="hm-tabs" id="tabs" aria-label="Choose a medium"></nav>
+    <section class="hm-easel">
+      <div class="hm-prompt">
+        <span class="hm-prompt__tag">Prompt</span>
+        <span class="hm-prompt__txt" id="promptTxt" aria-live="polite"></span>
+        <button class="hm-round" id="shuffle" type="button" title="New prompt (P)" aria-label="New prompt">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <div class="hm-job" id="job">
+        <button class="hm-jobbtn" id="jobBtn" type="button">Take a commission</button>
+        <span class="hm-jobinfo" id="jobInfo"></span>
+        <span class="hm-clock" id="jobClock"></span>
+      </div>
+      <div class="hm-frame">
+        <canvas id="cv" role="img" aria-label="Drawing surface"></canvas>
+        <div class="hm-timer"><i id="timer"></i></div>
+        <div class="hm-flag" id="flag"></div>
+        <div class="hm-badge" id="badge"></div>
+        <div class="hm-veil" id="veil"></div>
+        <div class="hm-hint on" id="hint">Drag on the surface to start</div>
+      </div>
+    </section>
+    <aside class="hm-panel">
+      <div class="hm-tools" id="tools"></div>
+      <div class="hm-actions">
+        <button class="hm-btn" id="undo" type="button" title="Undo (U)">Undo</button>
+        <button class="hm-btn" id="clear" type="button">Start over</button>
+        <button class="hm-btn hm-btn--hang" id="hang" type="button">Hang in gallery</button>
+        <button class="hm-btn hm-btn--solid" id="save" type="button">Save PNG</button>
+        <button class="hm-btn hm-gallery" id="galBtn" type="button" title="Open the gallery (G)">Gallery <span class="hm-count" id="galN">0</span></button>
+      </div>
+      <p class="hm-note" id="tip"></p>
+      <p class="hm-note" id="keys"></p>
+      <div class="hm-ledger" id="ledgerBox">
+        <div class="hm-lab">Studio ledger</div>
+        <div class="hm-stats" id="ledger"></div>
+      </div>
+    </aside>
+  </main>
+  <div class="hm-gallery-wall" id="gallery" hidden>
+    <div class="hm-gwin" role="dialog" aria-modal="true" aria-labelledby="galTitle">
+      <div class="hm-ghead">
+        <h2 id="galTitle">The Gallery</h2>
+        <button class="hm-round hm-close" type="button" data-close aria-label="Close gallery">✕</button>
+      </div>
+      <p class="hm-gempty" id="galEmpty">Nothing on the walls yet. Make something, then press "Hang in gallery".</p>
+      <div class="hm-ggrid" id="galGrid"></div>
+      <div class="hm-piece" id="piece" hidden>
+        <img id="pieceImg" alt="">
+        <h3 id="pieceTitle"></h3>
+        <p id="pieceMeta"></p>
+        <div class="hm-piecebtns">
+          <button class="hm-btn hm-btn--solid" id="pieceDl" type="button">Download PNG</button>
+          <button class="hm-btn" id="pieceDel" type="button">Take it down</button>
+          <button class="hm-btn" id="pieceBack" type="button">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="kit.js"></script>
+  <script src="chalk.js"></script>
+  <script src="water.js"></script>
+  <script src="ink.js"></script>
+  <script src="spray.js"></script>
+  <script src="studio.js"></script>
+</body>
+</html>

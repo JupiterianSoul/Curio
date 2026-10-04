@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Planet Passport · Zoble</title>
+  <meta name="description" content="Board the ship and tour the solar system: how old you are, what you weigh and how high you jump on every world you visit, with a stamp for each.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="planet-passport" data-modes>
+  <main class="c-wrap pp">
+    <section class="pp-board" id="board" aria-labelledby="ppTitle">
+      <div class="pp-hero">
+        <h1 id="ppTitle">Planet <span>Passport</span></h1>
+        <p>One ticket, the whole solar system. At every stop you find out how old you are there, what the scale says and how high you can jump. Collect a stamp on each world.</p>
+      </div>
+      <form class="pp-ticket" id="ticket" autocomplete="off">
+        <div class="pp-ticket__main">
+          <div class="pp-ticket__top"><b>ZOBLE SPACE LINES</b><span>BOARDING PASS</span></div>
+          <label class="pp-f pp-f--name"><span>Passenger</span><input class="c-input" id="who" maxlength="18" placeholder="Your name"></label>
+          <label class="pp-f"><span>Born on Earth</span><input class="c-input" type="date" id="born" required></label>
+          <div class="pp-f">
+            <span id="wLab">Weight on Earth</span>
+            <div class="pp-wrow">
+              <input class="c-input" type="number" id="kg" inputmode="decimal" min="1" max="500" step="0.1" aria-labelledby="wLab">
+              <div class="pp-unit" role="group" aria-label="Units"><button type="button" data-u="kg">kg</button><button type="button" data-u="lb">lb</button></div>
+            </div>
+          </div>
+          <div class="pp-route-txt"><b>EARTH</b><i aria-hidden="true"></i><b id="destTxt">NEPTUNE</b></div>
+        </div>
+        <div class="pp-ticket__stub" aria-hidden="true">
+          <span>GATE</span><b>Z9</b><span>SEAT</span><b id="seat">12A</b>
+          <div class="pp-bars"></div>
+        </div>
+        <button class="pp-board-btn" id="go" type="submit">Board the ship</button>
+        <p class="pp-small">Nothing you type leaves this page.</p>
+      </form>
+    </section>
+
+    <section class="pp-voyage" id="voyage" hidden>
+      <nav class="pp-route" id="route" aria-label="Your route"></nav>
+      <div class="pp-scene" id="sceneBox">
+        <canvas id="scene" role="img" aria-label="Your astronaut standing on the current world"></canvas>
+        <div class="pp-where"><small id="kind">Planet</small><b id="where">Mercury</b></div>
+        <div class="pp-warp" id="warp" aria-live="polite"></div>
+        <div class="pp-stampfx" id="stampfx" aria-hidden="true"></div>
+        <button class="pp-jump" type="button" id="jump">Jump <span class="c-kbd">J</span></button>
+      </div>
+      <div class="pp-guess" id="guess" hidden>
+        <p><b>Quick, before the scale settles:</b> how heavy do you feel here?</p>
+        <div class="pp-guess__opts" id="guessOpts"></div>
+      </div>
+      <div class="pp-tiles">
+        <div class="pp-tile pp-tile--age"><span>Your age here</span><b id="age">0</b><small id="ageSub"></small></div>
+        <div class="pp-tile pp-tile--w"><span>The scale says</span><b id="weight">0</b><small id="wSub"></small></div>
+        <div class="pp-tile pp-tile--j"><span>Best standing jump</span><b id="jumpH">0</b><small id="jSub"></small></div>
+        <div class="pp-tile pp-tile--d"><span>One day lasts</span><b id="dayB"></b><small id="dSub"></small></div>
+      </div>
+      <p class="pp-fact" id="fact"></p>
+      <ul class="pp-more" id="more"></ul>
+      <div class="pp-nav">
+        <button class="c-btn c-btn--ghost" type="button" id="back" aria-label="Previous stop">‹ Back</button>
+        <button class="c-btn c-btn--ghost pp-passbtn" type="button" id="pass">Passport <span id="stampN">0</span></button>
+        <button class="c-btn pp-next" type="button" id="next">Next stop ›</button>
+      </div>
+      <p class="pp-keys">Keys: <span class="c-kbd">→</span> next stop, <span class="c-kbd">←</span> back, <span class="c-kbd">J</span> jump, <span class="c-kbd">P</span> passport.</p>
+    </section>
+
+    <section class="pp-end" id="end" hidden>
+      <div class="pp-end__card">
+        <h2>Welcome home, <span id="endName">traveller</span></h2>
+        <p id="endLine"></p>
+        <div class="pp-end__stats" id="endStats"></div>
+        <div class="pp-end__table" id="endTable"></div>
+        <div class="c-row pp-end__btns">
+          <button class="c-btn" type="button" id="again">Fly again</button>
+          <button class="c-btn c-btn--ghost" type="button" id="share">Copy my postcard</button>
+          <button class="c-btn c-btn--ghost" type="button" id="edit">New passenger</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="pp-book" id="book" hidden>
+    <div class="pp-book__in" role="dialog" aria-modal="true" aria-labelledby="bookT">
+      <div class="pp-book__head"><h2 id="bookT">Passport</h2><button class="c-btn c-btn--ghost" type="button" id="bookX">Close</button></div>
+      <p class="pp-book__who" id="bookWho"></p>
+      <div class="pp-stamps" id="stamps"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="planets.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
