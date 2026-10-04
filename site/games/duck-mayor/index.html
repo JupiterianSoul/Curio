@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Duck Mayor · Zoble</title>
+  <meta name="description" content="You are the new mayor of a pond full of ducks. Swipe left or right on every request and keep bread, pond, joy and order in balance.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="duck-mayor" data-modes>
+  <main class="c-wrap dm-wrap">
+    <header class="dm-head">
+      <h1 class="c-title dm-title">Duck Mayor</h1>
+      <p class="c-sub">Congratulations, you won the election. Every duck in Puddleton has a request. Swipe left or right, and keep the town from tipping over.</p>
+    </header>
+
+    <section class="dm-town" id="town">
+      <div class="dm-sky" aria-hidden="true"><span class="dm-cloud"></span><span class="dm-cloud dm-cloud--2"></span></div>
+      <div class="dm-meters" id="meters"></div>
+      <div class="dm-day"><b id="day">Day 1</b><span id="dayNote">of 20 until re-election</span></div>
+
+      <div class="dm-stage" id="stage">
+        <div class="dm-card dm-card--back" aria-hidden="true"></div>
+        <article class="dm-card" id="card" tabindex="0" aria-live="polite">
+          <div class="dm-choice dm-choice--l" id="tagL"></div>
+          <div class="dm-choice dm-choice--r" id="tagR"></div>
+          <div class="dm-portrait" id="portrait"></div>
+          <div class="dm-who"><b id="who"></b><span id="role"></span></div>
+          <p class="dm-text" id="text"></p>
+        </article>
+        <div class="dm-over" id="over" hidden>
+          <div class="dm-overicon" id="overIcon"></div>
+          <div class="dm-overkick" id="overKick">The end</div>
+          <h2 class="dm-overtitle" id="overTitle"></h2>
+          <p class="dm-overtext" id="overText"></p>
+          <div class="c-row dm-overstats">
+            <div class="c-stat"><b id="overDays">0</b><span>Days in office</span></div>
+            <div class="c-stat"><b id="overBest">0</b><span>Best</span></div>
+          </div>
+          <div class="c-row">
+            <button class="c-btn" type="button" id="againBtn">Run again</button>
+            <button class="c-btn c-btn--ghost dm-adv" type="button" id="bookBtn">Endings</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dm-btns" id="btns">
+        <button type="button" class="dm-btn" id="btnL"><span class="c-kbd">←</span> <span id="btnLText"></span></button>
+        <button type="button" class="dm-btn" id="btnR"><span id="btnRText"></span> <span class="c-kbd">→</span></button>
+      </div>
+      <p class="dm-last" id="last" aria-live="polite"></p>
+    </section>
+    <p class="dm-tip c-muted">Drag the card, tap a button, or use the arrow keys. Dots on the meters show what a choice will change, but not which way.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

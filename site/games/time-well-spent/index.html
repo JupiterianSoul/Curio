@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Time Well Spent · Zoble</title>
+  <meta name="description" content="You have one free Saturday, or one whole life. Spend every hour and see what kind of day, or life, you built.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="time-well-spent" data-modes>
+  <main class="c-wrap tw-wrap">
+    <header class="tw-head">
+      <h1 class="c-title tw-title">Time Well Spent</h1>
+      <p class="c-sub" id="sub">Money comes and goes. Hours only go. Here is a free Saturday: spend every minute of it.</p>
+    </header>
+
+    <section class="tw-top" id="top">
+      <div class="tw-visual" id="visual"></div>
+      <div class="tw-side">
+        <div class="tw-left"><b id="left">16 h</b><span id="leftLabel">left of your Saturday</span></div>
+        <div class="tw-meters" id="meters"></div>
+        <div class="tw-taken" id="taken"></div>
+      </div>
+    </section>
+
+    <div class="tw-cats" id="cats" role="group" aria-label="Filter activities"></div>
+    <section class="tw-grid" id="grid" aria-label="Activities"></section>
+
+    <div class="tw-bar" id="bar">
+      <div class="tw-barinfo"><b id="barLeft"></b><span id="barNote"></span></div>
+      <button class="c-btn c-btn--ghost" type="button" id="resetBtn" aria-label="Start over">↺<span class="tw-hide-s"> Start over</span></button>
+      <button class="c-btn tw-live" type="button" id="liveBtn">End the day</button>
+    </div>
+
+    <section class="tw-result" id="result" hidden aria-live="polite">
+      <div class="tw-receipt">
+        <div class="tw-rkick" id="rKick">Your Saturday, reviewed</div>
+        <h2 class="tw-rtitle" id="rTitle"></h2>
+        <p class="tw-rtext" id="rText"></p>
+        <div class="tw-rmeters" id="rMeters"></div>
+        <ol class="tw-rlist" id="rList"></ol>
+        <p class="tw-rfound" id="rFound"></p>
+        <div class="c-row">
+          <button class="c-btn" type="button" id="againBtn">Plan another</button>
+          <button class="c-btn c-btn--ghost" type="button" id="editBtn">Tweak this one</button>
+          <button class="c-btn c-btn--ghost" type="button" id="shareBtn">Copy receipt</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

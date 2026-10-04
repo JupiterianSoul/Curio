@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Potion Shop · Zoble</title>
+  <meta name="description" content="Run a tiny night-time potion shop. Mix two things in the cauldron, discover over ninety brews and serve oddly specific customers.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="potion-shop" data-modes>
+  <main class="c-wrap ps-wrap">
+    <header class="ps-head">
+      <h1 class="c-title ps-title">Potion Shop</h1>
+      <p class="c-sub">The shop opens at moonrise. Drop two things in the cauldron, see what bubbles up, and sell it to whoever knocks.</p>
+    </header>
+
+    <section class="ps-shop" id="shop" aria-label="Potion shop">
+      <div class="ps-stars-bg" aria-hidden="true"></div>
+      <div class="ps-top">
+        <div class="ps-stats">
+          <div class="ps-stat"><b id="coins">0</b><span>Coins</span></div>
+          <div class="ps-stat ps-adv"><b id="stars"></b><span>Reputation</span></div>
+          <div class="ps-stat"><b id="dayLabel">1/5</b><span id="dayLabelName">Customer</span></div>
+          <div class="ps-stat"><b id="foundCount">0</b><span>Discovered</span></div>
+        </div>
+        <div class="ps-topbtns">
+          <button type="button" class="ps-chip" id="bookBtn">📖 Grimoire</button>
+          <button type="button" class="ps-chip ps-adv" id="scrollBtn" title="Hint scrolls">📜 <span id="scrolls">3</span></button>
+        </div>
+      </div>
+
+      <div class="ps-main">
+        <div class="ps-left">
+          <div class="ps-counter" id="counter">
+            <div class="ps-folk" id="folk" aria-hidden="true"></div>
+            <div class="ps-ask">
+              <div class="ps-askname" id="askName"></div>
+              <p class="ps-asktext" id="askText" aria-live="polite"></p>
+              <p class="ps-hint" id="askHint"></p>
+              <div class="ps-candle ps-adv" aria-label="Customer patience"><i id="patience"></i></div>
+              <div class="ps-askbtns">
+                <button type="button" class="ps-btn ps-btn--gold" id="giveBtn">Give a potion <span class="c-kbd">G</span></button>
+                <button type="button" class="ps-btn" id="hintBtn">Ask for a clue <span class="c-kbd">H</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ps-brew">
+            <div class="ps-slots">
+              <button type="button" class="ps-slot" id="slotA" aria-label="First ingredient slot, empty"></button>
+              <span class="ps-plus" aria-hidden="true">+</span>
+              <button type="button" class="ps-slot" id="slotB" aria-label="Second ingredient slot, empty"></button>
+            </div>
+            <div class="ps-cauldron" id="cauldron" role="img" aria-label="Cauldron">
+              <svg viewBox="0 0 240 190" aria-hidden="true">
+                <defs>
+                  <radialGradient id="psGlow" cx="50%" cy="40%" r="60%"><stop offset="0" style="stop-color:var(--ps-liquid);stop-opacity:.9"/><stop offset="1" style="stop-color:var(--ps-liquid);stop-opacity:0"/></radialGradient>
+                  <linearGradient id="psPot" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2238"/><stop offset=".45" stop-color="#4a3f5c"/><stop offset="1" stop-color="#1a1424"/></linearGradient>
+                </defs>
+                <ellipse cx="120" cy="60" rx="110" ry="48" fill="url(#psGlow)" opacity=".55"/>
+                <g class="ps-steam" fill="none" style="stroke:var(--ps-liquid)" stroke-width="5" stroke-linecap="round" opacity=".5">
+                  <path d="M90 50c-10-14 10-20 0-36"/><path d="M122 46c-10-14 10-20 0-36"/><path d="M152 50c-10-14 10-20 0-36"/>
+                </g>
+                <path d="M30 80c0 60 40 92 90 92s90-32 90-92z" fill="url(#psPot)" stroke="#120d1a" stroke-width="4"/>
+                <ellipse cx="120" cy="80" rx="92" ry="20" fill="#120d1a"/>
+                <ellipse cx="120" cy="82" rx="84" ry="15" class="ps-liquid"/>
+                <g class="ps-bubbles" fill="#fff" fill-opacity=".55">
+                  <circle cx="86" cy="82" r="6"/><circle cx="130" cy="78" r="8"/><circle cx="160" cy="84" r="5"/><circle cx="108" cy="86" r="4"/>
+                </g>
+                <ellipse cx="120" cy="80" rx="92" ry="20" fill="none" stroke="#5c4f70" stroke-width="5"/>
+                <path d="M54 166l-10 18M186 166l10 18" stroke="#120d1a" stroke-width="9" stroke-linecap="round"/>
+                <g class="ps-fire"><path d="M80 186c-6-14 6-18 4-30 10 8 14 20 6 30z" fill="#ff7b25"/><path d="M114 188c-8-18 8-24 6-38 12 10 18 26 8 38z" fill="#ffb627"/><path d="M150 186c-6-14 6-18 4-30 10 8 14 20 6 30z" fill="#ff7b25"/></g>
+                <path class="ps-spoon" d="M150 20l-30 66" stroke="#8b5e3c" stroke-width="8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="ps-result" id="result" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="ps-shelf">
+          <div class="ps-tabs" role="tablist">
+            <button type="button" role="tab" class="ps-tab" id="tabIng" aria-selected="true">Ingredients</button>
+            <button type="button" role="tab" class="ps-tab" id="tabPot" aria-selected="false">Potions <span id="potCount">0</span></button>
+          </div>
+          <input class="ps-search" id="search" type="search" placeholder="Find a potion..." aria-label="Find a potion" hidden>
+          <div class="ps-grid" id="grid"></div>
+          <p class="ps-shelftip" id="shelfTip">Tap two things to drop them in the cauldron. Number keys add ingredients.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

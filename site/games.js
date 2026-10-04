@@ -28,8 +28,6 @@ window.CURIO_GAMES = [
 
   { slug: 'noggin-gym', title: 'Noggin Gym', blurb: 'Fifteen brain tests, one daily workout', emoji: '🧠', color: '#ff6b2c', tag: 'gym' },
 
-  { slug: 'deep-sea', title: 'The Deep Sea', blurb: 'Scroll down to the bottom of the ocean', emoji: '🐙', color: '#0b3d91', tag: 'explore' },
-  { slug: 'size-of-space', title: 'Size of Space', blurb: 'Zoom from a human to the universe', emoji: '🪐', color: '#1b1340', tag: 'explore' },
   { slug: 'universe-timeline', title: 'Universe Timeline', blurb: '13.8 billion years, one scroll', emoji: '🌌', color: '#2d1b69', tag: 'explore' },
   { slug: 'solar-walk', title: 'Solar System Walk', blurb: 'The planets at true scale', emoji: '☀️', color: '#e67e22', tag: 'explore' },
   { slug: 'tall-things', title: 'Tall Things', blurb: 'Climb from an ant to Everest', emoji: '🗼', color: '#16a085', tag: 'explore' },
@@ -41,29 +39,25 @@ window.CURIO_GAMES = [
   { slug: 'count-to-billion', title: 'What a Billion Looks Like', blurb: 'Millions, billions, trillions, visualised', emoji: '🔢', color: '#2e7d32', tag: 'explore' },
   { slug: 'world-clock', title: 'World Clock', blurb: 'Day and night across the planet', emoji: '🕰️', color: '#0277bd', tag: 'explore' },
 
-  { slug: 'spend-money', title: 'Spend a Billionaire\'s Money', blurb: 'Try to spend $100 billion', emoji: '💸', color: '#27ae60', tag: 'life' },
-  { slug: 'life-stats', title: 'Life Stats', blurb: 'Your life in numbers', emoji: '🎂', color: '#e84393', tag: 'life' },
   { slug: 'planet-age', title: 'Age on Other Planets', blurb: 'How old are you on Mars?', emoji: '🔭', color: '#c0392b', tag: 'life' },
   { slug: 'planet-weight', title: 'Weight on Other Planets', blurb: 'Weigh yourself on Jupiter', emoji: '⚖️', color: '#d35400', tag: 'life' },
   { slug: 'world-counter', title: 'World Right Now', blurb: 'Live estimates of the planet ticking by', emoji: '🌍', color: '#2980b9', tag: 'life' },
-  { slug: 'auction', title: 'The Auction', blurb: 'Guess what famous things sold for', emoji: '🔨', color: '#6d4c41', tag: 'life' },
   { slug: 'your-birthday', title: 'Your Birthday', blurb: 'What was happening the day you were born', emoji: '🎈', color: '#d81b60', tag: 'life' },
   { slug: 'compound-interest', title: 'Get Rich Slowly', blurb: 'Watch compound interest snowball', emoji: '📊', color: '#388e3c', tag: 'life' },
+  { slug: 'time-well-spent', title: 'Time Well Spent', blurb: 'Spend a free Saturday, or a whole life', emoji: '⏳', color: '#d4934a', tag: 'life' },
+  { slug: 'flea-market', title: 'Flea Market', blurb: 'Haggle for treasure among the junk', emoji: '🏺', color: '#d64545', tag: 'life' },
 
-  { slug: 'password-game', title: 'The Password Game', blurb: 'Please choose a password', emoji: '🔐', color: '#f1c40f', tag: 'absurd' },
-  { slug: 'trolley', title: 'Absurd Trolley Problems', blurb: 'Pull the lever or don\'t', emoji: '🚋', color: '#7f8c8d', tag: 'absurd' },
-  { slug: 'not-a-robot', title: 'I\'m Not a Robot', blurb: 'Prove it. Increasingly.', emoji: '🤖', color: '#3498db', tag: 'absurd' },
   { slug: 'the-button', title: 'The Button', blurb: 'Whatever you do, keep pressing', emoji: '🔴', color: '#e74c3c', tag: 'absurd' },
-  { slug: 'stimulation', title: 'Stimulation Clicker', blurb: 'More. More! MORE!', emoji: '🎰', color: '#ff00aa', tag: 'absurd' },
-  { slug: 'infinite-craft', title: 'Infinite Craft', blurb: 'Combine elements, discover the world', emoji: '🔥', color: '#34495e', tag: 'absurd' },
   { slug: 'wreck-this-page', title: 'Wreck This Page', blurb: 'Turn a web page into a level and blow it up', emoji: '💥', color: '#272727', tag: 'absurd' },
   { slug: 'chaos-goose', title: 'Chaos Goose', blurb: 'A goose has entered the page', emoji: '🪿', color: '#a1662f', tag: 'absurd' },
   { slug: 'useless-machine', title: 'Useless Machine', blurb: 'Flip the switch. It flips it back.', emoji: '🎛️', color: '#546e7a', tag: 'absurd' },
   { slug: 'terrible-ui', title: 'Terrible Forms', blurb: 'The worst inputs ever designed', emoji: '📝', color: '#ef6c00', tag: 'absurd' },
   { slug: 'fortune-cookie', title: 'Fortune Cookie', blurb: 'Crack one open', emoji: '🥠', color: '#f9a825', tag: 'absurd' },
   { slug: 'pet-the-cat', title: 'Pet the Cat', blurb: 'Purrs, headbutts, and sudden betrayal', emoji: '🐈', color: '#ff8a65', tag: 'absurd' },
+  { slug: 'fine-print', title: 'Fine Print', blurb: 'Find the trap before you sign', emoji: '📜', color: '#8a5a36', tag: 'absurd' },
+  { slug: 'cat-exam', title: 'The Cat Exam', blurb: 'Prove you are a real cat', emoji: '🐈', color: '#f4a259', tag: 'absurd' },
+  { slug: 'duck-mayor', title: 'Duck Mayor', blurb: 'Run a pond town, one swipe at a time', emoji: '🦆', color: '#2b7a99', tag: 'absurd' },
 
-  { slug: 'perfect-circle', title: 'Draw a Perfect Circle', blurb: 'How round can you go?', emoji: '⭕', color: '#111111', tag: 'skill' },
   { slug: 'balance-stick', title: 'Balance the Stick', blurb: 'Keep a pole upright on your cursor', emoji: '🥢', color: '#424242', tag: 'skill' },
 
   { slug: 'higher-lower', title: 'Higher or Lower', blurb: 'Which country has more people?', emoji: '📈', color: '#00acc1', tag: 'brain' },
@@ -113,6 +107,7 @@ window.CURIO_GAMES = [
   { slug: 'slime', title: 'Slime', blurb: 'Poke, stretch and squish', emoji: '🟢', color: '#43a047', tag: 'toy' },
   { slug: 'kinetic-sand', title: 'Kinetic Sand', blurb: 'Slice the sand. So satisfying.', emoji: '🔪', color: '#f48fb1', tag: 'toy' },
   { slug: 'pendulum-wave', title: 'Pendulum Wave', blurb: 'Fifteen pendulums, one hypnotic dance', emoji: '🪀', color: '#263238', tag: 'toy' },
+  { slug: 'busy-bees', title: 'Busy Bees', blurb: 'Raise a colony, fill the comb, survive winter', emoji: '🐝', color: '#f5b324', tag: 'toy' },
 
   { slug: 'pixel-art', title: 'Pixel Art', blurb: 'Draw on a tiny grid, save a PNG', emoji: '👾', color: '#7b1fa2', tag: 'make' },
   { slug: 'kaleidoscope', title: 'Kaleidoscope', blurb: 'Symmetrical drawing', emoji: '❄️', color: '#00bcd4', tag: 'make' },
@@ -134,8 +129,8 @@ window.CURIO_GAMES = [
   { slug: 'paper-snowflake', title: 'Paper Snowflake', blurb: 'Fold, cut, unfold', emoji: '❄️', color: '#64b5f6', tag: 'make' },
   { slug: 'bounce-music', title: 'Bounce Music', blurb: 'Draw lines, balls bounce into melodies', emoji: '🎼', color: '#5e35b1', tag: 'make' },
   { slug: 'neon-sign', title: 'Neon Sign', blurb: 'Make your own glowing sign', emoji: '🪩', color: '#1a0033', tag: 'make' },
+  { slug: 'potion-shop', title: 'Potion Shop', blurb: 'Mix, discover, sell by moonlight', emoji: '🧪', color: '#3c1f66', tag: 'make' },
 
-  { slug: 'sketch-artist', title: 'Sketch Artist', blurb: 'Draw the suspect from witness statements', emoji: '🕵️', color: '#3e2723', tag: 'draw' },
   { slug: 'one-line', title: 'One Line', blurb: 'Draw without lifting the pen', emoji: '➰', color: '#212121', tag: 'draw' },
   { slug: 'trace-it', title: 'Trace It', blurb: 'Follow the outline as close as you can', emoji: '✍️', color: '#00796b', tag: 'draw' },
   { slug: 'blind-drawing', title: 'Blind Drawing', blurb: 'Draw it without seeing your canvas', emoji: '🙈', color: '#6d4c41', tag: 'draw' },
@@ -153,17 +148,17 @@ window.CURIO_GAMES = [
 window.CURIO_READY = window.CURIO_GAMES.filter((g) => !g.soon);
 
 window.CURIO_TAGS = {
-  classic: 'Classics',
-  gym: 'Brain Gym',
+  classic: 'Arcade Classics',
+  gym: 'Noggin Gym',
   explore: 'Explore',
-  life: 'Money & life',
+  life: 'Money & Life',
   absurd: 'Absurd',
-  skill: 'Skill tests',
-  brain: 'Brain',
+  skill: 'Skill Tests',
+  brain: 'Brain Teasers',
   arcade: 'Arcade',
   puzzle: 'Puzzles',
   versus: 'Versus',
   toy: 'Toys',
-  make: 'Make things',
+  make: 'Make Things',
   draw: 'Drawing'
 };

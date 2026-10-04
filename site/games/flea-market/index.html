@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Flea Market · Zoble</title>
+  <meta name="description" content="Haggle with stubborn stallholders, spot treasure among the junk and find out what your finds are really worth.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="flea-market" data-modes>
+  <main class="c-wrap fm-wrap">
+    <header class="fm-head">
+      <h1 class="c-title fm-title">Flea Market</h1>
+      <p class="c-sub" id="sub">Sunday morning, a field full of tables. Somewhere among the polka records is a treasure. Haggle hard.</p>
+    </header>
+
+    <div class="fm-hud">
+      <div class="c-stat"><b id="cash">$0</b><span>Cash</span></div>
+      <div class="c-stat"><b id="stallNo">1/6</b><span id="stallLabel">Stall</span></div>
+      <div class="c-stat"><b id="bagCount">0</b><span>In the bag</span></div>
+      <div class="c-stat fm-adv"><b id="looks">5</b><span>Inspections</span></div>
+    </div>
+
+    <section class="fm-stall" id="stall">
+      <div class="fm-awning" aria-hidden="true"></div>
+      <div class="fm-body">
+        <div class="fm-vendor">
+          <div class="fm-face" id="face" aria-hidden="true"></div>
+          <div class="fm-vname" id="vname"></div>
+          <div class="fm-patience" id="patience" aria-label="Patience"></div>
+        </div>
+        <div class="fm-talk">
+          <div class="fm-mini" id="mini" aria-hidden="true"></div><p class="fm-bubble" id="bubble" aria-live="polite"></p>
+        </div>
+        <div class="fm-table">
+          <div class="fm-item" id="itemArt" aria-hidden="true"></div>
+          <div class="fm-tag" id="tag"><span id="tagLabel">Asking</span><b id="ask">$0</b></div>
+        </div>
+        <div class="fm-info">
+          <h2 class="fm-iname" id="iname"></h2>
+          <p class="fm-idesc" id="idesc"></p>
+          <ul class="fm-clues" id="clues"></ul>
+        </div>
+      </div>
+      <div class="fm-deal" id="deal">
+        <div class="fm-offer">
+          <button type="button" class="fm-step" data-step="-10" aria-label="Lower offer by 10">−10</button>
+          <button type="button" class="fm-step" data-step="-1" aria-label="Lower offer by 1">−1</button>
+          <div class="fm-amount"><span id="offerLabel">Your offer</span><b id="offer">$0</b></div>
+          <button type="button" class="fm-step" data-step="1" aria-label="Raise offer by 1">+1</button>
+          <button type="button" class="fm-step" data-step="10" aria-label="Raise offer by 10">+10</button>
+        </div>
+        <input type="range" class="fm-range" id="range" min="1" max="100" value="50" aria-label="Offer amount">
+        <div class="fm-actions">
+          <button type="button" class="c-btn" id="offerBtn">Make offer <span class="c-kbd">Enter</span></button>
+          <button type="button" class="c-btn c-btn--ghost" id="payBtn">Pay asking</button>
+          <button type="button" class="c-btn c-btn--ghost" id="lookBtn">🔍 Inspect <span class="c-kbd">I</span></button>
+          <button type="button" class="c-btn c-btn--ghost" id="walkBtn">Walk away <span class="c-kbd">W</span></button>
+        </div>
+      </div>
+      <div class="fm-next" id="nextRow" hidden>
+        <p id="nextText"></p>
+        <button type="button" class="c-btn" id="nextBtn">Next stall <span class="c-kbd">Enter</span></button>
+      </div>
+    </section>
+
+    <section class="fm-bag">
+      <h3>Your bag</h3>
+      <div class="fm-bagitems" id="bag"><p class="c-muted">Empty, for now.</p></div>
+    </section>
+
+    <section class="fm-end" id="end" hidden aria-live="polite">
+      <div class="fm-ledger">
+        <div class="fm-lkick" id="endKick">The appraiser has arrived</div>
+        <h2 class="fm-ltitle" id="endTitle"></h2>
+        <p class="fm-ltext" id="endText"></p>
+        <ol class="fm-lrows" id="endRows"></ol>
+        <div class="c-row fm-lstats">
+          <div class="c-stat"><b id="endProfit">$0</b><span>Profit</span></div>
+          <div class="c-stat"><b id="endBest">$0</b><span>Best</span></div>
+        </div>
+        <div class="c-row">
+          <button type="button" class="c-btn" id="againBtn">Another market</button>
+          <button type="button" class="c-btn c-btn--ghost" id="shareBtn">Copy result</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

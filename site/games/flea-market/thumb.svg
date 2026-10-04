@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+<rect width="400" height="300" fill="#bfe3f5"/>
+<rect y="210" width="400" height="90" fill="#8cc152"/>
+<g stroke="#2e2017" stroke-width="3">
+<rect x="40" y="64" width="12" height="160" fill="#a8743f"/><rect x="348" y="64" width="12" height="160" fill="#a8743f"/>
+<path d="M20 30h360v44H20z" fill="#fff4e0"/>
+<path d="M20 30h45v44H20zM110 30h45v44h-45zM200 30h45v44h-45zM290 30h45v44h-45z" fill="#d64545"/>
+<path d="M20 74q22 26 45 0 22 26 45 0 22 26 45 0 22 26 45 0 22 26 45 0 22 26 45 0 22 26 45 0 22 26 45 0" fill="#fff4e0"/>
+<rect x="30" y="170" width="340" height="60" rx="6" fill="#3d7a5a"/>
+</g>
+<g stroke="#2e2017" stroke-width="3" stroke-linejoin="round">
+<path d="M78 170c-10-20-6-44 6-56l-4-12h24l-4 12c12 12 16 36 6 56z" fill="#f2f2f2"/><path d="M80 140h28M78 152h32" stroke="#2f5bd3" stroke-width="4"/>
+<rect x="140" y="132" width="70" height="40" rx="6" fill="#9c6644"/><rect x="150" y="120" width="50" height="12" rx="3" fill="#2e2017"/><circle cx="175" cy="152" r="10" fill="#e6f4ff"/>
+<circle cx="262" cy="148" r="22" fill="#ffd23f"/><path d="M262 132v16l10 6" fill="none"/><path d="M262 126v-8" /><circle cx="262" cy="114" r="5" fill="#ffd23f"/>
+<path d="M300 172l6-46h32l6 46z" fill="#e63946"/><path d="M304 146h36" stroke="#fff" stroke-width="4"/>
+</g>
+<g transform="translate(232 180) rotate(10)"><path d="M0 0h70l12 18-12 18H0z" fill="#d9b98a" stroke="#2e2017" stroke-width="3" stroke-linejoin="round"/><circle cx="66" cy="18" r="4" fill="#fff4e0" stroke="#2e2017" stroke-width="2"/><text x="30" y="27" text-anchor="middle" font-family="Comic Sans MS,Chalkboard,sans-serif" font-weight="700" font-size="24" fill="#2e2017">$5?</text></g>
+<g transform="translate(110 238)"><circle r="18" fill="#ffcf3a" stroke="#2e2017" stroke-width="3"/><text y="8" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="20" fill="#2e2017">$</text></g>
+<g transform="translate(150 252)"><circle r="14" fill="#ffcf3a" stroke="#2e2017" stroke-width="3"/></g>
+</svg>

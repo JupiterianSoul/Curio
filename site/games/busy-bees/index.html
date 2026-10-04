@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Busy Bees · Zoble</title>
+  <meta name="description" content="Tap the hive, raise a colony, plant flowers and fill the comb with honey. In Advanced, survive the winters.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="busy-bees" data-modes>
+  <main class="c-wrap bb-wrap">
+    <header class="bb-head">
+      <h1 class="c-title bb-title">Busy Bees</h1>
+      <p class="c-sub" id="sub">Tap the hive to send bees out. Grow the colony, plant a meadow and fill the big honey jar.</p>
+    </header>
+
+    <section class="bb-game">
+      <div class="bb-scene" id="scene" data-season="spring">
+        <div class="bb-sun" aria-hidden="true"></div>
+        <div class="bb-season" id="season" aria-live="polite"></div>
+        <button type="button" class="bb-hive" id="hive" aria-label="Tap the hive to gather honey (Space)">
+          <svg viewBox="0 0 160 170" aria-hidden="true">
+            <path d="M80 6v14" stroke="#5a3a1a" stroke-width="5"/>
+            <path d="M30 150c-14-60 4-120 50-130 46 10 64 70 50 130z" fill="#e9b04a" stroke="#5a3a1a" stroke-width="5"/>
+            <g fill="none" stroke="#b5791f" stroke-width="5" stroke-linecap="round"><path d="M38 48h84M28 76h104M24 104h112M24 132h112"/></g>
+            <path d="M64 150c0-18 32-18 32 0z" fill="#3a230f" stroke="#5a3a1a" stroke-width="4"/>
+            <rect x="18" y="148" width="124" height="14" rx="5" fill="#8b5a2b" stroke="#5a3a1a" stroke-width="4"/>
+          </svg>
+        </button>
+        <div class="bb-flowers" id="flowers" aria-hidden="true"></div>
+        <div class="bb-bees" id="bees" aria-hidden="true"></div>
+        <div class="bb-fx" id="fx" aria-hidden="true"></div>
+      </div>
+
+      <div class="bb-side">
+        <div class="bb-stats">
+          <div class="bb-stat bb-stat--big"><b id="honey">0</b><span>Honey</span></div>
+          <div class="bb-stat"><b id="rate">0/s</b><span>Per second</span></div>
+          <div class="bb-stat"><b id="beeCount">0</b><span>Bees</span></div>
+          <div class="bb-stat"><b id="cap">0</b><span>Comb space</span></div>
+        </div>
+        <div class="bb-comb" id="comb" role="img" aria-label="Honeycomb"></div>
+        <div class="bb-goal" id="goal"><div class="bb-goalbar"><i id="goalBar"></i></div><span id="goalText"></span></div>
+        <div class="bb-shop" id="shop"></div>
+      </div>
+    </section>
+    <p class="bb-tip c-muted">Click or tap the hive, or press <span class="c-kbd">Space</span>. Number keys buy from the shop.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

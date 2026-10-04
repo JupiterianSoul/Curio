@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fine Print · Zoble</title>
+  <meta name="description" content="Every contract hides something ridiculous. Find it with your red pen before the clerk loses patience.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="fine-print" data-modes>
+  <main class="c-wrap fp-wrap">
+    <header class="fp-head">
+      <h1 class="c-title fp-title">Fine Print</h1>
+      <p class="c-sub">Every contract hides something ridiculous. Strike it out with your red pen, then sign. Miss it and, legally, it happens.</p>
+    </header>
+
+    <section class="fp-desk" id="desk">
+      <div class="fp-screen" id="intro">
+        <div class="fp-paper fp-paper--intro">
+          <svg class="fp-hero" viewBox="0 0 320 170" aria-hidden="true">
+            <rect x="30" y="14" width="150" height="150" rx="6" fill="#fffdf6" stroke="#1d1b2f" stroke-width="3"/>
+            <g stroke="#9a96aa" stroke-width="5" stroke-linecap="round"><path d="M50 40h110M50 58h96M50 76h110M50 94h70M50 112h104M50 130h88"/></g>
+            <path d="M44 88c20-12 70-14 90 0 10 8-8 14-46 14-40 0-58-6-44-14z" fill="none" stroke="#d0312d" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="232" cy="92" r="46" fill="rgba(255,255,255,.25)" stroke="#1d1b2f" stroke-width="7"/>
+            <path d="M266 126l40 36" stroke="#1d1b2f" stroke-width="14" stroke-linecap="round"/>
+            <text x="232" y="98" text-anchor="middle" font-size="18" font-family="Georgia,serif" fill="#1d1b2f">goose?</text>
+          </svg>
+          <h2 class="fp-introtitle" id="introTitle">Please read carefully</h2>
+          <p class="fp-introtext" id="introText"></p>
+          <ul class="fp-rules" id="introRules"></ul>
+          <div class="c-row">
+            <button class="c-btn" type="button" id="startBtn">Uncap the red pen</button>
+            <button class="c-btn c-btn--ghost" type="button" id="albumBtn" hidden>Things I agreed to</button>
+          </div>
+          <p class="fp-best c-muted" id="introBest"></p>
+        </div>
+      </div>
+
+      <div class="fp-screen" id="play" hidden>
+        <div class="fp-hud">
+          <div class="c-stat"><b id="hudNo">1/6</b><span>Contract</span></div>
+          <div class="c-stat"><b id="hudScore">0</b><span>Score</span></div>
+          <div class="c-stat fp-adv"><b id="hudInk"></b><span>Red ink</span></div>
+          <div class="c-stat fp-adv"><b id="hudSuits"></b><span>Lawsuits left</span></div>
+        </div>
+        <div class="fp-clerk" aria-live="polite">
+          <svg class="fp-clerkface" id="clerkFace" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="34" r="24" fill="#f2c9a0" stroke="#1d1b2f" stroke-width="3"/>
+            <path d="M10 28c4-16 40-20 44 0-8-6-30-8-44 0z" fill="#4a3426"/>
+            <g class="fp-eyes"><circle cx="24" cy="34" r="3" fill="#1d1b2f"/><circle cx="40" cy="34" r="3" fill="#1d1b2f"/></g>
+            <rect x="15" y="28" width="16" height="11" rx="3" fill="none" stroke="#1d1b2f" stroke-width="2"/>
+            <rect x="33" y="28" width="16" height="11" rx="3" fill="none" stroke="#1d1b2f" stroke-width="2"/>
+            <path class="fp-mouth" d="M24 47q8 4 16 0" fill="none" stroke="#1d1b2f" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="fp-bubble" id="clerkSay">Take your time.</div>
+          <div class="fp-patience" aria-label="Clerk patience"><i id="patience"></i></div>
+        </div>
+        <article class="fp-paper" id="paper" aria-label="Contract">
+          <div class="fp-paperhead">
+            <div class="fp-seal" id="seal"><span id="sealMark"></span></div>
+            <div>
+              <div class="fp-kicker" id="kicker">Agreement</div>
+              <h2 class="fp-doctitle" id="docTitle"></h2>
+              <div class="fp-parties" id="parties"></div>
+            </div>
+          </div>
+          <ol class="fp-clauses" id="clauses"></ol>
+          <div class="fp-signrow">
+            <div class="fp-sigline"><svg class="fp-sig" id="sig" viewBox="0 0 220 60" aria-hidden="true"><path id="sigPath" d="M6 40c14-30 22-30 18-4-3 18 12-26 24-20 8 4-6 22 4 20 10-2 14-24 24-18 6 4-2 16 6 14 10-3 12-18 22-16 8 2 0 14 10 12 14-2 20-14 34-12 10 2 20 6 40 2" fill="none" stroke="#1f3fa0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>The Customer</span></div>
+            <button class="c-btn fp-signbtn" type="button" id="signBtn">Sign it <span class="c-kbd">Enter</span></button>
+          </div>
+          <div class="fp-stamp" id="stamp" aria-hidden="true"></div>
+        </article>
+        <div class="fp-verdict" id="verdict" hidden>
+          <p id="verdictText"></p>
+          <button class="c-btn" type="button" id="nextBtn">Next contract <span class="c-kbd">Enter</span></button>
+        </div>
+        <p class="fp-tip c-muted">Tap a clause to strike it. Keys <span class="c-kbd">1</span> to <span class="c-kbd">9</span> work too.</p>
+      </div>
+
+      <div class="fp-screen" id="end" hidden>
+        <div class="fp-paper fp-paper--end">
+          <div class="fp-kicker">Final assessment</div>
+          <h2 class="fp-rank" id="endRank"></h2>
+          <p class="fp-ranktext" id="endText"></p>
+          <div class="c-row fp-endstats">
+            <div class="c-stat"><b id="endScore">0</b><span>Score</span></div>
+            <div class="c-stat"><b id="endCaught">0</b><span>Traps caught</span></div>
+            <div class="c-stat"><b id="endBest">0</b><span>Best</span></div>
+          </div>
+          <h3 class="fp-lifehead" id="lifeHead">Your life now</h3>
+          <ul class="fp-life" id="endLife"></ul>
+          <div class="c-row">
+            <button class="c-btn" type="button" id="againBtn">Read some more</button>
+            <button class="c-btn c-btn--ghost" type="button" id="shareBtn">Copy result</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
