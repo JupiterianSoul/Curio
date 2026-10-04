@@ -26,6 +26,8 @@ window.CURIO_GAMES = [
   { slug: 'game-table', title: 'Game Table', blurb: 'Six quick classics for one or two', emoji: '🎲', color: '#8a5a32', tag: 'classic' },
   { slug: 'card-table', title: 'Card Table', blurb: 'Solitaire and Blackjack on the felt', emoji: '🃏', color: '#1b5e20', tag: 'classic' },
 
+  { slug: 'noggin-gym', title: 'Noggin Gym', blurb: 'Fifteen brain tests, one daily workout', emoji: '🧠', color: '#ff6b2c', tag: 'gym' },
+
   { slug: 'deep-sea', title: 'The Deep Sea', blurb: 'Scroll down to the bottom of the ocean', emoji: '🐙', color: '#0b3d91', tag: 'explore' },
   { slug: 'size-of-space', title: 'Size of Space', blurb: 'Zoom from a human to the universe', emoji: '🪐', color: '#1b1340', tag: 'explore' },
   { slug: 'universe-timeline', title: 'Universe Timeline', blurb: '13.8 billion years, one scroll', emoji: '🌌', color: '#2d1b69', tag: 'explore' },
@@ -62,21 +64,8 @@ window.CURIO_GAMES = [
   { slug: 'pet-the-cat', title: 'Pet the Cat', blurb: 'Purrs, headbutts, and sudden betrayal', emoji: '🐈', color: '#ff8a65', tag: 'absurd' },
 
   { slug: 'perfect-circle', title: 'Draw a Perfect Circle', blurb: 'How round can you go?', emoji: '⭕', color: '#111111', tag: 'skill' },
-  { slug: 'reaction-time', title: 'Reaction Time', blurb: 'Click the moment it turns green', emoji: '⚡', color: '#2ecc71', tag: 'skill' },
-  { slug: 'typing-test', title: 'Typing Test', blurb: 'How many words per minute?', emoji: '⌨️', color: '#546e7a', tag: 'skill' },
-  { slug: 'aim-trainer', title: 'Aim Trainer', blurb: 'Hit 30 targets fast', emoji: '🎯', color: '#c62828', tag: 'skill' },
-  { slug: 'chimp-test', title: 'Chimp Test', blurb: 'Are you smarter than a chimp?', emoji: '🐒', color: '#795548', tag: 'skill' },
-  { slug: 'stop-the-clock', title: 'Stop at 10', blurb: 'Stop the clock at exactly 10.00s', emoji: '⏱️', color: '#00897b', tag: 'skill' },
-  { slug: 'visual-memory', title: 'Visual Memory', blurb: 'Remember which tiles lit up', emoji: '🔲', color: '#1e88e5', tag: 'skill' },
-  { slug: 'verbal-memory', title: 'Verbal Memory', blurb: 'Seen it, or new?', emoji: '💬', color: '#6a1b9a', tag: 'skill' },
-  { slug: 'click-speed', title: 'Click Speed', blurb: 'Clicks per second, go!', emoji: '🖱️', color: '#e53935', tag: 'skill' },
-  { slug: 'guess-the-angle', title: 'Guess the Angle', blurb: 'How good is your eye?', emoji: '📐', color: '#00838f', tag: 'skill' },
   { slug: 'balance-stick', title: 'Balance the Stick', blurb: 'Keep a pole upright on your cursor', emoji: '🥢', color: '#424242', tag: 'skill' },
-  { slug: 'keep-the-beat', title: 'Keep the Beat', blurb: 'Tap in time, then without the music', emoji: '🎵', color: '#8e24aa', tag: 'skill' },
 
-  { slug: 'simon', title: 'Sequence Memory', blurb: 'Repeat the growing pattern', emoji: '🟩', color: '#43a047', tag: 'brain' },
-  { slug: 'number-memory', title: 'Number Memory', blurb: 'Remember the longest number', emoji: '🔢', color: '#3949ab', tag: 'brain' },
-  { slug: 'color-match', title: 'Color Match', blurb: 'Recreate a colour from memory', emoji: '🎨', color: '#ab47bc', tag: 'brain' },
   { slug: 'higher-lower', title: 'Higher or Lower', blurb: 'Which country has more people?', emoji: '📈', color: '#00acc1', tag: 'brain' },
   { slug: 'timeline-game', title: 'Timeline', blurb: 'Put history in the right order', emoji: '📜', color: '#a1887f', tag: 'brain' },
   { slug: 'flag-quiz', title: 'Flag Quiz', blurb: 'Name that flag', emoji: '🏳️', color: '#1e88e5', tag: 'brain' },
@@ -84,8 +73,6 @@ window.CURIO_GAMES = [
   { slug: 'emoji-movies', title: 'Emoji Movies', blurb: 'Name the film from the emoji', emoji: '🎬', color: '#c62828', tag: 'brain' },
   { slug: 'anagram', title: 'Anagram', blurb: 'Unscramble the letters', emoji: '🔤', color: '#00796b', tag: 'brain' },
   { slug: 'true-or-false', title: 'True or False', blurb: 'Weird facts, real or fake?', emoji: '✅', color: '#43a047', tag: 'brain' },
-  { slug: 'mental-math', title: 'Mental Math', blurb: '60 seconds of sums', emoji: '➗', color: '#5e35b1', tag: 'brain' },
-  { slug: 'odd-color', title: 'Odd Colour Out', blurb: 'Spot the slightly different tile', emoji: '🟦', color: '#039be5', tag: 'brain' },
 
   { slug: 'mini-golf', title: 'Mini Golf', blurb: 'Nine holes of putting', emoji: '⛳', color: '#2e7d32', tag: 'arcade' },
   { slug: 'word-rain', title: 'Word Rain', blurb: 'Type the words before they land', emoji: '🌧️', color: '#37474f', tag: 'arcade' },
