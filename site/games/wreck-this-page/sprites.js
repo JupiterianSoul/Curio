@@ -587,6 +587,128 @@
     '..33......'
   ], { gx: 2, gy: 5, mx: 10, my: 2.5 });
 
+  W.whip = S([
+    '.....WWw...',
+    '...Ww...w..',
+    '.uW......w.',
+    'uWWu......y',
+    'wwW........',
+    '.w.........'
+  ], { gx: 1, gy: 3, mx: 10, my: 3 });
+  W.glove = S([
+    '.......eee.',
+    '.5.5.5eeYee',
+    '5.5.5.eeeee',
+    '.5.5.5eeeeR',
+    '33.....eRR.'
+  ], { gx: 1, gy: 3, mx: 10, my: 2 });
+  W.saw = S([
+    '....7.7.7..',
+    '.33.56565.',
+    '3443565656',
+    '3a4a.56565',
+    '.3a3..7.7.',
+    '..33......'
+  ], { gx: 2, gy: 4, mx: 9, my: 2 });
+  W.backspace = S([
+    '666666666',
+    '6555e5556',
+    '655ee7756',
+    '6555e5556',
+    '666666666',
+    '..33.....',
+    '..33.....'
+  ], { gx: 3, gy: 5, mx: 8, my: 2 });
+  W.cutter = S([
+    '7.....7..',
+    '.7...7...',
+    '..7.7....',
+    '...6.....',
+    '..e.e....',
+    '.e...e...',
+    '.e...e...',
+    '..eee....'
+  ], { gx: 4, gy: 6, mx: 4, my: 0 });
+  W.vacuum = S([
+    '..cccccc.....',
+    '.cCCCCCc44444',
+    'ccCC7Ccc555554',
+    'ccccccc.4444.',
+    '.c3..3c......',
+    '..33.........'
+  ], { gx: 3, gy: 4, mx: 13, my: 2 });
+  W.pen = S([
+    '........77',
+    '......nnb7',
+    '....nnbb..',
+    '..nnbbn...',
+    '.5nbbn....',
+    '565n......',
+    '.5........'
+  ], { gx: 3, gy: 4, mx: 0, my: 6 });
+  W.lens = S([
+    '....5555..',
+    '...5CCC75.',
+    '..5CC77C75',
+    '..5CCCC7C5',
+    '..5CCCCCC5',
+    '...5CCCC5.',
+    '..u.5555..',
+    '.uW.......',
+    'uW........'
+  ], { gx: 1, gy: 7, mx: 10, my: 4 });
+  W.stamp = S([
+    '..WWW....',
+    '..uWu....',
+    '..WWW....',
+    '...w.....',
+    '.eeeeeee.',
+    '.RRRRRRR.',
+    '.eReReRe.'
+  ], { gx: 3, gy: 2, mx: 4, my: 6 });
+  W.blower = S([
+    '...aaaa.......',
+    '..aYYYaa55555.',
+    '.aa0YaaaC6666C',
+    '.aaaaaa.55555.',
+    '..3..3........',
+    '..33..........'
+  ], { gx: 3, gy: 4, mx: 14, my: 2 })
+  ;
+  W.bowling = S([
+    '..1111..',
+    '.122221.',
+    '12P2P221',
+    '1222P221',
+    '12222221',
+    '.122221.',
+    '..1111..'
+  ], { gx: 3, gy: 3, mx: 4, my: 3 });
+  W.lightning = S([
+    '..........y.',
+    '.........yY.',
+    'wwWWWWWWuyy.',
+    '.wwwwwwwwyY.',
+    '.........y..',
+    '..........y.'
+  ], { gx: 2, gy: 3, mx: 11, my: 1 });
+  W.termites = S([
+    '.5555.',
+    '.4444.',
+    'C7CCCC',
+    'Cw7wCC',
+    'CCwCwC',
+    'CwCCwC',
+    '.CCCC.'
+  ], { gx: 2, gy: 4, mx: 3, my: 2 });
+  W.antigrav = S([
+    '..55..',
+    '.4..4.',
+    '.mKKm.',
+    'mK7KKp',
+    'mKKKKp',
+    '.pppp.'
+  ], { gx: 2, gy: 3, mx: 3, my: 3 });
   const PROJ = {
     bullet: S(['y7'], { noOutline: true, gx: 1, gy: 0 }),
     bigbullet: S(['ay7', 'ay7'], { noOutline: true, gx: 2, gy: 1 }),
@@ -618,7 +740,11 @@
     cookie: S(['.ww.', 'wuWu', 'uWuu', '.uu.'], { gx: 2, gy: 2 }),
     check: S(['...l', 'l.l.', '.l..'], { gx: 2, gy: 1 }),
     mail: S(['77777', '76667', '77777'], { gx: 2, gy: 1 }),
-    click: S(['.7.', '7c7', '.7.'], { gx: 1, gy: 1 })
+    click: S(['.7.', '7c7', '.7.'], { gx: 1, gy: 1 }),
+    bowl: S(['.111.', '12221', '1P2P1', '12221', '.111.'], { gx: 2, gy: 2 }),
+    jar: W.termites,
+    agrav: W.antigrav,
+    floppy: S(['bbbbbbb.', 'b7777bbb', 'b7777b.b', 'bbbbbbbb', 'bnyyyynb', 'bnyyyynb', 'bbbbbbbb'], { gx: 4, gy: 3 })
   };
 
   const HEAD = [
@@ -677,7 +803,16 @@
     wall: ['.2222..', '..2.22.', '.77.32.', '....77.'],
     land: ['2222222', '22...22', '32...23', '77...77'],
     dash: ['22222..', '322....', '77.....', '.......'],
-    hurt: ['.22.22.', '.22..22', '.32...3', '.77...7']
+    hurt: ['.22.22.', '.22..22', '.32...3', '.77...7'],
+    skid: ['..222..', '.22.22.', '32...22', '7.....77'],
+    kick0: ['.2222..', '.22.2..', '.32.77.', '.77....'],
+    kick1: ['.22222222', '.22...377', '.32......', '.77......'],
+    stomp: ['.2222..', '.22.22.', '.22.22.', '.77.77.'],
+    tuck: ['.2222..', '.22222.', '..7777.', '.......'],
+    climb0: ['.2222..', '.22..2.', '.32..3.', '.77..7.'],
+    climb1: ['..222..', '.22.22.', '.3..32.', '7...77.'],
+    glide: ['.22.22.', '..2.2..', '..3.3..', '..7.7..'],
+    jet: ['..222..', '..2.2..', '..2.3..', '..7.7..']
   };
   const BACKARM = { hang: [[0, 0], [0, 1], [0, 2], [0, 3]], fwd: [[0, 0], [1, 1], [1, 2], [2, 3]], back: [[0, 0], [-1, 1], [-1, 2], [-2, 3]], up: [[0, 0], [0, -1], [0, -2], [0, -3]], wide: [[0, 0], [-1, 0], [-2, 1], [-3, 1]] };
   const TAILS = [
@@ -721,7 +856,19 @@
     land: [{ legs: 'land', squash: 2, arm: 'wide', tails: 4 }, { legs: 'land', squash: 1, arm: 'hang', tails: 0 }],
     hurt: [{ legs: 'hurt', head: HEAD_HURT, arm: 'up', tails: 3, headX: -1 }, { legs: 'hurt', head: HEAD_HURT, arm: 'wide', tails: 2 }],
     victory: [{ legs: 'stand', head: HEAD_HAPPY, arm: 'up', tails: 0 }, { legs: 'jump', head: HEAD_HAPPY, arm: 'up', tails: 4, bob: -2 }, { legs: 'jump', head: HEAD_HAPPY, arm: 'up', tails: 4, bob: -3 }, { legs: 'stand', head: HEAD_HAPPY, arm: 'up', tails: 1, bob: -1 }],
-    dash: [{ legs: 'dash', arm: 'back', tails: 2, lean: 1, headX: 1 }, { legs: 'dash', arm: 'back', tails: 3, lean: 1, headX: 1 }]
+    dash: [{ legs: 'dash', arm: 'back', tails: 2, lean: 1, headX: 1 }, { legs: 'dash', arm: 'back', tails: 3, lean: 1, headX: 1 }],
+    idle2: [{ tails: 0, head: HEAD_BLINK }, { tails: 1, headX: 1 }, { tails: 1, headX: 1 }, { tails: 2, headX: 1, headBob: 1 }, { tails: 0 }, { tails: 0, headX: -1 }, { tails: 1, headX: -1 }, { tails: 0 }],
+    idle3: [{ legs: 'stand', arm: 'up', tails: 0, bob: -1 }, { legs: 'stand', arm: 'up', tails: 1, bob: -1, head: HEAD_BLINK }, { legs: 'land', arm: 'wide', tails: 2, squash: 1 }, { tails: 0 }],
+    apex: [{ legs: 'tuck', arm: 'wide', tails: 4, bob: -1 }],
+    skid: [{ legs: 'skid', arm: 'wide', tails: 2, lean: -1, headX: -1 }],
+    kick: [{ legs: 'kick0', arm: 'back', tails: 2, lean: -1 }, { legs: 'kick1', arm: 'back', tails: 3, lean: -1 }, { legs: 'kick1', arm: 'back', tails: 4, lean: -1 }, { legs: 'kick0', arm: 'hang', tails: 2 }],
+    stomp: [{ legs: 'tuck', arm: 'up', tails: 4, bob: -1 }, { legs: 'stomp', arm: 'up', tails: 3 }, { legs: 'stomp', arm: 'wide', tails: 3 }],
+    uppercut: [{ legs: 'land', arm: 'back', tails: 1, squash: 1 }, { legs: 'jump', arm: 'up', tails: 4, bob: -2 }, { legs: 'jump', arm: 'up', tails: 4, bob: -2 }],
+    pound: [{ legs: 'tuck', arm: 'up', tails: 4, bob: -1 }, { legs: 'tuck', arm: 'up', tails: 0, bob: -1 }],
+    jet: [{ legs: 'jet', arm: 'wide', tails: 4, bob: -1 }, { legs: 'jet', arm: 'wide', tails: 3 }],
+    glide: [{ legs: 'glide', arm: 'up', tails: 1 }, { legs: 'glide', arm: 'up', tails: 2 }],
+    climb: [{ legs: 'climb0', arm: 'up', tails: 0, lean: 1 }, { legs: 'climb1', arm: 'fwd', tails: 1, lean: 1 }],
+    swing: [{ legs: 'jump', arm: 'up', tails: 3 }, { legs: 'fall', arm: 'up', tails: 2 }]
   };
   const SKINS = [
     { id: 'hero', name: 'Wrecker', desc: 'The original. Hoodie, headband, zero regrets.', map: {}, need: { type: 'free' } },
@@ -998,7 +1145,12 @@
     wheel: ['..777..', '.7.7.7.', '7..7..7', '7777777', '7..7..7', '.7.7.7.', '..777..'],
     dash: ['.......', '77..77.', '.77..77', '..77..7', '.77..77', '77..77.', '.......'],
     jump: ['...7...', '..777..', '.77777.', '...7...', '...7...', '.......', '7777777'],
-    alt: ['.77777.', '7.....7', '7.777.7', '7.7.7.7', '7.777.7', '7.....7', '.77777.']
+    alt: ['.77777.', '7.....7', '7.777.7', '7.7.7.7', '7.777.7', '7.....7', '.77777.'],
+    grid: ['77.77.7', '77.77.7', '.......', '77.77.7', '77.77.7', '.......', '77.77.7'],
+    kick: ['..77...', '..77...', '.777...', '.77.777', '.77..77', '.7.....', '77.....'],
+    up: ['...7...', '..777..', '.77777.', '7777777', '..777..', '..777..', '..777..'],
+    gadget: ['..777..', '.7...7.', '7..7..7', '7.777.7', '7..7..7', '.7...7.', '..777..'],
+    bug: ['.7...7.', '..7.7..', '.77777.', '7777777', '.77777.', '7.777.7', '.7...7.']
   };
   const iconCache = new Map();
   function iconURL(name, color = '7', scale = 2, shadow = '0') {

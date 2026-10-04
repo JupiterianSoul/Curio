@@ -14,7 +14,7 @@
       setup(run) { run.goal = run.params?.goal || 80; G().label(`WRECK ${run.goal}% OF ${run.page.site.toUpperCase()}`, 2400); },
       tick(run) { if (!run.goalHit && pct() >= run.goal) { run.goalHit = true; G().announce('PAGE FLATTENED!', 4); G().showFinish(true); if (run.params?.autoEnd) G().end('goal'); } },
       grade(run) { return gradeBy(pct(), 95, 80, 50); },
-      bestKey: (run) => `free:${run.page.id}`, bestVal: (run) => Math.round(run.score), higher: true,
+      bestKey: (run) => `${run.opts?.simple ? 'simple' : 'free'}:${run.page.id}`, bestVal: (run) => Math.round(run.score), higher: true,
       rows(run) { return [['Destroyed', `${pct().toFixed(1)}%`], ['Time', WTP.fmtTime(run.t)]]; }
     },
     speed: {
@@ -39,7 +39,7 @@
     },
     survival: {
       name: 'Survival', icon: 'skull', col: 'k', music: 'survival',
-      desc: 'The page fights back. Pop-up ads, captchas, cookie banners and cursor drones. Survive the waves.',
+      desc: 'The page fights back. Nineteen kinds of web nuisance and two bosses, from pop-up ads to The Algorithm itself. Survive the waves.',
       hud: { pct: true, time: true, score: true, hp: true, wave: true },
       setup(run) { run.wave = 0; run.waveT = 2.5; run.maxWave = run.params?.waves || 0; run.kills = 0; run.noHit = true; PL().maxHp = 6; PL().hp = 6; G().label('SURVIVE THE PAGE', 2000); G().startTimer(); },
       tick(run, dt) {
@@ -115,6 +115,7 @@
       desc: 'Every weapon, infinite everything, no clock, no HUD. Just you, a page, and the quiet sound of it falling apart.',
       hud: { minimal: true },
       setup() { G().label('BREATHE IN. BREATHE OUT. WRECK.', 2600); },
+      noHp: true,
       tick() { },
       grade() { return 'S'; },
       rows(run) { return [['Destroyed', `${pct().toFixed(1)}%`], ['Time relaxing', WTP.fmtClock(run.t)]]; }
@@ -136,26 +137,37 @@
       rows(run) { return run.sub.rows(run); }
     }
   };
+  const WAVE_POOL = [
+    [1, 'ad', 3], [1, 'cursor', 3], [2, 'captcha', 2], [2, 'spam', 2], [3, 'cookie', 1], [3, 'bell', 2], [4, 'chat', 2], [4, 'spinner', 2],
+    [5, 'video', 2], [6, 'ghost', 2], [6, 'crawler', 2], [7, 'paywall', 1], [7, 'tracker', 2], [8, 'update', 1], [8, 'virus', 2], [9, 'survey', 2], [9, 'clip', 2], [10, 'progress', 2], [11, 'scroll', 1]
+  ];
   function startWave(run) {
     run.wave++;
     run.waveClear = false;
     run.waveT = 3;
     const w = run.wave;
     const q = [];
-    const boss = run.params?.boss && (run.maxWave ? w === run.maxWave : w % 5 === 0);
-    if (boss) { q.push('modal'); for (let k = 0; k < 2; k++) q.push('cursor'); }
+    const bossWave = run.maxWave ? (run.params?.boss && w === run.maxWave) || (w % 5 === 0) : w % 5 === 0;
+    const bossType = Math.floor(w / 5) % 2 === 1 ? 'modal' : 'algo';
+    if (bossWave) { q.push(bossType); for (let k = 0; k < 2; k++) q.push('cursor'); }
     else {
-      const n = 2 + Math.floor(w * 1.4);
-      for (let k = 0; k < n; k++) {
-        const r = Math.random();
-        q.push(w < 2 ? (r < 0.6 ? 'ad' : 'cursor') : w < 4 ? (r < 0.4 ? 'ad' : r < 0.7 ? 'cursor' : 'captcha') : (r < 0.3 ? 'ad' : r < 0.55 ? 'cursor' : r < 0.8 ? 'captcha' : 'cookie'));
+      const pool = WAVE_POOL.filter((p) => p[0] <= w);
+      const fresh = WAVE_POOL.filter((p) => p[0] === w).map((p) => p[1]);
+      const tot = pool.reduce((a, p) => a + p[2], 0);
+      const n = 2 + Math.floor(w * 1.35);
+      for (const f of fresh) q.push(f);
+      while (q.length < n) {
+        let r = Math.random() * tot;
+        for (const p of pool) { r -= p[2]; if (r <= 0) { q.push(p[1]); if (p[1] === 'cursor') q.push('cursor'); break; } }
       }
       if (w % 3 === 0) q.push('cookie');
     }
     run.spawnQ = q; run.spawnT = 0.5;
-    G().announce(boss ? 'BOSS: THE NEWSLETTER' : `WAVE ${w}`, boss ? 4 : 2);
+    const intro = !bossWave && WAVE_POOL.filter((p) => p[0] === w).map((p) => WTP.enemies.TYPES[p[1]].name);
+    G().announce(bossWave ? `BOSS: ${WTP.enemies.TYPES[bossType].name.toUpperCase()}` : `WAVE ${w}`, bossWave ? 4 : 2);
+    if (intro && intro.length) G().label(`NEW: ${intro.join(' + ').toUpperCase()}`, 2200);
     WTP.audio.play('alarm');
-    if (boss) WTP.audio.music('boss');
+    if (bossWave) WTP.audio.music('boss');
     else if (WTP.audio.song !== 'survival') WTP.audio.music('survival');
   }
 

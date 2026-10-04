@@ -10,6 +10,22 @@
   const history = [];
   let pendingMode = 'free';
   let audioOn = false;
+  const SIMPLE = !!C.simple;
+  const SIMPLE_KIT = ['shotgun', 'rocket', 'grenade', 'flame', 'whip', 'hammer'];
+  const SIMPLE_PAGES = ['news', 'shop', 'lost', 'feed', 'arcade', 'blog', 'weather', 'retro', 'video', 'museum'];
+  document.body.classList.toggle('wtp-simple', SIMPLE);
+  U.simple = SIMPLE;
+  function simplePage(step = 0) {
+    const n = SIMPLE_PAGES.length;
+    const i = (((S().simpleIdx | 0) + step) % n + n) % n;
+    if (step) { S().simpleIdx = i; WTP.persist(); }
+    return WTP.pages.find((p) => p.id === SIMPLE_PAGES[i]) || WTP.pages[0];
+  }
+  function startSimple(step = 0) {
+    const page = simplePage(step);
+    launch({ mode: 'free', page, weapons: SIMPLE_KIT.slice(), params: { goal: 75, autoEnd: true }, simple: true, tryGadget: 'boots' });
+  }
+  U.startSimple = startSimple;
 
   const style = document.createElement('style');
   const scopeCss = (css) => css.split('}').map((ch) => { const i = ch.indexOf('{'); if (i < 0) return ch; return ch.slice(0, i).split(',').map((x) => (x.trim() ? `.wtp-src ${x.trim()}` : x)).join(', ') + ' ' + ch.slice(i); }).join('}');
@@ -109,6 +125,12 @@
   }
   function renderTitle() {
     const st = S().stats;
+    if (SIMPLE) {
+      $('tTag').textContent = 'One page. Six weapons. Go.';
+      $('tStats').textContent = `Next up: ${simplePage().site}`;
+      requestAnimationFrame(() => WTP.title.place && WTP.title.place());
+      return;
+    }
     $('tStats').textContent = st.pixels ? `${fmtInt(st.pixels)} pixels wrecked so far` : `${WP.DEFS.length} weapons · ${WTP.pages.filter((p) => !p.hidden).length} pages · ${MD.MODE_COUNT || 9} modes`;
     requestAnimationFrame(() => WTP.title.place && WTP.title.place());
   }
@@ -310,45 +332,88 @@
   }
 
   let armCat = 'all', armSel = 'pistol', armAnim = 0;
+  const GD = () => WTP.gadgets;
+  const gImg = (id, scale = 3) => { const k = `g${id}|${scale}`; if (!spriteCache.has(k)) spriteCache.set(k, SP.spriteURL(GD().BY[id].sprite, scale)); return spriteCache.get(k); };
+  const lvPips = (lv) => `<span class="lvp">${[1, 2, 3].map((k) => `<i class="${k <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
   function renderArmory() {
     const tabs = $('armTabs');
-    const cats = [{ id: 'all', name: 'All', icon: 'gun' }, ...WP.CATS];
+    const cats = [{ id: 'all', name: 'All', icon: 'gun' }, ...WP.CATS, { id: 'gadgets', name: 'Gadgets', icon: 'gadget' }];
     tabs.innerHTML = cats.map((c) => `<button class="arm-tab" type="button" role="tab" aria-selected="${c.id === armCat}" data-cat="${c.id}">${ico(c.icon)}<span>${c.name}</span></button>`).join('');
-    tabs.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { armCat = b.dataset.cat; AU.play('hover'); renderArmory(); paintIcons(tabs); }));
-    const list = WP.DEFS.filter((d) => armCat === 'all' || d.cat === armCat);
+    tabs.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { armCat = b.dataset.cat; if (armCat === 'gadgets' && !GD().BY[armSel]) armSel = S().gadget; if (armCat !== 'gadgets' && !WP.BY[armSel]) armSel = 'pistol'; AU.play('hover'); renderArmory(); paintIcons(tabs); }));
     const g = $('armGrid');
+    if (armCat === 'gadgets') {
+      g.innerHTML = GD().DEFS.map((d) => {
+        const own = GD().owned(d.id), eq = S().gadget === d.id;
+        return `<button class="arm-cell${own ? '' : ' is-locked'}" type="button" data-g="${d.id}" aria-pressed="${d.id === armSel}" aria-label="${esc(d.name)}">${own ? '<span class="own"></span>' : ''}<img alt="" src="${gImg(d.id, 4)}"><b>${esc(d.name)}</b><small>${eq ? 'Equipped' : own ? 'Owned' : `${ico('scrap')} ${fmtInt(d.price)}`}</small></button>`;
+      }).join('');
+      g.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => { armSel = b.dataset.g; AU.play('hover'); g.querySelectorAll('[data-g]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderGadgetDetail(); }));
+      paintIcons(g);
+      if (!GD().BY[armSel]) armSel = S().gadget;
+      renderGadgetDetail();
+      return;
+    }
+    const list = WP.DEFS.filter((d) => armCat === 'all' || d.cat === armCat);
     g.innerHTML = list.map((d) => {
       const own = PG.isOwned(d.id);
-      return `<button class="arm-cell${own ? '' : ' is-locked'}" type="button" data-w="${d.id}" aria-pressed="${d.id === armSel}" aria-label="${esc(d.name)}${own ? '' : `, costs ${d.price} scrap`}">${own ? '<span class="own"></span>' : ''}<img alt="" src="${wImg(d.id, 3)}"><b>${esc(d.name)}</b><small>${own ? (S().hotbar.includes(d.id) ? `Hotbar ${S().hotbar.indexOf(d.id) + 1}` : 'Owned') : `${ico('scrap')} ${fmtInt(d.price)}`}</small></button>`;
+      const slot = S().hotbar.indexOf(d.id);
+      return `<button class="arm-cell${own ? '' : ' is-locked'}" type="button" data-w="${d.id}" aria-pressed="${d.id === armSel}" aria-label="${esc(d.name)}${own ? '' : `, costs ${d.price} scrap`}">${own ? '<span class="own"></span>' : ''}<img alt="" src="${wImg(d.id, 3)}"><b>${esc(d.name)}</b><small>${own ? (slot >= 0 ? `Slot ${(slot + 1) % 10}` : 'Owned') + (WP.upg(d.id) ? ` · Lv ${WP.upg(d.id) + 1}` : '') : `${ico('scrap')} ${fmtInt(d.price)}`}</small></button>`;
     }).join('');
     g.querySelectorAll('[data-w]').forEach((b) => b.addEventListener('click', () => { armSel = b.dataset.w; AU.play('hover'); g.querySelectorAll('[data-w]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderArmDetail(); }));
     paintIcons(g);
+    if (!WP.BY[armSel]) armSel = 'pistol';
     renderArmDetail();
+  }
+  function renderGadgetDetail() {
+    const d = GD().BY[armSel];
+    const own = GD().owned(d.id), eq = S().gadget === d.id;
+    const box = $('armDetail');
+    box.innerHTML = `<div class="big"><img alt="" src="${gImg(d.id, 8)}" style="image-rendering:pixelated;max-height:110px"></div>
+      <h3>${esc(d.name)}</h3><div class="cat">Movement gadget · press ${esc(keyName(S().keys.gadget?.[0]))} (or the gadget button)</div>
+      <p>${esc(d.tip)}</p>
+      <div class="px-row">${own ? `<button class="px-btn${eq ? ' px-btn--ghost' : ''}" type="button" data-act="equip">${ico(eq ? 'check' : 'gadget')}<span>${eq ? 'Equipped' : 'Equip'}</span></button>` : `<button class="px-btn px-btn--gold${S().scrap >= d.price ? '' : ' is-off'}" type="button" data-act="buyg">${ico('scrap')}<span>Buy ${fmtInt(d.price)}</span></button>`}<button class="px-btn px-btn--sec" type="button" data-act="tryg">${ico('target')}<span>Try it</span></button></div>`;
+    paintIcons(box);
+    box.querySelector('[data-act="equip"]')?.addEventListener('click', () => { GD().equip(d.id); AU.play('select'); renderArmory(); });
+    box.querySelector('[data-act="buyg"]')?.addEventListener('click', () => {
+      if (GD().buy(d.id)) { GD().equip(d.id); AU.play('buy'); C.confetti && C.confetti(60); toastAch({ name: `${d.name} unlocked`, desc: 'Equipped. Press the gadget key to use it.', icon: 'gadget' }); renderArmory(); head('armory'); paintIcons($('scrArmory')); }
+      else { AU.play('deny'); label2(`Need ${fmtInt(d.price - S().scrap)} more scrap. Wreck more pages!`); }
+    });
+    box.querySelector('[data-act="tryg"]').addEventListener('click', () => {
+      launch({ mode: 'free', page: WTP.rangePage, practice: true, params: { goal: 101 }, tryGadget: d.id });
+    });
   }
   function renderArmDetail() {
     const d = WP.BY[armSel];
     const own = PG.isOwned(d.id);
     const cat = WP.CATS.find((c) => c.id === d.cat);
     const pips = (n) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
-    const inHot = S().hotbar.includes(d.id);
+    const lv = WP.upg(d.id);
+    const slot = S().hotbar.indexOf(d.id);
     const box = $('armDetail');
+    const up = own && lv < 3 ? WP.upCost(d.id, lv) : 0;
     box.innerHTML = `<div class="big"><canvas id="armCv" width="72" height="30" style="width:360px;max-width:100%;height:auto"></canvas></div>
-      <h3>${esc(d.name)}</h3><div class="cat">${esc(cat?.name || '')}${d.alt ? ` · ALT: ${esc(d.alt)}` : ''}${d.hold ? ' · Hold to fire' : ''}</div>
+      <h3>${esc(d.name)} ${own ? lvPips(lv) : ''}</h3><div class="cat">${esc(cat?.name || '')}${d.alt ? ` · ALT: ${esc(d.alt)}` : ''}${d.hold ? ' · Hold to fire' : ''}</div>
+      <p class="does">${ico('star')} ${esc(d.does || '')}</p>
       <p>${esc(d.tip)}</p>
-      <div class="statbar"><span>Power</span>${pips(d.st[0])}</div><div class="statbar"><span>Rate</span>${pips(d.st[1])}</div><div class="statbar"><span>Range</span>${pips(d.st[2])}</div><div class="statbar"><span>Chaos</span>${pips(d.st[3])}</div>
-      <div class="px-row">${own ? `<button class="px-btn px-btn--ghost" type="button" data-act="hot">${ico(inHot ? 'cross' : 'check')}<span>${inHot ? 'Remove from hotbar' : 'Add to hotbar'}</span></button>` : `<button class="px-btn px-btn--gold${S().scrap >= d.price ? '' : ' is-off'}" type="button" data-act="buy">${ico('scrap')}<span>Buy ${fmtInt(d.price)}</span></button>`}<button class="px-btn px-btn--sec" type="button" data-act="try">${ico('target')}<span>Try it</span></button></div>`;
+      <div class="statbar"><span>Power</span>${pips(Math.min(5, d.st[0] + (lv >= 2 ? 1 : 0)))}</div><div class="statbar"><span>Rate</span>${pips(Math.min(5, d.st[1] + (lv >= 3 ? 1 : 0)))}</div><div class="statbar"><span>Range</span>${pips(d.st[2])}</div><div class="statbar"><span>Chaos</span>${pips(d.st[3])}</div>
+      ${own ? `<div class="upg"><b>Level ${lv + 1} of 4</b><small>${lv < 3 ? 'Each level: bigger holes, +25% damage, faster cooldown.' : 'Fully upgraded. Maximum mayhem.'}</small></div>` : ''}
+      <div class="px-row">${own ? `${lv < 3 ? `<button class="px-btn px-btn--gold${S().scrap >= up ? '' : ' is-off'}" type="button" data-act="upg">${ico('up')}<span>Upgrade ${fmtInt(up)}</span></button>` : ''}<button class="px-btn px-btn--ghost" type="button" data-act="hot">${ico(slot >= 0 ? 'cross' : 'check')}<span>${slot >= 0 ? `Remove from slot ${(slot + 1) % 10}` : 'Add to hotbar'}</span></button>` : `<button class="px-btn px-btn--gold${S().scrap >= d.price ? '' : ' is-off'}" type="button" data-act="buy">${ico('scrap')}<span>Buy ${fmtInt(d.price)}</span></button>`}<button class="px-btn px-btn--sec" type="button" data-act="try">${ico('target')}<span>Try it</span></button></div>`;
     paintIcons(box);
     box.querySelector('[data-act="try"]').addEventListener('click', () => {
       launch({ mode: 'free', page: WTP.rangePage, weapons: [d.id], allWeapons: false, practice: true, first: d.id, params: { goal: 101 } });
     });
     box.querySelector('[data-act="buy"]')?.addEventListener('click', () => {
-      if (PG.buyWeapon(d.id)) { AU.play('buy'); C.confetti && C.confetti(60); toastAch({ name: `${d.name} unlocked`, desc: 'Added to your hotbar. Go break something.', icon: 'gun' }); renderArmory(); head('armory'); paintIcons($('scrArmory')); }
+      if (PG.buyWeapon(d.id)) { AU.play('buy'); C.confetti && C.confetti(60); toastAch({ name: `${d.name} unlocked`, desc: S().hotbar.includes(d.id) ? 'Added to your hotbar. Go break something.' : 'Hotbar full: assign it from the weapons menu (Tab).', icon: 'gun' }); renderArmory(); head('armory'); paintIcons($('scrArmory')); }
       else { AU.play('deny'); label2(`Need ${fmtInt(d.price - S().scrap)} more scrap. Wreck more pages!`); }
+    });
+    box.querySelector('[data-act="upg"]')?.addEventListener('click', () => {
+      if (S().scrap >= up) { S().scrap -= up; S().upg[d.id] = lv + 1; WTP.persist(); AU.play('unlock'); toastAch({ name: `${d.name} Lv ${lv + 2}`, desc: 'Bigger, meaner, faster.', icon: 'up' }); renderArmory(); head('armory'); paintIcons($('scrArmory')); }
+      else { AU.play('deny'); label2(`Need ${fmtInt(up - S().scrap)} more scrap.`); }
     });
     box.querySelector('[data-act="hot"]')?.addEventListener('click', () => {
       const hb = S().hotbar;
-      if (hb.includes(d.id)) hb.splice(hb.indexOf(d.id), 1);
-      else { if (hb.length >= 10) hb.pop(); hb.push(d.id); }
+      const k = hb.indexOf(d.id);
+      if (k >= 0) hb[k] = null;
+      else { const e = hb.indexOf(null); hb[e >= 0 ? e : 9] = d.id; }
       WTP.persist(); AU.play('select'); renderArmory();
     });
     armAnim++;
@@ -434,7 +499,7 @@
       render('stats');
     });
   }
-  const KEY_LABELS = { left: 'Move left', right: 'Move right', jump: 'Jump', down: 'Drop / fast fall', dash: 'Dash', fire: 'Fire (keyboard)', alt: 'Alt fire', prev: 'Previous weapon', next: 'Next weapon', wheel: 'Weapon wheel', reset: 'Restart', pause: 'Pause' };
+  const KEY_LABELS = { left: 'Move left', right: 'Move right', jump: 'Jump', down: 'Drop / fast fall', dash: 'Dash', fire: 'Fire (keyboard)', alt: 'Alt fire', melee: 'Kick (always available)', gadget: 'Use gadget', prev: 'Previous weapon', next: 'Next weapon', wheel: 'Weapons menu / wheel', reset: 'Restart', pause: 'Pause' };
   const keyName = (c) => (c || '-').replace(/^Key/, '').replace(/^Digit/, '').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ShiftLeft', 'Shift').replace('ShiftRight', 'R Shift').replace('Space', 'Space').replace('Escape', 'Esc');
   function renderSettings() {
     const st = S().settings;
@@ -454,6 +519,16 @@
         <div class="set-row"><label>Vibration</label>${tog('haptics')}</div>
         <div class="set-row"><label>Show FPS</label>${tog('fps')}</div>
       </div>
+      <div class="px-panel set-group"><h3 class="px-h3">Weapons</h3>
+        <div class="set-row"><label>Tab opens</label>${seg('radial', [[false, 'Grid menu'], [true, 'Radial wheel']])}</div>
+        <div class="set-row"><label>Switch weapons</label><span>Q / E, mouse wheel, 1 to 0</span></div>
+      </div>
+      <div class="px-panel set-group"><h3 class="px-h3">Touch controls</h3>
+        <div class="set-row"><label>Aiming</label>${seg('touchAim', [['auto', 'Auto + drag'], ['stick', 'Twin stick']])}</div>
+        <div class="set-row"><label>Button size</label>${seg('touchSize', [[0.8, 'S'], [1, 'M'], [1.25, 'L']])}</div>
+        <div class="set-row"><label>Opacity</label>${seg('touchAlpha', [[0.3, '30%'], [0.55, '55%'], [0.85, '85%']])}</div>
+        <div class="set-row"><label>Buttons on the left</label>${tog('touchSwap')}</div>
+      </div>
       <div class="px-panel set-group"><h3 class="px-h3">Aiming and touchpad</h3>
         <div class="set-row"><label>Click toggles fire (no holding)</label>${tog('toggleFire')}</div>
         <div class="set-row"><label>Aim assist</label>${seg('aimAssist', [[0, 'Off'], [1, 'Light'], [2, 'Strong']])}</div>
@@ -468,11 +543,12 @@
     $('setsBody').querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => {
       const k = b.dataset.set;
       let v = b.dataset.v;
-      v = v === 'true' ? true : v === 'false' ? false : Number(v);
+      v = v === 'true' ? true : v === 'false' ? false : isNaN(Number(v)) ? v : Number(v);
       st[k] = v;
       WTP.persist();
       AU.setVolumes();
       applyTheme();
+      applyTouch();
       AU.play('select');
       renderSettings();
       paintIcons($('setsBody'));
@@ -496,36 +572,43 @@
   }
   function renderHelp() {
     const k = (a) => `<span class="key">${esc(keyName(S().keys[a]?.[0]))}</span>`;
+    const EN = WTP.enemies;
+    const best = EN.ORDER.map((t) => { const T = EN.TYPES[t]; return `<div class="bst"><img alt="" src="${EN.portrait(t, t === 'modal' || t === 'algo' ? 2 : 3)}"><span><b>${esc(T.name)}</b><small>${esc(T.desc)}</small></span></div>`; }).join('');
     $('helpBody').innerHTML = `
       <div class="px-panel"><h3 class="px-h3">Keyboard and mouse</h3><ul>
         <li>${k('left')} ${k('right')} run, ${k('jump')} jump, again in the air to double jump</li>
         <li>Slide down walls, jump off them to wall jump</li>
         <li>${k('dash')} dashes (you are invincible while dashing)</li>
+        <li>${k('melee')} kicks in your aim direction. Every loadout has it, so you can always dig yourself out</li>
+        <li>${k('gadget')} uses your gadget (jetpack, grappling hook, glider and more)</li>
         <li>Aim with the mouse, click to fire</li>
-        <li>${k('prev')} ${k('next')}, mouse wheel or <span class="key">1</span>-<span class="key">0</span> switch weapons, ${k('wheel')} opens the wheel</li>
-        <li>${k('alt')} or right click: alt fire, ${k('reset')} restart, ${k('pause')} pause</li>
-        <li><span class="key">+</span> <span class="key">-</span> or pinch zoom the camera</li></ul></div>
+        <li>${k('prev')} ${k('next')}, mouse wheel or <span class="key">1</span>-<span class="key">0</span> switch weapons</li>
+        <li>${k('wheel')} opens the weapons menu: equip anything you own and assign it to a hotbar slot</li>
+        <li>${k('alt')} or right click: alt fire, ${k('reset')} restart, ${k('pause')} pause, <span class="key">+</span> <span class="key">-</span> or pinch to zoom</li></ul></div>
       <div class="px-panel"><h3 class="px-h3">Touchpad or keyboard only</h3><ul>
         <li>Aim with <span class="key">I</span> <span class="key">J</span> <span class="key">K</span> <span class="key">L</span>, or do nothing and auto aim finds the nearest stuff</li>
-        <li>Fire with ${k('fire')} or <span class="key">Enter</span></li>
-        <li><span class="key">V</span> locks fire on, so you never have to hold anything</li>
-        <li>Turn on Touchpad mode in the top bar: click once to start firing, click again to stop</li>
-        <li>Settings has "Click toggles fire" and aim assist</li></ul></div>
+        <li>Fire with ${k('fire')} or <span class="key">Enter</span>, <span class="key">V</span> locks fire on so you never hold anything</li>
+        <li>One swipe of two fingers switches exactly one weapon</li>
+        <li>Turn on Touchpad mode in the top bar: click once to start firing, click again to stop</li></ul></div>
       <div class="px-panel"><h3 class="px-h3">Touch</h3><ul>
-        <li>Left stick runs (push up to jump)</li><li>Right stick aims and fires</li><li>Green button jumps, blue dashes</li><li>The weapon button opens the wheel</li></ul></div>
+        <li>Touch anywhere on the left side to get a joystick</li><li>Hold the big fire button to fire with auto aim, drag it to aim yourself</li><li>Buttons for jump, kick, dash and your gadget</li><li>Tap the weapon to cycle, tap the grid for the weapons menu</li><li>Settings: button size, opacity, twin stick aiming, left handed layout</li></ul></div>
       <div class="px-panel"><h3 class="px-h3">Gamepad</h3><ul>
-        <li>Left stick move, right stick aim, RT fire, LT alt</li><li>A jump, B dash, LB RB switch, Y wheel</li><li>Start pauses, the d-pad works in menus</li></ul></div>
-      <div class="px-panel"><h3 class="px-h3">Wrecking tips</h3><ul>
-        <li>Hit a word and its letters pop off and fall</li><li>Buttons and search boxes are glass: one hit shatters the whole thing</li>
-        <li>Freeze things, then hit the ice to shatter it</li><li>Loose chunks fall and pile up as debris you can stand on</li>
-        <li>Keep hitting things to grow your combo multiplier</li><li>Every 25 pixels wrecked is 1 scrap. Spend it in the Armory</li></ul></div>
-      <div class="px-panel"><h3 class="px-h3">The page fights back</h3><ul>
-        <li><img alt="" src="${enemyImg('ad', 1)}" style="height:16px;image-rendering:pixelated"> Pop-up ads float after you and spit coins</li>
-        <li><img alt="" src="${enemyImg('captcha', 1)}" style="height:16px;image-rendering:pixelated"> Captchas hop and throw check marks</li>
-        <li><img alt="" src="${enemyImg('cookie', 1)}" style="height:12px;image-rendering:pixelated"> Cookie banners drop explosive cookies</li>
-        <li><img alt="" src="${enemyImg('cursor', 1)}" style="height:16px;image-rendering:pixelated"> Cursor drones dive at you and click</li></ul></div>`;
+        <li>Left stick move, right stick aim, RT fire, LT alt</li><li>A jump, B dash, X kick, stick clicks gadget</li><li>LB RB switch, Y weapons menu, Start pauses</li></ul></div>
+      <div class="px-panel"><h3 class="px-h3">How pages break</h3><ul>
+        <li>Paper and text break in one hit. Letters pop off and fall</li>
+        <li>Glass shatters all at once. Wood takes a couple of hits and splinters. Metal dents first and needs real force. Stone cracks</li>
+        <li>Buttons pop off and do whatever they say: buy, delete, download, subscribe...</li>
+        <li>Videos play when hit, cars in ads drive off, barrels explode, crates and safes hold scrap</li>
+        <li>Behind the page content is the page background, behind that its source code, and behind that your desktop. Big hits punch through all of it</li>
+        <li>Loose debris is soft: walk through it or stand on it. You can always kick your way out</li>
+        <li>Three secret floppy disks hide inside every page. Dig for them</li></ul></div>
+      <div class="px-panel"><h3 class="px-h3">Weapons and gadgets</h3><ul>
+        <li>Every weapon does one thing nothing else does. Read its line in the Armory</li>
+        <li>Upgrade weapons up to level 4 with scrap: bigger holes, more damage, faster cooldowns</li>
+        <li>Gadgets have their own slot: Spring Boots, Grappling Hook, Jetpack, Paper Glider, Wall Claws, Bounce Pads, Blast Boots, Blink Drive</li>
+        <li>Every 25 pixels wrecked is 1 scrap</li></ul></div>
+      <div class="px-panel help-best"><h3 class="px-h3">The page fights back</h3><div class="best-grid">${best}</div></div>`;
   }
-
   function showLoading(on) {
     const l = $('loading');
     l.hidden = !on;
@@ -576,8 +659,9 @@
     const goal = run.goal || (h.goal) || 0;
     $('hudGoal').style.display = goal && goal <= 100 ? '' : 'none';
     $('hudGoal').style.left = `${goal}%`;
-    $('hudFinish').hidden = !(run.modeId === 'free' || run.modeId === 'zen');
-    $('resultsOvl').hidden = true; $('pauseOvl').hidden = true; $('wheel').hidden = true;
+    $('hudFinish').hidden = SIMPLE || !(run.modeId === 'free' || run.modeId === 'zen');
+    $('hudWheel').hidden = SIMPLE; $('tMenu').hidden = SIMPLE;
+    $('resultsOvl').hidden = true; $('pauseOvl').hidden = true; $('wheel').hidden = true; $('radial').hidden = true;
     $('announce').innerHTML = '';
     U.hud(run);
   };
@@ -606,21 +690,55 @@
     ex.hidden = !parts.length;
     if (parts.length) { ex.innerHTML = parts.join(''); paintIcons(ex); }
   };
-  U.hudWeapons = (loadout, curId) => {
+  U.tick = () => { if (G.run) U.gadgetHud(); };
+  U.hudWeapons = (slots, curId) => {
     const hb = $('hotbar');
     const ammo = WP.ammo();
-    hb.innerHTML = loadout.slice(0, 20).map((id, i) => {
+    const n = Math.max(slots.length, G.run?.hotbarMode ? 10 : 0);
+    let html = '';
+    for (let i = 0; i < Math.min(n, 10); i++) {
+      const id = slots[i];
+      const num = (i + 1) % 10;
+      if (!id) { html += `<button class="w-cell is-empty" type="button" data-slot="${i}" aria-label="Empty slot ${num}, open the weapons menu" title="Empty slot ${num}"><span class="n">${num}</span><span class="plus">+</span></button>`; continue; }
       const a = ammo ? ammo[id] : null;
-      return `<button class="w-cell" type="button" data-w="${id}" aria-pressed="${id === curId}" aria-label="${esc(WP.BY[id].name)}" title="${esc(WP.BY[id].name)}${i < 10 ? ` (${(i + 1) % 10})` : ''}">${i < 10 ? `<span class="n">${(i + 1) % 10}</span>` : ''}<img alt="" src="${wImg(id, 3)}">${a != null ? `<span class="am${a <= 0 ? ' is-zero' : ''}">${a}</span>` : ''}</button>`;
-    }).join('');
+      const lv = WP.upg(id);
+      html += `<button class="w-cell" type="button" data-w="${id}" data-slot="${i}" aria-pressed="${id === curId}" aria-label="${esc(WP.BY[id].name)}" title="${esc(WP.BY[id].name)} (${num})"><span class="n">${num}</span><img alt="" src="${wImg(id, 3)}">${lv ? lvPips(lv) : ''}${a != null ? `<span class="am${a <= 0 ? ' is-zero' : ''}">${a}</span>` : ''}</button>`;
+    }
+    const inBar = slots.includes(curId);
+    if (!inBar && curId) html += `<button class="w-cell is-extra" type="button" data-w="${curId}" aria-pressed="true" aria-label="${esc(WP.BY[curId].name)} (not on the hotbar)" title="${esc(WP.BY[curId].name)}"><span class="n">*</span><img alt="" src="${wImg(curId, 3)}"></button>`;
+    hb.innerHTML = html;
     hb.querySelectorAll('[data-w]').forEach((b) => b.addEventListener('click', () => { G.selectWeapon(b.dataset.w); $('cv').focus({ preventScroll: true }); }));
-    const sel = hb.querySelector('[aria-pressed="true"]');
-    if (sel && hb.scrollWidth > hb.clientWidth) hb.scrollLeft = sel.offsetLeft - hb.clientWidth / 2;
+    hb.querySelectorAll('.is-empty').forEach((b) => b.addEventListener('click', () => U.wheel(true, Number(b.dataset.slot))));
     const d = WP.BY[curId];
+    if (!d) return;
     $('hudAlt').hidden = !d.alt; $('tAlt').hidden = !d.alt;
     const tc = $('tWpnCv'), g = tc.getContext('2d');
     g.clearRect(0, 0, 40, 20); g.imageSmoothingEnabled = false;
     g.drawImage(d.sprite.cv, Math.round(20 - d.sprite.w / 2), Math.round(10 - d.sprite.h / 2));
+    U.gadgetHud(true);
+  };
+  let gadLast = '';
+  U.gadgetHud = (force) => {
+    const GDm = WTP.gadgets;
+    const id = GDm.curId();
+    const cd = GDm.cooldown(), fuel = GDm.fuel();
+    const key = `${id}|${cd > 0 ? Math.ceil(cd * 10) : 0}|${Math.round(fuel * 20)}`;
+    if (!force && key === gadLast) return;
+    gadLast = key;
+    const d = GDm.BY[id];
+    for (const cvId of ['gadCv', 'tGadCv']) {
+      const cv = $(cvId); if (!cv) continue;
+      const g = cv.getContext('2d');
+      g.clearRect(0, 0, cv.width, cv.height); g.imageSmoothingEnabled = false;
+      g.drawImage(d.sprite.cv, Math.round((cv.width - d.sprite.w) / 2), Math.round((cv.height - d.sprite.h) / 2));
+    }
+    $('gadKey').textContent = keyName(S().keys.gadget?.[0]);
+    $('kickKey').textContent = keyName(S().keys.melee?.[0]);
+    const bar = $('gadBar');
+    const k = id === 'jetpack' ? fuel : cd > 0 ? 1 - cd / 1.2 : 1;
+    bar.style.width = `${Math.round(Math.max(0, Math.min(1, k)) * 100)}%`;
+    $('gadBtn').title = `${d.name}: ${d.tip}`;
+    $('gadBtn').setAttribute('aria-label', `Gadget: ${d.name}`);
   };
   let wnT = 0;
   U.weaponName = (d) => { const n = $('wname'); n.textContent = `${d.name}: ${d.tip}`; n.classList.add('is-on'); clearTimeout(wnT); wnT = setTimeout(() => n.classList.remove('is-on'), 1600); };
@@ -640,57 +758,121 @@
     box.append(c);
   };
 
-  let wheelCat = null;
-  U.wheelOpen = () => !$('wheel').hidden;
-  U.wheel = (open) => {
+  let wheelCat = 'all', wmPick = null, wmSlot = null;
+  U.wheelOpen = () => !$('wheel').hidden || !$('radial').hidden;
+  U.wheel = (open, slot) => {
+    if (open && SIMPLE) { G.cycle(1); return; }
+    if (open && S().settings.radial && slot === undefined && $('radial').hidden) return U.radial(true);
     const w = $('wheel');
-    if (!open) { w.hidden = true; $('cv').focus({ preventScroll: true }); return; }
+    if (!open) { w.hidden = true; $('radial').hidden = true; wmPick = null; wmSlot = null; $('cv').focus({ preventScroll: true }); return; }
     if (!G.run || G.run.ended) return;
+    $('radial').hidden = true;
     I.pointerFire = false;
     w.hidden = false;
-    const lo = G.loadout();
-    const allowed = G.run.allWeapons ? WP.DEFS.map((d) => d.id) : G.run.free ? WP.DEFS.filter((d) => PG.isOwned(d.id)).map((d) => d.id) : lo;
-    const curD = WP.current();
-    wheelCat = curD.cat;
-    const ring = $('wheelRing');
-    const cats = WP.CATS;
-    ring.innerHTML = `<div class="wh-cats">${cats.map((c, i) => {
-      const a = (i / cats.length) * Math.PI * 2 - Math.PI / 2;
-      const has = allowed.some((id) => WP.BY[id].cat === c.id);
-      const first = allowed.find((id) => WP.BY[id].cat === c.id);
-      return `<button class="wh-cat" type="button" data-cat="${c.id}" ${has ? '' : 'disabled'} aria-pressed="${c.id === wheelCat}" aria-label="${esc(c.name)}" title="${esc(c.name)}" style="left:${50 + Math.cos(a) * 42}%;top:${50 + Math.sin(a) * 42}%">${first ? `<img alt="" src="${wImg(first, 2)}">` : ico(c.icon)}<span>${esc(c.short || c.name)}</span></button>`;
-    }).join('')}</div><div class="px-panel wh-center" id="whCenter"></div><button class="px-ib wh-close" type="button" aria-label="Close wheel">${ico('cross')}</button>`;
-    const fill = () => {
-      const list = allowed.filter((id) => WP.BY[id].cat === wheelCat);
-      $('whCenter').innerHTML = `<h3>${esc(WP.CATS.find((c) => c.id === wheelCat)?.name || '')}</h3><div class="wh-list">${list.map((id) => `<button class="wh-w" type="button" data-w="${id}" aria-pressed="${id === WP.st.cur}"><img alt="" src="${wImg(id, 2)}"><span>${esc(WP.BY[id].name)}</span></button>`).join('')}</div>${I.isTouch ? '' : '<small class="wh-hint">Arrows pick · Enter equip · Q E category · Esc close</small>'}`;
-      $('whCenter').querySelectorAll('[data-w]').forEach((b) => {
-        b.addEventListener('click', () => { G.selectWeapon(b.dataset.w); U.wheel(false); });
-        b.addEventListener('focus', () => AU.play('hover'));
+    wmSlot = slot ?? null;
+    wmPick = null;
+    renderMenu();
+    AU.play('select');
+  };
+  function renderMenu() {
+    const box = $('wheelRing');
+    const avail = G.available();
+    const canAssign = !!G.run?.hotbarMode;
+    const cats = [{ id: 'all', short: 'All', icon: 'gun' }, ...WP.CATS.filter((c) => avail.some((id) => WP.BY[id].cat === c.id))];
+    if (!cats.some((c) => c.id === wheelCat)) wheelCat = 'all';
+    const list = avail.filter((id) => wheelCat === 'all' || WP.BY[id].cat === wheelCat);
+    const slots = G.slots();
+    const hint = canAssign ? (wmPick ? `Now pick a slot for ${WP.BY[wmPick].name} (or press 1 to 0)` : wmSlot != null ? `Pick a weapon for slot ${(wmSlot + 1) % 10}` : 'Click a weapon to equip it. Then click a slot below, or press 1 to 0, to put it on your hotbar.') : 'This loadout is fixed for this level. Click a weapon to equip it.';
+    const owned = WTP.gadgets.DEFS.filter((d) => WTP.gadgets.owned(d.id));
+    box.innerHTML = `<div class="wm-head"><h2 class="px-h2">Weapons</h2><span class="wm-count">${avail.length} owned</span><button class="px-ib wm-close" type="button" aria-label="Close menu">${ico('cross')}</button></div>
+      <div class="wm-cats">${cats.map((c) => `<button class="wm-cat" type="button" data-cat="${c.id}" aria-pressed="${c.id === wheelCat}">${ico(c.icon)}<span>${esc(c.short || c.name)}</span></button>`).join('')}</div>
+      <div class="wm-grid">${list.map((id) => { const d = WP.BY[id]; const sl = slots.indexOf(id); const lv = WP.upg(id); return `<button class="wm-w${id === wmPick ? ' is-pick' : ''}" type="button" data-w="${id}" aria-pressed="${id === WP.st.cur}" title="${esc(d.does || d.tip)}"><img alt="" src="${wImg(id, 2)}"><span>${esc(d.name)}</span>${sl >= 0 ? `<em>${(sl + 1) % 10}</em>` : ''}${lv ? lvPips(lv) : ''}</button>`; }).join('')}</div>
+      <p class="wm-hint">${esc(hint)}</p>
+      ${canAssign ? `<div class="wm-slots">${slots.map((id, i) => `<button class="wm-slot${i === wmSlot ? ' is-pick' : ''}" type="button" data-slot="${i}" aria-label="Slot ${(i + 1) % 10}${id ? `: ${esc(WP.BY[id].name)}` : ', empty'}"><span class="n">${(i + 1) % 10}</span>${id ? `<img alt="" src="${wImg(id, 2)}">` : ''}</button>`).join('')}<button class="wm-slot wm-clear" type="button" data-clear="1" aria-label="Clear the picked slot" title="Clear slot">${ico('cross')}</button></div>` : ''}
+      ${owned.length > 1 ? `<div class="wm-gads"><span>Gadget</span>${owned.map((d) => `<button class="wm-g" type="button" data-g="${d.id}" aria-pressed="${WTP.gadgets.curId() === d.id}" title="${esc(d.name)}"><img alt="" src="${gImg(d.id, 3)}"></button>`).join('')}</div>` : ''}
+      ${I.isTouch ? '' : '<small class="wm-keys">Arrows move · Enter equip · 1 to 0 assign · Q E category · Esc close</small>'}`;
+    paintIcons(box);
+    box.querySelector('.wm-close').addEventListener('click', () => U.wheel(false));
+    box.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { wheelCat = b.dataset.cat; AU.play('hover'); renderMenu(); box.querySelector(`[data-cat="${wheelCat}"]`)?.focus(); }));
+    box.querySelectorAll('[data-w]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const id = b.dataset.w;
+        G.selectWeapon(id);
+        if (wmSlot != null && canAssign) { G.assignSlot(wmSlot, id); AU.play('buy'); wmSlot = null; wmPick = null; U.wheel(false); return; }
+        if (canAssign) { wmPick = id; renderMenu(); box.querySelector(`[data-w="${id}"]`)?.focus(); }
+        else U.wheel(false);
       });
-      const f = $('whCenter').querySelector('[aria-pressed="true"]') || $('whCenter').querySelector('[data-w]');
-      f && f.focus({ preventScroll: true });
-    };
-    ring.querySelectorAll('[data-cat]').forEach((b) => {
-      const pick = () => { wheelCat = b.dataset.cat; ring.querySelectorAll('[data-cat]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); fill(); AU.play('hover'); };
-      b.addEventListener('click', pick);
-      b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { wheelCat = b.dataset.cat; ring.querySelectorAll('[data-cat]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); fill(); } });
+      b.addEventListener('focus', () => { AU.play('hover'); b.dataset.focus = '1'; });
+      b.addEventListener('dblclick', () => U.wheel(false));
     });
-    ring.querySelector('.wh-close').addEventListener('click', () => U.wheel(false));
+    box.querySelectorAll('[data-slot]').forEach((b) => b.addEventListener('click', () => {
+      const i = Number(b.dataset.slot);
+      if (wmPick) { G.assignSlot(i, wmPick); AU.play('buy'); G.label(`${WP.BY[wmPick].name.toUpperCase()} IN SLOT ${(i + 1) % 10}`, 900); wmPick = null; wmSlot = null; renderMenu(); return; }
+      wmSlot = wmSlot === i ? null : i; AU.play('hover'); renderMenu();
+    }));
+    box.querySelector('[data-clear]')?.addEventListener('click', () => { if (wmSlot != null) { G.assignSlot(wmSlot, null); AU.play('back'); renderMenu(); } else G.label('PICK A SLOT FIRST, THEN CLEAR IT', 900); });
+    box.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => { WTP.gadgets.equip(b.dataset.g); AU.play('select'); U.gadgetHud(true); renderMenu(); }));
+    const f = box.querySelector('.wm-w.is-pick') || box.querySelector('.wm-w[aria-pressed="true"]') || box.querySelector('.wm-w');
+    f && f.focus({ preventScroll: true });
+  }
+  U.menuKey = (code) => {
+    if (!/^Digit[0-9]$/.test(code) || !G.run?.hotbarMode) return false;
+    const n = Number(code.slice(5)), i = n === 0 ? 9 : n - 1;
+    const foc = document.activeElement?.dataset?.w;
+    const id = wmPick || foc;
+    if (!id) return false;
+    G.assignSlot(i, id); G.selectWeapon(id, true); AU.play('buy'); G.label(`${WP.BY[id].name.toUpperCase()} IN SLOT ${n}`, 900);
+    wmPick = null; renderMenu();
+    return true;
+  };
+  let radSel = -1;
+  U.radial = (open) => {
+    const r = $('radial');
+    if (!open) { r.hidden = true; $('cv').focus({ preventScroll: true }); return; }
+    if (!G.run || G.run.ended) return;
+    I.pointerFire = false;
+    r.hidden = false;
+    const slots = G.slots();
+    const n = 10;
+    radSel = Math.max(0, slots.indexOf(WP.st.cur));
+    const ring = $('radRing');
+    ring.innerHTML = slots.slice(0, n).map((id, i) => {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      return `<button class="rad-slot${id ? '' : ' is-empty'}" type="button" data-i="${i}" ${id ? `data-w="${id}"` : ''} aria-pressed="${i === radSel}" style="left:${50 + Math.cos(a) * 38}%;top:${50 + Math.sin(a) * 38}%" aria-label="${id ? esc(WP.BY[id].name) : 'Empty slot'}"><span class="n">${(i + 1) % 10}</span>${id ? `<img alt="" src="${wImg(id, 3)}">` : '<span class="plus">+</span>'}</button>`;
+    }).join('') + `<div class="rad-center px-panel"><b id="radName"></b><small id="radDoes"></small><button class="px-btn px-btn--ghost" type="button" id="radMenu">${ico('grid')}<span>All weapons</span></button></div>`;
     paintIcons(ring);
-    fill();
+    const pickI = (i) => { radSel = i; ring.querySelectorAll('.rad-slot').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.i) === i))); const id = slots[i]; $('radName').textContent = id ? WP.BY[id].name : `Slot ${(i + 1) % 10} is empty`; $('radDoes').textContent = id ? WP.BY[id].does : 'Open All weapons to fill it'; };
+    const choose = (i) => { const id = slots[i]; if (id) { G.selectWeapon(id); U.radial(false); } else { r.hidden = true; U.wheel(true, i); } };
+    ring.querySelectorAll('.rad-slot').forEach((b) => { b.addEventListener('click', () => choose(Number(b.dataset.i))); b.addEventListener('pointerenter', () => pickI(Number(b.dataset.i))); });
+    $('radMenu').addEventListener('click', () => { r.hidden = true; U.wheel(true, null); });
+    r.onpointermove = (e) => { const rr = ring.getBoundingClientRect(); const dx = e.clientX - (rr.left + rr.width / 2), dy = e.clientY - (rr.top + rr.height / 2); if (Math.hypot(dx, dy) < rr.width * 0.18) return; const a = Math.atan2(dy, dx) + Math.PI / 2; const i = ((Math.round((a / (Math.PI * 2)) * n) % n) + n) % n; if (i !== radSel) { pickI(i); AU.play('hover'); } };
+    U.radialPick = () => choose(radSel);
+    U.radialStep = (d) => pickI((radSel + d + n) % n);
+    pickI(radSel);
     AU.play('select');
   };
   $('wheel').addEventListener('click', (e) => { if (e.target.id === 'wheel') U.wheel(false); });
-
+  $('radial').addEventListener('click', (e) => { if (e.target.id === 'radial') U.radial(false); });
   U.pauseMenu = (on) => {
     const o = $('pauseOvl');
     o.hidden = !on;
     if (!on) return;
     const run = G.run;
     const lv = run.opts.campaign;
-    $('pauseCard').innerHTML = `<h2 class="px-h2">Paused</h2><p class="px-p">${esc(run.page.site)} · ${esc(run.mode.name)}${lv ? ` · ${esc(lv.name)}` : ''}</p>
+    if (SIMPLE) {
+      $('pauseCard').innerHTML = `<h2 class="px-h2">Paused</h2><p class="px-p">${esc(run.page.site)}</p>
+        <div class="ovl-btns">
+          <button class="px-btn" type="button" data-p="resume">${ico('play')}<span>Resume</span></button>
+          <button class="px-btn px-btn--ghost" type="button" data-p="nextpage">${ico('page')}<span>Next page</span></button>
+          <button class="px-btn px-btn--ghost" type="button" data-p="restart">${ico('reset')}<span>Restart</span></button>
+          ${C.setTouchpad && !I.isTouch ? `<button class="px-btn px-btn--ghost" type="button" data-p="pad">${ico('alt')}<span>Touchpad mode: ${C.touchpad ? 'ON' : 'OFF'}</span></button>` : ''}
+          <button class="px-btn px-btn--ghost" type="button" data-p="quit">${ico('home')}<span>Title screen</span></button>
+        </div>
+        <p class="px-p" style="margin-top:14px">${I.isTouch ? 'Left side moves. Hold the orange button to fire, drag it to aim.' : `Move ${esc(keyName(S().keys.left[0]))}${esc(keyName(S().keys.right[0]))} · jump ${esc(keyName(S().keys.jump[0]))} · aim with the mouse · click to fire · 1 to 6 swap · ${esc(keyName(S().keys.melee[0]))} kick`}</p>`;
+    } else $('pauseCard').innerHTML = `<h2 class="px-h2">Paused</h2><p class="px-p">${esc(run.page.site)} · ${esc(run.mode.name)}${lv ? ` · ${esc(lv.name)}` : ''}</p>
       <div class="ovl-btns">
         <button class="px-btn" type="button" data-p="resume">${ico('play')}<span>Resume</span></button>
+        <button class="px-btn px-btn--ghost" type="button" data-p="weapons">${ico('grid')}<span>Weapons and gadget</span></button>
         <button class="px-btn px-btn--ghost" type="button" data-p="restart">${ico('reset')}<span>Restart</span></button>
         ${run.modeId === 'free' || run.modeId === 'zen' ? `<button class="px-btn px-btn--ghost" type="button" data-p="finish">${ico('flag')}<span>Finish and see results</span></button>` : ''}
         ${C.setTouchpad && !I.isTouch ? `<button class="px-btn px-btn--ghost" type="button" data-p="pad">${ico('alt')}<span>Touchpad mode: ${C.touchpad ? 'ON' : 'OFF'}</span></button>` : ''}
@@ -703,6 +885,8 @@
     o.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => {
       const a = b.dataset.p;
       if (a === 'resume') G.pause(false);
+      else if (a === 'weapons') { G.pause(false); U.wheel(true, null); }
+      else if (a === 'nextpage') { o.hidden = true; G.paused = false; G.quit(); startSimple(1); }
       else if (a === 'restart') { o.hidden = true; G.paused = false; G.restart(); }
       else if (a === 'finish') { o.hidden = true; G.paused = false; G.end('finish'); }
       else if (a === 'quit') { o.hidden = true; G.paused = false; G.quit(); }
@@ -712,8 +896,8 @@
     }));
     o.querySelector('[data-p="resume"]').focus();
   };
-  U.showFinish = (on) => { $('hudFinish').hidden = !on && !(G.run && (G.run.modeId === 'free' || G.run.modeId === 'zen')); if (on) U.label('80% REACHED! KEEP GOING OR HIT THE FLAG TO FINISH', 2600); };
-  U.closeOverlays = () => { $('pauseOvl').hidden = true; $('resultsOvl').hidden = true; $('wheel').hidden = true; };
+  U.showFinish = (on) => { if (SIMPLE) return; $('hudFinish').hidden = !on && !(G.run && (G.run.modeId === 'free' || G.run.modeId === 'zen')); if (on) U.label('80% REACHED! KEEP GOING OR HIT THE FLAG TO FINISH', 2600); };
+  U.closeOverlays = () => { $('pauseOvl').hidden = true; $('resultsOvl').hidden = true; $('wheel').hidden = true; $('radial').hidden = true; };
 
   function gradeCanvas(g) {
     const ramps = { S: ['7', 'Y', 'y', 'a', 'o', 'e'], A: ['7', 'L', 'l', 'G', 'g'], B: ['7', 'C', 'c', 'b', 'n'], C: ['7', '6', '5', '4', '3'] };
@@ -743,10 +927,11 @@
       <div class="res-reward">${ico('scrap')}<span>Scrap earned</span><b id="resScrap">+0</b>${r.bonus ? `<span>Bonus</span><b>+${fmtInt(r.bonus)}</b>` : ''}<span style="margin-left:auto">Total ${fmtInt(S().scrap)}</span></div>
       ${r.achs.length ? `<div class="res-achs">${r.achs.map((a) => `<div>${ico('trophy')}<b>${esc(a.name)}</b><span class="c-muted">+${fmtInt(a.r)}</span></div>`).join('')}</div>` : ''}
       <div class="ovl-btns">
+        ${SIMPLE ? `<button class="px-btn px-btn--good" type="button" data-r="nextpage">${ico('play')}<span>Next page</span></button>` : ''}
         ${nextLv != null ? `<button class="px-btn px-btn--good" type="button" data-r="next">${ico('play')}<span>Next level</span></button>` : ''}
         <button class="px-btn" type="button" data-r="again">${ico('reset')}<span>Play again</span></button>
         <button class="px-btn px-btn--ghost" type="button" data-r="keep">${ico('eye')}<span>Look at the wreckage</span></button>
-        <button class="px-btn px-btn--ghost" type="button" data-r="menu">${ico('home')}<span>${lv ? 'Campaign' : 'Menu'}</span></button>
+        <button class="px-btn px-btn--ghost" type="button" data-r="menu">${ico('home')}<span>${lv ? 'Campaign' : SIMPLE ? 'Title' : 'Menu'}</span></button>
         <button class="px-btn px-btn--ghost" type="button" data-r="share">${ico('page')}<span>Copy result</span></button>
       </div>`;
     $('gradeBox').append(gradeCanvas(run.grade));
@@ -778,9 +963,10 @@
       else if (a === 'keep') { o.hidden = true; G.run.ended = true; I.enabled = true; AU.muffle(false); U.label('ESC OR THE PAUSE BUTTON TO LEAVE', 2400); }
       else if (a === 'menu') { o.hidden = true; G.quit(); if (lv) { history.length = 0; history.push('main'); cur = 'campaign'; for (const k in SCREENS) $(SCREENS[k]).classList.toggle('is-on', k === 'campaign'); render('campaign'); } }
       else if (a === 'next') { o.hidden = true; G.quit(); startLevel(nextLv); }
+      else if (a === 'nextpage') { o.hidden = true; G.quit(); startSimple(1); }
       else if (a === 'share') { try { await navigator.clipboard.writeText(share); label2('Copied! Go brag.'); } catch (e) { label2(share); } }
     }));
-    const f = card.querySelector('[data-r="next"]') || card.querySelector('[data-r="again"]');
+    const f = card.querySelector('[data-r="nextpage"]') || card.querySelector('[data-r="next"]') || card.querySelector('[data-r="again"]');
     f && f.focus({ preventScroll: true });
   };
 
@@ -808,7 +994,7 @@
     if (!G.playing) AU.music('title');
   }
   function focusables() {
-    const scope = !$('stage').hidden ? ($('resultsOvl').hidden ? ($('pauseOvl').hidden ? $('wheel') : $('pauseOvl')) : $('resultsOvl')) : $(SCREENS[cur]);
+    const scope = !$('stage').hidden ? ($('resultsOvl').hidden ? ($('pauseOvl').hidden ? ($('radial').hidden ? $('wheel') : $('radial')) : $('pauseOvl')) : $('resultsOvl')) : $(SCREENS[cur]);
     return [...scope.querySelectorAll('button:not([disabled]), textarea')].filter((e) => e.offsetParent !== null);
   }
   function spatial(dir, sel) {
@@ -841,7 +1027,7 @@
     if (I.take('navRight')) spatial('right');
     if (I.take('navOk')) { const a = document.activeElement; if (a && a.tagName === 'BUTTON') a.click(); }
     if (I.take('navBack')) {
-      if (!$('stage').hidden) { if (!$('wheel').hidden) U.wheel(false); else if (!$('pauseOvl').hidden) G.pause(false); }
+      if (!$('stage').hidden) { if (!$('wheel').hidden || !$('radial').hidden) U.wheel(false); else if (!$('pauseOvl').hidden) G.pause(false); }
       else if (cur !== 'title' && cur !== 'main') back();
     }
     const ax = I.gpAxes;
@@ -855,16 +1041,25 @@
     const tg = e.target;
     const typing = tg && (tg.tagName === 'TEXTAREA' || tg.tagName === 'INPUT');
     if (!$('stage').hidden) {
+      const wk = S().keys.wheel || [];
+      if (!$('radial').hidden) {
+        if (e.code === 'Escape') { e.preventDefault(); U.radial(false); return; }
+        if (wk.includes(e.code) || e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); U.radialPick(); return; }
+        if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'KeyE') { e.preventDefault(); U.radialStep(1); AU.play('hover'); }
+        if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'KeyQ') { e.preventDefault(); U.radialStep(-1); AU.play('hover'); }
+        if (/^Digit[0-9]$/.test(e.code)) { const n = Number(e.code.slice(5)); U.radialStep(0); const id = G.slots()[n === 0 ? 9 : n - 1]; if (id) { G.selectWeapon(id); U.radial(false); } }
+        return;
+      }
       if (!$('wheel').hidden) {
-        if (e.code === 'Escape' || e.code === 'Tab') { e.preventDefault(); U.wheel(false); return; }
-        if (e.code.startsWith('Arrow')) { e.preventDefault(); spatial(e.code.slice(5).toLowerCase(), '.wh-w'); }
+        if (e.code === 'Escape' || wk.includes(e.code)) { e.preventDefault(); U.wheel(false); return; }
+        if (e.code.startsWith('Arrow')) { e.preventDefault(); spatial(e.code.slice(5).toLowerCase(), '.wm-w, .wm-slot, .wm-cat, .wm-g'); }
         if (e.code === 'KeyQ' || e.code === 'KeyE') {
-          const cats = [...$('wheelRing').querySelectorAll('.wh-cat:not([disabled])')];
+          const cats = [...$('wheelRing').querySelectorAll('.wm-cat')];
           const i = cats.findIndex((b) => b.dataset.cat === wheelCat);
           const nb = cats[(i + (e.code === 'KeyE' ? 1 : -1) + cats.length) % cats.length];
           if (nb) nb.click();
         }
-        if (/^Digit[1-9]$/.test(e.code)) { const b = $('whCenter').querySelectorAll('[data-w]')[Number(e.code.slice(5)) - 1]; if (b) b.click(); }
+        if (/^Digit[0-9]$/.test(e.code)) { e.preventDefault(); if (!U.menuKey(e.code)) { const n = Number(e.code.slice(5)); const id = G.slots()[n === 0 ? 9 : n - 1]; if (id) { G.selectWeapon(id); U.wheel(false); } } }
         return;
       }
       if (!$('resultsOvl').hidden || !$('pauseOvl').hidden) {
@@ -877,14 +1072,14 @@
     }
     if (typing) return;
     ensureAudio();
-    if (cur === 'title' && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); show('main'); return; }
+    if (cur === 'title' && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); if (SIMPLE) startSimple(); else show('main'); return; }
     if (e.code === 'Escape' && cur !== 'title' && cur !== 'main') { e.preventDefault(); back(); return; }
     if (e.code.startsWith('Arrow')) { e.preventDefault(); spatial(e.code.slice(5).toLowerCase()); }
   });
   document.addEventListener('pointerdown', ensureAudio, { once: true });
 
   function bindStatic() {
-    $('tStart').addEventListener('click', () => { ensureAudio(); AU.play('title'); show('main'); });
+    $('tStart').addEventListener('click', () => { ensureAudio(); AU.play('title'); if (SIMPLE) startSimple(); else show('main'); });
     $('ownGo').addEventListener('click', () => {
       const t = $('ownText').value.trim();
       if (t.split(/\s+/).length < 3) { label2('Type or paste a few words first'); $('ownText').focus(); return; }
@@ -894,13 +1089,26 @@
     $('hudWheel').addEventListener('click', () => U.wheel(true));
     $('hudAlt').addEventListener('click', () => { I.press('alt'); $('cv').focus({ preventScroll: true }); });
     $('hudFinish').addEventListener('click', () => { if (G.run && !G.run.ended) G.end('finish'); });
-    $('tWpn').addEventListener('click', () => U.wheel(true));
-    I.bindTouch({ stickL: $('stickL'), stickR: $('stickR'), buttons: [[$('tJump'), 'jump'], [$('tDash'), 'dash'], [$('tAlt'), 'alt']] });
+    $('tWpn').addEventListener('click', () => { G.cycle(1); });
+    $('tMenu').addEventListener('click', () => U.wheel(true, null));
+    $('gadBtn').addEventListener('click', () => { I.press('gadget'); $('cv').focus({ preventScroll: true }); });
+    $('kickBtn').addEventListener('click', () => { I.press('melee'); $('cv').focus({ preventScroll: true }); });
+    I.bindTouch({ moveZone: $('tzMove'), joyL: $('joyL'), fire: $('tFire'), buttons: [[$('tJump'), 'jump'], [$('tDash'), 'dash'], [$('tAlt'), 'alt'], [$('tKick'), 'melee'], [$('tGad'), 'gadget']] });
     document.addEventListener('pointermove', (e) => { if (e.target.closest && e.target.closest('.px-btn, .mode-card, .pg-card, .arm-cell, .lv, .sk')) { const t = e.target.closest('button'); if (t && t !== U.hoverEl) { U.hoverEl = t; AU.play('hover'); } } });
   }
 
+  function applyTouch() {
+    const st = S().settings;
+    const t = $('touch');
+    t.style.setProperty('--tsize', String(st.touchSize || 1));
+    t.style.setProperty('--talpha', String(st.touchAlpha ?? 0.55));
+    t.classList.toggle('is-swap', !!st.touchSwap);
+    t.classList.toggle('is-stick', st.touchAim === 'stick');
+  }
+  U.applyTouch = applyTouch;
   function init() {
     applyTheme();
+    applyTouch();
     WTP.font.install().then(() => { WTP.title.start && WTP.title.on && WTP.title.start(); });
     G.init();
     WTP.title.init();

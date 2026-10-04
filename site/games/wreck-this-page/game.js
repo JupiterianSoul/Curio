@@ -9,7 +9,7 @@
   const cam = { x: 0, y: 0 };
   let shakeT = 0, hitstopT = 0, timeScale = 1, slowT = 0, chromaT = 0;
   let raf = 0, last = 0, acc = 0, hudT = 0, pendingSlot = null;
-  let voidPat = null, voidS = 0, shadowCv = null, shadowCtx = null;
+  let voidPat = null, voidS = 0, shadowCv = null, shadowCtx = null, desk = null;
   let comboY = 0, frameMs = 16, slowFrames = 0, fastFrames = 0, quality = 2, workMs = 4, workMax = 4;
   const aim = { x: 1, y: 0, ang: 0 };
   let loadout = [];
@@ -39,7 +39,7 @@
   }
   G.resize = resize;
   function computeScale() {
-    const W = Wd.w || 380;
+    const W = (Wd.PX1 - Wd.PX0) || Wd.w || 380;
     let s = Math.floor((vw * dpr) / (W + 16));
     const minS = I.isTouch ? Math.round(1.6 * dpr) : Math.round(1.4 * dpr);
     s = Math.max(2, s, minS);
@@ -61,7 +61,7 @@
   G.startTimer = () => { if (G.run && !G.run.timerOn) G.run.timerOn = true; };
   G.stat = (k, n) => { if (!G.run) return; G.run.stats[k] = (G.run.stats[k] || 0) + n; };
   G.weaponUsed = (id, dt) => { if (!G.run) return; const u = G.run.stats.weaponUse = G.run.stats.weaponUse || {}; u[id] = (u[id] || 0) + (dt || 1); };
-  G.ammoChanged = () => WTP.ui?.hudWeapons?.(loadout, WP.st.cur);
+  G.ammoChanged = () => WTP.ui?.hudWeapons?.(G.slots(), WP.st.cur);
   G.scrap = (n) => { if (G.run) G.run.bonusScrap += n; };
   G.bonus = (pts, x, y) => { if (!G.run) return; G.run.score += pts; FX.pop(x, y, `+${WTP.fmtInt(pts)}`, { scale: 1, ramp: ['Y', 'y', 'a'] }); };
   G.rocketJump = (h) => { if (G.run) G.run.rocketJump = Math.max(G.run.rocketJump || 0, h); if (h > 45) FX.pop(PL.x + 3, PL.y - 10, 'ROCKET JUMP!', { scale: 1, ramp: ['7', 'C', 'c'] }); };
@@ -108,31 +108,50 @@
   };
 
   function setLoadout(list) {
-    loadout = list.filter((id) => WP.BY[id]);
-    if (!loadout.length) loadout = ['pistol'];
-    WP.select(loadout[0]);
-    WTP.ui?.hudWeapons?.(loadout, WP.st.cur);
+    loadout = list.map((id) => (id && WP.BY[id] ? id : null));
+    if (!G.run?.hotbarMode) loadout = loadout.filter(Boolean);
+    if (!loadout.some(Boolean)) loadout = G.run?.hotbarMode ? ['pistol', ...new Array(WTP.HOTBAR_N - 1).fill(null)] : ['pistol'];
+    WP.select(loadout.find(Boolean));
+    WTP.ui?.hudWeapons?.(G.slots(), WP.st.cur);
   }
-  G.loadout = () => loadout;
+  G.loadout = () => loadout.filter(Boolean);
+  G.slots = () => (G.run?.hotbarMode ? WTP.save.hotbar.map((id) => (id && WTP.progress.isOwned(id) ? id : null)) : loadout.slice(0, WTP.HOTBAR_N));
+  G.available = () => {
+    if (!G.run) return [];
+    if (G.run.allWeapons) return WP.DEFS.map((d) => d.id);
+    if (G.run.hotbarMode) return WP.DEFS.filter((d) => WTP.progress.isOwned(d.id)).map((d) => d.id);
+    return loadout.filter(Boolean);
+  };
   G.selectWeapon = (id, quiet) => {
-    if (!loadout.includes(id)) {
-      if (G.run && WP.BY[id] && (G.run.allWeapons || (G.run.free && WTP.progress.isOwned(id)))) loadout.push(id);
-      else { if (!quiet) { G.label('NOT IN THIS LOADOUT', 800); AU.play('deny'); } return false; }
-    }
+    if (!id || !WP.BY[id] || !G.available().includes(id)) { if (!quiet) { G.label('NOT IN THIS LOADOUT', 800); AU.play('deny'); } return false; }
     if (WP.st.cur !== id) {
       WP.select(id);
       if (!quiet) { AU.play('select'); WTP.ui?.weaponName?.(WP.BY[id]); }
     }
-    WTP.ui?.hudWeapons?.(loadout, id);
+    WTP.ui?.hudWeapons?.(G.slots(), id);
+    return true;
+  };
+  G.assignSlot = (slot, id) => {
+    if (!G.run?.hotbarMode && G.run) return false;
+    if (slot < 0 || slot >= WTP.HOTBAR_N) return false;
+    if (id && !WTP.progress.isOwned(id)) return false;
+    const hb = WTP.save.hotbar;
+    if (id) { const k = hb.indexOf(id); if (k >= 0) hb[k] = hb[slot] && k !== slot ? hb[slot] : null; }
+    hb[slot] = id || null;
+    WTP.persist();
+    if (G.run) { loadout = hb.slice(); WTP.ui?.hudWeapons?.(G.slots(), WP.st.cur); }
     return true;
   };
   G.cycle = (d) => {
-    if (!loadout.length) return;
-    let i = loadout.indexOf(WP.st.cur);
-    i = (i + d + loadout.length) % loadout.length;
-    G.selectWeapon(loadout[i]);
+    let ring = G.slots().filter(Boolean);
+    if (ring.length < 2) ring = G.available();
+    if (!ring.length) return;
+    let i = ring.indexOf(WP.st.cur);
+    if (i < 0) i = d > 0 ? -1 : 0;
+    i = (i + d + ring.length) % ring.length;
+    G.selectWeapon(ring[i]);
   };
-  G.slotKey = (n) => { const idx = n === 0 ? 9 : n - 1; if (loadout[idx]) G.selectWeapon(loadout[idx]); };
+  G.slotKey = (n) => { const idx = n === 0 ? 9 : n - 1; const id = G.slots()[idx]; if (id) G.selectWeapon(id); else { G.label(`SLOT ${n} IS EMPTY: OPEN THE WEAPONS MENU (TAB) TO FILL IT`, 1400); AU.play('deny'); } };
 
   G.start = async (opts) => {
     const page = opts.page;
@@ -149,31 +168,40 @@
     if (LW < 600) root.classList.add('nw');
     try { if (document.fonts?.ready) await document.fonts.ready; } catch (e) { }
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    const data = await Wd.rasterize(root, { targetSel: opts.params?.selector });
+    WTP.levels.prepareDOM(root, page);
+    const data = await Wd.rasterize(root, { targetSel: opts.params?.selector, margin: WTP.levels.margin(), top: WTP.levels.topPad(), bottom: WTP.levels.bottomPad() });
     host.innerHTML = '';
     Wd.build(data);
+    WTP.levels.apply(page);
+    Wd.finalize();
     resize();
+    desk = WTP.levels.buildDesktop(page, viewW(), viewH());
     G.prepare(opts, mode);
   };
   G.prepare = (opts, mode) => {
     Wd.reset();
     FX.clear(); WP.reset(); EN.reset(); WP.setAmmo(null);
+    WTP.gadgets.force = opts.tryGadget || null;
+    WTP.props.reset(); WTP.levels.spawnEnts();
     computeScale();
     const run = G.run = {
       opts, mode, modeId: opts.mode, page: opts.page, params: { ...(opts.params || {}) }, t: 0, timerOn: false, score: 0, combo: 0, comboT: 0, comboShown: 0, maxCombo: 0, mult: 1,
       stats: { letters: 0, explosions: 0, shots: 0, chunks: 0, glass: 0, burned: 0, iced: 0, painted: 0, kills: 0, jumps: 0, walljumps: 0, dashes: 0, portals: 0, throws: 0, bees: 0, eaten: 0, nukes: 0, distance: 0, slowmos: 0 },
-      ended: false, bonusScrap: 0, allWeapons: !!opts.allWeapons || opts.mode === 'zen', free: !opts.weapons, hud: mode.hud, kills: 0, noHit: true, noHitWave: 0, wave: 0, frame: 0
+      ended: false, bonusScrap: 0, allWeapons: !!opts.allWeapons, free: !opts.weapons, hud: mode.hud, kills: 0, noHit: true, noHitWave: 0, wave: 0, frame: 0
     };
     let list;
     if (run.allWeapons) list = WP.DEFS.map((d) => d.id);
     else if (opts.weapons === 'all') list = WP.DEFS.filter((d) => WTP.progress.isOwned(d.id)).map((d) => d.id);
     else if (Array.isArray(opts.weapons)) list = opts.weapons.slice();
-    else list = WTP.progress.defaultHotbar().slice();
+    else list = null;
+    run.hotbarMode = !list;
+    if (!list) list = WTP.progress.defaultHotbar().slice();
     if (opts.mode === 'puzzle') list = Object.keys(opts.params.puzzle.ammo);
     if (opts.first) { const k = list.indexOf(opts.first); if (k >= 0) list.splice(k, 1); list.unshift(opts.first); }
     setLoadout(list);
     PL.maxHp = 6;
-    PL.spawn(Math.floor(Wd.w / 2) - 3, 4);
+    const sp = WTP.levels.spawn || { x: Math.floor(Wd.w / 2), y: 2 };
+    PL.spawn(sp.x - 3, sp.y);
     cam.x = PL.x - viewW() / 2; cam.y = -14;
     mode.setup(run);
     WTP.save.seenPages[opts.page.id] = true;
@@ -278,7 +306,8 @@
     const setT = (x, y) => { const m = Math.hypot(x, y); if (m > 0.01) { tx = x / m; ty = y / m; } };
     const manualKeys = src === 'keys' && performance.now() - I.lastKey < 3000;
     if (ka) setT(ka[0], ka[1]);
-    else if (I.stickR.id != null && Math.hypot(I.stickR.x, I.stickR.y) > 0.2) setT(I.stickR.x, I.stickR.y);
+    else if (I.stickR.id != null && I.fireDrag && Math.hypot(I.stickR.x, I.stickR.y) > 0.2) setT(I.stickR.x, I.stickR.y);
+    else if (I.isTouch && WTP.save.settings.touchAim === 'stick' && src === 'stick') { tx = aim.x; ty = aim.y; }
     else if (I.gp && Math.hypot(I.gpAxes[2], I.gpAxes[3]) > 0.3) setT(I.gpAxes[2], I.gpAxes[3]);
     else if (src === 'mouse' && I.mouse.in && (performance.now() - I.mouse.lastMove < 5000 || performance.now() - I.lastKey > 1500)) { const m = G.mouseWorld(); setT(m.x - o.x, m.y - oy); }
     else if (manualKeys || src === 'test') { tx = aim.x; ty = aim.y; }
@@ -299,7 +328,7 @@
     }
     const assist = WTP.save.settings.aimAssist;
     if (tx != null && assist) {
-      const cone = assist === 2 ? 0.45 : 0.22;
+      const cone = (assist === 2 ? 0.45 : 0.22) * (I.isTouch ? 1.6 : 1);
       const e = EN.nearest(o.x, oy, 170, Math.atan2(ty, tx), cone);
       if (e) { const ex = e.x - o.x, ey = e.y - oy, m = Math.hypot(ex, ey) || 1; const k = assist === 2 ? 0.75 : 0.45; setT(tx * (1 - k) + (ex / m) * k, ty * (1 - k) + (ey / m) * k); }
       else if (assist === 2 && (ka || I.gp)) {
@@ -327,12 +356,17 @@
     updateAim(dt);
     const ended = run.ended;
     PL.update(dt, ended);
-    const gun = PL.muzzle || PL.gun();
     const hand = PL.gunPos || PL.gun();
+    let gun = PL.muzzle || hand;
+    const bx = PL.x + PL.w / 2, by = PL.y + 5;
+    const gdx = gun.x - bx, gdy = gun.y - by, gd = Math.hypot(gdx, gdy);
+    if (gd > 0.01) for (let t = 0; t <= gd; t += 0.5) { const x = bx + (gdx * t) / gd, y = by + (gdy * t) / gd; if (Wd.solid(Math.floor(x), Math.floor(y))) { gun = { x, y }; break; } }
     const wheelOpen = WTP.ui?.wheelOpen?.();
     const want = !ended && !wheelOpen && !PL.dead && I.wantFire();
     const alt = !ended && I.take('alt');
-    WP.update(dt, want, alt, { x: gun.x, y: gun.y, hx: hand.x, hy: hand.y, ax: aim.x, ay: aim.y });
+    if (!ended && !PL.dead && I.take('melee')) WP.melee({ x: bx, y: PL.y + PL.h / 2, ax: aim.x, ay: aim.y });
+    WP.update(dt, want, alt, { x: gun.x, y: gun.y, hx: hand.x, hy: hand.y, ax: aim.x, ay: aim.y, bx, by });
+    WTP.props.update(dt);
     EN.update(dt);
     Wd.updateBurn();
     Wd.updateIce();
@@ -385,7 +419,7 @@
     workMax = Math.max(workMax * 0.995, work);
     if (WTP.save.settings.fps) drawFps();
     hudT -= dt;
-    if (hudT <= 0 && G.run) { hudT = 0.1; WTP.ui?.hud?.(G.run); }
+    if (hudT <= 0 && G.run) { hudT = 0.1; WTP.ui?.hud?.(G.run); WTP.ui?.tick?.(); }
   }
   function drawFps() {
     const sc = Math.max(2, Math.round(dpr * 2));
@@ -416,7 +450,7 @@
     const pc = PL.center();
     let tx = pc.x - vwc / 2 + aim.x * Math.min(36, vwc * 0.14);
     let ty = pc.y - vhc * (I.isTouch ? 0.46 : 0.5) + aim.y * Math.min(28, vhc * 0.12);
-    if (vwc >= Wd.w - 2) tx = (Wd.w - vwc) / 2; else tx = Math.max(-6, Math.min(Wd.w + 6 - vwc, tx));
+    if (vwc >= Wd.w - 2) tx = (Wd.w - vwc) / 2; else tx = Math.max(-2, Math.min(Wd.w + 2 - vwc, tx));
     ty = Math.max(-34, Math.min(Wd.h + 8 - vhc, ty));
     cam.x += (tx - cam.x) * Math.min(1, dt * 7);
     cam.y += (ty - cam.y) * Math.min(1, dt * (PL.vy > 200 ? 12 : 7));
@@ -468,12 +502,9 @@
     const sh = shakeT * intensity;
     const sx = sh > 0.4 ? Math.round(rand(-sh, sh) * 0.5) * Math.max(1, S >> 1) : 0, sy = sh > 0.4 ? Math.round(rand(-sh, sh) * 0.5) * Math.max(1, S >> 1) : 0;
     const ox = Math.round(-cam.x * S + sx), oy = Math.round(-cam.y * S + sy);
-    ctx.save();
-    ctx.translate(Math.round(ox * 0.35) % (48 * S), Math.round(oy * 0.35) % (48 * S));
-    ctx.fillStyle = voidPat;
-    ctx.fillRect(-48 * S, -48 * S, cv.width + 96 * S, cv.height + 96 * S);
-    ctx.restore();
     ctx.setTransform(S, 0, 0, S, ox, oy);
+    if (desk) ctx.drawImage(desk.cv, Math.round(cam.x * 0.3 - 60 - (desk.off || 0)), Math.round(cam.y * 0.45 - 60));
+    else { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.translate(Math.round(ox * 0.35) % (48 * S), Math.round(oy * 0.35) % (48 * S)); ctx.fillStyle = voidPat; ctx.fillRect(-48 * S, -48 * S, cv.width + 96 * S, cv.height + 96 * S); ctx.restore(); }
     const vx0 = Math.max(0, Math.floor(cam.x) - 4), vy0 = Math.max(0, Math.floor(cam.y) - 4);
     const vx1 = Math.min(Wd.w, Math.ceil(cam.x + viewW()) + 4), vy1 = Math.min(Wd.h, Math.ceil(cam.y + viewH()) + 4);
     const rw = vx1 - vx0, rh = vy1 - vy0;
@@ -481,13 +512,16 @@
       if (quality >= 1) drawShadow(vx0, vy0, rw, rh);
       ctx.drawImage(Wd.levelCv, vx0, vy0, rw, rh, vx0, vy0, rw, rh);
     }
-    ctx.fillStyle = PAL['3'];
-    for (let y = Math.max(-40, Math.floor(cam.y / 4) * 4); y < Math.min(Wd.h, cam.y + viewH()); y += 4) { ctx.fillRect(-2, y, 1, 2); ctx.fillRect(Wd.w + 1, y, 1, 2); }
+    ctx.fillStyle = PAL['0'];
+    const fy0 = Wd.top - 1, fh = Wd.h - Wd.top - 2;
+    ctx.fillRect(Wd.PX0 - 1, fy0, 1, fh); ctx.fillRect(Wd.PX1, fy0, 1, fh);
     drawTargets();
     const fxr = FX.render(ctx, cam, viewW(), viewH());
     ctx.drawImage(fxr.back, fxr.ox, fxr.oy);
+    WTP.props.draw(ctx);
     EN.draw(ctx);
     WP.draw(ctx);
+    WTP.gadgets.drawWorld(ctx);
     const cur = WP.current();
     PL.draw(ctx, dt, G.run.ended && G.run.won ? null : cur.sprite, aim, { swing: WP.swing() });
     if (PL.muzzle && !G.run.ended) {
@@ -594,7 +628,7 @@
     ctx.fillStyle = run.comboT < 0.5 ? PAL.e : PAL.y; ctx.fillRect(bx, y - sc * 2, bw, sc);
   }
 
-  G.zoom = (d) => { zoomBias = Math.max(-2, Math.min(4, zoomBias + d)); computeScale(); voidPat = null; };
+  G.zoom = (d) => { zoomBias = Math.max(-2, Math.min(4, zoomBias + d)); computeScale(); voidPat = null; if (G.run && desk && desk.h < Wd.h * 0.55 + viewH() + 100) desk = WTP.levels.buildDesktop(G.run.page, viewW(), viewH()); };
   G.aim = aim;
   G.cam = cam;
   G.scale = () => S;
@@ -608,6 +642,6 @@
     explode: (x, y, r) => WP.explode(x, y, r),
     end: (r) => G.end(r),
     weapons: () => WP.DEFS.map((d) => d.id),
-    allowAll: () => { if (G.run) { G.run.allWeapons = true; for (const d of WP.DEFS) if (!loadout.includes(d.id)) loadout.push(d.id); } }
+    allowAll: () => { if (G.run) { G.run.allWeapons = true; } }
   };
 })();

@@ -6,10 +6,10 @@
   const px = new Float32Array(CAP), py = new Float32Array(CAP), vx = new Float32Array(CAP), vy = new Float32Array(CAP);
   const life = new Float32Array(CAP), maxl = new Float32Array(CAP), aux = new Float32Array(CAP), aux2 = new Float32Array(CAP);
   const pc = new Uint32Array(CAP), pk = new Uint8Array(CAP), pf = new Uint8Array(CAP);
-  const K = { DEBRIS: 0, SHARD: 1, SPARK: 2, SMOKE: 3, FLAME: 4, DUST: 5, SHELL: 6, ACID: 7, LAVA: 8, PAINT: 9, SUCK: 10, CONFETTI: 11, WATER: 12, EMBER: 13, MAG: 14, STAR: 15, PIX: 16, TRAIL: 17 };
+  const K = { DEBRIS: 0, SHARD: 1, SPARK: 2, SMOKE: 3, FLAME: 4, DUST: 5, SHELL: 6, ACID: 7, LAVA: 8, PAINT: 9, SUCK: 10, CONFETTI: 11, WATER: 12, EMBER: 13, MAG: 14, STAR: 15, PIX: 16, TRAIL: 17, SPLINTER: 18, PAPER: 19, ASH: 20, RING: 21 };
   const FX = { K, np: 0, cap: 6000, anims: [], beams: [], pops: [], rings: [], flashA: 0, flashC: '#fff', decals: [] };
   WTP.fx = FX;
-  const PRIORITY_LOW = new Set([K.DUST, K.SMOKE, K.EMBER, K.TRAIL, K.SPARK]);
+  const PRIORITY_LOW = new Set([K.DUST, K.SMOKE, K.EMBER, K.TRAIL, K.SPARK, K.ASH, K.PAPER]);
 
   function add(k, x, y, ivx, ivy, c, l, a = 0, b = 0, f = 0) {
     let i = FX.np;
@@ -44,6 +44,9 @@
   FX.star = (x, y, ivx, ivy, c) => add(K.STAR, x, y, ivx, ivy, c, rand(0.6, 1.1));
   FX.pix = (x, y, ivx, ivy, c, l = 0.6) => add(K.PIX, x, y, ivx, ivy, c, l);
   FX.trail = (x, y, c, l = 0.25) => add(K.TRAIL, x, y, 0, 0, c, l);
+  FX.splinter = (x, y, ivx, ivy, c) => add(K.SPLINTER, x, y, ivx, ivy, (Math.random() < 0.3 ? shade(c, 1.2, 10) : c), rand(1.2, 2.4), rand(0, 6.28), rand(-14, 14));
+  FX.paper = (x, y, ivx, ivy, c) => add(K.PAPER, x, y, ivx, ivy, c, rand(2.2, 3.6), rand(0, 6.28));
+  FX.ash = (x, y) => add(K.ASH, x, y, rand(-6, 6), rand(-18, -6), Math.random() < 0.5 ? P32['3'] : P32['2'], rand(1, 2.4), rand(0, 6.28));
   FX.clear = () => { FX.np = 0; FX.anims = []; FX.beams = []; FX.pops = []; FX.rings = []; FX.flashA = 0; };
   FX.count = () => FX.np;
 
@@ -80,8 +83,10 @@
       life[i] -= dt;
       if (life[i] <= 0) { remove(i); continue; }
       const k = pk[i];
-      if (k === K.DEBRIS || k === K.SHARD || k === K.SHELL || k === K.CONFETTI || k === K.STAR || k === K.PIX) {
-        if (k === K.CONFETTI) { aux[i] += dt * 8; vy[i] = Math.min(vy[i] + 160 * dt, 38); vx[i] = vx[i] * 0.97 + Math.sin(aux[i]) * 40 * dt; }
+      if (k === K.DEBRIS || k === K.SHARD || k === K.SHELL || k === K.CONFETTI || k === K.STAR || k === K.PIX || k === K.SPLINTER || k === K.PAPER) {
+        if (k === K.SPLINTER) aux[i] += aux2[i] * dt;
+        if (k === K.PAPER) { aux[i] += dt * 5; vy[i] = Math.min(vy[i] + 120 * dt, 26); vx[i] = vx[i] * 0.96 + Math.sin(aux[i]) * 50 * dt; }
+        else if (k === K.CONFETTI) { aux[i] += dt * 8; vy[i] = Math.min(vy[i] + 160 * dt, 38); vx[i] = vx[i] * 0.97 + Math.sin(aux[i]) * 40 * dt; }
         else { vy[i] = Math.min(vy[i] + 430 * dt, 320); }
         const nx = px[i] + vx[i] * dt, ny = py[i] + vy[i] * dt;
         if (solid(Math.floor(nx), Math.floor(py[i]))) { vx[i] = -vx[i] * 0.4; if (k === K.STAR) { starHit(i, nx, py[i]); continue; } } else px[i] = nx;
@@ -93,7 +98,8 @@
             vy[i] = 0;
             if (k === K.DEBRIS && !pf[i] && Math.random() < 0.55 && W.placeRubble(Math.floor(px[i]), Math.floor(py[i]), pc[i])) { remove(i); continue; }
             if (k === K.DEBRIS) pf[i] = 1;
-            if (k === K.CONFETTI) { vx[i] = 0; aux2[i] = 1; }
+            if (k === K.CONFETTI || k === K.PAPER) { vx[i] = 0; aux2[i] = 1; }
+            if (k === K.SPLINTER) { aux2[i] = 0; if (!pf[i] && Math.random() < 0.3 && W.placeRubble(Math.floor(px[i]), Math.floor(py[i]), pc[i])) { remove(i); continue; } pf[i] = 1; }
           }
         } else py[i] = ny;
       } else if (k === K.ACID || k === K.LAVA || k === K.PAINT || k === K.WATER) {
@@ -125,6 +131,9 @@
           px[i] = nx; py[i] = ny;
         }
         if (dead) { remove(i); continue; }
+      } else if (k === K.ASH) {
+        aux[i] += dt * 2; vx[i] = vx[i] * 0.98 + Math.sin(aux[i]) * 8 * dt; vy[i] = vy[i] * 0.98 + 4 * dt;
+        px[i] += vx[i] * dt; py[i] += vy[i] * dt;
       } else if (k === K.SMOKE || k === K.FLAME || k === K.EMBER) {
         vx[i] *= 0.97; vy[i] = vy[i] * 0.97 - (k === K.EMBER ? -40 : 14) * dt;
         px[i] += vx[i] * dt; py[i] += vy[i] * dt;
@@ -265,6 +274,9 @@
         case K.SHARD: plot(bufB, X, Y, ((i + (performance.now() / 80) | 0) & 3) === 0 ? P32['7'] : pc[i]); break;
         case K.SHELL: plot(bufB, X, Y, pc[i]); if (Math.abs(vx[i]) > 5 || Math.abs(vy[i]) > 5 || (i & 1)) plot(bufB, X + 1, Y, shade(pc[i], 0.75)); else plot(bufB, X, Y - 1, shade(pc[i], 0.75)); break;
         case K.CONFETTI: plot(bufF, X, Y, pc[i]); if (Math.sin(aux[i] * 2) > 0) plot(bufF, X + 1, Y, shade(pc[i], 0.7)); break;
+        case K.SPLINTER: { const ca = Math.cos(aux[i]), sa = Math.sin(aux[i]); plot(bufB, X, Y, pc[i]); plot(bufB, Math.round(X + ca), Math.round(Y + sa), shade(pc[i], 0.8)); if (aux2[i]) plot(bufB, Math.round(X - ca), Math.round(Y - sa), shade(pc[i], 1.1, 6)); break; }
+        case K.PAPER: { const fl = Math.sin(aux[i]); plot(bufB, X, Y, fl > 0 ? pc[i] : shade(pc[i], 0.8)); if (Math.abs(fl) > 0.4) plot(bufB, X + 1, Y, shade(pc[i], 0.9)); if (fl > 0.2 && t > 0.3) plot(bufB, X, Y + 1, shade(pc[i], 0.75)); break; }
+        case K.ASH: if (DITH(X, Y, Math.min(1, t * 1.6))) plot(bufF, X, Y, pc[i]); break;
         case K.ACID: case K.LAVA: plot(bufB, X, Y, pc[i]); plot(bufB, X, Y - 1, shade(pc[i], 0.75)); if (k === K.LAVA) plot(bufF, X, Y, (i & 3) ? pc[i] : P32.Y); break;
         case K.PAINT: case K.WATER: plot(bufB, X, Y, pc[i]); if (k === K.WATER) plot(bufB, X - Math.sign(vx[i]), Y - 1, shade(pc[i], 0.8)); break;
         case K.SPARK: {
@@ -335,6 +347,19 @@
         const X = Math.round(x + Math.cos(ang + a) * R - ox), Y = Math.round(y + Math.sin(ang + a) * R - oy);
         plot(bufF, X, Y, k < 0.5 ? P32.K : P32.k);
         if (k < 0.6) plot(bufF, Math.round(x + Math.cos(ang + a) * (R - 3) - ox), Math.round(y + Math.sin(ang + a) * (R - 3) - oy), P32.m);
+      }
+    } else if (b.kind === 'select') {
+      const [x0, y0, x1, y1] = P;
+      const off = ((b.t * 30) | 0);
+      for (let x = Math.round(x0); x <= Math.round(x1); x++) { const on = ((x + off) >> 1) & 1; plot(bufF, x - ox, Math.round(y0) - oy, on ? P32['7'] : P32['0']); plot(bufF, x - ox, Math.round(y1) - oy, on ? P32['0'] : P32['7']); }
+      for (let y = Math.round(y0); y <= Math.round(y1); y++) { const on = ((y + off) >> 1) & 1; plot(bufF, Math.round(x0) - ox, y - oy, on ? P32['0'] : P32['7']); plot(bufF, Math.round(x1) - ox, y - oy, on ? P32['7'] : P32['0']); }
+    } else if (b.kind === 'cone') {
+      const [x, y, ang] = P;
+      for (let q = 0; q < 26; q++) {
+        const a = ang + (Math.random() * 2 - 1) * b.spread, d = Math.random() * b.r;
+        const ph = (d + performance.now() / 8) % 12;
+        if (ph > 2) continue;
+        plot(bufF, Math.round(x + Math.cos(a) * d - ox), Math.round(y + Math.sin(a) * d - oy), P32['6']);
       }
     } else if (b.kind === 'rope') {
       line(bufF, P[0] - ox, P[1] - oy, P[2] - ox, P[3] - oy, b.c1 || P32['5'], 0);

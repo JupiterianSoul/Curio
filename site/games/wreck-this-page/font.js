@@ -207,7 +207,7 @@
     const h = (o.big ? 11 : LINE) + pad * 2 + sh + depth;
     const cv = document.createElement('canvas');
     cv.width = Math.max(1, w); cv.height = Math.max(1, h);
-    const g = cv.getContext('2d');
+    const g = cv.getContext('2d', { willReadFrequently: true });
     const img = g.createImageData(cv.width, cv.height);
     const u = new Uint32Array(img.data.buffer);
     const mask = new Uint8Array(cv.width * cv.height);

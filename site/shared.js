@@ -30,6 +30,20 @@
   let touchpad = store.get('touchpad', false);
   const applyTouchpad = () => document.documentElement.classList.toggle('curio-touchpad', touchpad);
   applyTouchpad();
+  const MODE_KEY = `mode:${slug || 'hub'}`;
+  let mode = store.get(MODE_KEY, null) || store.get('modeDefault', 'simple');
+  if (mode !== 'simple' && mode !== 'advanced') mode = 'simple';
+  document.documentElement.dataset.mode = mode;
+  function setMode(next) {
+    next = next === 'advanced' ? 'advanced' : 'simple';
+    if (next === mode) return;
+    mode = next;
+    store.set(MODE_KEY, mode);
+    store.set('modeDefault', mode);
+    document.documentElement.dataset.mode = mode;
+    window.dispatchEvent(new CustomEvent('curio:mode', { detail: mode }));
+    if (document.body.dataset.modes !== 'live') location.reload();
+  }
   function setTouchpad(on) {
     touchpad = !!on;
     store.set('touchpad', touchpad);
@@ -46,6 +60,7 @@
         <span class="curio-bar__logo">✦</span><span>Zoble</span>
       </a>
       <div class="curio-bar__title"></div>
+      ${slug && document.body.dataset.modes != null ? `<div class="curio-mode" role="group" aria-label="Game mode"><button type="button" data-mode="simple" title="Simple: quick and easy">Simple</button><button type="button" data-mode="advanced" title="Advanced: more content, longer games">Advanced</button></div>` : ''}
       <button class="curio-bar__btn" data-act="touchpad" type="button"></button>
       <button class="curio-bar__btn" data-act="sound" type="button"></button>
       <button class="curio-bar__btn" data-act="theme" type="button" aria-label="Toggle dark mode"></button>
@@ -82,6 +97,18 @@
       const pick = others[Math.floor(Math.random() * others.length)];
       if (pick) location.href = `${root}games/${pick.slug}/index.html`;
     });
+    const modeBox = el.querySelector('.curio-mode');
+    if (modeBox) {
+      const paintMode = () => modeBox.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+      paintMode();
+      modeBox.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-mode]');
+        if (!b || b.dataset.mode === mode) return;
+        beep(660, 0.05);
+        setMode(b.dataset.mode);
+        paintMode();
+      });
+    }
     document.body.prepend(el);
     document.body.classList.add('curio-has-bar');
   }
@@ -252,6 +279,10 @@
     slug, game, store, beep, toast, modal, confetti, best, getBest, isDark,
     get muted() { return muted; },
     get touchpad() { return touchpad; },
+    get mode() { return mode; },
+    get simple() { return mode === 'simple'; },
+    get advanced() { return mode === 'advanced'; },
+    setMode,
     setTouchpad, drag,
     audioContext: ctx,
     rand: (a, b) => a + Math.random() * (b - a),

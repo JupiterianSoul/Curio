@@ -83,16 +83,19 @@
     if (S().scrap < d.price) return false;
     S().scrap -= d.price;
     S().owned[id] = true;
-    if (!S().hotbar.includes(id) && S().hotbar.length < 10) S().hotbar.push(id);
+    const hb = S().hotbar;
+    if (!hb.includes(id)) { const k = hb.indexOf(null); if (k >= 0) hb[k] = id; }
     WTP.persist();
     check();
     return true;
   }
   const isOwned = (id) => { const d = WTP.weapons.BY[id]; return !!d && (d.price === 0 || !!S().owned[id]); };
   function defaultHotbar() {
-    const owned = WTP.weapons.DEFS.filter((d) => isOwned(d.id)).map((d) => d.id);
-    const hb = S().hotbar.filter((id) => isOwned(id));
-    for (const id of owned) { if (hb.length >= 10) break; if (!hb.includes(id)) hb.push(id); }
+    const hb = WTP.normHotbar(S().hotbar).map((id) => (id && isOwned(id) ? id : null));
+    if (!hb.some(Boolean)) {
+      const owned = WTP.weapons.DEFS.filter((d) => isOwned(d.id)).map((d) => d.id);
+      for (let i = 0; i < hb.length && i < owned.length; i++) hb[i] = owned[i];
+    }
     S().hotbar = hb;
     return hb;
   }

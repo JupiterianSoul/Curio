@@ -74,41 +74,96 @@
     cv.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (e.ctrlKey) { I.zoomReq += e.deltaY; return; }
-      I.wheelAcc += Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      const TH = e.deltaMode === 1 ? 3 : 70;
-      if (Math.abs(I.wheelAcc) >= TH) { pending[I.wheelAcc > 0 ? 'next' : 'prev'] = true; I.wheelAcc = 0; }
+      I.wheelStep(e.deltaX, e.deltaY, e.deltaMode, performance.now());
     }, { passive: false });
   };
 
-  function bindStick(el, s, onDown, onUp) {
-    const knob = el.querySelector('i');
+  const WH = { acc: 0, last: -1e9, armed: true, lastFire: -1e9, big: false, fired: 0 };
+  I.wheelState = WH;
+  I.wheelStep = (dx, dy, mode, now) => {
+    let d = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+    if (mode === 1) d *= 40; else if (mode === 2) d *= 400;
+    if (!d) return false;
+    const gap = now - WH.last;
+    WH.last = now;
+    const big = Math.abs(d) >= 50;
+    if (gap > 200) { WH.armed = true; WH.acc = 0; }
+    else if (!WH.armed && big && WH.big && gap > 70) { WH.armed = true; WH.acc = 0; }
+    WH.big = big;
+    if (!WH.armed) return false;
+    if (WH.acc && Math.sign(WH.acc) !== Math.sign(d)) WH.acc = 0;
+    WH.acc += d;
+    if (Math.abs(WH.acc) < 45 || now - WH.lastFire < 90) return false;
+    pending[WH.acc > 0 ? 'next' : 'prev'] = true;
+    WH.fired++;
+    WH.acc = 0; WH.armed = false; WH.lastFire = now;
+    return true;
+  };
+  function bindJoy(zone, joy, s, o = {}) {
+    const knob = joy.querySelector('i');
+    let cx = 0, cy = 0, R = 40;
     const upd = (e) => {
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      let dx = (e.clientX - cx) / (r.width / 2), dy = (e.clientY - cy) / (r.height / 2);
+      let dx = (e.clientX - cx) / R, dy = (e.clientY - cy) / R;
       const m = Math.hypot(dx, dy);
       if (m > 1) { dx /= m; dy /= m; }
       s.x = dx; s.y = dy;
-      knob.style.transform = `translate(${Math.round(dx * r.width * 0.3)}px, ${Math.round(dy * r.height * 0.3)}px)`;
+      knob.style.transform = `translate(${Math.round(dx * R * 0.7)}px, ${Math.round(dy * R * 0.7)}px)`;
     };
-    el.addEventListener('pointerdown', (e) => { e.preventDefault(); s.id = e.pointerId; try { el.setPointerCapture(e.pointerId); } catch (er) { } el.classList.add('is-on'); C.audioContext && C.audioContext(); upd(e); onDown && onDown(); });
-    el.addEventListener('pointermove', (e) => { if (e.pointerId === s.id) upd(e); });
-    const end = (e) => { if (e.pointerId !== s.id) return; s.id = null; s.x = 0; s.y = 0; knob.style.transform = ''; el.classList.remove('is-on'); onUp && onUp(); };
+    zone.addEventListener('pointerdown', (e) => {
+      if (s.id != null) return;
+      e.preventDefault();
+      s.id = e.pointerId;
+      try { zone.setPointerCapture(e.pointerId); } catch (er) { }
+      const zr = zone.getBoundingClientRect();
+      R = (joy.offsetWidth || 90) / 2;
+      cx = Math.max(zr.left + R, Math.min(zr.right - R, e.clientX)); cy = Math.max(zr.top + R, Math.min(zr.bottom - R, e.clientY));
+      joy.style.left = `${cx - zr.left - R}px`; joy.style.top = `${cy - zr.top - R}px`;
+      joy.classList.add('is-on');
+      C.audioContext && C.audioContext();
+      upd(e);
+      o.down && o.down();
+    });
+    zone.addEventListener('pointermove', (e) => { if (e.pointerId === s.id) upd(e); });
+    const end = (e) => { if (e.pointerId !== s.id) return; s.id = null; s.x = 0; s.y = 0; knob.style.transform = ''; joy.classList.remove('is-on'); o.up && o.up(); };
+    zone.addEventListener('pointerup', end);
+    zone.addEventListener('pointercancel', end);
+  }
+  function bindFire(el, s) {
+    let cx = 0, cy = 0, moved = false;
+    const R = () => Math.max(30, el.offsetWidth * 0.7);
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (s.id != null) return;
+      s.id = e.pointerId; moved = false;
+      try { el.setPointerCapture(e.pointerId); } catch (er) { }
+      const r = el.getBoundingClientRect();
+      cx = r.left + r.width / 2; cy = r.top + r.height / 2;
+      I.touchBtns.fire = true; I.fireDrag = false; el.classList.add('is-on');
+      C.audioContext && C.audioContext();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== s.id) return;
+      let dx = (e.clientX - cx) / R(), dy = (e.clientY - cy) / R();
+      const m = Math.hypot(dx, dy);
+      if (m > 0.25) { moved = true; I.fireDrag = true; I.aim.src = 'stick'; }
+      if (m > 1) { dx /= m; dy /= m; }
+      if (moved) { s.x = dx; s.y = dy; const k = el.querySelector('.tb-aim'); if (k) k.style.transform = `translate(${Math.round(dx * 18)}px, ${Math.round(dy * 18)}px)`; }
+    });
+    const end = (e) => { if (e.pointerId !== s.id) return; s.id = null; s.x = 0; s.y = 0; I.touchBtns.fire = false; I.fireDrag = false; el.classList.remove('is-on'); const k = el.querySelector('.tb-aim'); if (k) k.style.transform = ''; };
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
   }
   I.bindTouch = (els) => {
-    bindStick(els.stickL, I.stickL);
-    bindStick(els.stickR, I.stickR, () => { I.aim.src = 'stick'; });
+    bindJoy(els.moveZone, els.joyL, I.stickL);
+    bindFire(els.fire, I.stickR);
     for (const [el, act] of els.buttons) {
-      const dn = (e) => { e.preventDefault(); I.touchBtns[act] = true; pending[act] = true; el.classList.add('is-on'); C.audioContext && C.audioContext(); };
+      const dn = (e) => { e.preventDefault(); I.touchBtns[act] = true; pending[act] = true; el.classList.add('is-on'); C.audioContext && C.audioContext(); WTP.vibe(8); };
       const up = () => { I.touchBtns[act] = false; el.classList.remove('is-on'); };
       el.addEventListener('pointerdown', dn);
       el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
     }
   };
-
-  const GP = { jump: [0], dash: [1, 2], alt: [6], fire: [7], prev: [4], next: [5], wheel: [3], reset: [8], pause: [9] };
+  const GP = { jump: [0], dash: [1], melee: [2], gadget: [10, 11], alt: [6], fire: [7], prev: [4], next: [5], wheel: [3], reset: [8], pause: [9] };
   function gpDown(a) {
     const g = I.gp;
     if (!g) return false;
@@ -147,8 +202,8 @@
     if (I.gp && I.gp.buttons[15]?.pressed && !mx) mx = 1;
     return mx;
   };
-  I.downHeld = () => I.down('down') || I.stickL.y > 0.7 || I.gpAxes[1] > 0.7;
-  I.jumpHeld = () => I.down('jump') || I.stickL.y < -0.62 || !!I.touchBtns.jump;
-  I.wantFire = () => I.pointerFire || I.fireLock || I.down('fire') || held.has('Enter') || held.has('NumpadEnter') || (I.stickR.id != null && Math.hypot(I.stickR.x, I.stickR.y) > 0.35) || !!I.touchBtns.fire;
+  I.downHeld = () => I.down('down') || (I.stickL.id != null && I.stickL.y > 0.72) || I.gpAxes[1] > 0.7;
+  I.jumpHeld = () => I.down('jump') || !!I.touchBtns.jump;
+  I.wantFire = () => I.pointerFire || I.fireLock || I.down('fire') || held.has('Enter') || held.has('NumpadEnter') || !!I.touchBtns.fire;
   I.gpNav = (a) => I.take(a);
 })();

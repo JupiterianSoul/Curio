@@ -1,6 +1,6 @@
 (() => {
   const WTP = window.WTP;
-  const { P32, rand, randInt, pick } = WTP;
+  const { P32, PAL, rand, randInt, pick, hash } = WTP;
   const SP = WTP.sprites;
   const PR = SP.PROJ;
   const W = () => WTP.world, FX = () => WTP.fx, G = () => WTP.game, PL = () => WTP.player, EN = () => WTP.enemies;
@@ -15,70 +15,89 @@
     { id: 'chem', short: 'Chem', name: 'Chemical', icon: 'zen', col: 'l' },
     { id: 'boom', short: 'Boom', name: 'Explosives', icon: 'star', col: 'e' },
     { id: 'melee', short: 'Melee', name: 'Melee', icon: 'cross', col: 'u' },
-    { id: 'gadget', short: 'Gadget', name: 'Gadgets', icon: 'gear', col: 'k' },
+    { id: 'gadget', short: 'Gizmo', name: 'Gizmos', icon: 'gear', col: 'k' },
     { id: 'disaster', short: 'Chaos', name: 'Disasters', icon: 'skull', col: 'y' }
   ];
   const D = [
-    { id: 'pistol', name: 'Pistol', cat: 'side', price: 0, rate: 0.17, flash: 'small', shell: true, recoil: 2, shake: 1.5, snd: 'pistol', st: [2, 3, 4, 1], tip: 'Reliable little holes. Pops letters right off the line.' },
-    { id: 'revolver', name: 'Hand Cannon', cat: 'side', price: 400, rate: 0.48, flash: 'big', recoil: 4, shake: 4, kick: 40, snd: 'revolver', st: [4, 2, 4, 2], tip: 'Six huge rounds that punch straight through paragraphs.', mag: 6, reload: 1 },
-    { id: 'dual', name: 'Dual Pistols', cat: 'side', price: 900, rate: 0.085, flash: 'small', shell: true, recoil: 1.5, shake: 1, snd: 'dual', st: [2, 4, 3, 2], tip: 'Golden twins. Alternating fire, maximum style.' },
-    { id: 'nailgun', name: 'Nail Gun', cat: 'side', price: 600, rate: 0.06, flash: 'small', recoil: 1, shake: 0.6, snd: 'nail', st: [1, 5, 3, 1], tip: 'Staples the page to itself. Very fast, very small.' },
-    { id: 'flare', name: 'Flare Gun', cat: 'side', price: 1200, rate: 0.6, flash: 'fire', recoil: 2, shake: 2, snd: 'flare', st: [2, 2, 3, 4], tip: 'A burning flare that sticks and sets everything around it on fire.' },
-    { id: 'smg', name: 'SMG', cat: 'auto', price: 0, rate: 0.055, flash: 'small', shell: true, recoil: 1.4, shake: 0.8, snd: 'smg', st: [2, 5, 3, 2], tip: 'Hold to shred text into confetti.' },
-    { id: 'rifle', name: 'Assault Rifle', cat: 'auto', price: 700, rate: 0.095, flash: 'big', shell: true, recoil: 2, shake: 1.6, snd: 'rifle', st: [3, 4, 5, 2], tip: 'Accurate, punchy, goes through a few lines at once.' },
-    { id: 'minigun', name: 'Minigun', cat: 'auto', price: 3500, rate: 0.028, flash: 'big', shell: true, recoil: 2.5, shake: 2.2, snd: 'minigun', spin: true, st: [3, 5, 4, 4], tip: 'Spin up, then a wall of lead. Pushes you backwards.' },
-    { id: 'shotgun', name: 'Shotgun', cat: 'shot', price: 0, rate: 0.7, flash: 'big', shell: true, recoil: 5, shake: 7, kick: 130, snd: 'shotgun', st: [4, 2, 2, 3], tip: 'Spray of pellets. Fire downward for a shotgun jump.' },
-    { id: 'double', name: 'Double Barrel', cat: 'shot', price: 1100, rate: 1.05, flash: 'big', recoil: 7, shake: 11, kick: 230, snd: 'double', st: [5, 1, 2, 4], tip: 'Both barrels at once. Launches you across the page.' },
-    { id: 'flak', name: 'Flak Cannon', cat: 'shot', price: 2200, rate: 0.8, flash: 'big', recoil: 5, shake: 5, kick: 60, snd: 'flak', st: [4, 2, 4, 4], tip: 'A shell that bursts into a cloud of shrapnel mid-air.' },
-    { id: 'confetti', name: 'Confetti Cannon', cat: 'shot', price: 800, rate: 0.5, flash: 'pink', recoil: 3, shake: 3, kick: 50, snd: 'confetti', st: [2, 3, 2, 5], tip: 'Party time. Paints the page and pokes tiny holes.' },
-    { id: 'sniper', name: 'Sniper Rifle', cat: 'prec', price: 1500, rate: 1.1, flash: 'big', shell: true, recoil: 6, shake: 6, kick: 60, snd: 'sniper', st: [4, 1, 5, 2], tip: 'Laser sight, one shot, three walls deep.' },
-    { id: 'railgun', name: 'Railgun', cat: 'prec', price: 3000, rate: 1.15, flash: 'energy', recoil: 8, shake: 14, kick: 180, snd: 'rail', st: [5, 1, 5, 3], tip: 'Charges, then pierces the entire page edge to edge.', charge: 0.45 },
-    { id: 'crossbow', name: 'Crossbow', cat: 'prec', price: 1000, rate: 0.62, recoil: 2, shake: 2, snd: 'throw', st: [3, 2, 4, 2], tip: 'Bolts skewer whole words and knock every letter loose.' },
-    { id: 'harpoon', name: 'Harpoon', cat: 'prec', price: 1800, rate: 1, recoil: 4, shake: 3, snd: 'harpoon', st: [3, 2, 4, 4], tip: 'Spears a chunk of the page and yanks it toward you.' },
-    { id: 'laser', name: 'Laser', cat: 'energy', price: 1600, hold: true, loop: 'laser', flash: 'pink', st: [3, 5, 5, 2], tip: 'Melts a clean tunnel wherever you point it.' },
-    { id: 'plasma', name: 'Plasma Rifle', cat: 'energy', price: 2000, rate: 0.33, flash: 'pink', recoil: 3, shake: 3, snd: 'plasma', st: [4, 3, 4, 3], tip: 'Hot purple balls that pop into neat craters.' },
-    { id: 'tesla', name: 'Tesla Coil', cat: 'energy', price: 2600, rate: 0.13, flash: 'energy', recoil: 1, shake: 1.5, snd: 'tesla', st: [3, 4, 3, 5], tip: 'Chain lightning that arcs from letter to letter.' },
-    { id: 'freeze', name: 'Freeze Ray', cat: 'energy', price: 1900, hold: true, loop: 'freeze', st: [2, 5, 3, 4], tip: 'Turns pixels to ice. Ice shatters. Beautifully.' },
-    { id: 'sound', name: 'Sound Cannon', cat: 'energy', price: 2400, rate: 0.9, recoil: 5, shake: 8, kick: 90, snd: 'sound', st: [3, 2, 3, 5], tip: 'A shockwave cone that rattles everything loose.' },
-    { id: 'eraser', name: 'Pixel Eraser', cat: 'energy', price: 1300, hold: true, loop: 'eraser', st: [3, 5, 3, 1], tip: 'Ctrl+Z for reality. Rubs out pixels wherever you aim.' },
-    { id: 'glitch', name: 'Glitch Gun', cat: 'energy', price: 4200, rate: 0.28, flash: 'pink', recoil: 2, shake: 3, snd: 'glitch', st: [3, 3, 4, 5], tip: 'Corrupts the page. Rows tear, colours scramble, pixels flee.' },
-    { id: 'flame', name: 'Flamethrower', cat: 'chem', price: 1400, hold: true, loop: 'flame', st: [3, 5, 2, 5], tip: 'Pixels catch fire, fire spreads, the page smoulders.' },
-    { id: 'acid', name: 'Acid Sprayer', cat: 'chem', price: 1700, hold: true, loop: 'acid', st: [3, 4, 2, 4], tip: 'Green goo that drips and eats its way downward.' },
-    { id: 'paint', name: 'Paint Gun', cat: 'chem', price: 500, rate: 0.085, flash: 'pink', recoil: 1, shake: 0.5, snd: 'paint', st: [1, 5, 3, 3], tip: 'Recolours the internet. Vandalism, technically.' },
-    { id: 'lava', name: 'Lava Launcher', cat: 'chem', price: 2800, rate: 0.26, flash: 'fire', recoil: 2, shake: 2, snd: 'lava', st: [4, 3, 3, 5], tip: 'Lobs molten blobs that melt straight down through the page.' },
-    { id: 'water', name: 'Water Cannon', cat: 'chem', price: 600, hold: true, loop: 'water', st: [1, 5, 3, 3], tip: 'Washes rubble away and puts out fires. Aim down to fly.' },
-    { id: 'grenade', name: 'Grenades', cat: 'boom', price: 0, rate: 0.5, throw: true, snd: 'throw', st: [4, 2, 3, 3], tip: 'Bouncy, then boom.' },
-    { id: 'rocket', name: 'Rocket Launcher', cat: 'boom', price: 1200, rate: 0.62, flash: 'fire', recoil: 5, shake: 3, kick: 30, snd: 'rocket', st: [5, 2, 4, 4], tip: 'Big craters and the classic rocket jump.' },
-    { id: 'homing', name: 'Homing Missiles', cat: 'boom', price: 2700, rate: 0.9, flash: 'fire', recoil: 3, shake: 3, snd: 'launch', st: [4, 2, 5, 4], tip: 'Four little missiles that hunt down whatever you point at.' },
-    { id: 'cluster', name: 'Cluster Bomb', cat: 'boom', price: 1600, rate: 0.9, throw: true, snd: 'throw', st: [4, 1, 3, 5], tip: 'One bomb becomes seven bombs. Maths!' },
-    { id: 'sticky', name: 'Sticky Bombs', cat: 'boom', price: 1500, rate: 0.3, throw: true, snd: 'throw', st: [4, 3, 3, 4], tip: 'They stick. Press ALT to blow them all, or wait.', alt: 'Detonate all' },
-    { id: 'mine', name: 'Proximity Mines', cat: 'boom', price: 1100, rate: 0.45, throw: true, snd: 'throw', st: [4, 2, 2, 4], tip: 'Arm, wait, boom when anything wanders close. ALT detonates.', alt: 'Detonate all' },
-    { id: 'firework', name: 'Fireworks', cat: 'boom', price: 1400, rate: 0.55, flash: 'pink', recoil: 2, shake: 2, snd: 'firework', st: [3, 2, 4, 5], tip: 'A rocket that bursts into burning stars.' },
-    { id: 'nuke', name: 'Pocket Nuke', cat: 'boom', price: 9000, rate: 7, flash: 'fire', recoil: 6, shake: 4, snd: 'nukeLaunch', st: [5, 1, 4, 5], tip: 'Do not aim this at anything you love.' },
-    { id: 'hammer', name: 'Giant Hammer', cat: 'melee', price: 0, rate: 0.36, melee: true, snd: 'swoosh', st: [4, 3, 1, 3], tip: 'Smash. Hit the floor to pogo upward.' },
-    { id: 'chainsaw', name: 'Chainsaw', cat: 'melee', price: 1500, hold: true, loop: 'saw', melee: true, st: [3, 5, 1, 3], tip: 'Carves right through, up close and personal.' },
-    { id: 'katana', name: 'Katana', cat: 'melee', price: 1000, rate: 0.26, melee: true, snd: 'slash', st: [3, 4, 2, 3], tip: 'Clean cuts. Sliced pieces fall away in one piece.' },
-    { id: 'drill', name: 'Power Drill', cat: 'melee', price: 2000, hold: true, loop: 'drill', melee: true, st: [3, 5, 1, 2], tip: 'Pulls you forward through anything. Tunnel time.' },
-    { id: 'wrecking', name: 'Wrecking Ball', cat: 'melee', price: 2600, hold: true, melee: true, st: [5, 3, 2, 4], tip: 'A ball on a chain. Hold fire to swing it toward your aim.' },
-    { id: 'portal', name: 'Portal Gun', cat: 'gadget', price: 2200, rate: 0.35, flash: 'energy', snd: 'portal', st: [1, 3, 5, 4], tip: 'Blue, then orange. Things that go in come out. ALT clears.', alt: 'Clear portals' },
-    { id: 'gravity', name: 'Gravity Gun', cat: 'gadget', price: 3200, hold: true, loop: 'grav', st: [4, 3, 3, 5], tip: 'Hold to rip out a chunk, let go to throw it.' },
-    { id: 'magnet', name: 'Magnet', cat: 'gadget', price: 1800, hold: true, loop: 'magnet', st: [2, 4, 3, 4], tip: 'Rips letters off the page. Let go to fling them back.' },
-    { id: 'ballgun', name: 'Bouncy Balls', cat: 'gadget', price: 900, rate: 0.16, flash: 'pink', recoil: 1, shake: 0.6, snd: 'ball', st: [2, 4, 4, 4], tip: 'Rubber balls that ricochet and chip away at everything.' },
-    { id: 'boomerang', name: 'Boomerang', cat: 'gadget', price: 700, rate: 0.3, throw: true, snd: 'boomerang', st: [3, 3, 3, 3], tip: 'Out and back again, carving both ways.' },
-    { id: 'blackhole', name: 'Black Hole', cat: 'gadget', price: 6000, rate: 2.4, throw: true, snd: 'throw', st: [5, 1, 3, 5], tip: 'Swallows letters, debris and the occasional hero.' },
-    { id: 'snowball', name: 'Snowballs', cat: 'gadget', price: 300, rate: 0.22, throw: true, snd: 'snow', st: [1, 4, 3, 2], tip: 'Freezes a little patch. Follow up with anything.' },
-    { id: 'banana', name: 'Banana Bomb', cat: 'gadget', price: 450, rate: 1.2, throw: true, snd: 'banana', st: [4, 1, 3, 5], tip: 'Splits into five smaller bananas. All of them explode.' },
-    { id: 'airstrike', name: 'Airstrike', cat: 'disaster', price: 3800, rate: 1.8, throw: true, snd: 'throw', st: [5, 1, 5, 5], tip: 'Throw a flare. Bombs follow shortly after.' },
-    { id: 'orbital', name: 'Orbital Laser', cat: 'disaster', price: 7000, rate: 4, throw: true, snd: 'beep', st: [5, 1, 5, 5], tip: 'Throw a beacon. Space answers with a column of light.' },
-    { id: 'meteor', name: 'Meteor Shower', cat: 'disaster', price: 5000, rate: 4, call: true, snd: 'meteor', st: [5, 1, 5, 5], tip: 'Rains burning rocks around your aim point.' },
-    { id: 'bees', name: 'Bee Swarm', cat: 'disaster', price: 3000, rate: 3, call: true, snd: 'buzz', st: [3, 1, 5, 4], tip: 'Fourteen hungry bees with a taste for typography.' },
-    { id: 'tornado', name: 'Tornado', cat: 'disaster', price: 4500, rate: 5, call: true, snd: 'swoosh', st: [4, 1, 4, 5], tip: 'A funnel that rips through the page, sucking everything up.' },
-    { id: 'quake', name: 'Earthquake', cat: 'disaster', price: 4000, rate: 6, call: true, snd: 'quake', st: [4, 1, 5, 5], tip: 'Shakes the whole page until loose things fall off.' }
+    { id: 'pistol', does: 'Pops single letters off cleanly, dead accurate', name: 'Pistol', cat: 'side', price: 0, rate: 0.17, flash: 'small', shell: true, recoil: 2, shake: 1.5, snd: 'pistol', st: [2, 3, 4, 1], tip: 'Reliable little holes. Pops letters right off the line.' },
+    { id: 'revolver', does: 'Six piercing slugs that tunnel through whole paragraphs', name: 'Hand Cannon', cat: 'side', price: 400, rate: 0.48, flash: 'big', recoil: 4, shake: 4, kick: 40, snd: 'revolver', st: [4, 2, 4, 2], tip: 'Six huge rounds that punch straight through paragraphs.', mag: 6, reload: 1 },
+    { id: 'dual', does: 'Bullets ricochet once off walls', name: 'Dual Pistols', cat: 'side', price: 900, rate: 0.085, flash: 'small', shell: true, recoil: 1.5, shake: 1, snd: 'dual', st: [2, 4, 3, 2], tip: 'Golden twins. Alternating fire, maximum style.' },
+    { id: 'nailgun', does: 'Nails stick in place as tiny footholds you can stand on', name: 'Nail Gun', cat: 'side', price: 600, rate: 0.06, flash: 'small', recoil: 1, shake: 0.6, snd: 'nail', st: [1, 5, 3, 1], tip: 'Staples the page to itself. Very fast, very small.' },
+    { id: 'flare', does: 'Sticks where it lands and keeps the fire going', name: 'Flare Gun', cat: 'side', price: 1200, rate: 0.6, flash: 'fire', recoil: 2, shake: 2, snd: 'flare', st: [2, 2, 3, 4], tip: 'A burning flare that sticks and sets everything around it on fire.' },
+    { id: 'smg', does: 'Every hit knocks a letter loose', name: 'SMG', cat: 'auto', price: 0, rate: 0.055, flash: 'small', shell: true, recoil: 1.4, shake: 0.8, snd: 'smg', st: [2, 5, 3, 2], tip: 'Hold to shred text into confetti.' },
+    { id: 'rifle', does: 'Pierces through five layers of text', name: 'Assault Rifle', cat: 'auto', price: 700, rate: 0.095, flash: 'big', shell: true, recoil: 2, shake: 1.6, snd: 'rifle', st: [3, 4, 5, 2], tip: 'Accurate, punchy, goes through a few lines at once.' },
+    { id: 'minigun', does: 'Spins up into a wall of lead that pushes you around', name: 'Minigun', cat: 'auto', price: 3500, rate: 0.028, flash: 'big', shell: true, recoil: 2.5, shake: 2.2, snd: 'minigun', spin: true, st: [3, 5, 4, 4], tip: 'Spin up, then a wall of lead. Pushes you backwards.' },
+    { id: 'shotgun', does: 'Fire downward to shotgun jump', name: 'Shotgun', cat: 'shot', price: 0, rate: 0.7, flash: 'big', shell: true, recoil: 5, shake: 7, kick: 130, snd: 'shotgun', st: [4, 2, 2, 3], tip: 'Spray of pellets. Fire downward for a shotgun jump.' },
+    { id: 'double', does: 'Two barrels at once: launches you across the page', name: 'Double Barrel', cat: 'shot', price: 1100, rate: 1.05, flash: 'big', recoil: 7, shake: 11, kick: 230, snd: 'double', st: [5, 1, 2, 4], tip: 'Both barrels at once. Launches you across the page.' },
+    { id: 'flak', does: 'Bursts in mid air into shrapnel', name: 'Flak Cannon', cat: 'shot', price: 2200, rate: 0.8, flash: 'big', recoil: 5, shake: 5, kick: 60, snd: 'flak', st: [4, 2, 4, 4], tip: 'A shell that bursts into a cloud of shrapnel mid-air.' },
+    { id: 'confetti', does: 'Paints the page in party colours', name: 'Confetti Cannon', cat: 'shot', price: 800, rate: 0.5, flash: 'pink', recoil: 3, shake: 3, kick: 50, snd: 'confetti', st: [2, 3, 2, 5], tip: 'Party time. Paints the page and pokes tiny holes.' },
+    { id: 'sniper', does: 'Triple damage on enemies and three walls deep', name: 'Sniper Rifle', cat: 'prec', price: 1500, rate: 1.1, flash: 'big', shell: true, recoil: 6, shake: 6, kick: 60, snd: 'sniper', st: [4, 1, 5, 2], tip: 'Laser sight, one shot, three walls deep.' },
+    { id: 'railgun', does: 'Charges, then pierces the whole page and the layers behind it', name: 'Railgun', cat: 'prec', price: 3000, rate: 1.15, flash: 'energy', recoil: 8, shake: 14, kick: 180, snd: 'rail', st: [5, 1, 5, 3], tip: 'Charges, then pierces the entire page edge to edge.', charge: 0.45 },
+    { id: 'crossbow', does: 'Bolts skewer whole words in one shot', name: 'Crossbow', cat: 'prec', price: 1000, rate: 0.62, recoil: 2, shake: 2, snd: 'twang', st: [3, 2, 4, 2], tip: 'Bolts skewer whole words and knock every letter loose.' },
+    { id: 'harpoon', does: 'Spears a chunk and yanks it toward you', name: 'Harpoon', cat: 'prec', price: 1800, rate: 1, recoil: 4, shake: 3, snd: 'harpoon', st: [3, 2, 4, 4], tip: 'Spears a chunk of the page and yanks it toward you.' },
+    { id: 'laser', does: 'Melts even metal in a clean beam', name: 'Laser', cat: 'energy', price: 1600, hold: true, loop: 'laser', flash: 'pink', st: [3, 5, 5, 2], tip: 'Melts a clean tunnel wherever you point it.' },
+    { id: 'plasma', does: 'Neat craters with no fire', name: 'Plasma Rifle', cat: 'energy', price: 2000, rate: 0.33, flash: 'pink', recoil: 3, shake: 3, snd: 'plasma', st: [4, 3, 4, 3], tip: 'Hot purple balls that pop into neat craters.' },
+    { id: 'tesla', does: 'Chain lightning that hops between letters and conducts through metal', name: 'Tesla Coil', cat: 'energy', price: 2600, rate: 0.13, flash: 'energy', recoil: 1, shake: 1.5, snd: 'tesla', st: [3, 4, 3, 5], tip: 'Chain lightning that arcs from letter to letter.' },
+    { id: 'freeze', does: 'Turns the page to ice that shatters in one hit', name: 'Freeze Ray', cat: 'energy', price: 1900, hold: true, loop: 'freeze', st: [2, 5, 3, 4], tip: 'Turns pixels to ice. Ice shatters. Beautifully.' },
+    { id: 'sound', does: 'A cone shockwave that shoves enemies and chunks away', name: 'Sound Cannon', cat: 'energy', price: 2400, rate: 0.9, recoil: 5, shake: 8, kick: 90, snd: 'sound', st: [3, 2, 3, 5], tip: 'A shockwave cone that rattles everything loose.' },
+    { id: 'eraser', does: 'Rubs out every layer, straight through to the desktop', name: 'Pixel Eraser', cat: 'energy', price: 1300, hold: true, loop: 'eraser', st: [3, 5, 3, 1], tip: 'Ctrl+Z for reality. Rubs out pixels wherever you aim.' },
+    { id: 'glitch', does: 'Scrambles rows of pixels and corrupts colours', name: 'Glitch Gun', cat: 'energy', price: 4200, rate: 0.28, flash: 'pink', recoil: 2, shake: 3, snd: 'glitch', st: [3, 3, 4, 5], tip: 'Corrupts the page. Rows tear, colours scramble, pixels flee.' },
+    { id: 'flame', does: 'Sets paper and wood on fire, and fire spreads', name: 'Flamethrower', cat: 'chem', price: 1400, hold: true, loop: 'flame', st: [3, 5, 2, 5], tip: 'Pixels catch fire, fire spreads, the page smoulders.' },
+    { id: 'acid', does: 'Drips and eats downward, slowly corrodes metal', name: 'Acid Sprayer', cat: 'chem', price: 1700, hold: true, loop: 'acid', st: [3, 4, 2, 4], tip: 'Green goo that drips and eats its way downward.' },
+    { id: 'paint', does: 'Recolours anything without breaking it', name: 'Paint Gun', cat: 'chem', price: 500, rate: 0.085, flash: 'pink', recoil: 1, shake: 0.5, snd: 'paint', st: [1, 5, 3, 3], tip: 'Recolours the internet. Vandalism, technically.' },
+    { id: 'lava', does: 'Molten blobs that melt straight down', name: 'Lava Launcher', cat: 'chem', price: 2800, rate: 0.26, flash: 'fire', recoil: 2, shake: 2, snd: 'lava', st: [4, 3, 3, 5], tip: 'Lobs molten blobs that melt straight down through the page.' },
+    { id: 'water', does: 'Washes rubble away, soaks paper to mush, puts out fire, aim down to hover', name: 'Water Cannon', cat: 'chem', price: 600, hold: true, loop: 'water', st: [1, 5, 3, 3], tip: 'Washes rubble away and puts out fires. Aim down to fly.' },
+    { id: 'grenade', does: 'Bouncy timed explosive', name: 'Grenades', cat: 'boom', price: 0, rate: 0.5, throw: true, snd: 'pin', st: [4, 2, 3, 3], tip: 'Bouncy, then boom.' },
+    { id: 'rocket', does: 'Big crater and the classic rocket jump', name: 'Rocket Launcher', cat: 'boom', price: 1200, rate: 0.62, flash: 'fire', recoil: 5, shake: 3, kick: 30, snd: 'rocket', st: [5, 2, 4, 4], tip: 'Big craters and the classic rocket jump.' },
+    { id: 'homing', does: 'Four missiles hunt down your aim point', name: 'Homing Missiles', cat: 'boom', price: 2700, rate: 0.9, flash: 'fire', recoil: 3, shake: 3, snd: 'launch', st: [4, 2, 5, 4], tip: 'Four little missiles that hunt down whatever you point at.' },
+    { id: 'cluster', does: 'One bomb splits into seven', name: 'Cluster Bomb', cat: 'boom', price: 1600, rate: 0.9, throw: true, snd: 'rattle', st: [4, 1, 3, 5], tip: 'One bomb becomes seven bombs. Maths!' },
+    { id: 'sticky', does: 'Stick to anything, even enemies. ALT blows them all', name: 'Sticky Bombs', cat: 'boom', price: 1500, rate: 0.3, throw: true, snd: 'squelch', st: [4, 3, 3, 4], tip: 'They stick. Press ALT to blow them all, or wait.', alt: 'Detonate all' },
+    { id: 'mine', does: 'Waits for anything to wander close', name: 'Proximity Mines', cat: 'boom', price: 1100, rate: 0.45, throw: true, snd: 'clankMine', st: [4, 2, 2, 4], tip: 'Arm, wait, boom when anything wanders close. ALT detonates.', alt: 'Detonate all' },
+    { id: 'firework', does: 'Bursts into burning stars that light everything', name: 'Fireworks', cat: 'boom', price: 1400, rate: 0.55, flash: 'pink', recoil: 2, shake: 2, snd: 'firework', st: [3, 2, 4, 5], tip: 'A rocket that bursts into burning stars.' },
+    { id: 'nuke', does: 'Erases a whole region down to the desktop', name: 'Pocket Nuke', cat: 'boom', price: 9000, rate: 7, flash: 'fire', recoil: 6, shake: 4, snd: 'nukeLaunch', st: [5, 1, 4, 5], tip: 'Do not aim this at anything you love.' },
+    { id: 'hammer', does: 'Smash the floor to pogo upward', name: 'Giant Hammer', cat: 'melee', price: 0, rate: 0.36, melee: true, snd: 'heave', st: [4, 3, 1, 3], tip: 'Smash. Hit the floor to pogo upward.' },
+    { id: 'chainsaw', does: 'Continuous carving up close', name: 'Chainsaw', cat: 'melee', price: 1500, hold: true, loop: 'saw', melee: true, st: [3, 5, 1, 3], tip: 'Carves right through, up close and personal.' },
+    { id: 'katana', does: 'Clean cuts: sliced pieces fall away whole', name: 'Katana', cat: 'melee', price: 1000, rate: 0.26, melee: true, snd: 'slash', st: [3, 4, 2, 3], tip: 'Clean cuts. Sliced pieces fall away in one piece.' },
+    { id: 'drill', does: 'Pulls you forward through anything', name: 'Power Drill', cat: 'melee', price: 2000, hold: true, loop: 'drill', melee: true, st: [3, 5, 1, 2], tip: 'Pulls you forward through anything. Tunnel time.' },
+    { id: 'wrecking', does: 'A ball on a chain that you swing with momentum', name: 'Wrecking Ball', cat: 'melee', price: 2600, hold: true, loop: 'chain', melee: true, st: [5, 3, 2, 4], tip: 'A ball on a chain. Hold fire to swing it toward your aim.' },
+    { id: 'portal', does: 'Things that go in come out the other side', name: 'Portal Gun', cat: 'gadget', price: 2200, rate: 0.35, flash: 'energy', snd: 'portal', st: [1, 3, 5, 4], tip: 'Blue, then orange. Things that go in come out. ALT clears.', alt: 'Clear portals' },
+    { id: 'gravity', does: 'Rip out a chunk and throw it', name: 'Gravity Gun', cat: 'gadget', price: 3200, hold: true, loop: 'grav', st: [4, 3, 3, 5], tip: 'Hold to rip out a chunk, let go to throw it.' },
+    { id: 'magnet', does: 'Strips letters off the page and flings them back', name: 'Magnet', cat: 'gadget', price: 1800, hold: true, loop: 'magnet', st: [2, 4, 3, 4], tip: 'Rips letters off the page. Let go to fling them back.' },
+    { id: 'ballgun', does: 'Rubber balls that speed up every time they bounce', name: 'Bouncy Balls', cat: 'gadget', price: 900, rate: 0.16, flash: 'pink', recoil: 1, shake: 0.6, snd: 'ball', st: [2, 4, 4, 4], tip: 'Rubber balls that ricochet and chip away at everything.' },
+    { id: 'boomerang', does: 'Carves on the way out and on the way back', name: 'Boomerang', cat: 'gadget', price: 700, rate: 0.3, throw: true, snd: 'boomerang', st: [3, 3, 3, 3], tip: 'Out and back again, carving both ways.' },
+    { id: 'blackhole', does: 'Swallows everything nearby, then pops', name: 'Black Hole', cat: 'gadget', price: 6000, rate: 2.4, throw: true, snd: 'warpThrow', st: [5, 1, 3, 5], tip: 'Swallows letters, debris and the occasional hero.' },
+    { id: 'snowball', does: 'Freezes a patch for a follow up shot', name: 'Snowballs', cat: 'gadget', price: 300, rate: 0.22, throw: true, snd: 'snowThrow', st: [1, 4, 3, 2], tip: 'Freezes a little patch. Follow up with anything.' },
+    { id: 'banana', does: 'Splits into five exploding bananas', name: 'Banana Bomb', cat: 'gadget', price: 450, rate: 1.2, throw: true, snd: 'banana', st: [4, 1, 3, 5], tip: 'Splits into five smaller bananas. All of them explode.' },
+    { id: 'airstrike', does: 'Throw a flare, a bomb line follows', name: 'Airstrike', cat: 'disaster', price: 3800, rate: 1.8, throw: true, snd: 'flarePop', st: [5, 1, 5, 5], tip: 'Throw a flare. Bombs follow shortly after.' },
+    { id: 'orbital', does: 'A column of light that drills to the bottom of the page', name: 'Orbital Laser', cat: 'disaster', price: 7000, rate: 4, throw: true, snd: 'beep', st: [5, 1, 5, 5], tip: 'Throw a beacon. Space answers with a column of light.' },
+    { id: 'meteor', does: 'Rains burning rocks around your aim', name: 'Meteor Shower', cat: 'disaster', price: 5000, rate: 4, call: true, snd: 'meteor', st: [5, 1, 5, 5], tip: 'Rains burning rocks around your aim point.' },
+    { id: 'bees', does: 'A swarm that eats letters and chases enemies', name: 'Bee Swarm', cat: 'disaster', price: 3000, rate: 3, call: true, snd: 'buzz', st: [3, 1, 5, 4], tip: 'Fourteen hungry bees with a taste for typography.' },
+    { id: 'tornado', does: 'A funnel that sucks up everything it touches', name: 'Tornado', cat: 'disaster', price: 4500, rate: 5, call: true, snd: 'tornadoCall', st: [4, 1, 4, 5], tip: 'A funnel that rips through the page, sucking everything up.' },
+    { id: 'whip', does: 'Long reach crack that yanks letters, chunks and enemies toward you, and swings you from ceilings', name: 'Bullwhip', cat: 'melee', price: 0, rate: 0.36, melee: true, snd: 'whipWind', st: [3, 3, 4, 4], tip: 'Crack it at the page. The tip yanks things to you. Crack it at a ceiling in the air to swing.' },
+    { id: 'glove', does: 'Punches a whole chunk out of the page as a flying projectile', name: 'Spring Glove', cat: 'melee', price: 1300, rate: 0.5, melee: true, snd: 'springPunch', st: [4, 2, 1, 4], tip: 'Boing. The punched chunk flies off and explodes on impact.' },
+    { id: 'saw', does: 'Blades embed in soft stuff and keep grinding, ricochet off metal', name: 'Saw Launcher', cat: 'side', price: 1400, rate: 0.42, flash: 'small', recoil: 2, shake: 2, snd: 'sawShot', st: [3, 3, 4, 4], tip: 'Spinning blades that bite into the page and keep chewing.' },
+    { id: 'backspace', does: 'Deletes text letter by letter along a line, never touches anything else', name: 'Backspace', cat: 'energy', price: 700, rate: 0.5, flash: 'energy', recoil: 1, shake: 1, snd: 'backspace', st: [2, 3, 5, 2], tip: 'A text cursor that deletes every letter in its path. Typing in reverse.' },
+    { id: 'cutter', does: 'Cuts a clean rectangle out of the page, then pastes it wherever you throw it', name: 'Ctrl+X', cat: 'gadget', price: 1600, rate: 0.35, snd: 'cut', st: [3, 2, 3, 4], tip: 'Fire to cut a selection, fire again to paste it at speed. ALT pastes it gently.', alt: 'Paste in place' },
+    { id: 'vacuum', does: 'Sucks up rubble and debris as ammo, then blasts it back out', name: 'Shop Vac', cat: 'gadget', price: 1200, hold: true, loop: 'vacuum', st: [3, 4, 3, 3], tip: 'Hold to clean up the mess, let go to fire the mess back. Recycling!', alt: 'Blow it out' },
+    { id: 'pen', does: 'Draws solid ink you can stand on: build bridges, walls and stairs', name: 'Ink Pen', cat: 'gadget', price: 500, hold: true, loop: 'pen', st: [1, 4, 3, 3], tip: 'Hold to draw solid ink lines. Make your own platforms, then wreck them too.' },
+    { id: 'bowling', does: 'A heavy ball that rolls and plows a long trench', name: 'Bowling Ball', cat: 'boom', price: 900, rate: 0.9, throw: true, snd: 'bowlThrow', st: [4, 1, 4, 3], tip: 'Roll it along a line of text. Strike!' },
+    { id: 'lightning', does: 'Strikes from the sky and conducts through every connected bit of metal', name: 'Storm Staff', cat: 'disaster', price: 3400, rate: 1.3, call: true, snd: 'thunder', st: [4, 2, 5, 5], tip: 'Calls lightning down on your aim. Metal carries the shock.' },
+    { id: 'termites', does: 'Bugs that eat wood and paper, and ignore metal and stone', name: 'Termite Jar', cat: 'chem', price: 1500, rate: 1.4, throw: true, snd: 'jar', st: [3, 1, 3, 5], tip: 'Smash the jar. The termites do the rest, one bite at a time.' },
+    { id: 'antigrav', does: 'Makes everything nearby float, then slams it all back down', name: 'Anti-Gravity Bomb', cat: 'boom', price: 2600, rate: 1.4, throw: true, snd: 'agravThrow', st: [3, 1, 3, 5], tip: 'Loose bits float up for three seconds, then come crashing down.' },
+    { id: 'lens', does: 'Focuses sunlight into a tiny dot: anything you hold it on smokes, then burns', name: 'Magnifying Glass', cat: 'chem', price: 650, hold: true, loop: 'lens', st: [2, 5, 4, 4], tip: 'Hold it steady. Paper smokes, then catches. Very precise, very slow, very satisfying.' },
+    { id: 'stamp', does: 'Slams a giant DENIED stamp into the page and punches the letters clean out', name: 'Rubber Stamp', cat: 'melee', price: 1100, rate: 0.75, melee: true, snd: 'stampW', st: [4, 2, 1, 4], tip: 'Bureaucracy, weaponised. Every hit punches a word shaped hole.' },
+    { id: 'blower', does: 'Blasts rubble, loose letters, chunks and enemies away. Wind, not damage', name: 'Leaf Blower', cat: 'gadget', price: 750, hold: true, loop: 'blower', st: [1, 5, 3, 4], tip: 'Clear the mess, shove the enemies, clear your path. Aim down to hover a little.' },
+    { id: 'quake', does: 'Shakes loose anything that is not attached', name: 'Earthquake', cat: 'disaster', price: 4000, rate: 6, call: true, snd: 'quake', st: [4, 1, 5, 5], tip: 'Shakes the whole page until loose things fall off.' }
   ];
   const BY = {};
   D.forEach((d, i) => { d.idx = i; d.sprite = SP.WEAPON[d.id] || SP.WEAPON.pistol; BY[d.id] = d; });
+  const upg = (id) => WTP.save.upg?.[id] | 0;
+  const upCost = (id, lv) => { const d = BY[id]; return Math.round((Math.max(300, d.price * 0.55) * [1, 1.8, 3][lv]) / 50) * 50; };
+  let curLv = 0;
+  const R = { dmgMul: 1 };
+  function setPow(lv) { curLv = lv | 0; W().powMul = 1 + 0.15 * curLv; R.dmgMul = 1 + 0.25 * curLv; }
 
-  const st = { cur: 'pistol', cd: 0, spin: 0, charge: 0, mag: {}, reload: 0, held: null, heldT: 0, ball: null, portals: [], portalNext: 0, stickies: [], mines: [], boomers: 0, dualSide: 0, katanaDir: 1, was: false, quakeT: 0, tornados: [], beam: null, orb: [], paintIdx: 0, ammo: null, nukeT: 0 };
+  const st = { whip: null, latch: null, cut: null, tank: 0, tankCols: [], blowing: 0, ink: 1, penLast: null, zones: [], glove: 0, kickCd: 0, thermals: [], cur: 'pistol', cd: 0, spin: 0, charge: 0, mag: {}, reload: 0, held: null, heldT: 0, ball: null, portals: [], portalNext: 0, stickies: [], mines: [], boomers: 0, dualSide: 0, katanaDir: 1, was: false, quakeT: 0, tornados: [], beam: null, orb: [], paintIdx: 0, ammo: null, nukeT: 0 };
   const shots = [];
   const owned = (id) => WTP.game?.allWeapons?.() || BY[id].price === 0 || !!WTP.save.owned[id];
 
@@ -90,6 +109,7 @@
   }
   function addShot(s) {
     s.age = 0;
+    if (s.lv == null) s.lv = curLv;
     s.from = s.from || 'p';
     shots.push(s);
     if (shots.length > 700) shots.shift();
@@ -107,7 +127,10 @@
 
   function explode(x, y, r, o = {}) {
     const Wd = W();
-    const n = Wd.carve(x, y, r, { debris: 0.45, force: 110 + r * 3, scorch: o.scorch !== false, back: r >= 11 ? (o.back ?? 0.72) : 0, letters: o.letters ?? Math.min(16, r * 0.7), ignite: o.fire ?? 0.12, cause: o.cause || 'boom', crumbleR: 6 + r * 0.25 });
+    const n = Wd.carve(x, y, r, { debris: 0.45, force: 110 + r * 3, scorch: o.scorch !== false, back: r >= 9 ? (o.back ?? 0.72) : 0.4, code: r >= 30 ? 0.6 : r >= 16 ? 0.35 : 0, letters: o.letters ?? Math.min(16, r * 0.7), ignite: o.fire ?? 0.12, cause: o.cause || 'boom', crumbleR: 6 + r * 0.25, pow: 2 + r * 0.25 });
+    st.thermals.push({ x, y, r, k: Math.min(1, r / 20) });
+    if (st.thermals.length > 12) st.thermals.shift();
+    WTP.props?.damageAt?.(x, y, r, r * 3);
     FX().explosion(x, y, r, o.kind || 'fire');
     FX().blast(x, y, r * 3, 260);
     const g = G();
@@ -143,11 +166,11 @@
     dual(o) {
       st.dualSide ^= 1;
       const nx = -o.ay * (st.dualSide ? 2.5 : -2.5), ny = o.ax * (st.dualSide ? 2.5 : -2.5);
-      bullet({ ...o, x: o.x + nx, y: o.y + ny }, 0.05, 580, 3.1, 9);
+      bullet({ ...o, x: o.x + nx, y: o.y + ny }, 0.05, 580, 3.1, 9, { ric: 1 });
     },
     nailgun(o) { bullet(o, 0.04, 680, 1.7, 5, { spr: 'nail', nail: true, life: 0.9 }); },
     flare(o) { lob(o, 'flare', 300, { life: 6, burnT: 3, spr: 'flare' }); },
-    smg(o) { bullet(o, 0.09, 600, 2.9, 7); },
+    smg(o) { bullet(o, 0.09, 600, 2.9, 7, { popAll: true }); },
     rifle(o) { bullet(o, 0.028, 740, 3.4, 14, { pierce: 5 }); },
     minigun(o) {
       bullet(o, 0.12, rand(580, 660), 2.9, 7);
@@ -164,7 +187,7 @@
         FX().confetti(o.x, o.y, Math.cos(a) * sp * 0.5, Math.sin(a) * sp * 0.5);
       }
     },
-    sniper(o) { hitscan(o, 520, 2.4, 80, 140, P32.y); },
+    sniper(o) { hitscan(o, 520, 2.4, 80, 420, P32.y); },
     railgun(o) { hitscan(o, 2000, 3.3, 99999, 200, P32.C, true); },
     crossbow(o) { addShot({ t: 'bolt', x: o.x, y: o.y, vx: o.ax * 540, vy: o.ay * 540, life: 2, g: 60, spr: 'bolt', pierce: 46, dmg: 35 }); },
     harpoon(o) { addShot({ t: 'harpoon', x: o.x, y: o.y, vx: o.ax * 480, vy: o.ay * 480, life: 1.2, g: 80, spr: 'harpoon', dmg: 30 }); },
@@ -229,10 +252,148 @@
       st.tornados.push({ x: tp.x, y: tp.y, dir: o.ax >= 0 ? 1 : -1, t: 0, life: 5.5 });
       G()?.event?.('TORNADO!', tp.x, tp.y - 30);
     },
+    whip(o) {
+      const P = PL();
+      st.whip = { t: 0, dur: 0.34, ang: Math.atan2(o.ay, o.ax), dir: P.face, len: 40 * (1 + 0.12 * curLv), cracked: false, pts: [], hitE: new Set(), lv: curLv };
+      st.swing = 0.3; st.swingDir = P.face;
+    },
+    glove(o) {
+      st.glove = 0.22;
+      const cx = o.x + o.ax * 7, cy = o.y + o.ay * 7;
+      const Wd = W();
+      const e = EN()?.nearest?.(cx, cy, 12);
+      if (e) { e.damage(55, 'glove'); if (!e.T.boss) { e.vx = o.ax * 340; e.vy = o.ay * 340 - 120; e.stun = 0.6; } A('punch'); G()?.shake?.(5); G()?.hitstop?.(0.05); return; }
+      const c = Wd.grabDisk(cx + o.ax * 3, cy + o.ay * 3, 6.5 + curLv);
+      if (c) { Wd.releaseChunk(c, o.ax * 640 + PL().vx * 0.3, o.ay * 640 - 60); A('punch'); G()?.shake?.(6); G()?.hitstop?.(0.04); G()?.event?.('POW!', cx, cy - 6, 1); }
+      else { const n = Wd.carve(cx, cy, 5, { debris: 0.6, force: 160, pow: 3, cause: 'glove', pop: 1 }); if (n) A('punch'); }
+      PL().vx -= o.ax * 40;
+    },
+    saw(o) { addShot({ t: 'saw', x: o.x, y: o.y, vx: o.ax * 340, vy: o.ay * 340, life: 4, dmg: 40, spin: 0, grind: 0 }); },
+    backspace(o) { addShot({ t: 'cursor', x: o.x, y: o.y, vx: o.ax * 230, vy: o.ay * 230, life: 1.6, dmg: 45, ate: 0, blink: 0 }); },
+    cutter(o) {
+      const Wd = W();
+      if (st.cut) {
+        const c = st.cut; st.cut = null;
+        Wd.releaseChunk(c, o.ax * 560 + PL().vx * 0.4, o.ay * 560 - 40);
+        A('paste'); G()?.stat?.('throws', 1); G()?.shake?.(3);
+        return;
+      }
+      const tp = aimPoint(o);
+      let dx = tp.x - o.x, dy = tp.y - o.y; const d = Math.hypot(dx, dy) || 1;
+      const k = d > 70 ? 70 / d : 1;
+      const x = o.x + dx * k, y = o.y + dy * k;
+      const hw = Math.round(9 + curLv * 2), hh = Math.round(6 + curLv);
+      const c = Wd.grabRect(Math.round(x - hw), Math.round(y - hh), Math.round(x + hw), Math.round(y + hh));
+      FX().beam([x - hw, y - hh, x + hw, y + hh], { kind: 'select', life: 0.35 });
+      if (c) { st.cut = c; A('cut'); G()?.event?.('CUT!', x, y - hh - 4, 1); }
+      else { A('deny'); return false; }
+    },
+    bowling(o) { lob(o, 'bowl', 230, { life: 7, spr: 'bowl', g: 620, dmg: 60, hits: 0, roll: 0 }); },
+    lightning(o) {
+      const Wd = W();
+      const tp = aimPoint(o);
+      const x = Math.max(1, Math.min(Wd.w - 2, tp.x));
+      const top = (G()?.camTop?.() ?? 0) - 20;
+      let y = Math.max(0, Math.floor(top));
+      while (y < Wd.h - 3 && !Wd.solid(Math.floor(x), y) && !(EN()?.at?.(x, y, 2))) y++;
+      const pts = [x + rand(-3, 3), top];
+      let cx = pts[0];
+      for (let yy = top + 8; yy < y; yy += rand(6, 12)) { cx += rand(-6, 6); pts.push(cx, yy); }
+      pts.push(x, y);
+      FX().beam(pts, { kind: 'bolt', life: 0.22, c2: P32.C });
+      for (let k = 0; k < 2; k++) { const bp = [x, y - rand(10, 30)]; FX().bolt(x, y - 20, x + rand(-24, 24), y + rand(-6, 10)); }
+      FX().flash(0.35, '#fff3b0');
+      const e = EN()?.at?.(x, y, 4);
+      if (e) e.damage(90, 'lightning');
+      Wd.carve(x, y + 2, 7, { debris: 0.6, force: 150, cause: 'lightning', pow: 4, scorch: true, ignite: 0.3, letters: 6 });
+      EN()?.damageCircle?.(x, y, 16, 50, 'lightning');
+      conduct(Math.floor(x), Math.min(Wd.h - 4, y + 1));
+      G()?.shake?.(7); G()?.hitstop?.(0.05);
+      st.thermals.push({ x, y, r: 20, k: 1 });
+    },
+    stamp(o) {
+      const Wd = W();
+      const words = ['DENIED', 'VOID', 'REJECTED', 'DELETED', 'NOPE', 'SPAM'];
+      const word = words[st.stampIdx = ((st.stampIdx || 0) + 1) % words.length];
+      const tp = WTP.levels.textPixels(word, '7');
+      const reach = 10 + tp.w / 2;
+      const cx = o.x + o.ax * reach, cy = o.y + o.ay * reach;
+      const sc = curLv >= 2 ? 3 : 2;
+      const x0 = Math.round(cx - (tp.w * sc) / 2), y0 = Math.round(cy - (tp.h * sc) / 2);
+      let n = 0;
+      for (let ty = 0; ty < tp.h; ty++) for (let tx = 0; tx < tp.w; tx++) {
+        if (!tp.on[ty * tp.w + tx]) continue;
+        for (let sy = 0; sy < sc; sy++) for (let sx = 0; sx < sc; sx++) {
+          const x = x0 + tx * sc + sx, y = y0 + ty * sc + sy;
+          if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue;
+          const i = y * Wd.w + x;
+          if (Wd.mat[i] === Wd.SOLID || Wd.mat[i] === Wd.ICE || Wd.mat[i] === Wd.RUBBLE || Wd.mat[i] === Wd.DEBRIS) n += Wd.kill(i, x, y, cx, cy, 0.5, 70);
+          else if (Wd.back[i]) { Wd.back[i] = 0; Wd.touch(i); }
+        }
+      }
+      const fx0 = x0 - 3, fy0 = y0 - 3, fx1 = x0 + tp.w * sc + 2, fy1 = y0 + tp.h * sc + 2;
+      for (let y = fy0; y <= fy1; y++) for (let x = fx0; x <= fx1; x++) {
+        if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue;
+        const edge = x <= fx0 + 1 || x >= fx1 - 1 || y <= fy0 + 1 || y >= fy1 - 1;
+        const i = y * Wd.w + x;
+        if (Wd.mat[i] !== Wd.SOLID) { if (edge && Wd.back[i] && (hash(x, y) & 7) !== 0) { Wd.bcol[i] = WTP.mix(Wd.bcol[i], P32.e, 0.75); Wd.touch(i); } continue; }
+        if (edge && (hash(x, y) & 7) !== 0) { Wd.col[i] = WTP.mix(Wd.col[i], P32.e, 0.8); Wd.touch(i); }
+        else if (!edge && (hash(x, y) & 3) === 0) { Wd.col[i] = WTP.mix(Wd.col[i], P32.e, 0.25); Wd.touch(i); }
+      }
+      Wd.crumble(cx, cy, 0, tp.w * sc * 0.6 + 6);
+      EN()?.damageCircle?.(cx, cy, tp.w * sc * 0.5, 70, 'stamp');
+      FX().pop(cx, y0 - 4, `${word}!`, { scale: 1, ramp: ['7', 'e', 'R'], life: 0.8 });
+      st.swing = 0.25; st.swingDir = PL().face;
+      if (n) { G()?.scored?.(n, cx, cy, 'stamp'); G()?.shake?.(6); G()?.hitstop?.(0.05); }
+      PL().vx -= o.ax * 40;
+    },
+    termites(o) { lob(o, 'jar', 260, { life: 4, spr: 'jar', g: 520 }); },
+    antigrav(o) { lob(o, 'agrav', 250, { fuse: 1.1, spr: 'agrav', g: 520, bounce: 0.45 }); },
     quake() { st.quakeT = 2.8; A('quake'); G()?.event?.('EARTHQUAKE!', PL().x, PL().y - 30); }
   };
 
   const HOLD = {
+    lens(o, dt) {
+      const tp = aimPoint(o);
+      const dx = tp.x - o.x, dy = tp.y - o.y, d = Math.hypot(dx, dy) || 1;
+      const k = d > 60 ? 60 / d : 1;
+      let x = o.x + dx * k, y = o.y + dy * k;
+      const r = W().raycast(o.x, o.y, dx / d, dy / d, d * k);
+      if (r.hit) { x = r.x; y = r.y; }
+      const L = st.lensAt;
+      if (L && Math.hypot(L.x - x, L.y - y) < 3) L.heat = Math.min(1.6, L.heat + dt * (1 + upg('lens') * 0.3)); else st.lensAt = { x, y, heat: 0 };
+      const H = st.lensAt;
+      H.x = x; H.y = y;
+      FX().beam([o.x + o.ax * 3, o.y + o.ay * 3, x, y], { kind: 'sight', life: 0.03, c1: P32.Y });
+      if (H.heat > 0.25 && Math.random() < H.heat * 0.6) FX().smoke(x, y - 1, 1, P32['5']);
+      if (H.heat > 0.6) {
+        if (Math.random() < 0.5) FX().spark(x, y, rand(-20, 20), rand(-40, -5), Math.random() < 0.5 ? P32.Y : P32.o, 0.2);
+        if ((H.t = (H.t || 0) - dt) <= 0) {
+          H.t = 0.08;
+          W().carve(x, y, 1.6 + H.heat, { debris: 0.2, force: 20, scorch: true, ignite: 0.2, cause: 'lens', pop: 0.4, noCrumble: Math.random() < 0.7 });
+          if (H.heat > 1) W().igniteAt(Math.floor(x), Math.floor(y), 3);
+        }
+        EN()?.damageCircle?.(x, y, 4, 40 * dt * H.heat, 'fire');
+      }
+    },
+    blower(o, dt) {
+      const Wd = W();
+      const base = Math.atan2(o.ay, o.ax);
+      for (let k = 0; k < 3; k++) { const a = base + rand(-0.25, 0.25); FX().pix(o.x, o.y, Math.cos(a) * rand(160, 260), Math.sin(a) * rand(160, 260), Math.random() < 0.5 ? P32['6'] : P32.L, 0.25); }
+      for (let k = 0; k < 36; k++) {
+        const a = base + rand(-0.4, 0.4), dd = rand(2, 70);
+        const x = Math.floor(o.x + Math.cos(a) * dd), y = Math.floor(o.y + Math.sin(a) * dd);
+        if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue;
+        const i = y * Wd.w + x;
+        if (Wd.mat[i] === Wd.RUBBLE || Wd.mat[i] === Wd.DEBRIS) { const c = Wd.col[i]; Wd.kill(i, x, y, x, y, 0, 0); FX().debris(x + 0.5, y + 0.5, Math.cos(a) * rand(160, 280), Math.sin(a) * rand(160, 280) - 40, c, { ns: true }); }
+        else if (Wd.mat[i] === Wd.SOLID && Wd.kind[i] === Wd.K_TEXT && Wd.gid[i] && Math.random() < 0.012 * (1 + upg('blower'))) Wd.detachGlyph(Wd.gid[i], Math.cos(a) * 220, Math.sin(a) * 220 - 40);
+        else if (Wd.burn[i] && Math.random() < 0.3) { Wd.burn[i] = 1; }
+      }
+      for (const c of Wd.chunks) { const dx = c.x - o.x, dy = c.y - o.y, dd = Math.hypot(dx, dy) || 1; if (dd < 90 && (dx * o.ax + dy * o.ay) / dd > 0.75) { c.vx += o.ax * 900 * dt / Math.max(1, Math.sqrt(c.n) * 0.2); c.vy += o.ay * 900 * dt - 200 * dt; c.rest = 0; } }
+      for (const e of EN()?.list || []) { if (e.dead || e.T.boss) continue; const dx = e.x - o.x, dy = e.y - o.y, dd = Math.hypot(dx, dy) || 1; if (dd < 80 && (dx * o.ax + dy * o.ay) / dd > 0.7) { e.vx += o.ax * 700 * dt; e.vy += o.ay * 700 * dt; e.stun = Math.max(e.stun || 0, 0.15); } }
+      const P = PL(); P.vx -= o.ax * 160 * dt; if (o.ay > 0.6) P.vy = Math.min(P.vy, P.vy - 900 * dt);
+      FX().beam([o.x + o.ax * 4, o.y + o.ay * 4, base], { kind: 'cone', life: 0.03, r: 70, spread: 0.4 });
+    },
     laser(o, dt) {
       const r = W().raycast(o.x, o.y, o.ax, o.ay, 260, 0.5);
       const e = EN()?.rayHit?.(o.x, o.y, o.ax, o.ay, Math.hypot(r.x - o.x, r.y - o.y));
@@ -289,6 +450,7 @@
           const i = y * Wd.w + x;
           if (Wd.mat[i] === Wd.RUBBLE || Wd.mat[i] === Wd.DEBRIS) { const c = Wd.col[i]; Wd.kill(i, x, y, x, y, 0, 0); FX().debris(x + 0.5, y + 0.5, o.ax * 200 + rand(-40, 40), o.ay * 200 - rand(10, 60), c, { ns: true }); }
           if (Wd.burn[i]) { Wd.burn[i] = 0; FX().smoke(x, y, 1, P32['6']); A('sizzle'); }
+          else if (Wd.mat[i] === Wd.SOLID && (Wd.mtl[i] === Wd.M.PAPER || Wd.mtl[i] === Wd.M.INK || Wd.mtl[i] === Wd.M.IMAGE) && Math.random() < 0.12) { const c = Wd.col[i]; if (Wd.kill(i, x, y, x, y, 0, 0)) { G()?.scored?.(1, -1, -1, 'water'); FX().water(x + 0.5, y + 0.5, rand(-20, 20), rand(10, 40)); if (Math.random() < 0.3) FX().paper(x, y, rand(-20, 20), rand(0, 30), c); } }
         }
         for (const c of Wd.chunks) if (Math.hypot(c.x - r.x, c.y - r.y) < c.rad + 8) { c.vx += o.ax * 600 * dt; c.vy += o.ay * 600 * dt - 200 * dt; c.rest = 0; }
       }
@@ -344,7 +506,7 @@
       const base = Math.atan2(o.ay, o.ax);
       let got = 0;
       for (let k = 0; k < 18; k++) {
-        const a = base + rand(-0.35, 0.35), d = rand(8, 85);
+        const a = base + rand(-0.35, 0.35), d = rand(2, 85);
         const x = Math.floor(o.x + Math.cos(a) * d), y = Math.floor(o.y + Math.sin(a) * d);
         if (x < 0 || x >= Wd.w || y < 0 || y >= Wd.h - 3) continue;
         const i = y * Wd.w + x;
@@ -371,7 +533,65 @@
       FX().beam([o.x + o.ax * 5, o.y + o.ay * 5, o.x + o.ax * 70, o.y + o.ay * 70], { kind: 'tractor', life: 0.03, c1: P32.e, c2: P32.c });
       EN()?.pull?.(o.x, o.y, 90, 400 * dt);
     },
-    wrecking(o, dt) { st.ballPull = true; }
+    wrecking(o, dt) { st.ballPull = true; },
+    vacuum(o, dt) {
+      const Wd = W();
+      const base = Math.atan2(o.ay, o.ax);
+      let got = 0;
+      for (let k = 0; k < 40; k++) {
+        const a = base + rand(-0.45, 0.45), d = rand(3, 72);
+        const x = Math.floor(o.x + Math.cos(a) * d), y = Math.floor(o.y + Math.sin(a) * d);
+        if (x < 0 || x >= Wd.w || y < 0 || y >= Wd.h - 3) continue;
+        const i = y * Wd.w + x;
+        if (Wd.mat[i] === Wd.RUBBLE || Wd.mat[i] === Wd.DEBRIS) {
+          const c = Wd.col[i];
+          Wd.kill(i, x, y, x, y, 0, 0);
+          FX().suck(x + 0.5, y + 0.5, rand(-20, 20), rand(-20, 20), c, o.x, o.y, 0.8);
+          if (st.tank < 400) { st.tank++; st.tankCols.push(c); if (st.tankCols.length > 60) st.tankCols.shift(); }
+          got++;
+        }
+      }
+      FX().suckAll(o.x, o.y, 70, 0.6);
+      for (let k = Wd.chunks.length - 1; k >= 0; k--) {
+        const c = Wd.chunks[k];
+        const dx = o.x - c.x, dy = o.y - c.y, d = Math.hypot(dx, dy) || 1;
+        if (d < 80 && c.n < 160) { c.vx += (dx / d) * 900 * dt; c.vy += (dy / d) * 900 * dt - 560 * dt; c.rest = 0; if (d < c.rad + 6) { Wd.chunks.splice(k, 1); st.tank = Math.min(400, st.tank + c.n); for (let q = 0; q < 6; q++) st.tankCols.push(c.cols[(Math.random() * c.n) | 0]); A('slurp'); } }
+      }
+      EN()?.pull?.(o.x, o.y, 70, 260 * dt);
+      EN()?.damageCircle?.(o.x + o.ax * 6, o.y + o.ay * 6, 6, 30 * dt, 'vacuum');
+      if (got) A('slurp');
+      FX().beam([o.x + o.ax * 4, o.y + o.ay * 4, base], { kind: 'cone', life: 0.03, r: 70, spread: 0.45 });
+    },
+    pen(o, dt) {
+      const Wd = W();
+      const tp = aimPoint(o);
+      let dx = tp.x - o.x, dy = tp.y - o.y; const d = Math.hypot(dx, dy) || 1;
+      const k = d > 64 ? 64 / d : 1;
+      const x = o.x + dx * k, y = o.y + dy * k;
+      st.penAt = { x, y };
+      if (st.ink <= 0.01) { st.penLast = null; return; }
+      const from = st.penLast || { x, y };
+      const len = Math.hypot(x - from.x, y - from.y);
+      const n = Math.max(1, Math.ceil(len));
+      const th = 1 + (curLv >= 2 ? 1 : 0);
+      const P = PL();
+      for (let s2 = 0; s2 <= n; s2++) {
+        const px = from.x + (x - from.x) * (s2 / n), py = from.y + (y - from.y) * (s2 / n);
+        for (let a = -th; a <= th; a++) for (let b = -th; b <= th; b++) {
+          if (a * a + b * b > th * th + 0.5) continue;
+          const cx = Math.floor(px + a), cy = Math.floor(py + b);
+          if (cx < 0 || cy < 0 || cx >= Wd.w || cy >= Wd.h - 3) continue;
+          if (P.inside(cx, cy)) continue;
+          const i = cy * Wd.w + cx;
+          if (Wd.mat[i] === Wd.SOLID || Wd.mat[i] === Wd.ROCK) continue;
+          Wd.setCell(cx, cy, (hash(cx, cy) & 7) === 0 ? P32.c : (hash(cx, cy) & 3) ? P32.n : P32.b, Wd.M.INKPEN, 64);
+          Wd.touch(i);
+        }
+      }
+      st.ink = Math.max(0, st.ink - len * 0.004 - dt * 0.05);
+      st.penLast = { x, y };
+      if (len > 0.5 && Math.random() < 0.3) FX().pix(x, y, rand(-20, 20), rand(-20, 10), P32.c, 0.3);
+    },
   };
   const RELEASE = {
     gravity(o) {
@@ -382,12 +602,16 @@
       A('fling'); G()?.shake?.(5); G()?.stat?.('throws', 1);
       PL().impulse(-o.ax * 60, -o.ay * 40);
     },
-    magnet(o) { FX().fling(o.ax, o.ay, 380); A('fling'); }
+    magnet(o) { FX().fling(o.ax, o.ay, 380); A('fling'); },
+    vacuum() { if (st.tank > 0) { st.blowing = st.tank; st.tank = 0; A('blowOut'); } },
+    pen() { st.penLast = null; }
   };
   const ALT = {
     sticky() { if (!st.stickies.length) return; st.stickies.forEach((s, k) => { s.fuse = 0.05 + k * 0.07; }); st.stickies = []; A('beep'); },
     mine() { st.mines.forEach((m, k) => { m.trig = 0.05 + k * 0.08; }); A('beep'); },
-    portal() { st.portals = []; A('portalOut'); }
+    portal() { st.portals = []; A('portalOut'); },
+    cutter(o) { if (!st.cut) return; const c = st.cut; st.cut = null; W().releaseChunk(c, 0, 0); c.thrown = false; A('paste'); },
+    vacuum() { if (st.tank > 0) { st.blowing = st.tank; st.tank = 0; A('blowOut'); } }
   };
 
   function hitscan(o, range, r, depth, dmg, col, all) {
@@ -508,6 +732,150 @@
     if (n) { G()?.shake?.(3); G()?.hitstop?.(0.03); A('impact'); }
   }
 
+  function conduct(x0, y0) {
+    const Wd = W();
+    let start = -1;
+    for (let dy = -2; dy <= 3 && start < 0; dy++) for (let dx = -2; dx <= 2; dx++) { const x = x0 + dx, y = y0 + dy; if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue; const i = y * Wd.w + x; if (Wd.mat[i] === Wd.SOLID && Wd.mtl[i] === Wd.M.METAL) { start = i; break; } }
+    if (start < 0) return 0;
+    const seen = new Set([start]);
+    const q = [start];
+    for (let h = 0; h < q.length && q.length < 900; h++) {
+      const i = q[h];
+      for (const j of [i - 1, i + 1, i - Wd.w, i + Wd.w]) if (j >= 0 && j < Wd.n && !seen.has(j) && Wd.mat[j] === Wd.SOLID && Wd.mtl[j] === Wd.M.METAL) { seen.add(j); q.push(j); }
+    }
+    for (let k = 0; k < Math.min(40, q.length / 6); k++) {
+      const i = q[(Math.random() * q.length) | 0];
+      const x = i % Wd.w, y = (i / Wd.w) | 0;
+      FX().spark(x + 0.5, y + 0.5, rand(-50, 50), rand(-70, 10), Math.random() < 0.5 ? P32.C : P32['7'], 0.35);
+      if (k % 4 === 0) { EN()?.damageCircle?.(x, y, 8, 35, 'shock'); WTP.props?.damageAt?.(x, y, 6, 10); }
+    }
+    for (let k = 0; k < q.length; k += 7) { const i = q[k]; const x = i % Wd.w, y = (i / Wd.w) | 0; if (Math.random() < 0.5) Wd.carve(x + 0.5, y + 0.5, 1.2, { pow: 2, debris: 0.3, force: 40, cause: 'shock', noCrumble: true, pop: 0 }); }
+    if (q.length > 30) { G()?.event?.('CONDUCTED!', x0, y0 - 10, 1); A('zap'); }
+    return q.length;
+  }
+  function melee(o) {
+    if (st.kickCd > 0) return;
+    st.kickCd = 0.26;
+    const P = PL();
+    const ax = o.ax, ay = o.ay;
+    P.kickT = 0.24; P.kickDir = ay > 0.6 ? 1 : ay < -0.6 ? -1 : 0;
+    if (Math.abs(ax) > 0.2) P.face = ax > 0 ? 1 : -1;
+    const lv = curLv; setPow(0);
+    const Wd = W();
+    let n = 0;
+    const ext = Math.abs(ax) * P.w / 2 + Math.abs(ay) * P.h / 2;
+    n += Wd.carve(o.x + ax * (ext + 1), o.y + ay * (ext + 1), 4.6, { pow: 3.2, debris: 0.6, force: 150, cause: 'kick', pop: 0.9, crumbleR: 6 });
+    n += Wd.carve(o.x + ax * (ext + 6), o.y + ay * (ext + 6), 3.8, { pow: 2.6, debris: 0.5, force: 130, cause: 'kick', pop: 0.7, noCrumble: true });
+    n += Wd.carve(o.x + ax * (ext + 10), o.y + ay * (ext + 10), 2.6, { pow: 2, debris: 0.4, force: 110, cause: 'kick', pop: 0.5, noCrumble: true });
+    const x0 = Math.floor(Math.min(P.x, P.x + ax * 9)), x1 = Math.ceil(Math.max(P.x + P.w, P.x + P.w + ax * 9)), y0 = Math.floor(Math.min(P.y, P.y + ay * 9)), y1 = Math.ceil(Math.max(P.y + P.h, P.y + P.h + ay * 9));
+    P.kickSoft(x0, y0, x1, y1, ax || P.face, ay - 0.5);
+    const hx = o.x + ax * (ext + 5), hy = o.y + ay * (ext + 5);
+    const hit = EN()?.damageCircle?.(hx, hy, 9, 24, 'kick') || 0;
+    for (const e of EN()?.list || []) if (!e.dead && !e.T.boss && Math.hypot(e.x - hx, e.y - hy) < 12) { e.vx = ax * 260; e.vy = ay * 200 - 120; e.stun = Math.max(e.stun || 0, 0.4); }
+    for (const c of Wd.chunks) { const d = Math.hypot(c.x - hx, c.y - hy); if (d < c.rad + 8) { c.vx += ax * (420 / Math.max(1, Math.sqrt(c.n) * 0.25)); c.vy += ay * 300 - 160; c.va += rand(-4, 4); c.rest = 0; c.thrown = c.n < 300; } }
+    WTP.props?.damageAt?.(hx, hy, 8, 20);
+    if (ay > 0.6 && !P.ground) { P.vy = Math.min(P.vy, -160); }
+    else if (n) P.vx -= ax * 30;
+    FX().anims.push({ kick: true, x: o.x + ax * 5, y: o.y + ay * 5, a: Math.atan2(ay, ax), t: 0, dur: 0.14 });
+    if (n || hit) { G()?.shake?.(3.5); G()?.hitstop?.(0.035); A('kickHit'); WTP.vibe(18); } else A('kick');
+    G()?.stat?.('kicks', 1);
+    setPow(lv);
+  }
+  function updateWhip(dt, o) {
+    const w = st.whip;
+    if (!w) return;
+    w.t += dt;
+    const k = Math.min(1, w.t / w.dur);
+    const hx = o.hx, hy = o.hy;
+    const ext = k < 0.5 ? Math.sin((k / 0.5) * Math.PI / 2) : 1 - (k - 0.5) * 1.3;
+    const L = w.len * Math.max(0.15, ext);
+    const N = 14;
+    const pts = [];
+    const wind = (1 - k) * 1.6 * w.dir;
+    for (let i = 0; i <= N; i++) {
+      const s2 = i / N;
+      const a = w.ang - wind * (1 - s2) * 0.6 + Math.sin((s2 * 2.2 - k * 3) * Math.PI) * 0.35 * (1 - k) * w.dir;
+      const prev = i ? pts[i - 1] : { x: hx, y: hy };
+      const seg = L / N;
+      pts.push(i ? { x: prev.x + Math.cos(a) * seg, y: prev.y + Math.sin(a) * seg } : { x: hx, y: hy });
+    }
+    w.pts = pts;
+    const tip = pts[N];
+    const Wd = W();
+    setPow(w.lv);
+    if (k > 0.18 && k < 0.75) {
+      for (let i = 4; i <= N; i += 2) {
+        const p = pts[i];
+        const ix = Math.floor(p.x), iy = Math.floor(p.y);
+        const e = EN()?.at?.(p.x, p.y, 2);
+        if (e && !w.hitE.has(e)) {
+          w.hitE.add(e);
+          e.damage(i >= N - 2 ? 42 : 20, 'whip');
+          if (!e.T.boss) { const pc = PL().center(); const dx = pc.x - e.x, dy = pc.y - e.y, d = Math.hypot(dx, dy) || 1; e.vx = (dx / d) * 280; e.vy = (dy / d) * 220 - 90; e.stun = 0.5; }
+          A('whipHit');
+        }
+        if (Wd.solid(ix, iy)) {
+          const isTip = i >= N - 2;
+          const ii = iy * Wd.w + ix;
+          if (isTip && Wd.kind[ii] === Wd.K_TEXT && Wd.gid[ii]) {
+            const pc = PL().center(); const dx = pc.x - p.x, dy = pc.y - p.y, d = Math.hypot(dx, dy) || 1;
+            Wd.detachGlyph(Wd.gid[ii], (dx / d) * 260, (dy / d) * 220 - 80);
+            G()?.stat?.('letters', 1);
+          } else Wd.carve(p.x, p.y, isTip ? 2.6 : 1.5, { pow: isTip ? 2.6 : 1.4, debris: 0.5, force: 110, cause: 'whip', pop: 0.8, noCrumble: !isTip });
+          if (isTip && !w.latched && !PL().ground && Math.sin(w.ang) < -0.25 && Wd.hardAt(ix, iy) && WTP.input.wantFire()) {
+            w.latched = true;
+            const pc = PL().center();
+            st.latch = { x: p.x, y: p.y, ax: ix, ay: iy, len: Math.max(10, Math.hypot(pc.x - p.x, pc.y - p.y)), t: 1.4 };
+            A('hookHit'); G()?.label?.('SWING!', 500);
+          }
+        }
+      }
+      for (const c of Wd.chunks) { const d = Math.hypot(c.x - tip.x, c.y - tip.y); if (d < c.rad + 3) { const pc = PL().center(); const dx = pc.x - c.x, dy = pc.y - c.y, dd = Math.hypot(dx, dy) || 1; c.vx = (dx / dd) * 300; c.vy = (dy / dd) * 260 - 120; c.rest = 0; } }
+    }
+    if (!w.cracked && k >= 0.48) {
+      w.cracked = true;
+      A('whipCrack');
+      FX().anim('ring', 10, tip.x, tip.y, 0.14);
+      for (let q = 0; q < 8; q++) FX().spark(tip.x, tip.y, rand(-90, 90), rand(-90, 90), Math.random() < 0.5 ? P32['7'] : P32.Y, 0.18);
+      Wd.carve(tip.x, tip.y, 3.2, { pow: 3, debris: 0.6, force: 160, cause: 'crack', letters: 3 });
+      EN()?.damageCircle?.(tip.x, tip.y, 6, 25, 'whip');
+      G()?.shake?.(2.5); G()?.hitstop?.(0.02);
+    }
+    if (w.t >= w.dur) st.whip = null;
+  }
+  function updateLatch(dt) {
+    const L = st.latch;
+    if (!L) return;
+    const P = PL(), Wd = W();
+    L.t -= dt;
+    if (L.t <= 0 || !WTP.input.wantFire() || !Wd.hardAt(L.ax, L.ay) || P.ground) { if (!Wd.hardAt(L.ax, L.ay)) A('snap'); st.latch = null; return; }
+    const pc = P.center();
+    const dx = pc.x - L.x, dy = pc.y - L.y, d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d;
+    if (d > L.len) { const vr = P.vx * nx + P.vy * ny; if (vr > 0) { P.vx -= vr * nx; P.vy -= vr * ny; } P.vx -= nx * (d - L.len) * 14; P.vy -= ny * (d - L.len) * 14; }
+    L.len = Math.max(8, L.len - 20 * dt);
+    P.vx += P.face * 120 * dt;
+  }
+  function updateZones(dt) {
+    const Wd = W();
+    for (let k = st.zones.length - 1; k >= 0; k--) {
+      const z = st.zones[k];
+      z.t += dt;
+      const slam = z.t > z.life;
+      for (const c of Wd.chunks) { const d = Math.hypot(c.x - z.x, c.y - z.y); if (d < z.r) { if (slam) { c.vy = 520; c.thrown = c.n < 400; } else { c.vy = c.vy * 0.9 - 700 * dt; c.vx *= 0.97; c.va += rand(-1, 1) * dt * 4; } c.rest = 0; } }
+      for (const e of EN()?.list || []) { if (e.dead || e.T.boss) continue; const d = Math.hypot(e.x - z.x, e.y - z.y); if (d < z.r) { if (slam) { e.vy = 420; e.damage(40, 'slam'); } else { e.vy = e.vy * 0.9 - 500 * dt; e.stun = 0.2; } } }
+      const P = PL(), pc = P.center();
+      if (Math.hypot(pc.x - z.x, pc.y - z.y) < z.r && !slam) P.vy = Math.max(-90, P.vy - 900 * dt);
+      for (let q = 0; q < 10; q++) {
+        const a = Math.random() * 6.283, r = Math.random() * z.r;
+        const x = Math.floor(z.x + Math.cos(a) * r), y = Math.floor(z.y + Math.sin(a) * r);
+        if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue;
+        const i = y * Wd.w + x;
+        if (Wd.mat[i] === Wd.RUBBLE || Wd.mat[i] === Wd.DEBRIS) { const c = Wd.col[i]; Wd.kill(i, x, y, x, y, 0, 0); FX().pix(x + 0.5, y + 0.5, rand(-10, 10), -rand(20, 60), c, rand(1.5, 2.5)); }
+      }
+      if (Math.random() < 0.6) { const a = Math.random() * 6.283; FX().pix(z.x + Math.cos(a) * z.r, z.y + Math.sin(a) * z.r, 0, -30, P32.m, 0.5); }
+      if (slam) { st.zones.splice(k, 1); FX().blast(z.x, z.y, z.r * 1.5, -300); A('slam'); G()?.shake?.(8); G()?.event?.('SLAM!', z.x, z.y - 10, 2); }
+    }
+  }
   function tryFire(d, o) {
     if (st.ammo) {
       const left = st.ammo[d.id];
@@ -532,15 +900,26 @@
   let wasFiring = false;
   function update(dt, want, alt, o) {
     const d = BY[st.cur];
+    const lv = upg(d.id);
+    setPow(lv);
     st.cd = Math.max(0, st.cd - dt);
+    st.kickCd = Math.max(0, st.kickCd - dt);
+    st.glove = Math.max(0, st.glove - dt);
     st.reload = Math.max(0, st.reload - dt);
     if (st.reload === 0 && st.reloadFor) { st.mag[st.reloadFor] = 6; st.reloadFor = null; }
     st.swing = Math.max(0, (st.swing || 0) - dt);
     st.ballPull = false;
     st.eraserAt = null;
+    st.penAt = null;
+    if (d.id !== 'lens' || !want) st.lensAt = null;
+    if (d.id !== 'pen' || !want) { st.penLast = null; st.ink = Math.min(1, st.ink + dt * 0.35); }
     if (d.spin) {
       if (want) st.spin = Math.min(1, st.spin + dt * 1.8); else st.spin = Math.max(0, st.spin - dt * 1.2);
       WTP.audio.loop('spin', st.spin > 0.02, st.spin);
+      const brrt = want && st.spin >= 1 && !st.ammoOut;
+      if (st.brrt && !brrt) A('minigunStop');
+      st.brrt = brrt;
+      WTP.audio.loop('brrt', brrt, Math.min(1, lv / 3));
     }
     if (d.charge) {
       if (want && st.cd <= 0) { if (st.charge === 0) A('charge'); st.charge += dt; if (Math.random() < 0.5) FX().spark(o.x + rand(-2, 2), o.y + rand(-2, 2), rand(-20, 20), rand(-20, 20), P32.C, 0.15); }
@@ -559,22 +938,38 @@
       if (wasFiring && !want && RELEASE[d.id]) RELEASE[d.id](o);
     } else if (want && st.cd <= 0 && st.reload <= 0) {
       const ready = !(d.spin && st.spin < 1) && !(d.charge && st.charge < d.charge);
-      if (ready && tryFire(d, o)) { st.cd = d.rate; st.charge = 0; G()?.startTimer?.(); }
+      if (ready && tryFire(d, o)) { st.cd = d.rate * (1 - 0.08 * lv); st.charge = 0; G()?.startTimer?.(); }
     }
     if (alt && ALT[d.id]) ALT[d.id](o);
     wasFiring = want;
     if (d.id === 'wrecking' || st.ball) updateBall(dt, o, d.id === 'wrecking');
     if (d.id !== 'gravity' && st.held) RELEASE.gravity(o);
+    if (d.id !== 'cutter' && st.cut) { const c = st.cut; st.cut = null; W().releaseChunk(c, 0, 0); c.thrown = false; }
+    if (st.cut) { const c = st.cut; const tx = o.x + o.ax * (c.rad + 8), ty = o.y + o.ay * (c.rad + 8); c.vx = (tx - c.x) * 16; c.vy = (ty - c.y) * 16; c.x += c.vx * dt; c.y += c.vy * dt; c.a *= 0.9; if (Math.random() < 0.2) FX().spark(c.x + rand(-c.rad, c.rad), c.y + rand(-c.rad, c.rad), 0, -10, P32.C, 0.2); }
+    if (st.blowing > 0) {
+      const n = Math.min(st.blowing, 6);
+      st.blowing -= n;
+      for (let k = 0; k < n; k++) { const a = Math.atan2(o.ay, o.ax) + rand(-0.14, 0.14), sp = rand(380, 480); addShot({ t: 'junk', x: o.x, y: o.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.9, g: 120, col: st.tankCols.length ? st.tankCols[(Math.random() * st.tankCols.length) | 0] : P32['5'], dmg: 6 }); }
+      PL().vx -= o.ax * 14; if (!PL().ground) PL().vy -= o.ay * 10;
+      if (Math.random() < 0.3) A('junkShot');
+      if (st.blowing <= 0) st.tankCols = [];
+    }
+    updateWhip(dt, o);
+    updateLatch(dt);
+    setPow(0);
     updateShots(dt);
     updateWaves(dt);
     updateTornados(dt);
     updateQuake(dt);
     updatePortals(dt);
-    for (let k = FX().anims.length - 1; k >= 0; k--) { const a = FX().anims[k]; if (a.slash) { a.t += dt; if (a.t > a.dur) FX().anims.splice(k, 1); } }
+    updateZones(dt);
+    for (let k = st.thermals.length - 1; k >= 0; k--) { const t = st.thermals[k]; t.k -= dt * 0.6; if (t.k <= 0) st.thermals.splice(k, 1); }
+    for (let k = FX().anims.length - 1; k >= 0; k--) { const a = FX().anims[k]; if (a.slash || a.kick) { a.t += dt; if (a.t > a.dur) FX().anims.splice(k, 1); } }
     if (d.id === 'sniper' && !st.cd) {
       const r = W().raycast(o.x, o.y, o.ax, o.ay, 300, 1);
       FX().beam([o.x, o.y, r.x, r.y], { kind: 'sight', life: 0.02, c1: P32.e });
     }
+    setPow(0);
   }
   function updateBall(dt, o, active) {
     const P = PL();
@@ -605,6 +1000,11 @@
         const n = Wd.carve(b.x, b.y, b.r + Math.min(4, sp / 120), { debris: 0.5, force: sp * 0.5, cause: 'wrecking', letters: 4 });
         if (n) { G()?.shake?.(Math.min(8, sp / 60)); if (sp > 200) { A('hammer'); G()?.hitstop?.(0.03); } }
         b.vx *= 0.72; b.vy *= 0.72;
+      } else if (st.ballPull && (b.grind = (b.grind || 0) - dt) <= 0) {
+        b.grind = 0.12;
+        const n = Wd.carve(b.x, b.y, b.r + 1, { debris: 0.5, force: 90, cause: 'wrecking', pow: 2.4, letters: 2 });
+        if (n) { G()?.shake?.(2); A('hammer'); }
+        b.vx *= -0.3; b.vy *= -0.3;
       } else { b.vx *= -0.3; b.vy *= -0.3; b.y -= 1; }
     }
     EN()?.damageCircle?.(b.x, b.y, b.r + 3, sp * 0.08 * dt * 10, 'wrecking');
@@ -781,6 +1181,7 @@
     for (let k = shots.length - 1; k >= 0; k--) {
       const s = shots[k];
       if (s.delay > 0) { s.delay -= dt; continue; }
+      if (s.from === 'p') setPow(s.lv | 0); else setPow(0);
       s.age += dt; s.life -= dt;
       let dead = s.life <= 0;
       switch (s.t) {
@@ -789,7 +1190,16 @@
           const pierced = s.pierce || 0;
           dead = travel(s, dt, (x, y, isE) => {
             if (isE) { FX().spark(x, y, rand(-50, 50), rand(-50, 50), P32.y); return true; }
-            const n = Wd.carve(x, y, s.r, { debris: 0.6, force: 70, cause: 'bullet', vx: s.vx, vy: s.vy, noCrumble: !!s.pierce });
+            const n = Wd.carve(x, y, s.r, { debris: 0.6, force: 70, cause: 'bullet', vx: s.vx, vy: s.vy, noCrumble: !!s.pierce, pop: s.popAll ? 1 : undefined });
+            if (s.ric > 0) {
+              s.ric--;
+              const vertical = !Wd.solid(Math.floor(x), Math.floor(y - Math.sign(s.vy) * 1.2));
+              if (vertical) s.vy = -s.vy; else s.vx = -s.vx;
+              s.x += s.vx * 0.006; s.y += s.vy * 0.006;
+              A('ricochet');
+              for (let z = 0; z < 3; z++) FX().spark(x, y, s.vx * 0.2 + rand(-40, 40), s.vy * 0.2 + rand(-40, 40), P32['7'], 0.15);
+              return false;
+            }
             if (s.nail && Math.random() < 0.6) Wd.placeRubble(Math.floor(x), Math.floor(y), P32['5']);
             for (let z = 0; z < 2; z++) FX().spark(x, y, -s.vx * 0.15 + rand(-50, 50), -s.vy * 0.15 + rand(-50, 50), P32.Y, rand(0.08, 0.2));
             A('impact');
@@ -921,6 +1331,7 @@
           s.vy += s.g * dt;
           dead = dead || travel(s, dt, (x, y, isE, e) => {
             if (isE) { e.freeze = 2.5; }
+            else Wd.carve(x, y, 1.6, { debris: 0.3, force: 40, cause: 'snow', pop: 0.3, noCrumble: true });
             Wd.freezeAt(x, y, 5);
             for (let q = 0; q < 8; q++) FX().pix(x, y, rand(-60, 60), rand(-80, 0), P32['7'], 0.5);
             A('snow');
@@ -1112,6 +1523,138 @@
           if (dead && !shots.some((o2) => o2 !== s && o2.t === 'bee')) WTP.audio.loop('bees', false);
           break;
         }
+        case 'saw': {
+          s.spin += dt * 30;
+          if (s.stuck > 0) {
+            s.stuck -= dt;
+            s.x += s.dx * dt * 14; s.y += s.dy * dt * 14;
+            const n = Wd.carve(s.x, s.y, 3.6, { debris: 0.6, force: 90, cause: 'saw', pow: 1.4, noCrumble: Math.random() < 0.7, pop: 0.5 });
+            if (Math.random() < 0.7) FX().spark(s.x, s.y, rand(-80, 80), rand(-110, -20), Math.random() < 0.5 ? P32.Y : P32.a, 0.2);
+            EN()?.damageCircle?.(s.x, s.y, 5, 60 * dt, 'saw');
+            if (Math.random() < 0.15) A('sawGrind');
+            if (s.stuck <= 0 || (!n && !Wd.solid(Math.floor(s.x), Math.floor(s.y)) && s.age > 0.3 && Math.random() < 0.1)) dead = true;
+            break;
+          }
+          if (dead) break;
+          dead = travel(s, dt, (x, y, isE, e) => {
+            if (isE) { A('sawHit'); return false; }
+            const i = Math.floor(y) * Wd.w + Math.floor(x);
+            if (Wd.mtl[i] === Wd.M.METAL || Wd.mat[i] === Wd.ROCK) {
+              if ((s.bounces = (s.bounces || 0) + 1) > 4) return true;
+              const vertical = !Wd.solid(Math.floor(x), Math.floor(y - Math.sign(s.vy) * 1.2));
+              if (vertical) s.vy = -s.vy; else s.vx = -s.vx;
+              s.x += s.vx * 0.008; s.y += s.vy * 0.008;
+              A('ricochet'); for (let z = 0; z < 4; z++) FX().spark(x, y, rand(-60, 60), rand(-60, 60), P32['7'], 0.2);
+              return false;
+            }
+            const sp = Math.hypot(s.vx, s.vy) || 1;
+            s.dx = s.vx / sp; s.dy = s.vy / sp; s.stuck = 1.6 + s.lv * 0.3; s.vx = 0; s.vy = 0; s.life = 3;
+            A('sawHit');
+            return false;
+          });
+          if (s.stuck > 0) dead = false;
+          break;
+        }
+        case 'cursor': {
+          s.blink += dt;
+          if (dead) break;
+          const steps = Math.max(1, Math.ceil(Math.hypot(s.vx, s.vy) * dt / 0.7));
+          for (let q = 0; q < steps && !dead; q++) {
+            s.x += (s.vx * dt) / steps; s.y += (s.vy * dt) / steps;
+            const ix = Math.floor(s.x), iy = Math.floor(s.y);
+            if (ix < 0 || ix >= Wd.w || iy < -200 || iy >= Wd.h - 3) { dead = true; break; }
+            const e = EN()?.at?.(s.x, s.y, 2);
+            if (e && !(s.hitSet && s.hitSet.has(e))) { (s.hitSet = s.hitSet || new Set()).add(e); e.damage(s.dmg, 'delete'); }
+            for (let dy = -3; dy <= 3; dy++) {
+              const yy = iy + dy;
+              if (yy < 0 || yy >= Wd.h - 3) continue;
+              const i = yy * Wd.w + ix;
+              if (Wd.mat[i] === Wd.SOLID && Wd.kind[i] === Wd.K_TEXT && Wd.gid[i]) {
+                const gr = Wd.groups[Wd.gid[i]];
+                if (gr && !gr.dead) {
+                  gr.dead = true;
+                  let n = 0;
+                  for (let y2 = gr.y0; y2 <= gr.y1; y2++) for (let x2 = gr.x0; x2 <= gr.x1; x2++) { const j = y2 * Wd.w + x2; if (Wd.gid[j] === Wd.gid[i] || (j === i)) { const c = Wd.col[j]; if (Wd.mat[j] === Wd.SOLID) { n += Wd.kill(j, x2, y2, x2, y2, 0, 0); if (Math.random() < 0.25) FX().pix(x2 + 0.5, y2 + 0.5, -s.vx * 0.2 + rand(-20, 20), rand(-30, 10), c, 0.4); } } }
+                  if (n) { G()?.scored?.(n, s.x, s.y, 'delete'); G()?.stat?.('letters', 1); s.ate++; if ((s.ate & 1) === 0) A('keyTap'); }
+                }
+              }
+            }
+            if (Wd.hardAt(ix, iy)) { const i = iy * Wd.w + ix; if (Wd.kind[i] !== Wd.K_TEXT) { Wd.carve(s.x, s.y, 1.2, { pow: 1, debris: 0.2, cause: 'cursor', noCrumble: true }); dead = true; } }
+          }
+          break;
+        }
+        case 'junk':
+          s.vy += (s.g || 0) * dt;
+          dead = dead || travel(s, dt, (x, y, isE) => { if (!isE) Wd.carve(x, y, 1.8, { pow: 1.3, debris: 0.5, force: 60, cause: 'junk', noCrumble: Math.random() < 0.8, pop: 0.4 }); FX().debris(x, y, rand(-40, 40), rand(-60, -10), s.col); return true; });
+          break;
+        case 'bowl': {
+          s.vy += s.g * dt;
+          const before = Math.hypot(s.vx, s.vy);
+          const h = physStep(s, dt, 0.25);
+          const onGround = Wd.solid(Math.floor(s.x), Math.floor(s.y + 4.5));
+          s.roll += s.vx * dt * 0.4;
+          if (onGround && Math.abs(s.vx) < 60 && s.age < 0.5) s.vx = Math.sign(s.vx || 1) * 160;
+          if (Math.abs(s.vx) > 40 || Math.abs(s.vy) > 120) {
+            const n = Wd.carve(s.x + Math.sign(s.vx) * 2, s.y, 4.6, { pow: 3.2, debris: 0.6, force: 120, cause: 'bowl', noCrumble: Math.random() < 0.6, pop: 0.8 });
+            if (n) { s.vx *= Math.max(0.6, 1 - n * 0.004); G()?.shake?.(1.2); }
+          }
+          if (onGround) s.vx *= Math.pow(0.85, dt);
+          if (h === 'x' && before > 200) A('bowlHit');
+          const hitN = EN()?.damageCircle?.(s.x, s.y, 6, 0, 'bowl') || 0;
+          if (hitN) { for (const e of EN().list) if (!e.dead && Math.hypot(e.x - s.x, e.y - s.y) < 10 && !(s.hitSet && s.hitSet.has(e))) { (s.hitSet = s.hitSet || new Set()).add(e); e.damage(s.dmg, 'bowl'); if (!e.T.boss) { e.vx = s.vx * 1.2; e.vy = -220; } s.hits++; A('pins'); } }
+          if (s.hits >= 3 && !s.strike) { s.strike = true; G()?.event?.('STRIKE!', s.x, s.y - 14, 3); A('strike'); }
+          if (Math.random() < 0.3) A('bowlRoll');
+          if (s.life <= 0 || (Math.abs(s.vx) < 8 && onGround && s.age > 1)) dead = true;
+          break;
+        }
+        case 'jar':
+          s.vy += s.g * dt;
+          dead = dead || travel(s, dt, (x, y) => {
+            A('jarBreak');
+            for (let q = 0; q < 10; q++) FX().shard(x, y, rand(-80, 80), rand(-120, -20), q & 1 ? P32.C : P32['7']);
+            for (let q = 0; q < 12 + s.lv * 3; q++) addShot({ t: 'termite', x: x - s.vx * 0.01 + rand(-2, 2), y: y - s.vy * 0.01 + rand(-2, 2), vx: rand(-40, 40), vy: rand(-60, 0), life: rand(6, 9), eat: 0, from: 'p', lv: s.lv });
+            G()?.event?.('TERMITES!', x, y - 8, 1);
+            return true;
+          });
+          break;
+        case 'termite': {
+          s.eat -= dt;
+          const ix = Math.floor(s.x), iy = Math.floor(s.y);
+          let best = -1, bx = 0, by = 0;
+          const edible = (i) => Wd.mat[i] === Wd.SOLID && (Wd.mtl[i] === Wd.M.WOOD || Wd.mtl[i] === Wd.M.PAPER || Wd.mtl[i] === Wd.M.INK || Wd.mtl[i] === Wd.M.IMAGE || Wd.mtl[i] === Wd.M.BUTTON || Wd.mtl[i] === Wd.M.INKPEN || Wd.mtl[i] === Wd.M.PLASTIC);
+          for (let q = 0; q < 6; q++) { const dx = ((Math.random() * 5) | 0) - 2, dy = ((Math.random() * 5) | 0) - 2; const x = ix + dx, y = iy + dy; if (x < 0 || y < 0 || x >= Wd.w || y >= Wd.h - 3) continue; const i = y * Wd.w + x; if (edible(i)) { best = i; bx = x; by = y; if (dy >= 0) break; } }
+          if (best >= 0) {
+            s.vx = (bx - s.x) * 8; s.vy = (by - s.y) * 8;
+            if (s.eat <= 0) { s.eat = 0.035; const c = Wd.col[best]; const n = Wd.kill(best, bx, by, bx, by, 0, 0); if (n) { G()?.scored?.(n, -1, -1, 'termite'); if (Math.random() < 0.15) FX().pix(bx, by, rand(-20, 20), rand(-30, 0), c, 0.3); } if (Math.random() < 0.05) A('munch'); s.x = bx + 0.5; s.y = by + 0.5; }
+          } else {
+            s.vy += 300 * dt;
+            const nx = s.x + s.vx * dt, ny = s.y + s.vy * dt;
+            if (Wd.solid(Math.floor(nx), Math.floor(s.y))) s.vx = -s.vx * 0.5; else s.x = nx;
+            if (Wd.solid(Math.floor(s.x), Math.floor(ny))) { s.vy = 0; s.vx = (s.vx >= 0 ? 1 : -1) * 30; } else s.y = ny;
+          }
+          const e = EN()?.at?.(s.x, s.y, 1);
+          if (e && s.eat <= 0) { e.damage(4, 'termite'); s.eat = 0.1; }
+          if (s.y > Wd.h) dead = true;
+          break;
+        }
+        case 'agrav': {
+          s.vy += (s.g || 520) * dt;
+          physStep(s, dt, s.bounce || 0.45);
+          s.fuse -= dt;
+          s.spin = (s.spin || 0) + dt * 8;
+          if (s.fuse <= 0) {
+            dead = true;
+            const r = 42 + s.lv * 6;
+            st.zones.push({ x: s.x, y: s.y, r, t: 0, life: 2.6 });
+            A('warp');
+            FX().anim('ring', r * 2, s.x, s.y, 0.35);
+            Wd.crumble(s.x, s.y, 0, r * 0.8);
+            Wd.letterRing(s.x, s.y, 0, r * 0.6, 60);
+            for (const c of Wd.chunks) if (Math.hypot(c.x - s.x, c.y - s.y) < r) { c.vy -= 120; c.rest = 0; }
+            G()?.event?.('ZERO G!', s.x, s.y - 14, 2);
+          }
+          break;
+        }
         default: break;
       }
       if (dead) { const ix = shots.indexOf(s); if (ix >= 0) shots.splice(ix, 1); }
@@ -1220,6 +1763,11 @@
       if (s.t === 'glitch') { ctx.fillStyle = Math.random() < 0.5 ? WTP.PAL.k : WTP.PAL.C; ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 1, 4 + randInt(0, 3), 2); continue; }
       if (s.t === 'lavab') { ctx.fillStyle = WTP.PAL.o; ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 1, 3, 3); ctx.fillStyle = WTP.PAL.Y; ctx.fillRect(Math.round(s.x), Math.round(s.y) - 1, 1, 1); continue; }
       if (s.t === 'bhole') { drawHole(ctx, s); continue; }
+      if (s.t === 'saw') { drawSaw(ctx, s); continue; }
+      if (s.t === 'cursor') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = PAL['0']; ctx.fillRect(x - 1, y - 5, 3, 11); ctx.fillStyle = ((s.blink * 8) | 0) & 1 ? PAL['7'] : PAL.C; ctx.fillRect(x, y - 4, 1, 9); ctx.fillRect(x - 1, y - 4, 3, 1); ctx.fillRect(x - 1, y + 4, 3, 1); continue; }
+      if (s.t === 'junk') { ctx.fillStyle = WTP.css32(s.col); ctx.fillRect(Math.round(s.x), Math.round(s.y), 2, 2); continue; }
+      if (s.t === 'termite') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = PAL.w; ctx.fillRect(x - 1, y, 3, 1); ctx.fillStyle = PAL['0']; ctx.fillRect(x + (s.vx >= 0 ? 1 : -1), y, 1, 1); if (((s.age * 20) | 0) & 1) { ctx.fillStyle = PAL.u; ctx.fillRect(x, y + 1, 1, 1); } continue; }
+      if (s.t === 'bowl' && sp) { const r = sp.rotated(s.roll || 0, false); ctx.drawImage(r.cv, Math.round(s.x - r.ox), Math.round(s.y - r.oy)); continue; }
       if (!sp) continue;
       let ang = Math.atan2(s.vy, s.vx);
       if (s.t === 'grenade' || s.t === 'cluster' || s.t === 'mini' || s.t === 'banana' || s.t === 'snow') ang = s.spin || 0;
@@ -1230,6 +1778,38 @@
       ctx.drawImage(r.cv, Math.round(s.x - r.ox), Math.round(s.y - r.oy));
       if (s.t === 'mine' && s.arm <= 0 && ((performance.now() / 250) | 0) % 2) { ctx.fillStyle = WTP.PAL.e; ctx.fillRect(Math.round(s.x), Math.round(s.y) - 4, 1, 1); }
     }
+    if (st.whip && st.whip.pts.length) {
+      const pts = st.whip.pts, N = pts.length - 1;
+      for (let i = 0; i < N; i++) {
+        const a = pts[i], b = pts[i + 1];
+        const th = i < N * 0.35 ? 1 : 0;
+        const c = i === N - 1 ? PAL.y : (i & 1 ? PAL.W : PAL.w);
+        const len = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y)));
+        for (let k = 0; k <= len; k++) { const x = Math.round(a.x + (b.x - a.x) * (k / len)), y = Math.round(a.y + (b.y - a.y) * (k / len)); ctx.fillStyle = PAL['0']; if (th) ctx.fillRect(x - 1, y - 1, 3, 3); ctx.fillStyle = c; ctx.fillRect(x, y, 1 + th, 1 + th); }
+      }
+      const tip = pts[N];
+      if (st.whip.cracked && st.whip.t < st.whip.dur * 0.62) { ctx.fillStyle = PAL['7']; ctx.fillRect(Math.round(tip.x) - 2, Math.round(tip.y), 5, 1); ctx.fillRect(Math.round(tip.x), Math.round(tip.y) - 2, 1, 5); }
+    }
+    if (st.latch) {
+      const g0 = PL().gunPos || PL().center();
+      const L = st.latch, n = Math.ceil(Math.hypot(L.x - g0.x, L.y - g0.y));
+      for (let k = 0; k <= n; k += 1) { ctx.fillStyle = k & 1 ? PAL.W : PAL.w; ctx.fillRect(Math.round(g0.x + (L.x - g0.x) * (k / n)), Math.round(g0.y + (L.y - g0.y) * (k / n)), 1, 1); }
+    }
+    if (st.glove > 0) {
+      const P = PL(), g0 = P.gunPos || P.center(), a = Math.atan2(G()?.aim?.y || 0, G()?.aim?.x || P.face);
+      const ext = Math.sin((1 - st.glove / 0.22) * Math.PI) * 14;
+      for (let k = 2; k < ext; k += 2) { ctx.fillStyle = (k >> 1) & 1 ? PAL['5'] : PAL['3']; ctx.fillRect(Math.round(g0.x + Math.cos(a) * k + Math.sin(a) * ((k >> 1) & 1 ? 1 : -1)), Math.round(g0.y + Math.sin(a) * k), 1, 1); }
+      const gx = Math.round(g0.x + Math.cos(a) * (ext + 3)), gy = Math.round(g0.y + Math.sin(a) * (ext + 3));
+      ctx.fillStyle = PAL['0']; ctx.fillRect(gx - 3, gy - 3, 7, 7); ctx.fillStyle = PAL.e; ctx.fillRect(gx - 2, gy - 2, 5, 5); ctx.fillStyle = PAL.Y; ctx.fillRect(gx - 1, gy - 2, 2, 1);
+    }
+    for (const z of st.zones) {
+      const k = Math.min(1, z.t / 0.3);
+      for (let q = 0; q < 48; q++) { const a = (q / 48) * Math.PI * 2 + z.t; if (((q + ((z.t * 10) | 0)) & 3) === 0) continue; ctx.fillStyle = q & 1 ? PAL.m : PAL.K; ctx.fillRect(Math.round(z.x + Math.cos(a) * z.r * k), Math.round(z.y + Math.sin(a) * z.r * k), 1, 1); }
+    }
+    if (st.lensAt) { const L = st.lensAt, x = Math.round(L.x), y = Math.round(L.y), r = L.heat > 0.6 ? 1 : 2; ctx.fillStyle = L.heat > 0.6 ? PAL['7'] : PAL.Y; ctx.fillRect(x - r, y, r * 2 + 1, 1); ctx.fillRect(x, y - r, 1, r * 2 + 1); }
+    if (st.penAt) { ctx.fillStyle = PAL['0']; ctx.fillRect(Math.round(st.penAt.x) - 2, Math.round(st.penAt.y) - 2, 5, 5); ctx.fillStyle = st.ink > 0.05 ? PAL.c : PAL.e; ctx.fillRect(Math.round(st.penAt.x) - 1, Math.round(st.penAt.y) - 1, 3, 3); }
+    if (st.cur === 'pen' && st.ink < 0.999) { const P = PL(), w = 10, bx = Math.round(P.x + P.w / 2 - w / 2), by = Math.round(P.y - 12); ctx.fillStyle = PAL['0']; ctx.fillRect(bx - 1, by - 1, w + 2, 3); ctx.fillStyle = PAL.c; ctx.fillRect(bx, by, Math.round(w * st.ink), 1); }
+    if (st.cur === 'vacuum' && (st.tank > 0 || st.blowing > 0)) { const P = PL(), w = 10, bx = Math.round(P.x + P.w / 2 - w / 2), by = Math.round(P.y - 12); ctx.fillStyle = PAL['0']; ctx.fillRect(bx - 1, by - 1, w + 2, 3); ctx.fillStyle = PAL.a; ctx.fillRect(bx, by, Math.round(w * Math.min(1, (st.tank || st.blowing) / 400)), 1); }
     for (const p of st.portals) {
       if (!p) continue;
       p.t = (p.t || 0) + 0.016;
@@ -1278,6 +1858,12 @@
       ctx.strokeRect(Math.round(e.x) - 5.5, Math.round(e.y) - 5.5, 11, 11);
     }
     for (const a of FX().anims) {
+      if (a.kick) {
+        const k = a.t / a.dur;
+        const R2 = 5 + k * 6;
+        for (let q = -5; q <= 5; q++) { const an = a.a + q * 0.16; if (Math.random() < k * 0.6) continue; ctx.fillStyle = Math.abs(q) < 2 ? PAL['7'] : PAL['6']; ctx.fillRect(Math.round(a.x + Math.cos(an) * R2), Math.round(a.y + Math.sin(an) * R2), 1, 1); }
+        continue;
+      }
       if (!a.slash) continue;
       const frames = SP.explosions().slash;
       const fr = frames[Math.min(frames.length - 1, Math.floor((a.t / a.dur) * frames.length))];
@@ -1289,6 +1875,14 @@
       ctx.drawImage(fr, -16 * s, -16 * s, 32 * s, 32 * s);
       ctx.restore();
     }
+  }
+  function drawSaw(ctx, s) {
+    const x = Math.round(s.x), y = Math.round(s.y);
+    ctx.fillStyle = PAL['0']; ctx.fillRect(x - 3, y - 3, 7, 7);
+    ctx.fillStyle = PAL['5']; ctx.fillRect(x - 2, y - 2, 5, 5);
+    ctx.fillStyle = PAL['6']; ctx.fillRect(x - 1, y - 1, 2, 2);
+    ctx.fillStyle = PAL['3']; ctx.fillRect(x, y, 1, 1);
+    for (let k = 0; k < 6; k++) { const a = s.spin + k * 1.047; ctx.fillStyle = PAL['7']; ctx.fillRect(Math.round(s.x + Math.cos(a) * 4), Math.round(s.y + Math.sin(a) * 4), 1, 1); }
   }
   function drawHole(ctx, s) {
     const r = s.on ? Math.round(s.hr * 0.42 + Math.sin(s.age * 20) * 0.6) : 2;
@@ -1306,7 +1900,7 @@
   }
   function reset() {
     shots.length = 0;
-    Object.assign(st, { cd: 0, spin: 0, charge: 0, mag: {}, reload: 0, reloadFor: null, held: null, ball: null, portals: [], stickies: [], mines: [], boomers: 0, waves: [], tornados: [], quakeT: 0, orb: [] });
+    Object.assign(st, { cd: 0, spin: 0, charge: 0, mag: {}, reload: 0, reloadFor: null, held: null, ball: null, portals: [], stickies: [], mines: [], boomers: 0, waves: [], tornados: [], quakeT: 0, orb: [], whip: null, latch: null, cut: null, tank: 0, tankCols: [], blowing: 0, ink: 1, penLast: null, zones: [], glove: 0, kickCd: 0, thermals: [] });
     WTP.audio.stopLoops();
   }
   function select(id) {
@@ -1314,8 +1908,10 @@
     if (st.cur !== id) {
       const old = BY[st.cur];
       if (old && old.loop) WTP.audio.loop(old.loop, false);
-      WTP.audio.loop('spin', false);
+      WTP.audio.loop('spin', false); WTP.audio.loop('brrt', false); st.brrt = false;
       if (st.held) { st.held.held = false; W().chunks.push(st.held); st.held = null; }
+      if (st.cut) { st.cut.held = false; W().chunks.push(st.cut); st.cut = null; }
+      st.whip = null; st.latch = null;
       st.spin = 0; st.charge = 0;
     }
     st.cur = id;
@@ -1323,9 +1919,18 @@
     return true;
   }
 
+  function shockwave(x, y, r) {
+    FX().blast(x, y, r, 300);
+    for (const e of EN()?.list || []) { const d = Math.hypot(e.x - x, e.y - y); if (d < r && !e.T.boss) { e.vx += ((e.x - x) / (d || 1)) * 300; e.vy -= 200; e.damage(20, 'sound'); } }
+    for (const c of W().chunks) { const d = Math.hypot(c.x - x, c.y - y); if (d < r) { c.vx += ((c.x - x) / (d || 1)) * 300; c.vy -= 200; c.rest = 0; } }
+    W().letterRing(x, y, 0, r * 0.6, 120);
+    W().crumble(x, y, 0, r * 0.7);
+    G()?.shake?.(8);
+  }
   WTP.weapons = {
-    CATS, DEFS: D, BY, st, shots, update, draw, reset, select, owned, explode, impactChunk,
-    heldChunk: () => st.held,
+    CATS, DEFS: D, BY, st, shots, update, draw, reset, select, owned, explode, impactChunk, melee, glitchAt, shockwave, conduct, upg, upCost,
+    get dmgMul() { return R.dmgMul; },
+    heldChunk: () => st.held || st.cut,
     magnetOn: () => st.cur === 'magnet' && WTP.input.wantFire(),
     current: () => BY[st.cur],
     setAmmo: (a) => { st.ammo = a ? { ...a } : null; },
@@ -1335,6 +1940,9 @@
       if (d.id === 'hammer' && st.swing > 0) return -(st.swing / 0.22) * 1.8 * st.swingDir * PL().face + 0.6 * PL().face;
       if (d.id === 'katana' && st.swing > 0) return st.swingDir * (1 - st.swing / 0.18) * 1.6 - st.swingDir * 0.8;
       if (d.throw && st.swing > 0) return -st.swing * 6 * PL().face;
+      if (d.id === 'whip' && st.whip) { const k = st.whip.t / st.whip.dur; return (k < 0.3 ? -k * 4 : -1.2 + (k - 0.3) * 2.5) * st.whip.dir; }
+      if (d.id === 'glove' && st.glove > 0) return 0;
+      if (d.id === 'stamp' && st.swing > 0) return -(st.swing / 0.25) * 1.6 * PL().face + 0.4 * PL().face;
       return 0;
     }
   };

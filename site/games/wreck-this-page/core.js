@@ -63,22 +63,34 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const SAVE_KEY = 'wtp3-save';
-  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false };
+  const SAVE_V = 4;
+  const HOTBAR_N = 10;
+  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false, radial: false, touchSize: 1, touchAlpha: 0.55, touchAim: 'auto', touchSwap: false };
   const DEFAULT_KEYS = {
     left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'], jump: ['KeyW', 'Space', 'ArrowUp'], down: ['KeyS', 'ArrowDown'],
-    dash: ['ShiftLeft', 'ShiftRight'], fire: ['KeyF'], alt: ['KeyG'], prev: ['KeyQ'], next: ['KeyE'], wheel: ['Tab'], reset: ['KeyR'], pause: ['Escape', 'KeyP']
+    dash: ['ShiftLeft', 'ShiftRight'], fire: ['KeyF'], alt: ['KeyG'], melee: ['KeyC'], gadget: ['KeyX'], prev: ['KeyQ'], next: ['KeyE'], wheel: ['Tab', 'KeyB'], reset: ['KeyR'], pause: ['Escape', 'KeyP']
   };
   const freshSave = () => ({
-    v: 3, scrap: 0, owned: {}, skin: 'hero', skins: { hero: true }, hotbar: [], achievements: {}, bests: {}, campaign: {}, daily: {}, puzzles: {}, seenPages: {},
-    stats: { pixels: 0, time: 0, shots: 0, explosions: 0, letters: 0, chunks: 0, burned: 0, iced: 0, glass: 0, kills: 0, deaths: 0, jumps: 0, dashes: 0, walljumps: 0, runs: 0, wins: 0, bestCombo: 0, painted: 0, portals: 0, throws: 0, bees: 0, nukes: 0, slowmos: 0, zenTime: 0, dailies: 0, scrapEarned: 0, weaponUse: {}, distance: 0, bestWave: 0, eaten: 0 },
+    v: SAVE_V, scrap: 0, owned: {}, skin: 'hero', skins: { hero: true }, hotbar: new Array(HOTBAR_N).fill(null), achievements: {}, bests: {}, campaign: {}, daily: {}, puzzles: {}, seenPages: {},
+    upg: {}, gadgets: { boots: true }, gadget: 'boots', secrets: {},
+    stats: { pixels: 0, time: 0, shots: 0, explosions: 0, letters: 0, chunks: 0, burned: 0, iced: 0, glass: 0, kills: 0, deaths: 0, jumps: 0, dashes: 0, walljumps: 0, runs: 0, wins: 0, bestCombo: 0, painted: 0, portals: 0, throws: 0, bees: 0, nukes: 0, slowmos: 0, zenTime: 0, dailies: 0, scrapEarned: 0, weaponUse: {}, distance: 0, bestWave: 0, eaten: 0, kicks: 0, gadgetUse: 0, secrets: 0, buttons: 0, props: 0, cracks: 0 },
     settings: { ...DEFAULT_SETTINGS }, keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), intro: false
   });
+  const isObj = (o) => !!o && typeof o === 'object' && !Array.isArray(o);
+  function normHotbar(h) {
+    const out = new Array(HOTBAR_N).fill(null);
+    if (!Array.isArray(h)) return out;
+    const seen = new Set();
+    for (let i = 0; i < HOTBAR_N; i++) { const id = h[i]; if (typeof id === 'string' && !seen.has(id)) { out[i] = id; seen.add(id); } }
+    return out;
+  }
   function loadSave() {
     let s = null;
     try { s = C.store.get(SAVE_KEY, null); } catch (e) { s = null; }
     const base = freshSave();
-    if (!s || typeof s !== 'object' || s.v !== 3) {
-      const old = C.store.get('wtp-career-v2', null);
+    if (!isObj(s) || !(s.v === 3 || s.v === SAVE_V)) {
+      let old = null;
+      try { old = C.store.get('wtp-career-v2', null); } catch (e) { old = null; }
       if (old && typeof old.pixels === 'number') {
         base.scrap = Math.min(20000, Math.floor(old.pixels / 25));
         base.stats.pixels = old.pixels;
@@ -87,15 +99,28 @@
       return base;
     }
     const out = Object.assign(base, s);
-    out.stats = Object.assign(freshSave().stats, s.stats || {});
-    out.settings = Object.assign({ ...DEFAULT_SETTINGS }, s.settings || {});
+    out.v = SAVE_V;
+    out.stats = Object.assign(freshSave().stats, isObj(s.stats) ? s.stats : {});
+    if (!isObj(out.stats.weaponUse)) out.stats.weaponUse = {};
+    for (const k in out.stats) if (k !== 'weaponUse' && (typeof out.stats[k] !== 'number' || !isFinite(out.stats[k]))) out.stats[k] = 0;
+    out.settings = Object.assign({ ...DEFAULT_SETTINGS }, isObj(s.settings) ? s.settings : {});
     const aa = out.settings.aimAssist;
     out.settings.aimAssist = aa === true ? 1 : aa === false ? 0 : [0, 1, 2].includes(aa) ? aa : 1;
-    out.keys = Object.assign(JSON.parse(JSON.stringify(DEFAULT_KEYS)), s.keys || {});
-    for (const k of ['owned', 'skins', 'achievements', 'bests', 'campaign', 'daily', 'puzzles', 'seenPages']) if (!out[k] || typeof out[k] !== 'object') out[k] = {};
-    if (!Array.isArray(out.hotbar)) out.hotbar = [];
+    if (!['auto', 'stick'].includes(out.settings.touchAim)) out.settings.touchAim = 'auto';
+    if (![0.8, 1, 1.25].includes(out.settings.touchSize)) out.settings.touchSize = 1;
+    if (typeof out.settings.touchAlpha !== 'number' || !isFinite(out.settings.touchAlpha)) out.settings.touchAlpha = 0.55;
+    const keys = JSON.parse(JSON.stringify(DEFAULT_KEYS));
+    if (isObj(s.keys)) for (const a in keys) if (Array.isArray(s.keys[a]) && s.keys[a].every((c) => typeof c === 'string')) keys[a] = s.keys[a].slice(0, 3);
+    if (s.v === 3) { for (const a of ['melee', 'gadget']) { const want = DEFAULT_KEYS[a][0]; const clash = Object.keys(keys).some((b) => b !== a && keys[b].includes(want)); keys[a] = clash ? [] : [want]; } if (!keys.wheel.includes('KeyB') && !Object.values(keys).some((l) => l.includes('KeyB'))) keys.wheel.push('KeyB'); }
+    out.keys = keys;
+    for (const k of ['owned', 'skins', 'achievements', 'bests', 'campaign', 'daily', 'puzzles', 'seenPages', 'upg', 'gadgets', 'secrets']) if (!isObj(out[k])) out[k] = {};
+    for (const k in out.upg) { const n = out.upg[k]; out.upg[k] = typeof n === 'number' && isFinite(n) ? Math.max(0, Math.min(3, n | 0)) : 0; }
+    out.gadgets.boots = true;
+    if (typeof out.gadget !== 'string' || !out.gadgets[out.gadget]) out.gadget = 'boots';
+    out.hotbar = normHotbar(s.hotbar);
     if (typeof out.scrap !== 'number' || !isFinite(out.scrap)) out.scrap = 0;
     out.skins.hero = true;
+    if (typeof out.skin !== 'string') out.skin = 'hero';
     return out;
   }
   const save = loadSave();
@@ -128,7 +153,7 @@
 
   Object.assign(WTP, {
     PAL, P32, PAL_LIST, pack, packHex, hexRGB, unR, unG, unB, shade, mix, css32, lum, nearest, clamp, hash, rng, strSeed,
-    rand, randInt, pick, fmtInt, fmtTime, fmtClock, todayKey, $, el, esc, save, persist, getBest, setBest, freshSave,
+    rand, randInt, pick, fmtInt, fmtTime, fmtClock, todayKey, $, el, esc, save, persist, getBest, setBest, freshSave, normHotbar, HOTBAR_N,
     DEFAULT_KEYS, DEFAULT_SETTINGS, on, emit, sem, isTouchDevice, reducedMotion, vibe
   });
 })();

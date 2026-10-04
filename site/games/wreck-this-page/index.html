@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Wreck This Page · Zoble</title>
-  <meta name="description" content="Every web page is secretly a level. Pick one, turn it into pixels, and shred it with a tiny pixel hero and 55 ridiculous weapons.">
+  <meta name="description" content="Every web page is secretly a level. Pick one, turn it into pixels, and shred it with a tiny pixel hero, 69 ridiculous weapons and 8 gadgets.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="wreck-this-page">
+<body data-game="wreck-this-page" data-modes>
   <main class="wtp-app" id="app">
     <canvas class="wtp-bg" id="bg" aria-hidden="true"></canvas>
     <h1 class="wtp-sr">Wreck This Page</h1>
@@ -58,24 +58,29 @@
         <div class="px-panel hud-extra" id="hudExtra" hidden></div>
       </div>
       <div class="hud-r">
-        <button class="px-ib" id="hudWheel" type="button" aria-label="Weapon wheel (Tab)" title="Weapon wheel (Tab)"><span class="ico" data-ico="wheel"></span></button>
+        <button class="px-ib" id="hudWheel" type="button" aria-label="Weapons menu (Tab)" title="Weapons menu (Tab or B)"><span class="ico" data-ico="grid"></span></button>
         <button class="px-ib" id="hudAlt" type="button" aria-label="Alt fire (G)" title="Alt fire (G)" hidden><span class="ico" data-ico="alt"></span></button>
         <button class="px-ib" id="hudFinish" type="button" aria-label="Finish run" title="Finish run" hidden><span class="ico" data-ico="flag"></span></button>
         <button class="px-ib" id="hudPause" type="button" aria-label="Pause (Esc)" title="Pause (Esc)"><span class="ico" data-ico="pause"></span></button>
       </div>
     </div>
-    <div class="hotbar px-panel" id="hotbar" role="toolbar" aria-label="Weapons"></div>
+    <div class="hotwrap" id="hotwrap"><div class="hotbar px-panel" id="hotbar" role="toolbar" aria-label="Weapon hotbar"></div><div class="px-panel gadbox" id="gadbox"><button class="gad-btn" id="gadBtn" type="button" aria-label="Gadget"><canvas id="gadCv" width="14" height="12" aria-hidden="true"></canvas><span class="k" id="gadKey">X</span><i id="gadBar"></i></button><button class="gad-btn gad-kick" id="kickBtn" type="button" aria-label="Kick"><span class="ico" data-ico="kick"></span><span class="k" id="kickKey">C</span></button></div></div>
     <div class="wname" id="wname" aria-live="polite"></div>
     <div class="announce" id="announce" aria-live="polite"></div>
     <div class="touch" id="touch">
-      <div class="stick stick--l" id="stickL"><span>MOVE</span><i></i></div>
-      <button class="tbtn tbtn--jump" id="tJump" type="button" aria-label="Jump"><span class="ico" data-ico="jump"></span></button>
-      <button class="tbtn tbtn--dash" id="tDash" type="button" aria-label="Dash"><span class="ico" data-ico="dash"></span></button>
-      <button class="tbtn tbtn--wpn" id="tWpn" type="button" aria-label="Weapon wheel"><canvas id="tWpnCv" width="40" height="20" aria-hidden="true"></canvas></button>
-      <button class="tbtn tbtn--alt" id="tAlt" type="button" aria-label="Alt fire" hidden><span class="ico" data-ico="alt"></span></button>
-      <div class="stick stick--r" id="stickR"><span>AIM + FIRE</span><i></i></div>
+      <div class="tzone" id="tzMove"><div class="joy" id="joyL"><i></i></div><span class="tzone-hint" id="tzHint">Touch here to move</span></div>
+      <div class="tpad" id="tpad">
+        <button class="tb tb--fire" id="tFire" type="button" aria-label="Fire (drag to aim)"><span class="ico" data-ico="target"></span><i class="tb-aim"></i></button>
+        <button class="tb tb--jump" id="tJump" type="button" aria-label="Jump"><span class="ico" data-ico="jump"></span></button>
+        <button class="tb tb--kick" id="tKick" type="button" aria-label="Kick"><span class="ico" data-ico="kick"></span></button>
+        <button class="tb tb--gad" id="tGad" type="button" aria-label="Gadget"><canvas id="tGadCv" width="14" height="12" aria-hidden="true"></canvas></button>
+        <button class="tb tb--dash" id="tDash" type="button" aria-label="Dash"><span class="ico" data-ico="dash"></span></button>
+        <button class="tb tb--alt" id="tAlt" type="button" aria-label="Alt fire" hidden><span class="ico" data-ico="alt"></span></button>
+      </div>
+      <div class="twpn"><button class="tw-cur" id="tWpn" type="button" aria-label="Next weapon"><canvas id="tWpnCv" width="40" height="20" aria-hidden="true"></canvas></button><button class="tw-menu" id="tMenu" type="button" aria-label="Weapons menu"><span class="ico" data-ico="grid"></span></button></div>
     </div>
-    <div class="ovl wheel" id="wheel" hidden><div class="wheel-ring" id="wheelRing" role="dialog" aria-label="Weapon wheel"></div></div>
+    <div class="ovl wmenu" id="wheel" hidden><div class="px-panel wm-card" id="wheelRing" role="dialog" aria-label="Weapons menu"></div></div>
+    <div class="ovl radial" id="radial" hidden><div class="rad-ring" id="radRing" role="dialog" aria-label="Weapon wheel"></div></div>
     <div class="ovl" id="pauseOvl" hidden><div class="px-panel ovl-card" role="dialog" aria-label="Paused" id="pauseCard"></div></div>
     <div class="ovl" id="resultsOvl" hidden><div class="px-panel ovl-card res-card" role="dialog" aria-label="Results" id="resCard"></div></div>
     <div class="loading" id="loading" hidden><canvas id="loadCv" width="64" height="32" aria-hidden="true"></canvas><span>Pixelating the page</span></div>
@@ -91,12 +96,18 @@
   <script src="pages.js"></script>
   <script src="pages2.js"></script>
   <script src="pages3.js"></script>
+  <script src="pages4.js"></script>
+  <script src="pages5.js"></script>
   <script src="world.js"></script>
   <script src="fx.js"></script>
   <script src="input.js"></script>
   <script src="player.js"></script>
+  <script src="gadgets.js"></script>
   <script src="weapons.js"></script>
+  <script src="props.js"></script>
   <script src="enemies.js"></script>
+  <script src="levels.js"></script>
+  <script src="scenery.js"></script>
   <script src="modes.js"></script>
   <script src="progress.js"></script>
   <script src="game.js"></script>
