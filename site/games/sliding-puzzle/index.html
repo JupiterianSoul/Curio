@@ -9,14 +9,17 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="sliding-puzzle">
+<body data-game="sliding-puzzle" data-modes>
   <main class="c-wrap sp" id="root">
     <section id="home" class="sp-home">
       <header class="sp-hero">
         <div class="sp-herotiles" id="heroTiles" aria-hidden="true"></div>
         <div>
+          <p class="sp-kicker">The Little Gallery of Shuffled Things</p>
           <h1 class="c-title">Sliding Puzzle</h1>
-          <p class="c-sub">Sixteen little paintings, chopped into tiles and scrambled. Slide them home. Every shuffle is guaranteed solvable, and the fewer moves you take, the more stars you earn.</p>
+          <p class="c-sub sp-adv">Sixteen little paintings, chopped into tiles by a clumsy curator. Slide every piece home and hang them back on the wall. Every shuffle is solvable, and the fewer moves you take, the more stars you earn.</p>
+          <p class="c-sub sp-simp">Pick a painting, slide the tiles home, hang it back on the wall. Three by three, quick and calm.</p>
+          <button class="c-btn sp-simp" type="button" id="simpleGo">Restore the next painting</button>
         </div>
       </header>
       <div class="sp-top">
@@ -62,7 +65,8 @@
         <button class="sp-tool" type="button" id="shuffleBtn"><i>🔀</i>Shuffle</button>
         <button class="sp-tool" type="button" id="solveBtn"><i>🤖</i>Solve</button>
       </div>
-      <p class="c-muted sp-keys">Tap a tile in line with the gap, swipe on the board, or use arrows / <span class="c-kbd">WASD</span>. <span class="c-kbd">U</span> undo · <span class="c-kbd">H</span> hint · <span class="c-kbd">P</span> or hold <span class="c-kbd">Space</span> to peek.</p>
+      <p class="c-muted sp-keys sp-simp">Tap a tile next to the gap, swipe, or use the arrow keys. <span class="c-kbd">U</span> undo · <span class="c-kbd">P</span> peek.</p>
+      <p class="c-muted sp-keys sp-adv">Tap a tile in line with the gap, swipe on the board, or use arrows / <span class="c-kbd">WASD</span>. <span class="c-kbd">U</span> undo · <span class="c-kbd">H</span> hint · <span class="c-kbd">P</span> or hold <span class="c-kbd">Space</span> to peek.</p>
     </section>
   </main>
   <div class="sp-badge" id="badge" role="status" aria-live="polite"></div>

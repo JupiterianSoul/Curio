@@ -50,6 +50,8 @@
     return s;
   }
   const S = load();
+  const SIMPLE = Curio.simple;
+  if (typeof S.walk !== 'number') S.walk = 0;
   const save = () => Curio.store.set(KEY, S);
 
   const SFX = {
@@ -267,13 +269,20 @@
 
   const cv = $('cv'), R = Renderer(cv);
   let G = null, raf = 0, lastT = 0;
+  function walkSpec() {
+    const k = S.walk, th = ['garden', 'ice', 'candy', 'space', 'dungeon'][Math.floor(k / 3) % 5];
+    return { theme: th, shape: 'square', size: k < 2 ? 'S' : k < 6 ? 'M' : 'L', gems: k < 2 ? 0 : 1, fog: false, loops: 1, seed: (Math.random() * 2 ** 31) >>> 0, label: `Walk ${k + 1} · ${THEMES[th].name}`, walk: true };
+  }
   function startLevel(i) { const l = LEVELS[i]; start({ ...l, label: `Level ${i + 1} · ${THEMES[l.theme].name}`, level: i }); }
   function start(spec) {
     const m = M.generate({ shape: spec.shape, size: spec.size, seed: spec.seed, gems: spec.gems, loops: spec.loops });
     G = { spec, m, theme: spec.theme, cell: m.start, pos: { x: m.cells[m.start].x, y: m.cells[m.start].y }, from: null, to: null, prog: 1, queue: [], buffered: null, trail: [m.start], gems: m.gems.slice(), total: m.gems.length, elapsed: 0, started: false, done: false, hints: 0, hint: null, hintUntil: 0, parts: [], squash: 0, face: 0, steps: 0, par: Math.round(m.tour * 0.33 + 3), stepMs: 80 };
     $('home').hidden = true; $('play').hidden = false; $('result').hidden = true;
     $('chip').textContent = spec.label;
-    $('par').textContent = `${G.par}s`;
+    $('par').textContent = spec.walk ? (Curio.getBest(`walk:${spec.size}`) != null ? `${Curio.getBest(`walk:${spec.size}`).toFixed(1)}s` : '-') : `${G.par}s`;
+    $('play').classList.toggle('walk', !!spec.walk);
+    $('parL').textContent = spec.walk ? 'best' : 'par';
+    $('gemsBox').hidden = !!spec.walk && !G.total;
     buildPad(); layout(); hud();
     if (spec.fog) { const seen = seenAround(); R.reveal(seen); }
     $('keys').innerHTML = m.kind === 'hex' ? 'Arrows or <span class="c-kbd">WASD</span>, plus <span class="c-kbd">Q</span> <span class="c-kbd">E</span> <span class="c-kbd">Z</span> <span class="c-kbd">C</span> for the slanted directions. Click or tap ahead of your explorer to run that way, or trace a path from it. <span class="c-kbd">H</span> path · <span class="c-kbd">R</span> restart' : 'Arrows or <span class="c-kbd">WASD</span> (hold two for diagonals). Click or tap ahead of your explorer to run that way, swipe, or trace a path from it. <span class="c-kbd">H</span> path · <span class="c-kbd">R</span> restart';
@@ -285,7 +294,7 @@
     if (!G) return;
     const wide = innerWidth > 820;
     const avW = Math.min(document.querySelector('.c-wrap').clientWidth - 32 - (wide ? 230 : 0), 680);
-    const avH = Math.max(260, innerHeight - 52 - (wide ? 150 : 340));
+    const avH = Math.max(260, innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0) - (wide ? 150 : SIMPLE ? 300 : 340));
     const m = G.m, ratio = m.w / m.h;
     let w = avW, h = w / ratio; if (h > avH) { h = avH; w = h * ratio; }
     R.set(m, G.theme, Math.floor(w), Math.floor(h), G.spec.fog);
@@ -304,7 +313,7 @@
     $('gems').textContent = `${G.total - G.gems.length}/${G.total}`;
     if (bumpGems) { const el = $('gems'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
     $('time').textContent = G.elapsed.toFixed(1);
-    $('time').style.color = G.elapsed > G.par ? 'var(--bad)' : '';
+    $('time').style.color = G.elapsed > G.par && !G.spec.walk ? 'var(--bad)' : '';
   }
 
   const angTo = (i, j) => { const a = G.m.cells[i], b = G.m.cells[j]; return Math.atan2(b.y - a.y, b.x - a.x); };
@@ -394,7 +403,7 @@
     const hintAlpha = G.hint ? Math.min(1, (G.hintUntil - now) / 600) : 0;
     if (G.hint && now > G.hintUntil) G.hint = null;
     R.draw({ trail: G.trail, pos: G.pos, gems: G.gems, hint: G.hint, hintAlpha, parts: G.parts, squash: G.squash, face: G.face }, now);
-    if (G.started && !G.done) { $('time').textContent = G.elapsed.toFixed(1); if (G.elapsed > G.par) $('time').style.color = 'var(--bad)'; }
+    if (G.started && !G.done) { $('time').textContent = G.elapsed.toFixed(1); if (G.elapsed > G.par && !G.spec.walk) $('time').style.color = 'var(--bad)'; }
     raf = requestAnimationFrame(loop);
   }
   function kick() { if (!raf && !document.hidden) { lastT = 0; raf = requestAnimationFrame(loop); } }
@@ -403,6 +412,7 @@
   function finish() {
     G.done = true; G.queue = [];
     const secs = Math.round(G.elapsed * 10) / 10, sp = G.spec;
+    if (sp.walk) return finishWalk(secs);
     const allGems = G.gems.length === 0, underPar = secs <= G.par;
     const st = 1 + (allGems ? 1 : 0) + (underPar ? 1 : 0);
     S.finishes++;
@@ -445,7 +455,22 @@
       else if (a === 'share') { const text = `Zoble Maze Runner · ${sp.label}\n${'⭐'.repeat(st)} ${secs.toFixed(1)}s · gems ${G.total - G.gems.length}/${G.total}`; try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); } }
     };
   }
-  function toHome() { $('play').hidden = true; $('home').hidden = false; G = null; paintHome(); heroT0 = performance.now(); kick(); scrollTo({ top: 0 }); }
+  function finishWalk(secs) {
+    const sp = G.spec, b = Curio.best(`walk:${sp.size}`, secs, false);
+    S.walk++; S.finishes++; if (!G.hints) S.noHint++; save();
+    unlock('first'); if (S.noHint >= 10) unlock('nohint');
+    const [x, y] = R.px(G.m.cells[G.m.exit].x, G.m.cells[G.m.exit].y);
+    burst(x, y, [R.th.portal, '#fff', R.th.player], 60);
+    SFX.win(); buzz([30, 50, 30]);
+    if (b.isNew) setTimeout(() => Curio.confetti(), 300);
+    hud();
+    const box = $('result');
+    box.innerHTML = `<div class="mz-rcard mz-walkcard" role="dialog" aria-label="Maze complete"><p class="mz-stamp">Walk ${S.walk} charted</p>${b.isNew ? '<span class="new">New best for this size</span>' : ''}<h3>${Curio.pick(['Out you pop!', 'Found the way!', 'Map complete!', 'Escaped!'])}</h3><p class="mz-walkt">${secs.toFixed(1)}<small>s</small></p><p class="c-muted">Best ${sp.size === 'S' ? 'small' : sp.size === 'M' ? 'medium' : 'large'} walk: ${b.best.toFixed(1)}s</p><div class="c-row"><button class="c-btn" type="button" data-a="next">Next maze</button><button class="c-btn c-btn--ghost" type="button" data-a="retry">Again</button></div></div>`;
+    setTimeout(() => { box.hidden = false; box.querySelector('.c-btn')?.focus({ preventScroll: true }); }, 600);
+    box.onclick = (e) => { const a = e.target.closest('[data-a]')?.dataset.a; if (a === 'next') start(walkSpec()); else if (a === 'retry') start({ ...sp }); };
+  }
+  function toHome() {
+    if (SIMPLE) { start(walkSpec()); return; } $('play').hidden = true; $('home').hidden = false; G = null; paintHome(); heroT0 = performance.now(); kick(); scrollTo({ top: 0 }); }
 
   function showPath() {
     if (!G || G.done) return;
@@ -496,7 +521,8 @@
     } else if (DIAG[k] != null) { e.preventDefault(); go(DIAG[k] * Math.PI / 180); }
     else if (k === 'h') showPath();
     else if (k === 'r') start(G.spec);
-    else if (k === 'escape') toHome();
+    else if (k === 'escape' && !SIMPLE) toHome();
+    else if (k === 'n' && G.done && G.spec.walk) start(walkSpec());
   });
   addEventListener('keyup', (e) => held.delete(e.key.toLowerCase()));
   addEventListener('blur', () => held.clear());
@@ -552,7 +578,7 @@
     Curio.modal({ emoji: '📊', title: 'Your stats', body: box, buttons: [{ label: 'Close', value: 'x' }] });
   });
 
-  paintHome();
+  if (SIMPLE) start(walkSpec()); else paintHome();
   kick();
   if (matchMedia('(pointer: fine)').matches && !Curio.store.get('maze:tip', false)) { Curio.store.set('maze:tip', true); setTimeout(() => Curio.toast('Tip: turn on Touchpad mode in the top bar to trace paths click-move-click', 4200), 1200); }
   window.__maze = { get G() { return G; }, go, startLevel, start, M, LEVELS, showPath };

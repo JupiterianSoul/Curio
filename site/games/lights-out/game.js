@@ -139,6 +139,29 @@ const LO = (() => {
   };
   const S = loadS();
   const save = () => Curio.store.set(SKEY, S);
+  const SIMPLE = Curio.simple;
+  const SSEQ = [[3, 6], [3, 14], [4, 5], [4, 10], [4, 16], ...Array.from({ length: 20 }, (_, i) => [5, i + 1])];
+  let sAt = Math.max(0, +Curio.store.get('lo:simpleAt', 0) || 0);
+  const sSpec = (k) => (k < SSEQ.length ? SSEQ[k] : [5 + (k % 2), 8 + (k % 12)]);
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    click(on, x = 0) {
+      const ac = this.ac(); if (!ac) return;
+      const t = ac.currentTime, len = Math.ceil(ac.sampleRate * 0.025), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+      const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = buf; f.type = 'highpass'; f.frequency.value = on ? 2400 : 1500; g.gain.value = 0.5;
+      src.connect(f).connect(g).connect(ac.destination); src.start(t);
+      const o = ac.createOscillator(), og = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(on ? 520 + x * 40 : 180 + x * 12, t); o.frequency.exponentialRampToValueAtTime(on ? 760 + x * 40 : 120, t + 0.08);
+      og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(on ? 0.05 : 0.07, t + 0.005); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      o.connect(og).connect(ac.destination); o.start(t); o.stop(t + 0.15);
+    },
+    lullaby() {
+      const ac = this.ac(); if (!ac) return;
+      [523, 440, 392, 330, 392, 262].forEach((f, k) => { const t = ac.currentTime + k * 0.16, o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.08, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.65); });
+    }
+  };
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   let variant = V[S.variant] ? S.variant : 'classic';
   let n = 5, L = 1, kind = 'level', start, b, target = null, par, exact = true, moves = 0, history = [], cells = [], sel = 0, status = 'playing';
@@ -225,7 +248,7 @@ const LO = (() => {
       $('tgrid').innerHTML = [...target].map((v) => `<i class="${v ? 'on' : ''}"></i>`).join('');
       $('tname').textContent = picName;
     }
-    $('brand').textContent = kind === 'daily' ? `DAILY·${V[variant].name.toUpperCase()}` : `${V[variant].name.toUpperCase()}·${variant === 'pics' ? picName.toUpperCase() : n + '×' + n}`;
+    $('brand').textContent = SIMPLE ? `STREET ${sAt + 1}` : kind === 'daily' ? `DAILY·${V[variant].name.toUpperCase()}` : `${V[variant].name.toUpperCase()}·${variant === 'pics' ? picName.toUpperCase() : n + '×' + n}`;
     $('parLbl').textContent = exact ? 'Optimal' : 'Target';
     $('litLbl').textContent = target ? 'To fix' : 'Lit';
     paintSizes();
@@ -233,6 +256,8 @@ const LO = (() => {
     if (!opts.quiet) {
       if (kind === 'daily') msg(`Today's puzzle is a ${V[variant].name.toLowerCase()} board. Can you do it in ${par}?`);
       else if (target) msg(`Switch lights on until the board looks like the ${picName.toLowerCase()}. ${par} presses will do it.`);
+      else if (SIMPLE && sAt === 0) msg('Tap a window. It flips, and so do its neighbours. Get the whole street dark.');
+      else if (SIMPLE) msg(Curio.pick(['Shh, the street is trying to sleep.', 'Who left all these on?', 'Night owls everywhere. Switch them off.', 'One more street before bed.']));
       else if (L === 1 && n === 5 && variant === 'classic') msg('Tip: press a light and watch its neighbours flip too.');
       else if (variant === 'tri') msg(`Lights cycle off, yellow, blue, off. Can you do it in ${par}?`);
       else msg(`Can you do it in ${par}?`);
@@ -287,8 +312,7 @@ const LO = (() => {
       setTimeout(() => c.classList.add('flip'), k ? 40 : 0);
     });
     if (!fromUndo) ring(i);
-    const y = Math.floor(i / n), x = i % n;
-    Curio.beep(b[i] === 1 ? 660 + x * 40 : b[i] === 2 ? 880 + x * 30 : 330 + y * 30, 0.07, 'triangle', 0.07);
+    sfx.click(b[i] !== 0, i % n);
     navigator.vibrate?.(5);
     render();
     if (!fromUndo) checkWin();
@@ -341,7 +365,7 @@ const LO = (() => {
         bm = Curio.best(bestKey(), moves, false);
         const k = `${vkey()}-${L}`;
         S.stars[k] = Math.max(S.stars[k] || 0, st);
-        if (L > solvedCount()) S.solved[vkey()] = L;
+        if (L > solvedCount() && !SIMPLE) S.solved[vkey()] = L;
         if (target) { award('pic', fresh); if (window.LO_PICTURES.every((_, i) => S.stars[`pics-${i + 1}`])) award('pics', fresh); }
       }
       if (totalStars() >= 60) award('stars60', fresh);
@@ -350,7 +374,7 @@ const LO = (() => {
     boardEl.classList.add(target ? 'pic-won' : 'won');
     cells.forEach((c, i) => { c.style.animationDelay = `${(Math.floor(i / n) + (i % n)) * 55}ms`; });
     if (!assisted) Curio.confetti();
-    [392, 523, 659, 784, 1046].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.09), k * 90));
+    sfx.lullaby();
     navigator.vibrate?.([20, 40, 20]);
     msg(moves <= par ? (target ? 'Picture perfect, and perfectly efficient.' : 'Lights out. Perfectly efficient.') : target ? 'Picture complete!' : 'Lights out!');
     render();
@@ -359,20 +383,21 @@ const LO = (() => {
     setTimeout(() => {
       if (gid !== gameId) return;
       cells.forEach((c) => { c.style.animationDelay = ''; });
-      const last = L >= LO.LEVELS || kind === 'daily';
+      const last = !SIMPLE && (L >= LO.LEVELS || kind === 'daily');
       $('rStars').innerHTML = [1, 2, 3].map((i) => starSvg(!assisted && i <= st)).join('');
-      $('rTitle').textContent = assisted ? 'Solved with help' : st === 3 ? (target ? 'Picture perfect!' : 'Perfect darkness!') : target ? 'Picture done!' : 'All dark!';
+      $('rTitle').textContent = assisted ? 'Asleep, with a little help' : st === 3 ? (target ? 'Picture perfect!' : 'Sound asleep!') : target ? 'Picture done!' : 'Lights out, goodnight!';
       $('rBody').textContent = `${moves} moves (${exact ? 'optimal' : 'target'} ${par}) in ${fmtT(secs)}.${assisted ? ' Hints were used, so no stars this time.' : bm.isNew ? ' New best!' : bm.best != null ? ` Best: ${bm.best}.` : ''}${L >= LO.LEVELS && kind !== 'daily' ? ' That was the last level here. Try another size or variant!' : ''}`;
       $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       $('rNext').hidden = last;
-      $('rNext').textContent = target ? 'Next picture' : `Level ${L + 1}`;
+      $('rNext').textContent = SIMPLE ? 'Next street' : target ? 'Next picture' : `Level ${L + 1}`;
       $('rAgain').textContent = st < 3 || assisted ? 'Retry for 3 stars' : 'Replay';
       $('result').hidden = false;
       ($('rNext').hidden ? $('rAgain') : $('rNext')).focus({ preventScroll: true });
       paintProgress();
     }, 1300);
   }
-  $('rNext').addEventListener('click', () => load(L + 1));
+  $('rNext').addEventListener('click', () => { if (SIMPLE) { sAt++; Curio.store.set('lo:simpleAt', sAt); simpleLoad(); } else load(L + 1); });
+  function simpleLoad() { const [k, l] = sSpec(sAt); variant = 'classic'; n = k; kind = 'level'; load(l); }
   $('rAgain').addEventListener('click', () => load(L, { quiet: true }));
   $('rShare').addEventListener('click', () => {
     const what = kind === 'daily' ? `Daily ${today()} (${V[variant].name})` : target ? `Picture: ${picName}` : `${V[variant].name} ${n}×${n}, level ${L}`;
@@ -427,12 +452,12 @@ const LO = (() => {
     if (e.key === 'z' || e.key === 'Z') undo();
     else if (e.key === 'r' || e.key === 'R') load(L, { quiet: true });
     else if (e.key === 'h' || e.key === 'H') hint();
-    else if ((e.key === 'n' || e.key === 'N') && kind === 'level' && L < unlocked()) load(L + 1);
+    else if ((e.key === 'n' || e.key === 'N') && kind === 'level' && L < unlocked() && !SIMPLE) load(L + 1);
   });
 
   n = V[variant].sizes.includes(S.n) ? S.n : 5;
   paintSizes();
-  load(variant === 'pics' ? 1 : Math.min(unlocked(), Math.max(1, Curio.store.get(`lo:level:${n}`, 1) | 0)));
+  if (SIMPLE) simpleLoad(); else load(variant === 'pics' ? 1 : Math.min(unlocked(), Math.max(1, Curio.store.get(`lo:level:${n}`, 1) | 0)));
   paintProgress();
   window.__lo = { engine: LO, get b() { return b; }, get par() { return par; }, get status() { return status; }, get target() { return target; }, tap, load, get n() { return n; }, setVariant: (v, k) => { variant = v; if (k) n = k; kind = 'level'; }, setKind: (k) => { kind = k; }, solveNow: () => LO.solve(variant, n, b, target) };
 })();

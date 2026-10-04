@@ -81,3 +81,34 @@ details.c-card[open] summary { margin-bottom: 12px; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
 @media (max-width: 480px) { .card, .card .f, .card .b { border-radius: 8px; } .hud .c-stat b { font-size: 22px; } .seg button { padding: 6px 8px; font-size: 13px; } .hud .c-stat { min-width: 58px; } }
 .seg[hidden] { display: none; }
+
+body[data-game="memory-match"] { --accent: #6b3fd1; --accent-ink: #fff; --c-pop: #d8b25a; --c-edge: #1c1446; --gold: #d8b25a; --gold-2: #f1d27a; --mm-ink: #24183f; --tent-a: #efe2f3; --tent-b: #e3d0ea; background-color: var(--tent-a); background-image: radial-gradient(ellipse 70% 50% at 50% 0, rgba(255, 235, 190, .55), transparent 70%), repeating-linear-gradient(90deg, var(--tent-a) 0 44px, var(--tent-b) 44px 46px, var(--tent-b) 46px 88px, var(--tent-a) 88px 90px); }
+:root[data-theme="dark"] body[data-game="memory-match"] { --accent: #a98bff; --accent-ink: #160e33; --c-pop: #d8b25a; --c-edge: #05030f; --mm-ink: #f3e9ff; --tent-a: #1a1336; --tent-b: #20183f; background-image: radial-gradient(ellipse 60% 45% at 50% 0, rgba(216, 178, 90, .16), transparent 70%), radial-gradient(1.5px 1.5px at 14% 22%, #f1d27a, transparent), radial-gradient(1.5px 1.5px at 84% 16%, #f1d27a, transparent), radial-gradient(1px 1px at 70% 40%, #fff, transparent), radial-gradient(1px 1px at 30% 60%, #fff, transparent), repeating-linear-gradient(90deg, var(--tent-a) 0 44px, var(--tent-b) 44px 88px); }
+body[data-game="memory-match"]::before { content: ''; position: fixed; left: 0; right: 0; top: var(--bar-h); height: 36px; z-index: 0; pointer-events: none; background: radial-gradient(circle at 22px -6px, #5b3fb0 0 26px, transparent 27px) 0 0 / 44px 36px repeat-x; opacity: .9; filter: drop-shadow(0 3px 2px rgba(30, 10, 60, .25)); }
+:root[data-theme="dark"] body[data-game="memory-match"]::before { background: radial-gradient(circle at 22px -6px, #3b2a7a 0 26px, transparent 27px) 0 0 / 44px 36px repeat-x; }
+body[data-game="memory-match"] main { position: relative; z-index: 1; padding-top: 40px; }
+.mm-kicker { margin: 4px 0 0; font: 700 13px/1.2 Georgia, "Times New Roman", serif; letter-spacing: .26em; text-transform: uppercase; color: var(--accent); }
+.g-head .c-title { font-family: "Copperplate", "Didot", Georgia, serif; font-weight: 700; font-variant: small-caps; letter-spacing: .06em; color: var(--mm-ink); text-shadow: 0 0 1px var(--gold), 2px 2px 0 color-mix(in srgb, var(--gold) 55%, transparent); margin-top: 0; }
+.g-head .c-sub { font-family: Georgia, serif; font-style: italic; color: color-mix(in srgb, var(--mm-ink) 80%, transparent); }
+.mm-simp { display: none; }
+html[data-mode="simple"] .mm-simp { display: block; }
+html[data-mode="simple"] .mm-adv, html[data-mode="simple"] .opts, html[data-mode="simple"] #daily, html[data-mode="simple"] .toggle, html[data-mode="simple"] .panels, html[data-mode="simple"] .g-help, html[data-mode="simple"] .hud .c-stat:nth-child(4) { display: none !important; }
+.seg { background: color-mix(in srgb, var(--mm-ink) 8%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent); }
+.seg button { font-family: Georgia, serif; }
+.seg button[aria-pressed="true"] { background: #1c1446; color: var(--gold-2); box-shadow: inset 0 0 0 1px var(--gold); }
+.hud .c-stat b { font-family: Georgia, serif; font-weight: 700; color: var(--mm-ink); }
+.stars i { color: var(--gold); }
+.stage { padding: 18px; border-radius: 20px; background: radial-gradient(ellipse at 50% 30%, #3a2f7a, #1a1336 75%); box-shadow: inset 0 0 0 2px rgba(216, 178, 90, .55), inset 0 0 0 7px #140e2c, inset 0 0 0 8px rgba(216, 178, 90, .3), 0 18px 40px rgba(30, 10, 60, .35); }
+.stage::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(1.2px 1.2px at 8% 12%, rgba(255, 255, 255, .7), transparent), radial-gradient(1.2px 1.2px at 92% 88%, rgba(255, 255, 255, .6), transparent), radial-gradient(1px 1px at 50% 96%, rgba(241, 210, 122, .7), transparent), radial-gradient(1px 1px at 96% 10%, rgba(241, 210, 122, .7), transparent); }
+.card .b { background: radial-gradient(circle at 50% 50%, rgba(241, 210, 122, .28) 0 22%, transparent 23%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 3l1.2 3.6L18 7.8l-3.8 1.2L13 13l-1.2-4L8 7.8l3.8-1.2z' fill='%23f1d27a' fill-opacity='.35'/%3E%3Ccircle cx='3' cy='20' r='1' fill='%23fff' fill-opacity='.4'/%3E%3C/svg%3E"), linear-gradient(150deg, var(--back-b), var(--back-a)); box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 5px rgba(20, 10, 40, .35), 0 3px 0 rgba(0, 0, 0, .3), 0 6px 14px rgba(0, 0, 0, .25); }
+.card .b::before { inset: 8%; border-radius: 6px; border: 1.5px solid rgba(241, 210, 122, .55); }
+.card .b span { display: grid; place-items: center; width: 52%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #2b1f5c, #120c2a); box-shadow: 0 0 0 2px var(--gold), 0 0 12px rgba(241, 210, 122, .45); font-size: calc(100cqw / var(--cols) * .24); }
+.card .f { background: radial-gradient(circle at 50% 38%, #fff 0 22%, transparent 60%), linear-gradient(160deg, var(--fa), var(--fb)); box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 4px rgba(255, 255, 255, .6), 0 3px 0 rgba(0, 0, 0, .25); }
+.card .f::before { content: '✦'; position: absolute; left: 7%; top: 3%; font-size: clamp(8px, calc(100cqw / var(--cols) * .1), 14px); color: #8a6a1e; opacity: .7; }
+.card.done .f { box-shadow: inset 0 0 0 3px var(--gold-2), 0 0 16px rgba(241, 210, 122, .7), 0 3px 0 rgba(0, 0, 0, .25); }
+.card.done .f::after { color: #8a6a1e; content: '✦'; }
+.combo { color: var(--gold-2); text-shadow: 0 0 8px #5b3fb0, 0 2px 0 #1c1446; font-family: Georgia, serif; font-style: italic; }
+.pl { background: color-mix(in srgb, var(--surface) 80%, transparent); }
+.bests, .g-help { color: color-mix(in srgb, var(--mm-ink) 70%, transparent); }
+@media (max-width: 480px) { .stage { padding: 10px; border-radius: 14px; } .mm-kicker { font-size: 10.5px; letter-spacing: .14em; } }
+.stage { max-width: calc(min(var(--cols, 4) * 108px, (100dvh - 130px) / var(--rows, 3) * .72 * var(--cols, 4)) + 40px); margin: 0 auto; }

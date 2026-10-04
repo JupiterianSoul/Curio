@@ -87,3 +87,30 @@ details.c-card[open] summary { margin-bottom: 12px; }
 .ach.on b { color: var(--ink); }
 .statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
 @media (max-width: 480px) { :root { --tw: 36px; --sh: 30px; } .rack { gap: 36px 13px; } .hud .c-stat b { font-size: 22px; } .c-btn { padding: 10px 13px; font-size: 15px; } .tube::after { left: -6px; right: -6px; } .lab { border-radius: 14px; } }
+
+body[data-game="water-sort"] { --accent: #1769c2; --accent-ink: #fff; --c-pop: #39c7d9; --c-edge: #0f2c4a; --ws-ink: #0f2c4a; --tile: #f4f7f8; --grout: #d3dde2; --bench: #6f8796; --bench-2: #4c606d; background: linear-gradient(var(--grout) 2px, transparent 2px) 0 0 / 48px 26px, linear-gradient(90deg, var(--grout) 2px, transparent 2px) 0 0 / 48px 52px, linear-gradient(90deg, var(--grout) 2px, transparent 2px) 24px 26px / 48px 52px, var(--tile); }
+:root[data-theme="dark"] body[data-game="water-sort"] { --accent: #4fc3f7; --accent-ink: #062033; --c-edge: #000; --ws-ink: #e6f4ff; --tile: #172028; --grout: #0d1318; --bench: #2f3d47; --bench-2: #1f2a32; }
+.wsx-title { display: inline-flex; gap: 10px; text-shadow: none; margin: 8px 0 10px; }
+.wsx-title .el { position: relative; display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; padding-top: .05em; border: 3px solid var(--ws-ink); border-radius: 6px; background: color-mix(in srgb, var(--accent) 14%, var(--tile)); color: var(--ws-ink); font-family: "Helvetica Neue", Arial, var(--font); font-weight: 800; font-size: clamp(36px, 6vw, 52px); line-height: 1; box-shadow: 5px 5px 0 var(--c-pop); }
+.wsx-title .el:nth-child(2) { box-shadow: 5px 5px 0 #f06292; }
+.wsx-title .el small { position: absolute; left: 6px; top: 4px; font-size: 13px; font-weight: 700; }
+.wsx-title .el i { position: absolute; bottom: 4px; left: 0; right: 0; font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.g-head .c-sub { color: var(--ws-ink); font-family: "Helvetica Neue", Arial, var(--font); }
+.wsx-simp { display: none; }
+html[data-mode="simple"] .wsx-simp { display: block; }
+html[data-mode="simple"] .wsx-adv, html[data-mode="simple"] .modes, html[data-mode="simple"] .lvl button, html[data-mode="simple"] #add, html[data-mode="simple"] .toggle, html[data-mode="simple"] .panels, html[data-mode="simple"] .g-help { display: none !important; }
+.segs { border-radius: 6px; background: color-mix(in srgb, var(--tile) 80%, transparent); border: 2px solid var(--ws-ink); }
+.segs button { border-radius: 3px; font-family: "Helvetica Neue", Arial, var(--font); }
+.segs button[aria-pressed="true"] { background: var(--ws-ink); color: var(--tile); box-shadow: none; }
+.hud .c-stat b { font-family: "Helvetica Neue", Arial, var(--font); font-weight: 800; color: var(--ws-ink); }
+.lab { border-radius: 10px; background: linear-gradient(180deg, color-mix(in srgb, var(--tile) 60%, transparent), transparent 70%), linear-gradient(180deg, transparent calc(100% - 26px), var(--bench) calc(100% - 26px), var(--bench-2)); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ws-ink) 30%, transparent), 0 12px 24px rgba(15, 44, 74, .15); }
+:root[data-theme="dark"] .lab { background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(79, 195, 247, .12), transparent 70%), linear-gradient(180deg, transparent calc(100% - 26px), var(--bench) calc(100% - 26px), var(--bench-2)); }
+.lab::before { background-image: radial-gradient(circle, rgba(23, 105, 194, .16) 0 3px, transparent 4px), radial-gradient(circle, rgba(23, 105, 194, .1) 0 5px, transparent 6px); }
+.stage { padding-bottom: 40px; }
+.tube::after { background: linear-gradient(#c49a6c, #8e6a43); border-radius: 2px; height: 12px; }
+.tube .glass { border-color: color-mix(in srgb, var(--ws-ink) 45%, #9fb3c1); }
+.tube::before { background: color-mix(in srgb, var(--ws-ink) 45%, #9fb3c1); }
+.tube.sel .glass { box-shadow: 0 0 0 3px var(--c-pop), 0 10px 20px rgba(0, 0, 0, .15); }
+.g-row .c-btn { border-radius: 6px; font-family: "Helvetica Neue", Arial, var(--font); font-weight: 800; }
+.levels button { border-radius: 4px; }
+@media (max-width: 480px) { .wsx-title .el { font-size: 44px; } }

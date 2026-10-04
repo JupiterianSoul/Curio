@@ -129,7 +129,18 @@ const Soko = (() => {
   const S = loadS();
   const save = () => Curio.store.set(SKEY, S);
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-  let pack = PACKS.find((p) => p.id === S.pack) || PACKS[0];
+  const SIMPLE = Curio.simple;
+  let pack = SIMPLE ? PACKS[0] : PACKS.find((p) => p.id === S.pack) || PACKS[0];
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    noise(d, freq, vol, type = 'lowpass', when = 0) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + when, len = Math.ceil(ac.sampleRate * d), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2; const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = buf; f.type = type; f.frequency.value = freq; g.gain.value = vol; src.connect(f).connect(g).connect(ac.destination); src.start(t); },
+    tone(f, d, type, vol, when = 0) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.setValueAtTime(vol, t + d * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.02); },
+    step() { this.noise(0.03, 900, 0.12, 'bandpass'); },
+    push() { this.noise(0.14, 260, 0.5); this.tone(70, 0.12, 'sine', 0.08); },
+    scan() { this.tone(1850, 0.07, 'square', 0.025); this.tone(1850, 0.07, 'square', 0.025, 0.1); },
+    clunk() { this.noise(0.08, 160, 0.6); this.tone(55, 0.18, 'sine', 0.1); },
+    bump() { this.noise(0.05, 400, 0.25); }
+  };
   let li = 0, L, boxes, player, dir = 2, moves = 0, pushes = 0, history = [], status = 'playing', cs = 48, daily = false, hintsUsed = 0, undos = 0;
   let boxEls = [], playerEl, elapsed = 0, t0 = 0, started = false, walkQ = [], walkTimer = 0, gameId = 0;
 
@@ -170,7 +181,8 @@ const Soko = (() => {
   function load(i) {
     gameId++;
     li = i;
-    if (!daily) { S.idx[pack.id] = li; save(); }
+    if (SIMPLE) Curio.store.set('soko:simpleAt', li);
+    else if (!daily) { S.idx[pack.id] = li; save(); }
     stopWalk();
     L = Soko.parse(LEVELS()[li].m);
     boxes = L.boxes.slice(); player = L.player; dir = 2;
@@ -224,10 +236,10 @@ const Soko = (() => {
     bumpStat('moves', moves); bumpStat('pushes', pushes);
     $('crates').textContent = `${on}/${boxes.length}`;
     $('time').textContent = fmtT(elapsed);
-    const d = daily ? (S.daily[today()] ? { m: S.daily[today()] } : null) : S.done[dkey(li)];
+    const d = SIMPLE ? (Curio.getBest(`simple-${li}`) != null ? { m: Curio.getBest(`simple-${li}`) } : null) : daily ? (S.daily[today()] ? { m: S.daily[today()] } : null) : S.done[dkey(li)];
     $('best').textContent = d ? d.m : '-';
     const st = !daily && S.done[dkey(li)] ? starsFor(S.done[dkey(li)].p, LEVELS()[li].p) : 0;
-    $('lvlName').innerHTML = `${daily ? 'Daily · ' : ''}${pack.name} ${li + 1}/${LEVELS().length}<small>${st ? '★'.repeat(st) + '☆'.repeat(3 - st) : ''}</small>`;
+    $('lvlName').innerHTML = SIMPLE ? `Shift ${li + 1} of ${LEVELS().length}` : `${daily ? 'Daily · ' : ''}${pack.name} ${li + 1}/${LEVELS().length}<small>${st ? '★'.repeat(st) + '☆'.repeat(3 - st) : ''}</small>`;
     $('prev').disabled = li <= 0 || daily;
     $('nextL').disabled = daily || li >= LEVELS().length - 1 || li + 1 > unlockedUpTo();
     $('undo').disabled = !history.length || status !== 'playing';
@@ -263,12 +275,12 @@ const Soko = (() => {
       boxEls[bk].classList.remove('thud'); void boxEls[bk].offsetWidth; boxEls[bk].classList.add('thud');
       dust(t2, d);
       navigator.vibrate?.(8);
-      if (L.goal[t2]) { Curio.beep(780, 0.09, 'triangle', 0.08); Curio.beep(1170, 0.08, 'sine', 0.04); } else Curio.beep(150, 0.06, 'square', 0.035);
-      if (isStuck(t2)) { msg('Uh oh, that crate is wedged for good. Undo?'); Curio.beep(110, 0.2, 'sawtooth', 0.04); }
+      sfx.push(); if (L.goal[t2]) sfx.scan();
+      if (isStuck(t2)) { msg('Uh oh, that crate is wedged for good. Undo?'); sfx.clunk(); }
       else if (L.goal[t2]) msg(Curio.pick(['Clunk. Right on target.', 'Nice push!', 'That one is home.', 'Crate delivered.', 'Signed, sealed, delivered.']));
     } else {
       history.push({ player, boxes: boxes.slice(), moves, pushes, dir });
-      Curio.beep(520 + (moves % 2) * 40, 0.02, 'sine', 0.02);
+      sfx.step();
     }
     if (history.length > 3000) history.shift();
     if (!started) { started = true; t0 = performance.now(); }
@@ -278,7 +290,7 @@ const Soko = (() => {
     checkWin();
     return true;
   }
-  function bump() { playerEl.classList.remove('bump'); void playerEl.offsetWidth; playerEl.classList.add('bump'); Curio.beep(110, 0.05, 'sine', 0.04); render(); }
+  function bump() { playerEl.classList.remove('bump'); void playerEl.offsetWidth; playerEl.classList.add('bump'); sfx.bump(); render(); }
   function undo() {
     stopWalk(); clearHint();
     const h = history.pop(); if (!h || status !== 'playing') return;
@@ -343,7 +355,7 @@ const Soko = (() => {
     const prev = daily ? null : S.done[dkey(li)];
     const isNew = !daily && (!prev || moves < prev.m || pushes < prev.p);
     const before = totalCleared();
-    if (!daily && isNew) S.done[dkey(li)] = { m: prev ? Math.min(moves, prev.m) : moves, p: prev ? Math.min(pushes, prev.p) : pushes };
+    if (!daily && isNew && !SIMPLE) S.done[dkey(li)] = { m: prev ? Math.min(moves, prev.m) : moves, p: prev ? Math.min(pushes, prev.p) : pushes };
     if (daily) S.daily[today()] = Math.min(S.daily[today()] ?? 1e9, moves);
     S.stats.cleared++; S.stats.moves += moves; S.stats.pushes += pushes;
     award('first', fresh);
@@ -357,29 +369,31 @@ const Soko = (() => {
     if (secs < 20) award('speedy', fresh);
     save();
     const newChar = CHARS.find((c) => c.need > before && c.need <= totalCleared());
-    if (!daily) Curio.best(`moves-${pack.id === 'classic' ? '' : pack.id + '-'}${li}`, moves, false);
+    if (SIMPLE) Curio.best(`simple-${li}`, moves, false);
+    else if (!daily) Curio.best(`moves-${pack.id === 'classic' ? '' : pack.id + '-'}${li}`, moves, false);
     boardEl.classList.add('won');
     boxEls.forEach((b, k) => b.style.setProperty('--d', `${k * 90}ms`));
     Curio.confetti();
     navigator.vibrate?.([20, 40, 20]);
-    [392, 523, 659, 784, 1046].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.13, 'triangle', 0.09), k * 90));
-    msg('Warehouse sorted!');
+    [784, 988, 1175, 1568].forEach((f, k) => sfx.tone(f, 0.12, 'triangle', 0.07, k * 0.09));
+    msg(Curio.pick(['Warehouse sorted!', 'Shipment ready to go!', 'Every crate on its mark!']));
     render(); paintPicker(); paintPacks(); paintChars();
     const gid = gameId;
     setTimeout(() => {
       if (gid !== gameId) return;
-      const last = daily || li >= LEVELS().length - 1;
+      const last = !SIMPLE && (daily || li >= LEVELS().length - 1);
       $('rStars').innerHTML = [1, 2, 3].map((i) => starSvg(i <= st)).join('');
-      $('rTitle').textContent = daily ? 'Daily level cleared!' : pack.levels.every((_, i) => S.done[dkey(i)]) ? `${pack.name} pack complete!` : `Level ${li + 1} cleared!`;
+      $('rTitle').textContent = SIMPLE ? `Shift ${li + 1} done!` : daily ? 'Daily level cleared!' : pack.levels.every((_, i) => S.done[dkey(i)]) ? `${pack.name} pack complete!` : `Level ${li + 1} cleared!`;
       $('rBody').textContent = `${moves} moves and ${pushes} pushes in ${fmtT(secs)}. ${pushes <= opt ? 'Minimum pushes, a true pro.' : `It can be done in ${opt} pushes.`}${hintsUsed ? ` (${hintsUsed} hint${hintsUsed > 1 ? 's' : ''})` : ''}${newChar ? ` New pusher unlocked: ${newChar.name}!` : ''}`;
       $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       $('rNext').hidden = last;
+      if (SIMPLE) $('rNext').textContent = 'Next shift';
       $('result').hidden = false;
       ($('rNext').hidden ? $('rAgain') : $('rNext')).focus({ preventScroll: true });
       paintProgress();
     }, 1100);
   }
-  $('rNext').addEventListener('click', () => load(li + 1));
+  $('rNext').addEventListener('click', () => load((li + 1) % LEVELS().length));
   $('rAgain').addEventListener('click', () => load(li));
   $('rShare').addEventListener('click', () => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
@@ -466,7 +480,8 @@ const Soko = (() => {
   addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const a = { boxes: boxes.slice(), player }; build(); boxes = a.boxes; player = a.player; render(true); }, 150); });
 
   paintChars();
-  load(Math.max(0, Math.min(LEVELS().length - 1, S.idx[pack.id] || 0, unlockedUpTo())));
+  if (SIMPLE) load(Math.max(0, Math.min(LEVELS().length - 1, +Curio.store.get('soko:simpleAt', 0) || 0)));
+  else load(Math.max(0, Math.min(LEVELS().length - 1, S.idx[pack.id] || 0, unlockedUpTo())));
   paintProgress();
   window.__soko = { engine: Soko, packs: PACKS, step, get state() { return { player, boxes: boxes.slice(), moves, pushes, status, li, pack: pack.id }; }, load, undo, setPack: (id) => { pack = PACKS.find((p) => p.id === id); daily = false; }, hint, solveHere: () => Soko.solve(L, boxes, player) };
 })();

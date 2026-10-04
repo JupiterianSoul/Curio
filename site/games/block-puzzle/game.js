@@ -22,7 +22,7 @@
     { c: '#c2185b', w: .5, cells: P(['.#.', '###', '.#.']) }
   ];
   const TOTAL_W = SHAPES.reduce((a, s) => a + s.w, 0);
-  const SKINS = [['classic', 'Glossy'], ['jelly', 'Jelly'], ['wood', 'Wood'], ['neon', 'Neon']];
+  const SKINS = [['bauhaus', 'Bauhaus'], ['classic', 'Glossy'], ['jelly', 'Jelly'], ['wood', 'Wood'], ['neon', 'Neon']];
   const ACH = [
     ['first', '🧱', 'First clear', 'Clear your first line'],
     ['double', '✌️', 'Double', 'Clear two lines at once'],
@@ -40,14 +40,24 @@
 
   const SAVE_V = 2;
   const load = () => {
-    const base = { v: SAVE_V, mode: 'classic', skin: 'classic', level: 0, solved: {}, ach: {}, games: 0, lines: 0, best: { classic: Curio.getBest('score') || 0, blitz: 0 }, daily: {}, game: null };
+    const base = { v: SAVE_V, mode: 'classic', skin: 'bauhaus', level: 0, solved: {}, ach: {}, games: 0, lines: 0, best: { classic: Curio.getBest('score') || 0, blitz: 0 }, daily: {}, game: null };
     const raw = Curio.store.get('bf:v2', null);
     if (!raw || raw.v !== SAVE_V) return base;
     return { ...base, ...raw, solved: raw.solved || {}, ach: raw.ach || {}, best: { ...base.best, ...(raw.best || {}) }, daily: raw.daily || {} };
   };
   const save = load();
   if (!['classic', 'gems', 'blitz', 'daily'].includes(save.mode)) save.mode = 'classic';
-  const persist = () => Curio.store.set('bf:v2', save);
+  const SIMPLE = Curio.simple;
+  const realMode = save.mode;
+  if (SIMPLE) save.mode = 'simple';
+  const persist = () => Curio.store.set('bf:v2', SIMPLE ? { ...save, mode: realMode } : save);
+  const BH = { '#ffb020': '#f6c432', '#ff7a45': '#e63b2e', '#f5487f': '#e63b2e', '#e0457b': '#1f4fa8', '#d64545': '#e63b2e', '#2fb36d': '#1f4fa8', '#18a6a6': '#1d1d1b', '#5c6bc0': '#f6c432', '#3d8bfd': '#1f4fa8', '#9b59b6': '#e63b2e', '#00a3d9': '#1f4fa8', '#ffa000': '#f6c432', '#8d6e63': '#1d1d1b', '#c2185b': '#e63b2e' };
+  const tone = (c) => (save.skin === 'bauhaus' && BH[c]) || c;
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    mar(f, when = 0, vol = 0.09) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + when; [[1, vol], [4, vol * 0.2]].forEach(([m, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + (m > 1 ? 0.06 : 0.3)); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.32); }); }
+  };
+  const MAR = [392, 440, 523, 587, 659, 784, 880, 1047];
 
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
@@ -93,7 +103,8 @@
   const bestVal = () => (save.mode === 'gems' ? 0 : save.mode === 'daily' ? save.daily[todayKey()] || 0 : save.best[save.mode] || 0);
 
   function persistGame() {
-    save.game = over || save.mode !== 'classic' ? null : { grid, pieces, score, streak, undoLeft, rotLeft };
+    if (save.mode === 'simple') save.gameS = over ? null : { grid, pieces, score, streak, undoLeft, rotLeft };
+    else save.game = over || save.mode !== 'classic' ? null : { grid, pieces, score, streak, undoLeft, rotLeft };
     persist();
   }
 
@@ -113,8 +124,9 @@
       rand = rng(hashStr(todayKey()));
       undoLeft = 0; rotLeft = 2;
     } else grid = Array(N * N).fill(null);
-    if (resume && save.mode === 'classic' && save.game) {
-      const g = save.game;
+    const resumeG = save.mode === 'simple' ? save.gameS : save.mode === 'classic' ? save.game : null;
+    if (resume && resumeG) {
+      const g = resumeG;
       grid = g.grid; pieces = g.pieces; score = g.score || 0; streak = g.streak || 0; undoLeft = g.undoLeft ?? 3; rotLeft = g.rotLeft ?? 3;
     } else pieces = [randPiece(), randPiece(), randPiece()];
     if (save.mode === 'blitz') {
@@ -150,7 +162,7 @@
       const el = cells[i], v = grid[i];
       el.className = v ? (fresh && fresh.has(i) ? 'cell f nw' : 'cell f') : 'cell';
       if (gems.has(i)) el.classList.add('gem');
-      if (v) el.style.setProperty('--c', v); else el.style.removeProperty('--c');
+      if (v) el.style.setProperty('--c', tone(v)); else el.style.removeProperty('--c');
     }
   }
 
@@ -160,7 +172,7 @@
     const set = new Set(p.cells.map(([r, c]) => r * 10 + c));
     for (let r = 0; r < p.h; r++) for (let c = 0; c < p.wd; c++) {
       const i = document.createElement('i');
-      if (!set.has(r * 10 + c)) i.className = 'x'; else i.style.setProperty('--c', p.c);
+      if (!set.has(r * 10 + c)) i.className = 'x'; else i.style.setProperty('--c', tone(p.c));
       el.append(i);
     }
     return el;
@@ -195,7 +207,7 @@
     ex.classList.toggle('low', save.mode === 'blitz' && timeLeft <= 10);
     if (save.mode === 'gems') { $('extra').textContent = `${gemsTotal - gems.size}/${gemsTotal}`; $('extra-l').textContent = 'Gems'; }
     if (save.mode === 'blitz') { const t = Math.max(0, Math.ceil(timeLeft)); $('extra').textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; $('extra-l').textContent = 'Time'; }
-    $('goal').textContent = save.mode === 'gems' ? `Level ${save.level + 1}: clear every 💎 by wiping the lines they sit on.` : save.mode === 'blitz' ? 'Two minutes. Score as much as you can.' : save.mode === 'daily' ? `Daily deal for ${todayKey()}: everyone gets the same shapes.` : 'Endless: survive as long as you can.';
+    $('goal').textContent = save.mode === 'gems' ? `Level ${save.level + 1}: clear every 💎 by wiping the lines they sit on.` : save.mode === 'blitz' ? 'Two minutes. Score as much as you can.' : save.mode === 'daily' ? `Daily deal for ${todayKey()}: everyone gets the same shapes.` : save.mode === 'simple' ? 'Fill a whole row or column to clear it.' : 'Endless: survive as long as you can.';
     $('undo-n').textContent = `×${undoLeft}`; $('rot-n').textContent = `×${rotLeft}`;
     $('undo').disabled = !undoLeft || !hist.length || over;
     $('rotate').disabled = !rotLeft || over;
@@ -281,7 +293,8 @@
       if (gemHit) { gained += gemHit * 50; setTimeout(() => popText(`💎 ×${gemHit}`, 50, 30), 200); [1175, 1568].forEach((f, q) => setTimeout(() => Curio.beep(f, 0.1, 'sine', 0.08), 150 + q * 90)); }
       setTimeout(() => paintBoard(), 380 + 10 * 22 + 20);
       const notes = [523, 659, 784, 988, 1175, 1319];
-      for (let q = 0; q < Math.min(lines + streak - 1, 6); q++) setTimeout(() => Curio.beep(notes[q], 0.11, 'triangle', 0.09), q * 70);
+      for (let q = 0; q < Math.min(lines + streak + 1, 8); q++) sfx.mar(MAR[q], q * 0.05);
+      void notes;
       popText(`+${bonus}`, (cc / N) * 100, (cr / N) * 100);
       if (streak > 1) setTimeout(() => popText(`Combo ×${streak}!`, 50, 42), 160);
       if (lines >= 2) { frame.classList.remove('shake'); void frame.offsetWidth; frame.classList.add('shake'); buzz(lines * 12); }
@@ -290,7 +303,7 @@
       if (grid.every((v) => !v)) { gained += 300; setTimeout(() => { popText('Clean sweep! +300', 50, 55); Curio.confetti(60); }, 300); unlock('wipe'); }
     } else {
       streak = 0;
-      Curio.beep(260 + p.cells.length * 25, 0.06, 'triangle', 0.08);
+      sfx.mar(MAR[Math.min(7, p.cells.length - 1)] / 2, 0, 0.11);
     }
     score += gained;
     const refilled = pieces.every((x) => !x);
@@ -495,6 +508,7 @@
       if (v !== 'y') return;
     }
     if (save.mode === 'classic') save.game = null;
+    if (save.mode === 'simple') save.gameS = null;
     newGame();
   });
 

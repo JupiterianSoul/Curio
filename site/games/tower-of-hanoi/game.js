@@ -4,6 +4,7 @@
   const stage = $('stage'), seg = $('seg');
   const MODES = { classic: { P: 3, name: 'Classic' }, four: { P: 4, name: '4 pegs' }, cyclic: { P: 3, name: 'Clockwise' } };
   const SKINS = [
+    { id: 'jade', name: 'Jade', c: (s, n) => `hsl(${150 + (s % 2) * 18}deg ${34 + (s * 7) % 18}% ${70 - (s - 1) * 34 / Math.max(1, n - 1)}%)` },
     { id: 'rainbow', name: 'Rainbow', c: (s, n) => `hsl(${Math.round((s - 1) * 300 / Math.max(1, n - 1))}deg 78% 62%)` },
     { id: 'wood', name: 'Wood', c: (s, n) => `hsl(${24 + (s % 2) * 8}deg ${45 + (s * 3) % 15}% ${68 - (s - 1) * 30 / Math.max(1, n - 1)}%)` },
     { id: 'candy', name: 'Candy', c: (s) => ['#ff8fab', '#ffc6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#ffadad', '#b9fbc0'][(s - 1) % 10] },
@@ -33,17 +34,24 @@
   ];
   const SKEY = 'hanoi2';
   const loadS = () => {
-    const base = { v: 1, stars: {}, ach: {}, skin: 'rainbow', mode: 'classic', n: Curio.store.get('hanoi:n', 3) | 0 || 3, stats: { solved: 0, moves: 0, perfect: 0, hints: 0 }, daily: {} };
+    const base = { v: 1, stars: {}, ach: {}, skin: 'jade', mode: 'classic', n: Curio.store.get('hanoi:n', 3) | 0 || 3, stats: { solved: 0, moves: 0, perfect: 0, hints: 0 }, daily: {} };
     const d = Curio.store.get(SKEY, null);
     if (!d || typeof d !== 'object' || d.v !== 1) return base;
     return { ...base, ...d, stats: { ...base.stats, ...(d.stats || {}) } };
   };
   const S = loadS();
-  const save = () => Curio.store.set(SKEY, S);
+  const SIMPLE = Curio.simple;
+  const keepN = S.n;
+  const save = () => Curio.store.set(SKEY, SIMPLE ? { ...S, n: keepN, mode: S.mode } : S);
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    tok(f = 900) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime; [1, 2.3].forEach((m, k) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(f * m, t); o.frequency.exponentialRampToValueAtTime(f * m * 0.92, t + 0.08); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(k ? 0.025 : 0.09, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + (k ? 0.05 : 0.12)); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.15); }); },
+    gong() { const ac = this.ac(); if (!ac) return; const t = ac.currentTime; [[110, 0.12], [176, 0.06], [264, 0.05], [341, 0.03], [523, 0.02]].forEach(([f, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 3.3); }); }
+  };
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   const NAMES4 = ['Left', 'Middle', 'Right'];
   const pegName = (i) => (P === 4 ? ['First', 'Second', 'Third', 'Fourth'][i] : NAMES4[i]);
-  let mode = MODES[S.mode] ? S.mode : 'classic', P = MODES[mode].P;
+  let mode = SIMPLE ? 'classic' : MODES[S.mode] ? S.mode : 'classic', P = MODES[mode].P;
   let n = 3, pegs, discEls = [], moves = 0, history = [], held = -1, cursor = 0, assisted = false, solving = null;
   let status = 'playing', elapsed = 0, t0 = 0, started = false, geo = null, drag = null, kind = 'stack', optimalN = 7, factI = 0;
   let gameId = 0, base, poles = [], labels = [], hits = [], arrows = [];
@@ -54,7 +62,7 @@
     b.addEventListener('click', () => { kind = 'stack'; newGame(k); });
     seg.append(b);
   }
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; P = MODES[mode].P; S.mode = mode; save(); kind = 'stack'; buildBoard(); newGame(n); }));
+  document.querySelectorAll('#modes [data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; P = MODES[mode].P; S.mode = mode; save(); kind = 'stack'; buildBoard(); newGame(n); }));
 
   function buildBoard() {
     [base, ...poles, ...labels, ...hits, ...arrows].forEach((el) => el && el.remove());
@@ -72,9 +80,10 @@
     });
     $('result').remove();
     stage.append($('result') || resultEl);
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    document.querySelectorAll('#modes [data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   }
   const resultEl = $('result');
+  resultEl.addEventListener('pointerdown', (e) => e.stopPropagation());
 
   const cache = new Map();
   function solver() {
@@ -166,7 +175,7 @@
     if (solving) { clearTimeout(solving); solving = null; }
     gameId++;
     n = Math.max(3, Math.min(maxN(), k));
-    S.n = n; save();
+    if (SIMPLE) Curio.store.set('hanoi:simpleN', n); else { S.n = n; save(); }
     pegs = Array.from({ length: P }, () => []);
     const { dist, pw } = solver();
     if (kind === 'stack') {
@@ -205,7 +214,7 @@
   }
 
   function legend(t) { $('legend').textContent = t; }
-  function bestKey() { return mode === 'classic' ? `moves-${n}` : `${mode}-moves-${n}`; }
+  function bestKey() { if (SIMPLE) return `simple-moves-${n}`; return mode === 'classic' ? `moves-${n}` : `${mode}-moves-${n}`; }
   function render() {
     const mv = $('moves');
     if (mv.textContent !== String(moves)) { mv.textContent = moves; mv.classList.add('bump'); setTimeout(() => mv.classList.remove('bump'), 140); }
@@ -222,10 +231,8 @@
   function paintCursor() { hits.forEach((h, i) => { h.classList.toggle('cursor', i === cursor && h.matches(':focus-visible')); h.tabIndex = i === cursor ? 0 : -1; }); }
   function startClock() { if (!started) { started = true; t0 = performance.now(); } }
   const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
-  function note(s, vol = 0.08) {
-    const f = 262 * 2 ** (PENTA[Math.max(0, Math.min(9, n - s))] / 12);
-    Curio.beep(f, 0.12, 'triangle', vol);
-    Curio.beep(f * 2, 0.06, 'sine', vol * 0.3);
+  function note(s) {
+    sfx.tok(392 * 2 ** (PENTA[Math.max(0, Math.min(9, n - s))] / 12));
   }
   function puff(s, p, k) {
     const [x, y] = restXY(s, p, k);
@@ -431,7 +438,8 @@
       if (mode === 'cyclic') award('cyclic', fresh);
       if (kind !== 'stack' && perfect) award('scramble', fresh);
       if (n === 5 && secs < 30) award('speedy', fresh);
-      if (kind === 'stack') {
+      if (kind === 'stack' && SIMPLE) bm = Curio.best(bestKey(), moves, false);
+      else if (kind === 'stack') {
         bm = Curio.best(bestKey(), moves, false);
         Curio.best(`${mode}-time-${n}`, secs, false);
         const sk = `${mode}-${n}`;
@@ -448,7 +456,7 @@
       stage.classList.add('won');
       for (let s = 1; s <= n; s++) discEls[s].style.animationDelay = `${(n - s) * 60}ms`;
       if (!assisted) Curio.confetti();
-      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.1), i * 110));
+      sfx.gong();
     }, 380);
     legend(perfect ? 'Flawless. Not a single wasted move.' : `Done! ${moves - optimalN} more than the perfect ${optimalN}.`);
     setTimeout(() => {
@@ -462,12 +470,13 @@
       const next = $('rNext');
       next.hidden = !(kind === 'stack' && n < maxN());
       next.textContent = `Try ${n + 1} discs`;
+      if (SIMPLE) { next.hidden = false; next.textContent = n < 7 ? `Next: ${n + 1} discs` : 'Again'; }
       $('result').hidden = false;
       (next.hidden ? $('rAgain') : next).focus({ preventScroll: true });
       paintProgress();
     }, 1300);
   }
-  $('rNext').addEventListener('click', () => newGame(n + 1));
+  $('rNext').addEventListener('click', () => newGame(SIMPLE && n >= 7 ? 7 : n + 1));
   $('rAgain').addEventListener('click', () => newGame(n));
   $('rShare').addEventListener('click', () => {
     const stars = $('stars').querySelectorAll('[fill="#ffc93c"]').length;
@@ -546,7 +555,7 @@
   stage.addEventListener('focusout', () => setTimeout(paintCursor));
 
   buildBoard();
-  newGame(Math.min(10, Math.max(3, S.n | 0)));
+  newGame(SIMPLE ? Math.min(7, Math.max(3, Curio.store.get('hanoi:simpleN', 3) | 0)) : Math.min(10, Math.max(3, S.n | 0)));
   paintProgress();
   window.__hanoi = { get pegs() { return pegs; }, doMove: (a, b) => doMove(a, b), get status() { return status; }, get moves() { return moves; }, get optimal() { return optimalN; }, nextBest, newGame: (k) => newGame(k), setMode: (m) => { mode = m; P = MODES[m].P; buildBoard(); }, setKind: (k) => { kind = k; } };
 })();

@@ -9,16 +9,15 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="block-puzzle">
+<body data-game="block-puzzle" data-modes>
   <main class="c-wrap">
     <header class="g-head">
       <svg class="logo" viewBox="0 0 150 60" aria-hidden="true">
-        <rect x="20" y="28" width="16" height="16" rx="3" fill="#f5487f"/><rect x="38" y="28" width="16" height="16" rx="3" fill="#f5487f"/><rect x="38" y="10" width="16" height="16" rx="3" fill="#f5487f"/>
-        <rect x="62" y="28" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="80" y="28" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="62" y="10" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="80" y="10" width="16" height="16" rx="3" fill="#2fb36d"/>
-        <rect x="104" y="10" width="16" height="16" rx="3" fill="#3d8bfd"/><rect x="104" y="28" width="16" height="16" rx="3" fill="#3d8bfd"/><rect x="122" y="28" width="16" height="16" rx="3" fill="#3d8bfd"/>
+        <circle cx="26" cy="32" r="18" fill="#e63b2e"/><rect x="50" y="14" width="36" height="36" fill="#1f4fa8"/><path d="M96 50L114 14L132 50Z" fill="#f6c432"/><path d="M8 54H142" stroke="#1d1d1b" stroke-width="4"/><circle cx="114" cy="38" r="4" fill="#1d1d1b"/>
       </svg>
-      <h1 class="c-title">Block Fit</h1>
-      <p class="c-sub">Drag the shapes onto the board. Fill a whole row or column and it vanishes. Run out of room and it's over.</p>
+      <h1 class="c-title bf-title"><span>B</span>lock <span>F</span>i<span>t</span></h1>
+      <p class="c-sub bf-adv">Form follows function. Drag the shapes onto the grid; fill a whole row or column and it vanishes. Run out of room and the composition is complete.</p>
+      <p class="c-sub bf-simp">Drag shapes onto the grid. Fill a row or column to clear it. Keep going as long as they fit.</p>
     </header>
     <div class="modes">
       <div class="seg" id="modes" role="group" aria-label="Mode">

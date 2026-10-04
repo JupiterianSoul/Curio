@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="lights-out">
+<body data-game="lights-out" data-modes>
   <main class="c-wrap">
     <header class="g-head">
-      <h1 class="c-title">Lights Out</h1>
-      <p class="c-sub">Pressing a light flips it and its neighbours. Turn the whole board dark. Every level is guaranteed solvable, and a little linear algebra tells us the fewest moves it takes.</p>
+      <h1 class="c-title lo-neon"><span>Lights</span> <span class="lo-out">Out</span></h1>
+      <p class="c-sub lo-adv">It is way past bedtime and the whole block is still awake. Every switch flips a window and its neighbours. Get the street dark. Every level is solvable, and a little linear algebra tells us the fewest moves it takes.</p>
+      <p class="c-sub lo-simp">Tap a window: it flips, and so do its neighbours. Turn the whole street dark so everyone can sleep.</p>
     </header>
     <div class="lo-controls">
       <div class="seg" role="group" aria-label="Variant" id="vseg"></div>
@@ -30,7 +31,7 @@
     <div class="play" id="play">
       <div class="ambient" id="ambient" aria-hidden="true"></div>
       <div class="device">
-        <div class="device-top"><span class="led" id="led" aria-hidden="true"></span><span class="brand" id="brand">LIGHTS·OUT</span><span class="screws" aria-hidden="true"></span></div>
+        <div class="device-top"><span class="led" id="led" aria-hidden="true"></span><span class="brand" id="brand">LIGHTS·OUT</span><span class="moon" aria-hidden="true"></span><span class="screws" aria-hidden="true"></span></div>
         <div class="board-wrap">
           <div class="board" id="board" role="grid" aria-label="Lights board"></div>
           <div class="target" id="target" hidden><span>Make this</span><div class="tgrid" id="tgrid"></div><b id="tname"></b></div>

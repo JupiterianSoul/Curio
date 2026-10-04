@@ -112,14 +112,21 @@
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
   const dailyIdx = () => { let h = 2166136261; for (const ch of todayKey()) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } const lo = TIERS[2][0]; return lo + ((h >>> 0) % (LEVELS.length - lo)); };
 
-  let idx = Math.min(LEVELS.length - 1, save.level);
+  const SIMPLE = Curio.simple;
+  let idx = Math.min(LEVELS.length - 1, SIMPLE ? Math.max(0, +Curio.store.get('ub:simpleAt', 0) || 0) : save.level);
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    vroom(big) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(big ? 55 : 80, t); o.frequency.exponentialRampToValueAtTime(big ? 90 : 150, t + 0.12); o.frequency.exponentialRampToValueAtTime(big ? 60 : 90, t + 0.22); f.type = 'lowpass'; f.frequency.value = 700; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); o.connect(f).connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.27); },
+    horn() { const ac = this.ac(); if (!ac) return; [[0, 0.22], [0.28, 0.4]].forEach(([w, d]) => [392, 494].forEach((fq) => { const t = ac.currentTime + w, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(); o.type = 'square'; o.frequency.value = fq; f.type = 'lowpass'; f.frequency.value = 1600; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.035, t + 0.01); g.gain.setValueAtTime(0.035, t + d - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(f).connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.02); })); }
+  };
   let V, pos, hist, carEls, won, ghostEl, hinted, solving, isDaily = false, t0 = 0, elapsed = 0, ticking = false;
   const lot = $('lot');
   const stars = (m, opt) => (m <= opt ? 3 : m <= Math.ceil(opt * 1.5) + 1 ? 2 : 1);
   const fmtT = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   function loadLevel(i, daily = false) {
-    idx = i; isDaily = daily; save.level = idx; persist();
+    idx = i; isDaily = daily;
+    if (SIMPLE) Curio.store.set('ub:simpleAt', idx); else { save.level = idx; persist(); }
     V = parse(LEVELS[idx][0]); pos = V.map((v) => v.p); hist = []; won = false; hinted = false; solving = false;
     t0 = 0; elapsed = 0; ticking = false;
     lot.querySelectorAll('.car, .ghost, .puff').forEach((e) => e.remove());
@@ -151,6 +158,7 @@
   function hud() {
     const [, name, col] = tierOf(idx);
     $('level').textContent = isDaily ? '📅' : idx + 1;
+    if (SIMPLE) { const b = Curio.getBest(`simple-${idx}`); $('time').parentElement.querySelector('span').textContent = 'Time'; $('opt').parentElement.querySelector('span').textContent = b != null ? `Best ${b}` : 'Optimal'; }
     $('moves').textContent = hist.length;
     $('opt').textContent = LEVELS[idx][1];
     $('time').textContent = fmtT(elapsed);
@@ -206,7 +214,7 @@
     else hist.push({ i, from: pos[i] });
     pos[i] = p;
     paint(); hud();
-    Curio.beep(i === 0 ? 520 : 360 + (i % 5) * 30, 0.05, 'triangle', 0.07);
+    sfx.vroom(V[i].len === 3);
     if (pos[0] === 4) win();
   }
 
@@ -220,9 +228,17 @@
       lot.append(pf); setTimeout(() => pf.remove(), 750);
     }, k * 90);
     setTimeout(() => { el.classList.add('gone'); el.style.setProperty('--c', 8); }, 150);
-    [392, 523, 659, 784].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.12, 'square', 0.05), k * 90));
+    sfx.horn();
     try { navigator.vibrate?.([20, 30, 40]); } catch {}
     if (solving) { await new Promise((r) => setTimeout(r, 900)); solving = false; Curio.toast('That is the shortest route. Now try it yourself!'); loadLevel(idx, isDaily); return; }
+    if (SIMPLE) {
+      const b = Curio.best(`simple-${idx}`, m, false);
+      await new Promise((r) => setTimeout(r, 750));
+      Curio.confetti();
+      const v = await Curio.modal({ emoji: s === 3 ? '🏁' : '🚗', title: `${'★'.repeat(s)}${'☆'.repeat(3 - s)}`, body: `Out in ${m} moves${m <= opt ? ', the best possible!' : ` (best possible: ${opt}).`}${b.isNew ? ' New personal best.' : ''}`, buttons: [{ label: 'Next car park', value: 'next' }, { label: 'Again', value: 'again' }] });
+      loadLevel(v === 'next' ? Math.min(LEVELS.length - 1, idx + 1) : idx);
+      return;
+    }
     const done = save.done;
     if (!done[idx] || m < done[idx]) done[idx] = m;
     save.totalTime += Math.round(elapsed);

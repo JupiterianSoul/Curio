@@ -99,7 +99,27 @@
     ];
     const loadS = () => { const base = { v: 1, ach: {}, check: false, stats: { solved: 0, cells: 0, hints: 0, mistakes: 0, random: 0 }, daily: {} }; const d = Curio.store.get('nono2', null); return d && d.v === 1 ? { ...base, ...d, stats: { ...base.stats, ...(d.stats || {}) } } : base; };
     const S = loadS();
-    const save = () => Curio.store.set('nono2', S);
+    const SIMPLE = Curio.simple;
+    const keepCheck = S.check;
+    if (SIMPLE) S.check = false;
+    const save = () => Curio.store.set('nono2', SIMPLE ? { ...S, check: keepCheck } : S);
+    const SEQ = SIMPLE ? [...data[5].map((_, i) => [5, i]), ...data[8].map((_, i) => [8, i])] : [];
+    let simpleAt = Math.max(0, Math.min(SEQ.length, +Curio.store.get('nono:simpleAt', 0) || 0));
+    const sfx = {
+      ac() { return Curio.muted ? null : Curio.audioContext(); },
+      pull(len = 1, up = true) {
+        const ac = this.ac(); if (!ac) return;
+        const d = 0.05 + Math.min(6, len) * 0.012, t = ac.currentTime;
+        const buf = ac.createBuffer(1, Math.ceil(ac.sampleRate * d), ac.sampleRate), ch = buf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / ch.length);
+        const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = buf; f.type = 'bandpass'; f.Q.value = 3;
+        f.frequency.setValueAtTime(up ? 1400 : 2600, t); f.frequency.exponentialRampToValueAtTime(up ? 3200 + len * 120 : 1100, t + d);
+        g.gain.value = 0.16; src.connect(f).connect(g).connect(ac.destination); src.start(t);
+      },
+      knot() { Curio.beep(620, 0.03, 'sine', 0.04); },
+      pluck(f, w = 0) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + w, o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.55); }
+    };
     function mistake(i) {
       mistakes++; lives--; S.stats.mistakes++; save();
       cellEls[i].classList.remove('bad'); void cellEls[i].offsetWidth; cellEls[i].classList.add('bad');
@@ -185,7 +205,7 @@
       history = []; status = 'playing'; elapsed = 0; started = false; hints = 0; cur = 0; lives = 3; mistakes = 0;
       gameId++;
       $('result').hidden = true;
-      if (idx !== -2) Curio.store.set('nono:last', { size, idx });
+      if (idx !== -2 && !SIMPLE) Curio.store.set('nono:last', { size, idx });
       build();
       [...seg.children].forEach((b) => b.setAttribute('aria-pressed', +b.dataset.s === size));
       paintPicker();
@@ -251,7 +271,7 @@
       rowEls.forEach((el, y) => { el.classList.toggle('done', same(Nono.clues(lineVals(y, true)), rc[y])); el.classList.toggle('hl', y === cy && hoverOn); });
       colEls.forEach((el, x) => { el.classList.toggle('done', same(Nono.clues(lineVals(x, false)), cc[x])); el.classList.toggle('hl', x === cx && hoverOn); });
       $('time').textContent = fmtT(elapsed);
-      $('pnum').textContent = idx === -2 ? '📅' : idx < 0 ? '🎲' : `${idx + 1}/${data[size].length}`;
+      $('pnum').textContent = SIMPLE ? (simpleAt < SEQ.length ? `${simpleAt + 1}/${SEQ.length}` : '🎲') : idx === -2 ? '📅' : idx < 0 ? '🎲' : `${idx + 1}/${data[size].length}`;
       const b = idx < 0 ? null : Curio.getBest(`time-${pid()}`);
       $('best').textContent = b == null ? '-' : fmtT(b);
       const s = solvedSet();
@@ -295,7 +315,7 @@
       s.len = cells.length;
       if (changed) {
         s.changed = true;
-        Curio.beep(s.to === 1 ? 380 + s.len * 30 : s.to === 2 ? 240 : 200, 0.035, s.to === 1 ? 'triangle' : 'sine', 0.05);
+        if (s.to === 1) sfx.pull(s.len, true); else if (s.to === 2) sfx.knot(); else sfx.pull(1, false);
       }
       cur = s.y0 * n + s.x0;
       render();
@@ -357,7 +377,7 @@
       startClock(); snapshot();
       st[i] = st[i] === want ? 0 : want;
       if (S.check && st[i] === 1 && !sol[Math.floor(i / n)][i % n]) { st[i] = 2; mistake(i); render(); return; }
-      Curio.beep(want === 1 ? 420 : 240, 0.035, 'triangle', 0.05);
+      if (st[i] === 1) sfx.pull(1, true); else if (st[i] === 2) sfx.knot(); else sfx.pull(1, false);
       render(); checkWin();
     }
 
@@ -403,7 +423,7 @@
       st[pickI] = pickV ? 1 : 2;
       cellEls[pickI].classList.remove('hint'); void cellEls[pickI].offsetWidth; cellEls[pickI].classList.add('hint');
       Curio.beep(880, 0.08, 'sine', 0.06);
-      $('reveal').textContent = pickV ? 'That square has to be filled. Can you see why?' : 'That square must be empty, so it gets a cross.';
+      $('reveal').textContent = pickV ? 'That square needs a stitch. Can you see why?' : 'That square must stay empty, so it gets a knot.';
       render(); checkWin();
     }
 
@@ -435,13 +455,14 @@
         const x = i % n, y = Math.floor(i / n), ch = puzzle.g[y][x];
         c.style.setProperty('--d', `${(x + y) * (n > 10 ? 25 : 40)}ms`);
         c.classList.remove('x', 'cur', 'hl');
-        c.style.background = ch === '.' ? puzzle.bg : colorAt(x, y);
+        c.style.setProperty('--cell', puzzle.bg);
+        if (ch !== '.') c.style.setProperty('--floss', colorAt(x, y));
       });
       render();
       const r = $('reveal');
       r.textContent = idx < 0 ? 'Abstract art!' : `It's ${/^[AEIOU]/.test(puzzle.t) ? 'an' : 'a'} ${puzzle.t.toLowerCase()}!`;
       r.classList.remove('pop'); void r.offsetWidth; r.classList.add('pop');
-      setTimeout(() => { Curio.confetti(); [523, 659, 784, 1046, 1318].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.09), k * 90)); }, n * 50);
+      setTimeout(() => { Curio.confetti(); [392, 494, 587, 784, 988, 1175].forEach((f, k) => sfx.pluck(f, k * 0.08)); }, n * 50);
       navigator.vibrate?.([20, 40, 20]);
       const gid = gameId;
       setTimeout(() => { if (gid === gameId) showResult({ secs, bt, fresh }); }, 1300 + n * 60);
@@ -461,7 +482,8 @@
       $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       const nextIdx = idx >= 0 && idx + 1 < data[size].length ? idx + 1 : -1;
       $('rNext').textContent = lost ? 'Try again' : idx === -2 ? 'Random puzzle' : nextIdx >= 0 ? 'Next puzzle' : 'Random puzzle';
-      $('rNext').onclick = () => (lost ? load(idx) : load(idx === -2 ? -1 : nextIdx));
+      $('rNext').onclick = () => (lost ? load(idx) : SIMPLE ? simpleNext() : load(idx === -2 ? -1 : nextIdx));
+      if (SIMPLE && !lost) $('rNext').textContent = simpleAt + 1 < SEQ.length ? 'Next pattern' : 'Surprise pattern';
       $('rShare').hidden = lost;
       $('result').hidden = false;
       $('rNext').focus({ preventScroll: true });
@@ -514,7 +536,7 @@
     $('hint').addEventListener('click', hint);
     $('clear').addEventListener('click', async () => {
       if (status !== 'playing' || !st.some((v) => v)) return;
-      const v = await Curio.modal({ emoji: '🧽', title: 'Clear the grid?', body: 'All your squares and crosses will go (undo can bring them back).', buttons: [{ label: 'Clear', value: 'y' }, { label: 'Cancel', value: 'n' }] });
+      const v = await Curio.modal({ emoji: '✂️', title: 'Unpick everything?', body: 'All your stitches and knots will go (undo can bring them back).', buttons: [{ label: 'Clear', value: 'y' }, { label: 'Cancel', value: 'n' }] });
       if (v !== 'y') return;
       snapshot(); st = st.map(() => 0); render();
     });
@@ -524,8 +546,14 @@
     $('check').checked = !!S.check;
     $('check').addEventListener('change', (e) => { S.check = e.target.checked; save(); if (status === 'playing') { lives = 3; mistakes = 0; } paintLives(); Curio.toast(S.check ? 'Mistake checking on: wrong squares cost a heart' : 'Mistake checking off: relaxed mode'); });
     if (!Curio.touchpad && matchMedia('(pointer: fine)').matches && !Curio.store.get('tpTip', false)) { Curio.store.set('tpTip', true); setTimeout(() => Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar to paint lines with click, move, click'), 1500); }
+    function simpleLoad() {
+      if (simpleAt < SEQ.length) { size = SEQ[simpleAt][0]; load(SEQ[simpleAt][1]); }
+      else { size = Math.random() < 0.5 ? 5 : 8; load(-1); }
+    }
+    function simpleNext() { if (simpleAt < SEQ.length) simpleAt++; Curio.store.set('nono:simpleAt', simpleAt); simpleLoad(); }
     const last = Curio.store.get('nono:last', null);
-    if (last && SIZES.includes(last.size) && last.idx >= 0 && last.idx < data[last.size].length) { size = last.size; load(last.idx); }
+    if (SIMPLE) simpleLoad();
+    else if (last && SIZES.includes(last.size) && last.idx >= 0 && last.idx < data[last.size].length) { size = last.size; load(last.idx); }
     else { size = SIZES.includes(Curio.store.get('nono:size', 5)) ? Curio.store.get('nono:size', 5) : 5; load(0); }
     paintProgress();
     window.__nono = { engine: Nono, setCell, get lives() { return lives; }, get sol() { return sol; }, get st() { return st; }, set st(v) { st = v; render(); checkWin(); }, get status() { return status; }, load, get size() { return size; }, set size(v) { size = v; } };

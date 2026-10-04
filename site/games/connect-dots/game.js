@@ -90,7 +90,18 @@ const FlowGen = (() => {
   const save = () => Curio.store.set(SKEY, S);
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   const svg = $('board'), seg = $('seg'), picker = $('picker'), bw = $('bw');
-  let mode = ['levels', 'daily', 'endless'].includes(S.mode) ? S.mode : 'levels';
+  const SIMPLE = Curio.simple;
+  let mode = SIMPLE ? 'simple' : ['levels', 'daily', 'endless'].includes(S.mode) ? S.mode : 'levels';
+  let sAt = Math.max(0, +Curio.store.get('flow:simpleAt', 0) || 0);
+  const sSpec = (a) => (a < 20 ? [5, a] : a < 40 ? [6, a - 20] : [7, (a - 40) % PER]);
+  const buzz = (c) => {
+    if (Curio.muted) return; const ac = Curio.audioContext(); if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 118; f.type = 'lowpass'; f.frequency.value = 900;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.035, t + 0.01); g.gain.setValueAtTime(0.035, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    o.connect(f).connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.32);
+    note(c, 2, 0.16, 0.06);
+  };
   let n = 5, li = 0, sol, k, ends, paths, history = [], status = 'playing', moves = 0, lastColor = -1, gameId = 0;
   let elapsed = 0, t0 = 0, started = false, hints = 0, drag = null, kc = 0, kHold = false, solPaths, endlessSeed = 1;
   let layers = {};
@@ -110,11 +121,11 @@ const FlowGen = (() => {
   const nbs = (i) => { const x = i % n, y = Math.floor(i / n), o = []; if (y > 0) o.push(i - n); if (x < n - 1) o.push(i + 1); if (y < n - 1) o.push(i + n); if (x > 0) o.push(i - 1); return o; };
   const adj = (a, b) => nbs(a).includes(b);
   const center = (i) => [(i % n) * 100 + 50, Math.floor(i / n) * 100 + 50];
-  const keyOf = () => (mode === 'levels' ? `${n}-${li}` : mode === 'daily' ? `daily-${today()}` : null);
+  const keyOf = () => (mode === 'simple' ? `s${n}-${li}` : mode === 'levels' ? `${n}-${li}` : mode === 'daily' ? `daily-${today()}` : null);
   const note = (c, oct = 1, dur = 0.06, vol = 0.05) => Curio.beep(262 * 2 ** (PENTA[c % 12] / 12) * oct, dur, 'triangle', vol);
 
   function paintModes() {
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    document.querySelectorAll('#modes [data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     seg.hidden = mode === 'daily';
     picker.hidden = mode !== 'levels';
     $('next').querySelector('i').nextSibling.textContent = mode === 'endless' ? 'New' : 'Next';
@@ -140,7 +151,8 @@ const FlowGen = (() => {
     gameId++;
     li = i;
     let s;
-    if (mode === 'levels') { Curio.store.set('flow:last', { n, li }); s = levelString(n, li); }
+    if (mode === 'simple') { [n, li] = sSpec(sAt); s = levelString(n, li); }
+    else if (mode === 'levels') { Curio.store.set('flow:last', { n, li }); s = levelString(n, li); }
     else if (mode === 'daily') { n = 8; s = FlowGen.generate(8, [...today()].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261)).str; }
     else { endlessSeed = (Math.random() * 2 ** 31) | 0; s = FlowGen.generate(n, endlessSeed).str; }
     const letters = [...new Set(s)];
@@ -158,7 +170,7 @@ const FlowGen = (() => {
     [...seg.children].forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.n === n)));
     paintModes();
     paintPicker();
-    msg(mode === 'daily' ? `Today's board: ${k} colours on 8×8, the same for everyone.` : mode === 'endless' ? `A fresh ${n}×${n} board with ${k} colours, straight from the generator.` : n === 5 && li === 0 ? 'Drag from a dot to its twin. Then fill every gap!' : `${k} colours to connect.`);
+    msg(mode === 'simple' ? (sAt === 0 ? 'Drag from a dot to its twin. Light up every square!' : `Sign ${sAt + 1}: ${k} colours of neon to bend.`) : mode === 'daily' ? `Today's board: ${k} colours on 8×8, the same for everyone.` : mode === 'endless' ? `A fresh ${n}×${n} board with ${k} colours, straight from the generator.` : n === 5 && li === 0 ? 'Drag from a dot to its twin. Then fill every gap!' : `${k} colours to connect.`);
     render();
   }
   function build() {
@@ -285,7 +297,7 @@ const FlowGen = (() => {
     if (endOther >= 0) return;
     p.push(j);
     recut();
-    if (complete(c)) { note(c, 2, 0.1, 0.08); setTimeout(() => note(c + 2, 2, 0.1, 0.06), 70); navigator.vibrate?.(12); }
+    if (complete(c)) { buzz(c); setTimeout(() => note(c + 2, 2, 0.1, 0.06), 90); navigator.vibrate?.(12); }
     else Curio.beep(420 + Math.min(p.length, 30) * 12, 0.025, 'sine', 0.03);
   }
   function recut() {
@@ -407,6 +419,7 @@ const FlowGen = (() => {
     if (n >= 9 && !hints) award('nohint', fresh);
     const kk = keyOf();
     let bt = { best: null, isNew: false };
+    if (mode === 'simple') { sAt++; Curio.store.set('flow:simpleAt', sAt); }
     if (mode === 'levels') {
       const prev = S.done[kk];
       S.done[kk] = { m: Math.min(moves, prev && prev.m != null ? prev.m : 999), perfect: !!(perfect || (prev && prev.perfect)) };
@@ -433,20 +446,22 @@ const FlowGen = (() => {
       $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       const nx = $('rNext');
       nx.hidden = mode === 'daily' || (mode === 'levels' && li >= PER - 1 && n === 10);
-      nx.textContent = mode === 'endless' ? 'Another board' : 'Next level';
+      nx.textContent = mode === 'simple' ? 'Next sign' : mode === 'endless' ? 'Another board' : 'Next level';
+      if (mode === 'simple') { $('rTitle').textContent = perfect ? 'Lit up perfectly!' : 'Sign lit!'; $('rAgain').textContent = 'Admire it'; }
       $('result').hidden = false;
       (nx.hidden ? $('rAgain') : nx).focus({ preventScroll: true });
       paintProgress();
     }, 1200);
   }
   function nextLevel() {
+    if (mode === 'simple') { if (status !== 'won') { sAt++; Curio.store.set('flow:simpleAt', sAt); } load(0); return; }
     if (mode === 'endless') { load(0); return; }
     if (mode !== 'levels') return;
     if (li < PER - 1) load(li + 1);
     else if (n < 10) { n++; load(0); }
   }
   $('rNext').addEventListener('click', nextLevel);
-  $('rAgain').addEventListener('click', () => { if (mode === 'endless') { $('result').hidden = true; return; } load(li); });
+  $('rAgain').addEventListener('click', () => { if (mode === 'endless' || mode === 'simple') { $('result').hidden = true; return; } load(li); });
   $('rShare').addEventListener('click', () => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
     const what = mode === 'daily' ? `Daily ${today()}` : mode === 'endless' ? `Endless ${n}×${n}` : `${n}×${n} level ${li + 1}`;
@@ -490,14 +505,14 @@ const FlowGen = (() => {
     if (document.querySelector('.curio-modal') || e.metaKey || e.altKey) return;
     if (e.target.closest?.('input, select, textarea')) return;
     if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); undo(); }
-    else if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && mode !== 'endless') load(li);
+    else if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && mode !== 'endless') { if (mode === 'simple') { if (status === 'playing') load(0); } else load(li); }
     else if ((e.key === 'h' || e.key === 'H') && !e.ctrlKey) hint();
   });
   $('undo').addEventListener('click', undo);
-  $('restart').addEventListener('click', () => { if (mode === 'endless') { paths = paths.map(() => []); history = []; moves = 0; lastColor = -1; render(); } else load(li); });
+  $('restart').addEventListener('click', () => { if (mode === 'endless' || (mode === 'simple' && status !== 'playing')) { paths = paths.map(() => []); history = []; moves = 0; lastColor = -1; render(); } else load(li); });
   $('hint').addEventListener('click', hint);
   $('next').addEventListener('click', nextLevel);
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; S.mode = mode; save(); if (mode === 'levels') { const last = Curio.store.get('flow:last', null); if (last && SIZES.includes(last.n)) { n = last.n; load(Math.min(PER - 1, last.li)); return; } } load(0); }));
+  document.querySelectorAll('#modes [data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; S.mode = mode; save(); if (mode === 'levels') { const last = Curio.store.get('flow:last', null); if (last && SIZES.includes(last.n)) { n = last.n; load(Math.min(PER - 1, last.li)); return; } } load(0); }));
   $('symbols').checked = !!S.symbols;
   $('glow').checked = S.glow !== false;
   $('symbols').addEventListener('change', (e) => { S.symbols = e.target.checked; save(); const keep = { paths, status }; build(); paths = keep.paths; render(); });
@@ -505,7 +520,8 @@ const FlowGen = (() => {
 
   paintModes();
   const last = Curio.store.get('flow:last', null);
-  if (mode === 'levels' && last && SIZES.includes(last.n) && last.li >= 0 && last.li < PER) { n = last.n; load(last.li); } else load(0);
+  if (mode === 'simple') load(0);
+  else if (mode === 'levels' && last && SIZES.includes(last.n) && last.li >= 0 && last.li < PER) { n = last.n; load(last.li); } else load(0);
   paintProgress();
   window.__flow = { get sol() { return sol; }, get ends() { return ends; }, get solPaths() { return solPaths; }, get paths() { return paths; }, get status() { return status; }, load, get n() { return n; }, set n(v) { n = v; }, setMode: (m) => { mode = m; }, begin, moveTo, finish, gen: FlowGen.generate };
 })();

@@ -36,7 +36,12 @@
     return s;
   }
   const S = load();
+  const SIMPLE = Curio.simple;
+  if (SIMPLE && S.curS && !(Array.isArray(S.curS.t) && S.curS.t.length === S.curS.n * S.curS.n)) S.curS = null;
   const save = () => Curio.store.set(KEY, S);
+  const boardN = () => SIMPLE ? 3 : S.n;
+  const curGet = () => SIMPLE ? S.curS : S.cur;
+  const curSet = (v) => { if (SIMPLE) S.curS = v; else S.cur = v; };
 
   const SFX = {
     ac() { return Curio.muted ? null : Curio.audioContext(); },
@@ -116,18 +121,19 @@
     const dp = dailyPic(), dd = S.daily[dayKey()];
     $('daily').innerHTML = `<img src="${render(dp.id, 240)}" alt="Today's picture: ${dp.name}"><div><h3>Daily puzzle</h3><p>${dp.name} · 4×4 · same shuffle for everyone today${dd ? `<br>Solved in ${dd.moves} moves, ${fmtT(dd.time)}` : ''}</p><button class="c-btn" type="button" id="dailyBtn">${dd ? 'Play again' : 'Play today\'s'}</button></div>${streak() ? `<span class="tag">🔥 ${streak()}</span>` : ''}`;
     $('dailyBtn').onclick = () => start({ pic: dp.id, n: 4, daily: dayKey() });
-    const c = S.cur;
-    $('cont').hidden = !c;
-    if (c) {
+    const c = curGet();
+    $('cont').hidden = !c || SIMPLE;
+    if (c && !SIMPLE) {
       $('cont').innerHTML = `${c.pic ? `<img src="${render(c.pic, 120)}" alt="">` : ''}<div><b>Continue</b><span>${c.pic ? PICS.find((p) => p.id === c.pic)?.name : 'Number board'} · ${c.n}×${c.n} · ${c.moves} moves</span></div><button class="c-btn c-btn--ghost" type="button" id="contBtn">Resume ▶</button>`;
       $('contBtn').onclick = () => resume();
     }
-    $('gallery').innerHTML = SETS.map((set) => {
-      const pics = PICS.filter((p) => p.set === set);
+    const N = boardN();
+    $('gallery').innerHTML = (SIMPLE ? ['All'] : SETS).map((set) => {
+      const pics = SIMPLE ? PICS : PICS.filter((p) => p.set === set);
       const done = pics.filter((p) => S.pics[p.id]).length;
-      return `<section class="sp-set"><h2><span>${set}</span><span>${done}/${pics.length} solved</span></h2><div class="sp-pics">${pics.map((p) => {
-        const rec = S.pics[p.id] && S.pics[p.id][S.n];
-        return `<button type="button" class="sp-pic ${S.pics[p.id] ? '' : 'fresh'}" data-pic="${p.id}"><img src="${render(p.id, 300)}" alt="${p.name}" loading="lazy"><span class="grid" style="background-size:${100 / S.n}% ${100 / S.n}%"></span><span class="meta"><b>${p.name}</b><span class="st" aria-label="${rec ? rec.stars : 0} stars">${starStr(rec ? rec.stars : 0)}</span></span></button>`;
+      return `<section class="sp-set"><h2><span>${SIMPLE ? 'The collection' : `${set} wing`}</span><span>${done}/${pics.length} restored</span></h2><div class="sp-pics">${pics.map((p) => {
+        const rec = S.pics[p.id] && S.pics[p.id][N];
+        return `<button type="button" class="sp-pic ${S.pics[p.id] ? '' : 'fresh'}" data-pic="${p.id}"><span class="mat"><img src="${render(p.id, 300)}" alt="${p.name}" loading="lazy"><span class="grid" style="background-size:${100 / N}% ${100 / N}%"></span></span><span class="meta"><b>${p.name}</b><span class="st" aria-label="${rec ? rec.stars : 0} stars">${starStr(rec ? rec.stars : 0)}</span></span></button>`;
       }).join('')}</div></section>`;
     }).join('');
     $('trophyN').textContent = `${Object.keys(S.ach).length}/${ACH.length}`;
@@ -136,7 +142,7 @@
   $('sizes').addEventListener('click', (e) => { const b = e.target.closest('[data-n]'); if (!b) return; S.n = +b.dataset.n; save(); SFX.tone(600 + S.n * 60, 0.05); paintHome(); $('sizes').querySelector(`[data-n="${S.n}"]`).focus(); });
   $('numsBox').addEventListener('change', () => { S.nums = $('numsBox').checked; save(); SFX.tone(700, 0.05); });
   $('skins').addEventListener('click', (e) => { const b = e.target.closest('[data-skin]'); if (!b) return; S.skin = b.dataset.skin; save(); SFX.slide(1); paintHome(); });
-  $('gallery').addEventListener('click', (e) => { const b = e.target.closest('[data-pic]'); if (b) start({ pic: b.dataset.pic, n: S.n }); });
+  $('gallery').addEventListener('click', (e) => { const b = e.target.closest('[data-pic]'); if (b) start({ pic: b.dataset.pic, n: boardN() }); });
   $('numPlay').addEventListener('click', () => start({ pic: null, n: S.n }));
 
   let G = null, tileEls = [], timer = 0, last = 0, plan = null, solving = false, peeking = false;
@@ -150,10 +156,10 @@
     if (n === 3) { const p = SV.idaStar(t, 3); par = Math.ceil((p ? p.length : 24) * 1.25); }
     else par = Math.round(SV.heur(t, n) * MULT[n]);
     G = { pic, n, t, skin: pic ? null : S.skin, moves: 0, elapsed: 0, started: false, daily, par, hist: [], assisted: false, helped: false, solved: false };
-    S.cur = G; save();
+    curSet(G); save();
     show('play'); setup();
   }
-  function resume() { G = S.cur; G.hist = G.hist || []; G.started = G.moves > 0; show('play'); setup(); }
+  function resume() { G = curGet(); G.hist = G.hist || []; G.started = G.moves > 0; show('play'); setup(); }
   function setup() {
     plan = null; solving = false;
     $('result').hidden = true; $('peek').classList.remove('done', 'on');
@@ -239,7 +245,7 @@
     G.helped = true; plan = null;
     paint(); hud(true); SFX.tone(400, 0.08, 'sine', 0.05, 0, 250); persist();
   }
-  function persist() { if (G && !G.solved) { S.cur = G; save(); } }
+  function persist() { if (G && !G.solved) { curSet(G); save(); } }
 
   function getPlan(cb) {
     if (plan && plan.length) return cb(plan);
@@ -281,7 +287,7 @@
     for (let i = 0; i < G.t.length - 1; i++) if (G.t[i] !== i + 1) return;
     G.solved = true; solving = false; plan = null;
     const secs = Math.round(G.elapsed);
-    S.cur = null;
+    curSet(null);
     const stars = G.assisted ? 0 : G.moves <= G.par ? 3 : G.moves <= G.par * 1.6 ? 2 : 1;
     let isBest = false;
     if (!G.assisted) {
@@ -314,14 +320,15 @@
     hud();
     boardEl.classList.add('solved');
     if (G.pic) setTimeout(() => { if (G.solved) $('peek').classList.add('done'); }, 700);
+    $('frame').classList.remove('hung'); void $('frame').offsetWidth; $('frame').classList.add('hung');
     SFX.win(); buzz([30, 50, 30, 50, 120]);
     setTimeout(() => Curio.confetti(), 700);
     const box = $('result');
     const name = G.pic ? PICS.find((p) => p.id === G.pic).name : `${SKINS[G.skin][0]} numbers`;
     box.innerHTML = `<div class="sp-rcard" role="dialog" aria-label="Solved"><div class="sp-stars">${[0, 1, 2].map((i) => `<span class="${i < stars ? '' : 'off'}" style="animation-delay:${1.4 + i * 0.18}s">★</span>`).join('')}</div>
-      ${isBest ? '<span class="new">Personal best</span>' : ''}<h3>${G.assisted ? 'Robot wins!' : Curio.pick(['Solved!', 'Picture perfect!', 'Beautiful!', 'All home!'])}</h3>
+      ${isBest ? '<span class="new">Personal best</span>' : ''}<h3>${G.assisted ? 'Robot wins!' : Curio.pick(['Restored!', 'Picture perfect!', 'Ready to hang!', 'A masterpiece!'])}</h3>
       <p>${name}, ${G.n}×${G.n}: ${G.moves} moves in ${fmtT(secs)}. Par was ${G.par}.${G.assisted ? ' No stars for robot help.' : ''}</p>
-      <div class="c-row"><button class="c-btn" type="button" data-a="next">${G.pic && !G.daily ? 'Next picture' : 'Play again'}</button><button class="c-btn c-btn--ghost" type="button" data-a="share">Share</button><button class="c-btn c-btn--ghost" type="button" data-a="menu">Gallery</button></div></div>`;
+      <div class="c-row"><button class="c-btn" type="button" data-a="next">${G.pic && !G.daily ? 'Next picture' : 'Play again'}</button>${SIMPLE ? '' : '<button class="c-btn c-btn--ghost" type="button" data-a="share">Share</button>'}<button class="c-btn c-btn--ghost" type="button" data-a="menu">Gallery</button></div></div>`;
     box.hidden = false;
     if (!G.assisted) [0, 1, 2].forEach((i) => { if (i < stars) setTimeout(() => SFX.star(i), 1400 + i * 180); });
     box.onclick = async (e) => {
@@ -367,7 +374,7 @@
     const k = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
     if (k) { e.preventDefault(); push(k[0], k[1]); return; }
     if (e.key === 'u' || e.key === 'U') undo();
-    else if (e.key === 'h' || e.key === 'H') hint();
+    else if ((e.key === 'h' || e.key === 'H') && !SIMPLE) hint();
     else if (e.key === ' ' && G.pic && !e.target.closest('button')) { e.preventDefault(); if (!e.repeat) setPeek(true); }
     else if ((e.key === 'p' || e.key === 'P') && G.pic) togglePeek();
     else if (e.key === 'Escape') { persist(); show('home'); paintHome(); }
@@ -411,5 +418,9 @@
 
   if (matchMedia('(pointer: fine)').matches && !Curio.store.get('slide:tipTouchpad', false)) { Curio.store.set('slide:tipTouchpad', true); setTimeout(() => Curio.toast('Tip: click tiles to slide them. Touchpad mode in the top bar adds click-move-click swipes', 4200), 900); }
   paintHome();
+  if (SIMPLE) {
+    $('simpleGo').addEventListener('click', () => { const nx = PICS.find((p) => !(S.pics[p.id] && S.pics[p.id][3])) || Curio.pick(PICS); start({ pic: nx.id, n: 3 }); });
+    if (S.curS) resume(); else { const nx = PICS.find((p) => !(S.pics[p.id] && S.pics[p.id][3])) || Curio.pick(PICS); start({ pic: nx.id, n: 3 }); }
+  }
   window.__slide = { get G() { return G; }, slideFrom, push, start, SV, hint, undo, get solving() { return solving; } };
 })();

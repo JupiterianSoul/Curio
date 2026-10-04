@@ -9,11 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="sokoban">
+<body data-game="sokoban" data-modes>
   <main class="c-wrap">
     <header class="g-head">
+      <p class="sk-tape" aria-hidden="true"></p>
       <h1 class="c-title">Box Pusher</h1>
-      <p class="c-sub">Push every crate onto a glowing target. You are strong enough to push one crate, but far too polite to pull. Think before you shove.</p>
+      <p class="c-sub sk-adv">Warehouse rules: push every crate onto a marked bay. You are strong enough to push one crate, but far too polite to pull. Think before you shove.</p>
+      <p class="c-sub sk-simp">Push every crate onto a marked bay. You can push, but never pull.</p>
     </header>
     <div class="packs"><div class="seg" role="group" aria-label="Level pack" id="packs"></div></div>
     <div class="lvl">

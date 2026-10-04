@@ -30,9 +30,20 @@
   if (!THEMES[save.theme]) save.theme = 'animals';
   if (!['solo', 'duo', 'bot', 'clock'].includes(save.mode)) save.mode = 'solo';
   if (!BOTS[save.bot]) save.bot = 'medium';
-  const persist = () => Curio.store.set('mm:v2', save);
+  const SIMPLE = Curio.simple;
+  const realMode = save.mode;
+  if (SIMPLE) save.mode = 'solo';
+  const persist = () => Curio.store.set('mm:v2', SIMPLE ? { ...save, mode: realMode } : save);
+  const SIMPLE_THEMES = ['animals', 'food', 'ocean', 'space', 'sports', 'music'].filter((k) => THEMES[k]);
+  let simpleRound = +Curio.store.get('mm:simpleRound', 0) || 0;
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    bell(f, when = 0, vol = 0.07, len = 0.9) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + when; [[1, vol], [2.76, vol * 0.35], [5.4, vol * 0.12]].forEach(([m, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + len / m ** 0.5); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + len + 0.05); }); },
+    swish() { const ac = this.ac(); if (!ac) return; const t = ac.currentTime, len = Math.ceil(ac.sampleRate * 0.12), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len) * 0.6; const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = buf; f.type = 'bandpass'; f.frequency.setValueAtTime(1200, t); f.frequency.exponentialRampToValueAtTime(3800, t + 0.12); g.gain.value = 0.25; src.connect(f).connect(g).connect(ac.destination); src.start(t); }
+  };
+  const SCALE = [523, 587, 659, 784, 880, 1047, 1175, 1319];
 
-  let deck, open, moves, found, total, t0, elapsed, timer, lock, turn, scores, over, score, streak, bestStreak, misses, timeLeft, daily, memory, botBusy;
+  let deckSize = 0, deck, open, moves, found, total, t0, elapsed, timer, lock, turn, scores, over, score, streak, bestStreak, misses, timeLeft, daily, memory, botBusy;
 
   const sizesEl = $('sizes'), themesEl = $('themes'), board = $('board');
   SIZES.forEach(([c, r], i) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.size = i; b.textContent = `${c}×${r}`; sizesEl.append(b); });
@@ -69,8 +80,9 @@
   function newGame(isDaily = false) {
     clearInterval(timer); clearTimeout(lock); botBusy = false;
     daily = isDaily;
-    const sizeIdx = daily ? 2 : save.size;
-    const themeKey = daily ? Object.keys(THEMES)[todaySeed() % Object.keys(THEMES).length] : save.theme;
+    const sizeIdx = SIMPLE ? (simpleRound < 2 ? 0 : 1) : daily ? 2 : save.size;
+    const themeKey = SIMPLE ? SIMPLE_THEMES[simpleRound % SIMPLE_THEMES.length] : daily ? Object.keys(THEMES)[todaySeed() % Object.keys(THEMES).length] : save.theme;
+    deckSize = sizeIdx;
     const T = THEMES[themeKey];
     const [cols, rows] = SIZES[sizeIdx];
     total = cols * rows / 2;
@@ -88,6 +100,7 @@
     timeLeft = total * 5 + 10;
     board.style.setProperty('--cols', cols);
     board.style.setProperty('--rows', rows);
+    board.parentElement.style.setProperty('--cols', cols); board.parentElement.style.setProperty('--rows', rows);
     const root = document.documentElement.style;
     root.setProperty('--back-a', T.back[0]); root.setProperty('--back-b', T.back[1]);
     root.setProperty('--fa', T.c[0]); root.setProperty('--fb', T.c[1]);
@@ -108,7 +121,7 @@
     if (daily) Curio.toast(`Daily deck: ${T.label}. Same cards for everyone today!`);
     if (save.peek) {
       lock = true;
-      setTimeout(() => { board.classList.add('peek-on'); Curio.beep(700, 0.05, 'sine', 0.06); }, 500 + deck.length * 18);
+      setTimeout(() => { board.classList.add('peek-on'); sfx.bell(1047); }, 500 + deck.length * 18);
       setTimeout(() => { board.classList.remove('peek-on'); lock = false; }, 500 + deck.length * 18 + Math.min(4000, 900 + total * 120));
     }
   }
@@ -127,9 +140,10 @@
     $('pl1').classList.toggle('on', turn === 0); $('pl2').classList.toggle('on', turn === 1);
   }
 
+  const bkey = (k, c, r) => `${SIMPLE ? 'simple-' : ''}${k}-${c}x${r}`;
   function bests() {
-    const [c, r] = SIZES[save.size];
-    const bm = Curio.getBest(`moves-${c}x${r}`), bt = Curio.getBest(`time-${c}x${r}`), bs = Curio.getBest(`score-${c}x${r}`);
+    const [c, r] = SIZES[SIMPLE ? deckSize : save.size];
+    const bm = Curio.getBest(bkey('moves', c, r)), bt = Curio.getBest(bkey('time', c, r)), bs = Curio.getBest(bkey('score', c, r));
     $('bests').textContent = bm == null ? `No best yet on ${c}×${r}. Perfect play is ${c * r / 2} moves.` : `Your best on ${c}×${r}: ${bm} moves, fastest ${fmtT(bt)}${bs ? `, top score ${Curio.fmt(bs)}` : ''}.`;
     const wr = save.botW + save.botL ? Math.round(save.botW / (save.botW + save.botL) * 100) : 0;
     $('statgrid').innerHTML = [[save.games, 'Games'], [save.wins, 'Solo wins'], [Object.keys(save.themesDone).length, 'Themes done'], [save.botW, 'Robot wins'], [save.botL, 'Robot losses'], [`${wr}%`, 'vs robot']].map(([v, l]) => `<div class="c-stat"><b>${v}</b><span>${l}</span></div>`).join('');
@@ -203,7 +217,7 @@
     c.el.setAttribute('aria-label', `${c.face[1] || c.face[0]}, face up`);
     open.push(c);
     remember(i);
-    Curio.beep(520 + open.length * 90, 0.05, 'triangle', 0.07);
+    sfx.swish(); sfx.bell(open.length === 1 ? 784 : 988, 0, 0.035, 0.4);
     if (open.length < 2) return;
     moves++;
     const [a, b] = open;
@@ -225,7 +239,7 @@
       if (streak >= 2 && !versus()) comboText(b.el, `Combo ×${streak}!`);
       if (streak >= 4 && !versus()) unlock('combo4');
       buzz(15);
-      setTimeout(() => { Curio.beep(660 + streak * 40, 0.07, 'sine', 0.1); Curio.beep(990 + streak * 60, 0.1, 'sine', 0.08); }, 120);
+      setTimeout(() => { const k = Math.min(streak, 5); [0, 2, 4].forEach((d, j) => sfx.bell(SCALE[Math.min(7, k - 1 + d)], j * 0.07, 0.06)); }, 120);
       if (found < total && Math.random() < 0.25 && !versus()) Curio.toast(Curio.pick(QUIPS), 1000);
       if (found < total && save.mode === 'duo') Curio.toast(`Player ${turn + 1} goes again!`, 900);
       hud();
@@ -234,7 +248,7 @@
     } else {
       streak = 0; misses++;
       a.el.classList.add('nope'); b.el.classList.add('nope');
-      Curio.beep(180, 0.12, 'sawtooth', 0.04);
+      sfx.bell(233, 0, 0.05, 0.5); sfx.bell(220, 0.08, 0.04, 0.5);
       lock = setTimeout(endMiss, save.mode === 'bot' && turn === 1 ? 1100 : 850);
       hud();
     }
@@ -286,10 +300,11 @@
     hud();
     Curio.confetti();
     buzz([20, 40, 20]);
-    [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.1), k * 110));
-    const sizeIdx = daily ? 2 : save.size;
+    SCALE.forEach((f, k) => sfx.bell(f, k * 0.08, 0.05, 1.2));
+    const sizeIdx = deckSize;
     const [c, r] = SIZES[sizeIdx];
     save.games++;
+    if (SIMPLE) { simpleRound++; Curio.store.set('mm:simpleRound', simpleRound); }
     save.themesDone[deck.theme] = 1;
     if (Object.keys(save.themesDone).length >= 6) unlock('themes');
     if (THEMES[deck.theme].pairs) unlock('pairs');
@@ -311,7 +326,7 @@
       if (moves === total) unlock('perfect');
       if (s === 3 && sizeIdx >= 2) unlock('three');
       persist();
-      const bm = Curio.best(`moves-${c}x${r}`, moves, false), bt = Curio.best(`time-${c}x${r}`, Math.round(elapsed), false), bs = Curio.best(`score-${c}x${r}`, score);
+      const bm = Curio.best(bkey('moves', c, r), moves, false), bt = Curio.best(bkey('time', c, r), Math.round(elapsed), false), bs = Curio.best(bkey('score', c, r), score);
       hud();
       const perfect = moves === total;
       const body = document.createElement('div');
@@ -319,7 +334,7 @@
       const p = document.createElement('div');
       p.textContent = `${'★'.repeat(s)}${'☆'.repeat(3 - s)} ${perfect ? 'A perfect game, are you psychic?' : bm.isNew ? 'New fewest-moves record!' : bt.isNew ? 'New fastest time!' : bs.isNew ? 'New high score!' : `Best: ${bm.best} moves.`}`;
       body.append(p);
-      v = await Curio.modal({ emoji: s === 3 ? '🧠' : s === 2 ? '😎' : '🙂', title: daily ? 'Daily deck done!' : s === 3 ? 'Total recall!' : s === 2 ? 'Well matched!' : 'All pairs found!', body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Close', value: 'x' }] });
+      v = await Curio.modal({ emoji: s === 3 ? '🔮' : s === 2 ? '🌙' : '✨', title: daily ? 'Daily deck done!' : s === 3 ? 'The cards foretold it!' : s === 2 ? 'Well remembered!' : 'All pairs found!', body, buttons: SIMPLE ? [{ label: 'Next deck', value: 'again' }, { label: 'Close', value: 'x' }] : [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Close', value: 'x' }] });
       if (v === 'share') { try { await navigator.clipboard.writeText(`🃏 Zoble Memory Match${daily ? ` daily (${todayKey()})` : ''}: ${total} pairs in ${moves} moves, ${fmtT(elapsed)}, ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
       bests();
     }

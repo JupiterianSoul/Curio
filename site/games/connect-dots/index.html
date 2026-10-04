@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="connect-dots">
+<body data-game="connect-dots" data-modes>
   <main class="c-wrap">
     <header class="g-head">
-      <h1 class="c-title">Flow</h1>
-      <p class="c-sub">Connect each pair of matching dots with a pipe. Pipes cannot cross, and a perfect solve fills every single square.</p>
+      <h1 class="c-title fl-neon" aria-label="Flow"><span>F</span><span>l</span><span>o</span><span>w</span></h1>
+      <p class="c-sub fl-adv">A neon sign shop where every order is a puzzle. Bend a glowing tube between each pair of matching dots. Tubes cannot cross, and a perfect sign lights every single square.</p>
+      <p class="c-sub fl-simp">Drag a glowing tube from each dot to its twin. Tubes cannot cross. Light up every square.</p>
     </header>
     <div class="modes"><div class="seg" role="group" aria-label="Mode" id="modes">
       <button type="button" data-mode="levels">Levels</button>
@@ -45,7 +46,7 @@
           </div>
         </div>
       </div>
-      <div class="meter"><span>Pipe</span><div class="bar"><div id="bar"></div></div><span id="pct">0%</span></div>
+      <div class="meter"><span>Lit</span><div class="bar"><div id="bar"></div></div><span id="pct">0%</span></div>
       <p class="msg" id="msg" aria-live="polite"></p>
       <div class="tools">
         <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>

@@ -9,23 +9,25 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="nonogram">
+<body data-game="nonogram" data-modes>
   <main class="c-wrap">
     <header class="g-head">
-      <h1 class="c-title">Nonogram</h1>
-      <p class="c-sub">The numbers say how many filled squares sit together in each row and column, in order. Fill the right ones and a hidden pixel picture appears, in full colour.</p>
+      <p class="nn-kicker">Stitch by number</p>
+      <h1 class="c-title"><span>Nonogram</span></h1>
+      <p class="c-sub nn-adv">A sampler of picture logic. The numbers say how many stitched squares sit together in each row and column, in order. Stitch the right ones and a hidden picture blooms in coloured thread.</p>
+      <p class="c-sub nn-simp">Each number is a run of stitched squares in that row or column. Stitch the right ones and a little picture appears.</p>
     </header>
     <div class="c-row"><div class="seg" role="group" aria-label="Puzzle size" id="seg"></div></div>
     <div class="picker" id="picker" aria-label="Puzzles"></div>
     <div class="hud">
-      <div class="c-stat"><b id="pnum">1</b><span>Puzzle</span></div>
+      <div class="c-stat"><b id="pnum">1</b><span>Pattern</span></div>
       <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
       <div class="c-stat"><b id="best">-</b><span>Best</span></div>
-      <div class="c-stat"><b id="solvedN">0</b><span>Solved</span></div>
+      <div class="c-stat nn-adv"><b id="solvedN">0</b><span>Solved</span></div>
       <div class="lives" id="lives" aria-label="Hearts left" hidden></div>
     </div>
     <div class="play">
-      <div class="board-wrap" id="bw"><div class="easel"><div class="nono" id="nono" role="grid" tabindex="0" aria-label="Nonogram grid. Arrow keys move, F fills, X crosses."></div></div>
+      <div class="board-wrap" id="bw"><div class="easel"><div class="nono" id="nono" role="grid" tabindex="0" aria-label="Nonogram grid. Arrow keys move, F stitches, X marks empty."></div></div>
         <div class="result" id="result" hidden>
           <div class="result-card">
             <canvas class="rpic" id="rPic" width="10" height="10" aria-label="The finished picture"></canvas>
@@ -43,8 +45,8 @@
       </div>
       <p class="reveal" id="reveal" aria-live="polite"></p>
       <div class="tools">
-        <button class="tool" type="button" id="mFill" aria-pressed="true"><span class="ico-fill"></span>Fill</button>
-        <button class="tool" type="button" id="mX" aria-pressed="false"><i>✕</i>Cross</button>
+        <button class="tool" type="button" id="mFill" aria-pressed="true"><span class="ico-fill"></span>Stitch</button>
+        <button class="tool" type="button" id="mX" aria-pressed="false"><span class="ico-dot"></span>Mark empty</button>
         <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
         <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
         <button class="tool" type="button" id="clear"><i>⌫</i>Clear</button>
@@ -56,7 +58,8 @@
       <div class="stats" id="stats"></div>
       <div class="badges" id="badges"></div>
     </details>
-    <p class="g-help c-muted">Drag across a row or column to fill many squares at once, starting on a filled square erases instead. On a touchpad, Touchpad mode in the top bar lets you click, glide along a line, and click again. Cross mode (or right-click, or X) marks squares you know are empty. Keyboard: arrows, <span class="c-kbd">F</span> or <span class="c-kbd">Space</span> fill, <span class="c-kbd">X</span> cross, <span class="c-kbd">Z</span> undo. Every hand-made puzzle can be solved by pure logic, no guessing.</p>
+    <p class="g-help c-muted nn-simp">Tap a square to stitch it, or drag along a line. Mark empty puts a little knot where you know nothing goes. Keyboard: arrows, <span class="c-kbd">F</span> stitch, <span class="c-kbd">X</span> knot, <span class="c-kbd">Z</span> undo.</p>
+    <p class="g-help c-muted nn-adv">Drag across a row or column to stitch many squares at once, starting on a stitched square unpicks instead. On a touchpad, Touchpad mode in the top bar lets you click, glide along a line, and click again. Mark empty mode (or right-click, or X) ties a knot on squares you know are empty. Keyboard: arrows, <span class="c-kbd">F</span> or <span class="c-kbd">Space</span> stitch, <span class="c-kbd">X</span> knot, <span class="c-kbd">Z</span> undo. Every hand-made puzzle can be solved by pure logic, no guessing.</p>
   </main>
   <div class="count" id="count"></div>
   <script src="../../games.js"></script>

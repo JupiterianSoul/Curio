@@ -9,14 +9,15 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="maze">
+<body data-game="maze" data-modes>
   <main class="c-wrap mz" id="root">
     <section id="home" class="mz-home">
       <header class="mz-hero">
         <canvas id="heroCv" class="mz-herocv" width="200" height="200" aria-hidden="true"></canvas>
         <div>
+          <p class="mz-kicker">Cartographer's Edition · Est. by a lost explorer</p>
           <h1 class="c-title">Maze Runner</h1>
-          <p class="c-sub">Five worlds, thirty mazes. Square, hexagon and round ones, gems tucked into dead ends, and dungeons you can only see by torchlight. Grab the gems, find the exit, earn three stars.</p>
+          <p class="c-sub">Five uncharted lands, thirty mazes. Square, hexagon and round ones, treasure tucked into dead ends, and dungeons you can only see by torchlight. Grab the loot, find the exit, ink three stars on your map.</p>
         </div>
       </header>
       <div class="mz-top">
@@ -29,7 +30,7 @@
           <div class="mz-row"><label class="mz-check"><input type="checkbox" id="fFog"> Fog of war</label><label class="mz-check"><input type="checkbox" id="fGems"> Gems</label><button class="c-btn" type="button" id="freeBtn">Generate</button></div>
         </article>
       </div>
-      <h2 class="mz-h">Adventure</h2>
+      <h2 class="mz-h">The expedition</h2>
       <div class="mz-worlds" id="worlds"></div>
       <div class="c-row mz-links">
         <button class="c-btn c-btn--ghost" type="button" id="howBtn">📖 How to play</button>
@@ -43,9 +44,9 @@
         <button class="mz-ib" type="button" id="backBtn" aria-label="Back to the map">←</button>
         <div class="mz-chip" id="chip"></div>
         <div class="mz-hud">
-          <div><b id="gems">0/0</b><span>gems</span></div>
+          <div id="gemsBox"><b id="gems">0/0</b><span>gems</span></div>
           <div><b id="time">0.0</b><span>time</span></div>
-          <div><b id="par">-</b><span>par</span></div>
+          <div><b id="par">-</b><span id="parL">par</span></div>
         </div>
       </div>
       <div class="mz-arena">

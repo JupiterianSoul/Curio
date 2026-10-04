@@ -50,6 +50,14 @@
   const board = $('board'), cur = $('cur');
   let grid = [], cells = [], els = {}, level = 0;
   let def, moves, score, need, busy = false, sel = -1, idleTimer = 0, over = true, nextId = 1, kbCur = 27, kbMode = false;
+  const SIMPLE = Curio.simple;
+  let simpleRun = false;
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    tink(f, when = 0, vol = 0.06) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + when; [[1, vol], [2.01, vol * 0.4], [3.98, vol * 0.18]].forEach(([m, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35 / m); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.4); }); },
+    rumble() { const ac = this.ac(); if (!ac) return; const t = ac.currentTime, len = Math.ceil(ac.sampleRate * 0.4), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2; const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = buf; f.type = 'lowpass'; f.frequency.value = 220; g.gain.value = 0.7; src.connect(f).connect(g).connect(ac.destination); src.start(t); }
+  };
+  const CHIME = [1047, 1175, 1319, 1568, 1760, 2093, 2349, 2637];
   let blitz = false, timeLeft = 0, blitzTimer = 0, hammerMode = false, maxCascade = 0, lastT = 0;
   document.addEventListener('visibilitychange', () => { lastT = performance.now(); });
 
@@ -217,7 +225,7 @@
       fx(i, g);
       for (const j of effectCells(i, g)) if (!clear.has(j)) { clear.add(j); queue.push(j); }
     }
-    if (specials) { Curio.beep(180, 0.18, 'sawtooth', 0.06); Curio.beep(90, 0.25, 'sine', 0.12); shake(); buzz(20); }
+    if (specials) { sfx.rumble(); sfx.tink(2637, 0.02, 0.05); shake(); buzz(20); }
     let n = 0, bonus = 0;
     const crateHits = new Set(), popped = [];
     for (const i of clear) {
@@ -248,9 +256,7 @@
     if (n || bonus) {
       const center = [...clear].sort((a, b) => a - b)[Math.floor(clear.size / 2)];
       popText(`+${gained}`, center);
-      const base = [523, 587, 659, 698, 784, 880, 988, 1047];
-      Curio.beep(base[Math.min(mult - 1, 7)], 0.09, 'triangle', 0.1);
-      setTimeout(() => Curio.beep(base[Math.min(mult, 7)] * 1.5, 0.08, 'sine', 0.06), 60);
+      sfx.tink(CHIME[Math.min(mult - 1, 7)]); sfx.tink(CHIME[Math.min(mult + 1, 7)], 0.06, 0.04);
     }
     hud(true);
     await wait(250);
@@ -368,7 +374,7 @@
     if (cells[a].lock || cells[b].lock) { Curio.toast('Chained gems cannot move. Match them to free them!'); Curio.beep(160, 0.08, 'square', 0.04); const l = els.lock[cells[a].lock ? a : b]; l?.animate?.([{ transform: 'rotate(-8deg)' }, { transform: 'rotate(8deg)' }, { transform: 'none' }], { duration: 250 }); return; }
     busy = true; clearHint(); setSel(-1);
     swapIn(a, b);
-    Curio.beep(440, 0.04, 'triangle', 0.06);
+    sfx.tink(660, 0, 0.025);
     await wait(180);
     const ga = grid[b], gb = grid[a];
     [a, b].forEach((i) => grid[i].el.classList.remove('swap'));
@@ -424,10 +430,17 @@
     if (manual) await settle();
   }
 
-  const goalsMet = () => !blitz && Object.entries(need).every(([, n]) => n <= 0) && cells.every((c) => !c.ice && !c.crate && !c.lock) && score >= def.s;
+  const goalsMet = () => !blitz && !simpleRun && Object.entries(need).every(([, n]) => n <= 0) && cells.every((c) => !c.ice && !c.crate && !c.lock) && score >= def.s;
 
   async function settle() {
     hud();
+    if (simpleRun) {
+      if (moves <= 0) return finishSimple();
+      let guard = 0;
+      while (!findMove() && guard++ < 5) await shuffleBoard();
+      armHint();
+      return;
+    }
     if (blitz) {
       if (timeLeft <= 0) return finish(true);
       let guard = 0;
@@ -508,6 +521,7 @@
       const d = document.createElement('div'); d.className = `goal${ok ? ' ok' : ''}${bumpKeys.has(key) ? ' bump' : ''}`;
       d.innerHTML = html; d.setAttribute('aria-label', label); target.append(d);
     };
+    if (simpleRun) { const b = Curio.getBest('simple-score'); chip(`<span>🏆</span><span>${b ? `Best ${Curio.fmt(b)}` : 'Set a record'}</span>`, b != null && score > b, 'Best score', 'b'); return; }
     if (blitz) { chip(`<span>⏱️</span><span>${Math.max(0, Math.ceil(timeLeft))}s</span>`, false, 'Time left', 't'); return; }
     chip(`<span>🎯</span><span>${score >= def.s ? '✓' : Curio.fmt(def.s)}</span>`, score >= def.s, 'Target score', 's');
     for (const [k, n] of Object.entries(need)) chip(`${svgFor(+k)}<span>${n <= 0 ? '✓' : n}</span>`, n <= 0, `${NAMES[k]}: ${n <= 0 ? 'done' : `${n} to go`}`, `c${k}`);
@@ -519,13 +533,13 @@
 
   let lastGoalSig = '';
   function hud(bump) {
-    $('level').textContent = blitz ? '⏱️' : level + 1;
-    $('level-l').textContent = blitz ? 'Blitz' : 'Level';
+    $('level').textContent = simpleRun ? '💎' : blitz ? '⏱️' : level + 1;
+    $('level-l').textContent = simpleRun ? 'Sprint' : blitz ? 'Blitz' : 'Level';
     $('moves').textContent = blitz ? Math.max(0, Math.ceil(timeLeft)) : moves;
-    $('moves-l').textContent = blitz ? 'Seconds' : 'Moves left';
+    $('moves-l').textContent = blitz ? 'Seconds' : simpleRun ? 'Swaps left' : 'Moves left';
     $('moves-stat').classList.toggle('low', blitz ? timeLeft <= 10 : moves <= 3 && !over);
     $('score').textContent = Curio.fmt(score);
-    $('fill').style.width = blitz ? `${Math.min(100, score / Math.max(10000, save.blitzBest || 10000) * 100)}%` : `${Math.min(100, score / (def.s * 2) * 100)}%`;
+    $('fill').style.width = simpleRun ? `${Math.min(100, score / Math.max(3000, Curio.getBest('simple-score') || 3000) * 100)}%` : blitz ? `${Math.min(100, score / Math.max(10000, save.blitzBest || 10000) * 100)}%` : `${Math.min(100, score / (def.s * 2) * 100)}%`;
     const sig = JSON.stringify([need, cells.map((c) => c.ice + c.crate * 3 + (c.lock ? 9 : 0)).join(''), score >= (def?.s || 0)]);
     goalChips($('goals'), bump && sig !== lastGoalSig ? new Set(['s', 'ice', 'crate', 'lock', ...Object.keys(need).map((k) => `c${k}`)]) : new Set());
     lastGoalSig = sig;
@@ -567,6 +581,7 @@
 
   function showPlay() { $('map-view').hidden = true; $('play-view').hidden = false; }
   function showMap() {
+    if (SIMPLE) { startSimple(); return; }
     over = true; clearInterval(blitzTimer); clearHint(); setHammer(false);
     document.querySelector('.curio-modal')?.remove();
     $('play-view').hidden = true; $('map-view').hidden = false;
@@ -574,8 +589,29 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function startSimple() {
+    blitz = false; simpleRun = true; clearInterval(blitzTimer); setHammer(false);
+    def = { m: 20, s: 0 }; need = {}; score = 0; moves = 20; maxCascade = 0; busy = false; sel = -1; over = false;
+    document.querySelector('.curio-modal')?.remove();
+    showPlay();
+    buildBoard(null);
+    $('intro').hidden = true;
+    hud();
+    banner('20 swaps. Go!');
+    armHint();
+  }
+  async function finishSimple() {
+    over = true; clearHint();
+    const b = Curio.best('simple-score', score);
+    if (b.isNew) Curio.confetti();
+    buzz([20, 40, 20]);
+    CHIME.forEach((f, k) => sfx.tink(f, k * 0.07, 0.05));
+    hud();
+    const v = await Curio.modal({ emoji: '💎', title: `${Curio.fmt(score)} points!`, body: `${b.isNew ? 'A new record haul!' : `Your record: ${Curio.fmt(b.best)}.`} Longest cascade: x${maxCascade}.`, buttons: [{ label: 'Dig again', value: 'again' }] });
+    if (v === 'again' || v == null) startSimple();
+  }
   function start(i) {
-    blitz = false; clearInterval(blitzTimer); setHammer(false);
+    blitz = false; simpleRun = false; clearInterval(blitzTimer); setHammer(false);
     level = Math.max(0, Math.min(LEVELS.length - 1, i)); save.level = level; persist();
     const L = LEVELS[level];
     def = { ...L, hasIce: false, hasCrate: false, hasLock: false };
@@ -607,7 +643,7 @@
   }
 
   function startBlitz() {
-    blitz = true; setHammer(false);
+    blitz = true; simpleRun = false; setHammer(false);
     def = { m: 0, s: 0 }; need = {}; score = 0; moves = 0; maxCascade = 0; busy = false; sel = -1; over = false;
     timeLeft = 60;
     showPlay();
@@ -736,7 +772,7 @@
     if ($('play-view').hidden) return;
     if (k === 'h') { clearHint(); showHint(); }
     else if (k === 'r') $('restart').click();
-    else if (k === 'm') showMap();
+    else if (k === 'm' && !SIMPLE) showMap();
   });
 
   function paintMap() {
@@ -794,7 +830,7 @@
   }
 
   $('hintBtn').addEventListener('click', () => { clearHint(); showHint(); });
-  $('restart').addEventListener('click', () => { if (busy) return; if (blitz) startBlitz(); else start(level); });
+  $('restart').addEventListener('click', () => { if (busy) return; if (simpleRun) startSimple(); else if (blitz) startBlitz(); else start(level); });
   $('to-map').addEventListener('click', () => { if (!busy) showMap(); });
   $('intro-go').addEventListener('click', begin);
   $('go-continue').addEventListener('click', () => start(save.max));

@@ -93,8 +93,22 @@ const Pipes = (() => {
   const save = () => Curio.store.set(SKEY, S);
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   const cfg0 = Curio.store.get('pipes:cfg', { n: 5, wrap: false }) || {};
+  const SIMPLE = Curio.simple;
   let mode = ['campaign', 'free', 'daily', 'rush'].includes(S.mode) ? S.mode : 'campaign';
   if (mode === 'rush') mode = 'campaign';
+  if (SIMPLE) mode = 'simple';
+  let sL = Math.max(1, +Curio.store.get('pipes:simpleL', 1) || 1);
+  const simpleN = (L) => (L <= 3 ? 4 : L <= 12 ? 5 : L <= 24 ? 6 : 7);
+  const clank = (pitch = 1, wet = false) => {
+    if (Curio.muted) return; const ac = Curio.audioContext(); if (!ac) return;
+    const t = ac.currentTime, len = Math.ceil(ac.sampleRate * 0.05), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
+    const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1800 * pitch; f.Q.value = 6; g.gain.value = 0.45;
+    src.connect(f).connect(g).connect(ac.destination); src.start(t);
+    [1, 2.76].forEach((m, k) => { const o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine'; o.frequency.value = 520 * pitch * m; og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(k ? 0.012 : 0.03, t + 0.004); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.22); o.connect(og).connect(ac.destination); o.start(t); o.stop(t + 0.25); });
+    if (wet) { const o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(380, t + 0.03); o.frequency.exponentialRampToValueAtTime(900 + Math.random() * 300, t + 0.12); og.gain.setValueAtTime(0.0001, t + 0.03); og.gain.exponentialRampToValueAtTime(0.05, t + 0.05); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.14); o.connect(og).connect(ac.destination); o.start(t + 0.03); o.stop(t + 0.16); }
+  };
   let n = 5, wrap = false, freeN = SIZES.includes(cfg0.n) ? cfg0.n : 5, freeWrap = !!cfg0.wrap, level = Math.max(1, Math.min(CAMP, S.level | 0 || 1));
   let base, src, rots, locked, moves = 0, history = [], status = 'playing', cur = 0, opt = 0;
   let elapsed = 0, t0 = 0, started = false, hints = 0, lockMode = false, revMode = false, cellEls = [], rotEls = [], dripEls = [], lastFlood = null, gameId = 0;
@@ -171,20 +185,22 @@ const Pipes = (() => {
   }
   function setMode(m) {
     mode = m;
-    if (m !== 'rush') { S.mode = m; save(); }
+    if (m !== 'rush' && m !== 'simple') { S.mode = m; save(); }
     $('freeOpts').hidden = m !== 'free';
     $('campOpts').hidden = m !== 'campaign';
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('#modes [data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
     $('new').disabled = m === 'campaign' || m === 'daily';
   }
   function seedFor() {
+    if (mode === 'simple') return sL * 104729 + 77;
     if (mode === 'campaign') return level * 7919 + 1301;
     if (mode === 'daily') return [...today()].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
     return (Math.random() * 2 ** 31) | 0;
   }
   function newGame(opts = {}) {
     gameId++;
-    if (mode === 'campaign') ({ n, wrap } = campCfg(level));
+    if (mode === 'simple') { n = simpleN(sL); wrap = false; }
+    else if (mode === 'campaign') ({ n, wrap } = campCfg(level));
     else if (mode === 'daily') { n = 8; wrap = Math.floor(Date.now() / 864e5) % 2 === 1; }
     else if (mode === 'rush') { n = 5; wrap = false; }
     else { n = freeN; wrap = freeWrap; Curio.store.set('pipes:cfg', { n, wrap }); }
@@ -205,7 +221,8 @@ const Pipes = (() => {
     $('wrapEl').classList.toggle('wrap', wrap);
     paintPicker();
     if (!opts.quiet) {
-      if (mode === 'rush') msg(rushCount ? `Board ${rushCount + 1}. Keep going!` : 'Rush: solve as many 5×5 boards as you can in three minutes. The clock starts on your first turn.');
+      if (mode === 'simple') msg(sL === 1 ? 'Tap a pipe to turn it. Join every pipe so water from the pump reaches all the pots.' : Curio.pick(['New job on the board. Spin those fittings.', 'Another leaky garden. You know the drill.', 'Tools out. Water on.', 'The pump is ready when you are.']));
+      else if (mode === 'rush') msg(rushCount ? `Board ${rushCount + 1}. Keep going!` : 'Rush: solve as many 5×5 boards as you can in three minutes. The clock starts on your first turn.');
       else if (mode === 'daily') msg(`Today's puzzle: 8×8${wrap ? ' with wrap-around edges' : ''}. Same board for everyone.`);
       else msg(wrap ? 'Wrap-around: pipes on one edge continue on the opposite edge.' : S.theme === 'garden' ? 'Get water from the pump to every thirsty plant.' : 'Get water from the pump to every outlet.');
     }
@@ -261,6 +278,7 @@ const Pipes = (() => {
     let b;
     if (mode === 'rush') { b = S.stats.rushBest || null; $('bestLbl').textContent = 'Best rush'; $('best').textContent = b ? b : '-'; }
     else if (mode === 'campaign') { const c2 = S.camp[level]; $('bestLbl').textContent = 'Best'; $('best').textContent = c2 ? fmtT(c2.time) : '-'; }
+    else if (mode === 'simple') { b = Curio.getBest(`simple-${sL}`); $('bestLbl').textContent = 'Best'; $('best').textContent = b == null ? '-' : fmtT(b); }
     else if (mode === 'daily') { $('bestLbl').textContent = 'Best'; $('best').textContent = S.daily[today()] != null ? fmtT(S.daily[today()]) : '-'; }
     else { b = Curio.getBest(`time-${key()}`); $('bestLbl').textContent = 'Best'; $('best').textContent = b == null ? '-' : fmtT(b); }
     $('undo').disabled = !history.length || status !== 'playing';
@@ -295,8 +313,7 @@ const Pipes = (() => {
     if (record) { history.push([i, d]); moves++; S.stats.turns++; } else moves--;
     const before = lastFlood ? lastFlood.dist.filter((x) => x >= 0).length : 0;
     const wet = render();
-    if (wet > before) { Curio.beep(520 + Math.min(wet, 60) * 6, 0.05, 'triangle', 0.06); Curio.beep(900 + Math.min(wet, 60) * 8, 0.04, 'sine', 0.02); }
-    else Curio.beep(300, 0.04, 'triangle', 0.05);
+    clank(0.9 + Math.random() * 0.25, wet > before);
     navigator.vibrate?.(4);
     if (record) checkWin();
   }
@@ -383,6 +400,8 @@ const Pipes = (() => {
       if (campDone() >= 10) award('camp10', fresh);
       if (campDone() >= 30) award('camp30', fresh);
       if (campDone() >= CAMP) award('camp60', fresh);
+    } else if (mode === 'simple') {
+      bt = Curio.best(`simple-${sL}`, secs, false);
     } else if (mode === 'daily') {
       award('daily', fresh);
       S.daily[today()] = Math.min(S.daily[today()] ?? 1e9, secs);
@@ -402,12 +421,12 @@ const Pipes = (() => {
     setTimeout(() => {
       if (gid !== gameId) return;
       $('rStars').innerHTML = [1, 2, 3].map((i) => starSvg(i <= st)).join('');
-      $('rTitle').textContent = mode === 'daily' ? 'Daily puzzle plumbed!' : mode === 'campaign' ? `Level ${level} flowing!` : 'Water works!';
+      $('rTitle').textContent = mode === 'simple' ? `Job ${sL} done!` : mode === 'daily' ? 'Daily puzzle plumbed!' : mode === 'campaign' ? `Level ${level} flowing!` : 'Water works!';
       $('rBody').textContent = `${n}×${n}${wrap ? ' wrap-around' : ''} in ${fmtT(secs)} with ${moves} turns (about ${opt} needed)${hints ? ` and ${hints} hint${hints > 1 ? 's' : ''}` : ''}. ${bt.isNew ? 'New best time!' : bt.best != null ? `Best: ${fmtT(bt.best)}.` : ''}`;
       $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       const nx = $('rNext');
       nx.hidden = mode === 'daily' || (mode === 'campaign' && level >= CAMP);
-      nx.textContent = mode === 'campaign' ? `Level ${level + 1}` : 'Next puzzle';
+      nx.textContent = mode === 'simple' ? 'Next job' : mode === 'campaign' ? `Level ${level + 1}` : 'Next puzzle';
       $('result').hidden = false;
       (nx.hidden ? $('rAgain') : nx).focus({ preventScroll: true });
       paintProgress(); paintPicker();
@@ -434,6 +453,7 @@ const Pipes = (() => {
   }
   $('rNext').addEventListener('click', () => {
     if (mode === 'campaign') { level = Math.min(CAMP, level + 1); S.level = level; save(); }
+    if (mode === 'simple') { sL++; Curio.store.set('pipes:simpleL', sL); }
     if (mode === 'rush') { rushCount = 0; rushLeft = 0; newGame({ fresh: true }); return; }
     newGame();
   });
@@ -541,7 +561,7 @@ const Pipes = (() => {
   });
   $('mWall').addEventListener('click', () => { freeWrap = false; newGame(); });
   $('mWrap').addEventListener('click', () => { freeWrap = true; newGame(); });
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.mode); rushCount = 0; rushLeft = 0; newGame({ fresh: true }); }));
+  document.querySelectorAll('#modes [data-mode]').forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.mode); rushCount = 0; rushLeft = 0; newGame({ fresh: true }); }));
   document.querySelectorAll('[data-theme-pick]').forEach((b) => b.addEventListener('click', () => {
     S.theme = b.dataset.themePick; save(); paintTheme();
     const keep = { status };
@@ -552,6 +572,7 @@ const Pipes = (() => {
 
   paintTheme();
   setMode(mode);
+  if (SIMPLE) { $('freeOpts').hidden = true; $('campOpts').hidden = true; }
   newGame({ fresh: true });
   paintProgress();
   window.__pipes = { engine: Pipes, get base() { return base; }, get rots() { return rots; }, get src() { return src; }, get status() { return status; }, turn, newGame, get n() { return n; }, setMode, setLevel: (L) => { level = L; }, solveAll: () => { for (let i = 0; i < n * n; i++) { let r = 0; while (Pipes.rot(base[i], rots[i] + r) !== base[i]) r++; for (let k = 0; k < r; k++) turn(i, 1); } }, get rush() { return { rushLeft, rushCount }; } };

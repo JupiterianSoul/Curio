@@ -79,17 +79,24 @@
   const persist = () => Curio.store.set('ws:v2', save);
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
   const todaySeed = () => { let h = 2166136261; for (const ch of todayKey()) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) % 100000; };
+  const SIMPLE = Curio.simple;
+  const sfx = {
+    ac() { return Curio.muted ? null : Curio.audioContext(); },
+    glug(k, ballish) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime + k * 0.08, o = ac.createOscillator(), g = ac.createGain(); o.type = ballish ? 'triangle' : 'sine'; const f0 = ballish ? 600 + k * 90 : 220 + k * 50; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * (ballish ? 1.1 : 2.2), t + 0.07); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.1); },
+    clink(f = 2200) { const ac = this.ac(); if (!ac) return; const t = ac.currentTime; [1, 2.7, 5.1].forEach((m, k) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(k ? 0.012 : 0.04, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25 / m); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.3); }); }
+  };
   const track = () => (save.mode === 'hidden' ? 'hidden' : 'classic');
 
   let level, tubes, hid, history, moves, sel, busy, extraUsed, undoUsed, hintUsed, won, els = [], doneSet, baseCount;
   const rack = $('rack');
 
   function loadLevel(L) {
-    if (save.mode === 'daily') { level = 0; tubes = makeLevel(todaySeed() + 1, 777, 8); }
+    if (SIMPLE) { level = L; Curio.store.set('ws:simpleL', L); tubes = makeLevel(L, 3131, Math.min(6, colorsFor(L))); }
+    else if (save.mode === 'daily') { level = 0; tubes = makeLevel(todaySeed() + 1, 777, 8); }
     else { level = L; save.level[track()] = level; tubes = makeLevel(level, save.mode === 'hidden' ? 50021 : 0); }
     persist();
     baseCount = tubes.length;
-    hid = tubes.map((t) => t.map((_, k) => save.mode === 'hidden' && k < t.length - 1));
+    hid = tubes.map((t) => t.map((_, k) => !SIMPLE && save.mode === 'hidden' && k < t.length - 1));
     history = []; moves = 0; sel = -1; busy = false; extraUsed = false; undoUsed = false; hintUsed = false; won = false; doneSet = new Set();
     build(); hud(); paintLevels();
   }
@@ -163,9 +170,9 @@
 
   const starsNow = () => (extraUsed ? 1 : undoUsed ? 2 : 3);
   function hud() {
-    $('level').textContent = save.mode === 'daily' ? '📅' : level;
+    $('level').textContent = !SIMPLE && save.mode === 'daily' ? '📅' : level;
     $('moves').textContent = moves;
-    const b = save.mode === 'daily' ? save.daily[todayKey()] : Curio.getBest(`${save.mode === 'hidden' ? 'h-' : ''}level-${level}`);
+    const b = SIMPLE ? Curio.getBest(`s-level-${level}`) : save.mode === 'daily' ? save.daily[todayKey()] : Curio.getBest(`${save.mode === 'hidden' ? 'h-' : ''}level-${level}`);
     $('best').textContent = b == null ? '-' : b;
     const s = starsNow();
     $('stars').textContent = '★'.repeat(s) + '☆'.repeat(3 - s);
@@ -235,7 +242,7 @@
     hid[i].length = tubes[i].length; hid[j].length = tubes[j].length;
     reveal();
     moves++; save.pours++;
-    for (let k = 0; k < n; k++) setTimeout(() => Curio.beep(save.skin === 'balls' ? 500 + k * 90 : 300 + k * 70 + Math.random() * 30, 0.07, save.skin === 'balls' ? 'triangle' : 'sine', 0.06), k * 70);
+    for (let k = 0; k < n; k++) sfx.glug(k, save.skin === 'balls');
     await wait(60);
     paint(); hud();
     await wait(320);
@@ -268,7 +275,11 @@
     unlock('first');
     if (s === 3) unlock('perfect');
     if (tubes.filter((t) => t.length).length >= 12) unlock('twelve');
-    if (save.mode === 'daily') {
+    if (SIMPLE) {
+      const b = Curio.best(`s-level-${level}`, moves, false);
+      title = `Experiment ${level} complete!`;
+      body = `${moves} pours. ${'★'.repeat(s)}${'☆'.repeat(3 - s)} ${b.isNew ? 'New best!' : `Best: ${b.best}.`}`;
+    } else if (save.mode === 'daily') {
       const prev = save.daily[todayKey()];
       if (!prev || moves < prev) save.daily[todayKey()] = moves;
       unlock('daily');
@@ -291,7 +302,7 @@
     [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.1), k * 110));
     els.forEach((e, k) => setTimeout(() => { e.classList.remove('done'); void e.offsetWidth; if (tubes[k].length) e.classList.add('done'); }, k * 60));
     await wait(600);
-    const v = await Curio.modal({ emoji: '🧪', title, body, buttons: save.mode === 'daily' ? [{ label: 'Classic levels', value: 'classic' }, { label: 'Share', value: 'share' }] : [{ label: 'Next level', value: 'next' }, { label: 'Replay', value: 'again' }, { label: 'Share', value: 'share' }] });
+    const v = await Curio.modal({ emoji: '🧪', title, body, buttons: SIMPLE ? [{ label: 'Next experiment', value: 'next' }, { label: 'Again', value: 'again' }] : save.mode === 'daily' ? [{ label: 'Classic levels', value: 'classic' }, { label: 'Share', value: 'share' }] : [{ label: 'Next level', value: 'next' }, { label: 'Replay', value: 'again' }, { label: 'Share', value: 'share' }] });
     if (v === 'share') {
       try { await navigator.clipboard.writeText(`🧪 Zoble Water Sort ${save.mode === 'daily' ? `daily ${todayKey()}` : `${save.mode} level ${level}`}: sorted in ${moves} pours ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); }
       return;
@@ -307,7 +318,7 @@
     clearHint();
     if (sel === -1) {
       if (!tubes[i].length || full(tubes[i])) { els[i].classList.remove('bad'); void els[i].offsetWidth; els[i].classList.add('bad'); Curio.beep(150, 0.06, 'square', 0.03); return; }
-      sel = i; Curio.beep(600, 0.04, 'triangle', 0.06); paint(); return;
+      sel = i; sfx.clink(); paint(); return;
     }
     if (sel === i) { sel = -1; paint(); return; }
     if (canPour(tubes, sel, i)) { const s = sel; sel = -1; doPour(s, i); return; }
@@ -372,7 +383,7 @@
   });
   addEventListener('resize', () => layout());
 
-  loadLevel(save.mode === 'daily' ? 0 : save.level[track()]);
+  if (SIMPLE) loadLevel(Math.max(1, +Curio.store.get('ws:simpleL', 1) || 1)); else loadLevel(save.mode === 'daily' ? 0 : save.level[track()]);
   window.__ws = { get tubes() { return tubes; }, tap, solve, makeLevel, isSolved, load: loadLevel, get busy() { return busy; }, get won() { return won; }, setMode(m) { save.mode = m; persist(); loadLevel(m === 'daily' ? 0 : save.level[track()]); }, setSkin(s) { save.skin = s; paint(); } };
   if (!Curio.touchpad && !Curio.store.get('padtip:water-sort', false)) { Curio.store.set('padtip:water-sort', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad? Turn on Touchpad mode in the top bar.', 3400), 2200); }
 })();
