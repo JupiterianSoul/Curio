@@ -9,21 +9,22 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="trace-it">
+<body data-game="trace-it" data-modes>
   <main class="c-wrap">
     <div class="tr-head">
       <h1 class="c-title">Trace It</h1>
-      <p class="c-sub">Follow the faint outline as closely as you can. Over a hundred shapes, three stars each. Steady hands get big numbers.</p>
+      <p class="c-sub tr-s">Draw over the dotted line on the lightbox, then press Score it. Three stars if you stay on the line.</p>
+      <p class="c-sub tr-a">Follow the faint outline as closely as you can. Over a hundred shapes, three stars each. Steady hands get big numbers.</p>
     </div>
     <div class="tr-pick">
       <button class="tr-nav" id="prev" type="button" aria-label="Previous shape">‹</button>
       <div class="tr-name"><small id="lvl">Easy</small><b id="name">Circle</b></div>
       <button class="tr-nav" id="nextS" type="button" aria-label="Next shape">›</button>
       <button class="tr-nav" id="rnd" type="button" aria-label="Random shape">🎲</button>
-      <button class="tr-toggle" id="fade" type="button" aria-pressed="false" title="The outline vanishes after 2 seconds">🫥 Memory mode</button>
-      <button class="tr-toggle" id="daily" type="button" aria-pressed="false">📅 Daily Five</button>
+      <button class="tr-toggle tr-a" id="fade" type="button" aria-pressed="false" title="The outline vanishes after 2 seconds">🫥 Memory mode</button>
+      <button class="tr-toggle tr-a" id="daily" type="button" aria-pressed="false">📅 Daily Five</button>
     </div>
-    <div class="tr-board" id="board">
+    <div class="tr-box"><div class="tr-board" id="board">
       <canvas id="cv" role="img" aria-label="Tracing area. Trace over the faint outline with your mouse or finger. You can use several strokes."></canvas>
       <div class="tr-mem" id="mem">Memorise it! 2.0</div>
       <div class="tr-res" id="res" aria-live="polite">
@@ -37,29 +38,29 @@
           <button class="c-btn" id="go" type="button">Next shape ›</button>
         </div>
       </div>
-    </div>
+    </div><span class="tr-lamp" aria-hidden="true">LIGHTBOX</span></div>
     <div class="tr-stats">
       <div class="c-stat"><b id="time">0.0</b><span>Seconds</span></div>
       <div class="c-stat"><b id="cov">0%</b><span>Covered</span></div>
       <div class="c-stat"><b id="best">-</b><span>Best</span></div>
     </div>
     <div class="tr-actions">
-      <button class="c-btn c-btn--ghost" id="undo" type="button" disabled>↶ Undo stroke</button>
+      <button class="c-btn c-btn--ghost tr-a" id="undo" type="button" disabled>↶ Undo stroke</button>
       <button class="c-btn c-btn--ghost" id="clear" type="button" disabled>Clear</button>
       <button class="c-btn" id="done" type="button" disabled>✓ Score it</button>
     </div>
-    <div class="tr-grid-head">
+    <div class="tr-grid-head tr-a">
       <h2>All shapes</h2>
       <span class="c-muted" id="tally"></span>
     </div>
-    <div class="tr-cats" id="cats" role="group" aria-label="Filter shapes"></div>
-    <div class="tr-grid" id="grid"></div>
-    <section class="c-card tr-card" aria-label="Stats and badges">
+    <div class="tr-cats tr-a" id="cats" role="group" aria-label="Filter shapes"></div>
+    <div class="tr-grid tr-a" id="grid"></div>
+    <section class="c-card tr-card tr-a" aria-label="Stats and badges">
       <h2>🏅 Tracing record</h2>
       <div class="tr-stats2" id="stats2"></div>
       <div class="tr-badges" id="badges"></div>
     </section>
-    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">←</span><span class="c-kbd">→</span> shapes · <span class="c-kbd">Enter</span> score / next · <span class="c-kbd">R</span> retry · <span class="c-kbd">M</span> memory mode · <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undo stroke · Touchpad mode: click to start a stroke, click again to end it</p>
+    <p class="c-muted tr-a" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">←</span><span class="c-kbd">→</span> shapes · <span class="c-kbd">Enter</span> score / next · <span class="c-kbd">R</span> retry · <span class="c-kbd">M</span> memory mode · <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undo stroke · Touchpad mode: click to start a stroke, click again to end it</p>
     <svg class="tr-svg" aria-hidden="true"><path id="probe" d="M0 0"/></svg>
   </main>
   <script src="../../games.js"></script>

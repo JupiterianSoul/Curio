@@ -80,10 +80,12 @@
     return true;
   }
   let autoT = 0;
-  function autosave() { clearTimeout(autoT); autoT = setTimeout(() => Curio.store.set('pixel-art:v2', { ...encode(), color }), 500); }
+  const PKEY = Curio.simple ? 'pixel-art:simple' : 'pixel-art:v2';
+  function autosave() { clearTimeout(autoT); autoT = setTimeout(() => Curio.store.set(PKEY, { ...encode(), color }), 500); }
   function loadInitial() {
-    const s = Curio.store.get('pixel-art:v2', null);
+    const s = Curio.store.get(PKEY, null);
     if (s && decode(s)) { if (s.color) color = s.color; return true; }
+    if (Curio.simple) { newProject(16); return false; }
     const old = Curio.store.get('pixel-art', null);
     if (old && [16, 32, 64].includes(old.n) && Array.isArray(old.px) && old.px.length === old.n * old.n) {
       newProject(old.n); old.px.forEach((c, i) => { if (c) layers[0].frames[0][i] = hexU(c); }); if (old.color) color = old.color; return true;
@@ -395,8 +397,10 @@
 
   const toolsEl = $('tools');
   TOOLS.forEach((t) => {
+    if (Curio.simple && !['pencil', 'eraser', 'fill'].includes(t.id)) return;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'pa-tool'; b.dataset.tool = t.id;
     b.title = `${t.name} (${t.key.toUpperCase()})`; b.setAttribute('aria-label', t.name); b.textContent = t.icon;
+    if (Curio.simple) { const l = document.createElement('small'); l.textContent = t.name; b.append(l); }
     b.addEventListener('click', () => { setTool(t.id); Curio.beep(600, 0.03, 'sine', 0.06); });
     toolsEl.append(b);
   });
@@ -427,7 +431,7 @@
   const palEl = $('pal'), palSel = $('palSel');
   D.PALETTES.forEach((p) => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} (${p.colors.length})`; palSel.append(o); });
   function paintPalette() {
-    const p = D.PALETTES.find((x) => x.id === meta.palette) || D.PALETTES[0];
+    const p = D.PALETTES.find((x) => x.id === (Curio.simple ? 'pico8' : meta.palette)) || D.PALETTES[0];
     palSel.value = p.id; palEl.textContent = '';
     for (const c of p.colors) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'pa-sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', `Color ${c}`); b.title = c;
@@ -805,7 +809,9 @@
     if (e.key === 'Escape') { if (!drawer.hidden) closeDrawer(); return; }
     if (!startEl.hidden || !drawer.hidden) return;
     const t = TOOLS.find((x) => x.key === k) || (k === 'p' ? TOOLS[0] : null);
-    if (t) { setTool(t.id); return; }
+    if (t && (!Curio.simple || ['pencil', 'eraser', 'fill'].includes(t.id))) { setTool(t.id); return; }
+    if (Curio.simple && t) return;
+    if (Curio.simple && /^[1-9]$/.test(k)) { const sw = palEl.children[+k - 1]; if (sw) sw.click(); return; }
     if (k === '[') { size = Math.max(1, size - 1); paintOpts(); }
     else if (k === ']') { size = Math.min(3, size + 1); paintOpts(); }
     else if (k === 'x') $('mirXBtn').click(); else if (k === 'y') $('mirYBtn').click();
@@ -825,5 +831,5 @@
   setTool('pencil'); setColor(color); paintPalette(); paintRecent(); paintOpts(); sizeSel(); paintLayers(); paintFrames(); syncUndo();
   sizeBox();
   requestAnimationFrame(previewLoop);
-  showStart();
+  if (Curio.simple) { setTimeout(sizeBox, 50); if (!meta.tphint && !Curio.touchpad) { meta.tphint = true; persistMeta(); setTimeout(() => Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar', 3600), 1500); } } else showStart();
 })();

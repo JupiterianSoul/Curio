@@ -36,13 +36,36 @@
       .ns-stage { height: max(260px, min(62vw + 60px, 360px)); }
       .ns-tip { font-size: 11px; }
     }
+    .ns-wrap { --ns-bench: #17141f; --ns-bench2: #221d2e; --ns-glow: #ff2d95; --ns-ice: #3ddcff; --ns-font: "Avenir Next Condensed", "Arial Narrow", "Roboto Condensed", var(--font, system-ui), sans-serif; }
+    .ns-head .c-title { font-family: var(--ns-font); text-transform: uppercase; letter-spacing: .08em; color: var(--ns-glow); text-shadow: 0 0 6px color-mix(in srgb, var(--ns-glow) 70%, transparent), 0 0 18px color-mix(in srgb, var(--ns-glow) 45%, transparent); -webkit-text-stroke: 1px color-mix(in srgb, var(--ns-glow) 60%, #fff); }
+    .ns-stage { border: 6px solid #0c0a11; box-shadow: 0 0 0 1px #3a3346, 0 20px 50px rgba(10, 6, 20, .45); }
+    .ns-panel { padding: 16px; border-radius: 18px; color: #ece6f6; background: radial-gradient(circle at 10px 10px, rgba(255, 255, 255, .07) 2px, transparent 2.5px) 0 0 / 22px 22px, linear-gradient(170deg, var(--ns-bench2), var(--ns-bench)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 12px 30px rgba(10, 6, 20, .3); }
+    .ns-panel .lbl { color: var(--ns-ice); text-shadow: 0 0 8px color-mix(in srgb, var(--ns-ice) 60%, transparent); }
+    .ns-panel .ns-text { background: #0d0b13; color: #fff; border-color: #3a3346; font-family: var(--ns-font); font-size: 20px; letter-spacing: .03em; }
+    .ns-panel .chip, .ns-panel .ns-icons button { background: #2a2436; color: #ece6f6; border-color: #463d57; }
+    .ns-panel .chip[aria-pressed="true"] { border-color: var(--ns-glow); background: color-mix(in srgb, var(--ns-glow) 25%, #2a2436); box-shadow: 0 0 10px color-mix(in srgb, var(--ns-glow) 45%, transparent); }
+    .ns-panel .tube { border-color: #17141f; box-shadow: 0 0 0 1.5px #463d57; }
+    .ns-panel .tube[aria-pressed="true"] { box-shadow: 0 0 0 3px #fff, 0 0 14px currentColor; }
+    .ns-panel .c-muted, .ns-panel .ns-keys { color: #b5abc6; }
+    .ns-panel .c-kbd { background: #2a2436; color: #fff; border-color: #463d57; }
+    .ns-power { background: #2a2436; color: #fff; box-shadow: 0 3px 0 #000; }
+    .ns-rand { background: linear-gradient(90deg, #ff2d95, #b14dff); color: #fff; box-shadow: 0 3px 0 #5a1240, 0 0 16px rgba(255, 45, 149, .35); }
+    .ns-presets .chip { font-size: 12px; }
+    .ns-presets { margin-top: 10px; }
+    .ns-s { display: none; }
+    html[data-mode="simple"] .ns-s { display: block; }
+    html[data-mode="simple"] .ns-a { display: none !important; }
+    html[data-mode="simple"] .ns-ctl .c-btn { font-size: 17px; padding: 12px 20px; }
+    html[data-mode="simple"] .tube { width: 40px; height: 40px; }
+    html[data-mode="simple"] .ns-text { font-size: 24px; }
   </style>
 </head>
-<body data-game="neon-sign">
-  <main class="c-wrap">
+<body data-game="neon-sign" data-modes>
+  <main class="c-wrap ns-wrap">
     <div class="ns-head">
       <h1 class="c-title">Neon Sign</h1>
-      <p class="c-sub">Type something, bend the glass, flip the switch. Buzzing included at no extra cost.</p>
+      <p class="c-sub ns-s">Type a word and it glows. Pick a colour, or hit Surprise for a ready made sign.</p>
+      <p class="c-sub ns-a">Type something, bend the glass, flip the switch. Buzzing included at no extra cost.</p>
     </div>
     <div class="ns-stage" id="stage">
       <canvas id="sign" role="img" aria-label="Your neon sign glowing on a wall. Tap a letter to change its tube colour."></canvas>
@@ -51,21 +74,24 @@
     <div class="ns-panel">
       <div>
         <label class="lbl" for="text">Your words</label>
-        <textarea id="text" class="c-input ns-text" rows="3" maxlength="60" spellcheck="false">Stay
-Curious ♥</textarea>
-        <div class="ns-icons" id="icons" role="group" aria-label="Add a neon icon"></div>
+        <textarea id="text" class="c-input ns-text" rows="3" maxlength="60" spellcheck="false">Open
+Late ♥</textarea>
+        <div class="ns-icons ns-a" id="icons" role="group" aria-label="Add a neon icon"></div>
+        <div class="ns-row ns-a ns-presets" id="presets" role="group" aria-label="Ready made signs"><span class="lbl">Signs</span></div>
       </div>
       <div class="ns-ctl">
-        <div class="ns-row" role="group" aria-label="Lettering"><span class="lbl">Style</span><span class="ns-row" id="styles"></span></div>
+        <div class="ns-row ns-a" role="group" aria-label="Lettering"><span class="lbl">Style</span><span class="ns-row" id="styles"></span></div>
         <div class="ns-row" role="group" aria-label="Tube colour"><span class="lbl">Tubes</span><span class="ns-row" id="tubes"></span><button type="button" class="chip" id="rainbow" title="Mix (X)">🌈 Mix</button></div>
-        <div class="ns-row" role="group" aria-label="Wall"><span class="lbl">Wall</span><span class="ns-row" id="walls"></span></div>
+        <div class="ns-row ns-a" role="group" aria-label="Wall"><span class="lbl">Wall</span><span class="ns-row" id="walls"></span></div>
         <div class="ns-row">
-          <button type="button" class="c-btn" id="power" title="Power (P)">⏻ Switch off</button>
-          <button type="button" class="chip" id="flicker" aria-pressed="false" title="Flicker (F)">⚡ Flicker</button>
-          <button type="button" class="chip" id="hum" aria-pressed="true" title="Hum (H)">〰 Hum</button>
-          <button type="button" class="c-btn c-btn--ghost" id="save">💾 Save PNG</button>
+          <button type="button" class="c-btn ns-power" id="power" title="Power (P)">⏻ Switch off</button>
+          <button type="button" class="c-btn ns-rand" id="randSign" title="Surprise (R)">🎲 Surprise me</button>
+          <button type="button" class="chip ns-a" id="flicker" aria-pressed="false" title="Flicker (F)">⚡ Flicker</button>
+          <button type="button" class="chip ns-a" id="chase" aria-pressed="false" title="Chase lights (C)">🏃 Chase</button>
+          <button type="button" class="chip ns-a" id="hum" aria-pressed="true" title="Hum (H)">〰 Hum</button>
+          <button type="button" class="c-btn c-btn--ghost ns-a" id="save">💾 Save PNG</button>
         </div>
-        <p class="c-muted ns-keys">Click a letter to recolour it. Keys: <span class="c-kbd">1</span>-<span class="c-kbd">9</span> tube colour, <span class="c-kbd">X</span> mix, <span class="c-kbd">P</span> switch, <span class="c-kbd">F</span> flicker, <span class="c-kbd">H</span> hum, <span class="c-kbd">T</span> type.</p>
+        <p class="c-muted ns-keys ns-a">Click a letter to recolour it. Keys: <span class="c-kbd">1</span>-<span class="c-kbd">9</span> tube colour, <span class="c-kbd">X</span> mix, <span class="c-kbd">R</span> surprise, <span class="c-kbd">C</span> chase, <span class="c-kbd">P</span> switch, <span class="c-kbd">F</span> flicker, <span class="c-kbd">H</span> hum, <span class="c-kbd">T</span> type.</p>
       </div>
     </div>
   </main>
@@ -418,6 +444,30 @@ Curious ♥</textarea>
       paintWall(); layout();
     }
 
+    const SIGNS = [['Open\nLate ♥', 'tube', 'brick'], ['Diner', 'script', 'tiles'], ['Good\nVibes', 'tube', 'wood'], ['Game\nOn ⚡', 'mono', 'concrete'], ['Coffee ☕', 'script', 'wood'], ['Hello\nZoble', 'italic', 'velvet'], ['Live\nMusic ♪', 'marquee', 'brick'], ['No\nVacancy', 'tube', 'concrete'], ['Bar 🍸', 'marquee', 'velvet'], ['Dream\nBig ★', 'italic', 'tiles'], ['Pizza', 'mono', 'brick'], ['Good\nNight ☾', 'script', 'velvet'], ['Go\nThis Way ➜', 'tube', 'wood'], ['Arcade', 'mono', 'velvet']];
+    function useSign(sg, randomize) {
+      textEl.value = sg[0];
+      if (Curio.advanced) { style = sg[1]; wall = sg[2]; }
+      const n = Array.from(textEl.value).length;
+      const pal = Curio.shuffle([0, 2, 3, 4, 5, 6, 7]);
+      const mode = randomize ? Curio.randInt(0, 2) : 0;
+      paint = pal[0];
+      colors = Array.from({ length: n }, (_, i) => mode === 0 ? pal[0] : mode === 1 ? pal[Math.floor(i / 4) % 2] : pal[i % pal.length]);
+      sync(); paintWall(); layout(); if (!power) setPower(true); else flash(); save();
+    }
+    const presetsEl = document.getElementById('presets');
+    SIGNS.forEach((sg) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = sg[0].replace('\n', ' '); b.addEventListener('click', () => { ensureHum(); useSign(sg, false); }); presetsEl.append(b); });
+    let lastSign = -1;
+    document.getElementById('randSign').addEventListener('click', () => { ensureHum(); let i; do { i = Curio.randInt(0, SIGNS.length - 1); } while (i === lastSign); lastSign = i; useSign(SIGNS[i], true); });
+    let chase = false, chaseT = 0, chaseK = 0;
+    const chaseBtn = document.getElementById('chase');
+    chaseBtn.addEventListener('click', () => { chase = !chase; chaseBtn.setAttribute('aria-pressed', String(chase)); chaseK = 0; if (!chase && power) letters.forEach((L) => { L.target = 1; }); });
+    setInterval(() => {
+      if (!chase || !power || document.hidden || !letters.length) return;
+      const n = letters.length, k = chaseK++ % (n * 2 + 4);
+      letters.forEach((L, i) => { L.target = k < n ? (i <= k ? 1 : 0) : k < n * 2 ? (i > k - n ? 1 : 0) : (k % 2 ? 1 : 0.15); });
+      if (k < n) ting(k);
+    }, 110);
     const powerBtn = document.getElementById('power');
     function setPower(on) {
       power = on;
@@ -544,6 +594,8 @@ Curious ♥</textarea>
       else if (k === 'x') document.getElementById('rainbow').click();
       else if (k === 'f') flickBtn.click();
       else if (k === 'h') humBtn.click();
+      else if (k === 'r') document.getElementById('randSign').click();
+      else if (k === 'c' && Curio.advanced) chaseBtn.click();
       else if (k === 't') { e.preventDefault(); textEl.focus(); }
     });
     let rt = 0;

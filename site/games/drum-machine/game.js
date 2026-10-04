@@ -741,8 +741,8 @@
   $('rand').addEventListener('click', generate);
   $('clear').addEventListener('click', () => { pushUndo(); const P = editPat(); P.v = grid0(0); P.p = grid0(1); P.r = grid0(1); P.len = new Array(ROWS).fill(16); if (!chal.active) { P.bn.fill(-1); P.ch = [-1, -1, -1, -1]; } paintAll(); save(); Curio.beep(200, 0.1, 'sine', 0.06); });
   $('reset').addEventListener('click', async () => {
-    const v = await Curio.modal({ emoji: '⟲', title: 'Reset everything?', body: 'This brings back the starter rock beat and all default settings. You can still press Undo afterwards to get your beat back.', buttons: [{ label: 'Reset', value: 'y' }, { label: 'Cancel', value: 'n' }] });
-    if (v !== 'y') return;
+    if (S.adv) { const v = await Curio.modal({ emoji: '⟲', title: 'Start over?', body: 'This brings back the starter rock beat and all default settings. You can still press Undo afterwards to get your beat back.', buttons: [{ label: 'Start over', value: 'y' }, { label: 'Cancel', value: 'n' }] });
+    if (v !== 'y') return; }
     if (chal.active) exitChal();
     pushUndo();
     loadPresetInto(S, D.presets[0]); S.pm = 'pattern'; S.fx = { ...DEF_FX }; S.mix = freshMix(); S.bass = { ...DEF_BASS }; S.tool = 'draw'; S.autoFill = false; S.sel = 0;
@@ -1053,7 +1053,8 @@
     if (e.key === 'ArrowUp') { e.preventDefault(); setSel(Math.min(S.adv ? 11 : 7, S.sel - 1)); hitNow(S.sel, 0.6); return; }
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel(Math.min(S.adv ? 11 : 7, S.sel + 1)); hitNow(S.sel, 0.6); return; }
     const si = STEPKEYS.indexOf(k); if (si >= 0 && !e.shiftKey) { toggleStep(si); return; }
-    if (k === 'g') generate();
+    if (k === 'g') { if (S.adv) generate(); else $('randS').click(); }
+    else if (k === 'x' && !S.adv) wipe();
     else if (!S.adv) return;
     else if (k === 'f') armFill();
     else if (k === 'c') copyPat();
@@ -1062,16 +1063,20 @@
 
   function setAdv(v) {
     S.adv = v; $('wrap').classList.toggle('simple', !v);
-    $('advBtn').setAttribute('aria-pressed', String(v)); $('advBtn').textContent = `⚙️ Advanced mode: ${v ? 'On' : 'Off'}`;
-    if (!v) { if (chal.active) exitChal(); if (liveRec) $('liveRec').click(); if (S.sel > 7) setSel(0); if (S.cur !== 0) { S.cur = 0; } }
-    paintAll(); save();
+    if (!v) { if (chal.active) exitChal(); if (liveRec) $('liveRec').click(); if (S.sel > 7) setSel(0); if (S.cur !== 0) { S.cur = 0; } if (S.pm === 'song') setPM('pattern'); }
+    paintAll(); paintSpeed(); save();
   }
-  $('advBtn').addEventListener('click', () => { setAdv(!S.adv); Curio.toast(S.adv ? 'Advanced mode: patterns, bass line, effects, mixer, song mode and more' : 'Simple mode: just the drums', 2200); });
+  addEventListener('curio:mode', (e) => setAdv(e.detail === 'advanced'));
+  function paintSpeed() { document.querySelectorAll('[data-sp]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.sp - S.tempo) < 15))); }
+  document.querySelectorAll('[data-sp]').forEach((b) => b.addEventListener('click', () => { S.tempo = +b.dataset.sp; syncKnobs(); paintSpeed(); save(); Curio.beep(440 + S.tempo * 2, 0.05, 'square', 0.05); if (!playing) { if (!booted) powerOn(); start(); } }));
+  function wipe() { pushUndo(); const P = editPat(); P.v = grid0(0); P.p = grid0(1); P.r = grid0(1); P.len = new Array(ROWS).fill(16); paintAll(); save(); Curio.beep(180, 0.12, 'sine', 0.07); Curio.toast('Wiped clean. Undo brings it back.', 1600); $('grid').classList.remove('dm-wiped'); void $('grid').offsetWidth; $('grid').classList.add('dm-wiped'); }
+  $('clearS').addEventListener('click', wipe);
+  $('randS').addEventListener('click', () => { const ids = Object.keys(GENRES); $('genre').value = Curio.pick(ids); S.genre = $('genre').value; generate(); });
   function showHelp(on) { $('howto').hidden = !on; $('helpBtn').setAttribute('aria-expanded', String(on)); }
   $('helpBtn').addEventListener('click', () => showHelp($('howto').hidden));
   $('howtoOk').addEventListener('click', () => { showHelp(false); S.seenHelp = true; save(); });
   if (location.hash && decode(location.hash)) Curio.toast('Shared beat loaded. Power on and press play!', 2600);
-  setAdv(!!S.adv); showHelp(!S.seenHelp);
+  setAdv(Curio.advanced); showHelp(Curio.advanced && !S.seenHelp);
   setKit(S.kit, true); setTool(S.tool); setPM(S.pm); syncKnobs(); syncBassUI(); paintMS(); paintAll(); paintChain(); paintUndo(); paintAch(); paintChal(); setSel(S.sel);
   $('autoFill').setAttribute('aria-pressed', String(!!S.autoFill));
   addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click a step and move to paint a row, click again to stop. Knobs work the same, or scroll with two fingers', 4000); });

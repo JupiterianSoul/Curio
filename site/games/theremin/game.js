@@ -59,9 +59,16 @@
   const SPAN = 36;
   const saved = Curio.store.get('theremin', {});
   const st = Object.assign({ wave: 'sine', scale: 'free', root: 0, lo: 48, vib: 35, glide: 30, dly: 25, rev: 45, mode: 'hover', bpm: 96, beat: false }, saved);
+  const EASY = [
+    { name: '🛸 Spooky', s: { wave: 'sine', scale: 'free', lo: 48, vib: 45, glide: 40, dly: 30, rev: 60 } },
+    { name: '🎵 Sweet', s: { wave: 'triangle', scale: 'pentatonic', lo: 48, vib: 25, glide: 15, dly: 25, rev: 45 } },
+    { name: '👾 Robot', s: { wave: 'square', scale: 'major', lo: 48, vib: 0, glide: 0, dly: 20, rev: 10 } },
+    { name: '🐋 Whale', s: { wave: 'warm', scale: 'minor', lo: 36, vib: 25, glide: 90, dly: 60, rev: 95 } }
+  ];
+  if (Curio.simple) { Object.assign(st, EASY[1].s); st.mode = 'hover'; }
   st.beat = false;
   if (!WAVES[st.wave]) st.wave = 'sine';
-  const save = () => Curio.store.set('theremin', st);
+  const save = () => { if (!Curio.simple) Curio.store.set('theremin', st); };
 
   const field = $('field'), cv = $('cv'), g = cv.getContext('2d');
   const scope = $('scope'), sg = scope.getContext('2d');
@@ -620,11 +627,11 @@
   let raf = 0;
   function kick() { if (!raf && !document.hidden) raf = requestAnimationFrame(draw); }
   document.addEventListener('visibilitychange', () => { if (document.hidden) { stopAll(); kOn = false; } else kick(); });
-  const presetsEl = $('presets');
-  PRESETS.forEach((p) => {
+  const presetsEl = Curio.simple ? $('easy') : $('presets');
+  (Curio.simple ? EASY : PRESETS).forEach((p, pi) => {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = p.name;
     b.addEventListener('click', () => {
-      Object.assign(st, p.s); save();
+      Object.assign(st, p.s); if (!Curio.simple) save();
       triedPresets.add(p.name); Curio.store.set('theremin:presets', [...triedPresets]);
       if (triedPresets.size >= 6) award('presets');
       notes = scaleSet();
@@ -637,11 +644,14 @@
       previewNote();
       presetsEl.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     });
+    if (Curio.simple && pi === 1) b.setAttribute('aria-pressed', 'true');
+    b.title = Curio.simple ? `Key ${pi + 1}` : '';
     presetsEl.append(b);
   });
   addEventListener('keydown', (e) => {
     if (e.target.closest?.('input, select, button') || e.ctrlKey || e.metaKey || document.querySelector('.curio-modal')) return;
     const k = e.key.toLowerCase();
+    if (/^[1-8]$/.test(k)) { const b = presetsEl.children[+k - 1]; if (b) { b.click(); return; } }
     if (k === 'r') { e.preventDefault(); $('lpRec').click(); }
     else if (k === 'p') $('lpPlay').click();
     else if (k === 'b') $('beatBtn').click();

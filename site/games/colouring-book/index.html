@@ -9,15 +9,16 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="colouring-book">
+<body data-game="colouring-book" data-modes>
   <main class="c-wrap">
     <div class="cb-head">
       <h1 class="c-title">Colouring Book</h1>
-      <p class="c-sub">Fifty pages, six palettes, seven fill styles and a little magic. Pick a page, grab a colour and tap to fill. Stay inside the lines, or absolutely do not.</p>
+      <p class="c-sub cb-s">Grab a crayon, tap a shape to fill it. Arrows flip the page.</p>
+      <p class="c-sub cb-a">Fifty pages, six palettes, seven fill styles and a little magic. Pick a page, grab a colour and tap to fill. Stay inside the lines, or absolutely do not.</p>
     </div>
     <div class="cb">
       <aside class="cb-side c-card">
-        <div class="cb-full">
+        <div class="cb-full cb-a">
           <h2>Tools</h2>
           <div class="cb-tools" id="tools">
             <button class="cb-tool" type="button" data-tool="fill" title="Fill bucket (F)" aria-label="Fill bucket">🪣</button>
@@ -27,7 +28,7 @@
             <button class="cb-tool" type="button" data-tool="pan" title="Move around when zoomed (H, or hold Space)" aria-label="Pan">✋</button>
           </div>
         </div>
-        <div>
+        <div class="cb-a">
           <h2>Fill style</h2>
           <div class="cb-seg" id="styles" role="group" aria-label="Fill style">
             <button type="button" data-style="solid">Solid</button>
@@ -39,7 +40,7 @@
           <button type="button" data-style="glitter">Glitter</button>
           </div>
         </div>
-        <div>
+        <div class="cb-a">
           <h2>Settings</h2>
           <label class="cb-range">Tolerance <input type="range" id="tol" min="0" max="100" value="65" aria-label="Fill tolerance. At maximum, fills ignore existing colours and fill the whole outlined area."><b id="tolV" style="min-width:30px;text-align:right">65</b></label>
           <div class="cb-seg" id="sizes" role="group" aria-label="Brush size" style="margin-top:8px">
@@ -49,10 +50,10 @@
           </div>
         </div>
         <div class="cb-full">
-          <h2 style="display:flex;justify-content:space-between;align-items:center;gap:6px">Palette <select class="c-input cb-theme" id="theme" aria-label="Palette theme"></select></h2>
+          <h2 style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="cb-a">Palette</span><span class="cb-s">Crayons</span> <select class="c-input cb-theme cb-a" id="theme" aria-label="Palette theme"></select></h2>
           <div class="cb-pal" id="pal"></div>
         </div>
-        <div class="cb-cur cb-full">
+        <div class="cb-cur cb-full cb-a">
           <div class="cb-big" id="big"></div>
           <input type="color" id="custom" value="#ff7043" aria-label="Custom colour">
           <span id="hex">#ff7043</span>
@@ -67,7 +68,7 @@
           <button class="c-btn c-btn--ghost" id="magic" type="button" title="Colour every blank area with the current palette (M)">🪄 Magic</button>
           <button class="c-btn c-btn--ghost" id="undo" type="button" disabled>↶ Undo</button>
             <button class="c-btn c-btn--ghost" id="clear" type="button">Start over</button>
-            <button class="c-btn" id="png" type="button">⬇ PNG</button>
+            <button class="c-btn cb-a" id="png" type="button">⬇ PNG</button>
           </div>
         </div>
         <div class="cb-view" id="view" data-tool="fill">
@@ -76,24 +77,24 @@
             <canvas id="lines" class="cb-lines" aria-hidden="true"></canvas>
           </div>
           <div class="cb-busy" id="busy">Loading page...</div>
-          <div class="cb-zoom">
+          <div class="cb-zoom cb-a">
             <button type="button" id="zOut" aria-label="Zoom out">−</button>
             <span id="zLbl">100%</span>
             <button type="button" id="zIn" aria-label="Zoom in">+</button>
             <button type="button" id="zFit" aria-label="Reset zoom">⤢</button>
           </div>
         </div>
-        <p class="cb-hint c-muted">Pinch or <span class="c-kbd">Ctrl</span>+scroll to zoom, two fingers or <span class="c-kbd">Space</span>+drag to pan. <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undoes, <span class="c-kbd">M</span> magic colour, <span class="c-kbd">←</span><span class="c-kbd">→</span> pages, <span class="c-kbd">F</span><span class="c-kbd">B</span><span class="c-kbd">E</span><span class="c-kbd">I</span><span class="c-kbd">H</span> tools. Touchpad mode: click to start a brush stroke or pan, click again to stop. Progress saves itself.</p>
+        <p class="cb-hint c-muted cb-a">Pinch or <span class="c-kbd">Ctrl</span>+scroll to zoom, two fingers or <span class="c-kbd">Space</span>+drag to pan. <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undoes, <span class="c-kbd">M</span> magic colour, <span class="c-kbd">←</span><span class="c-kbd">→</span> pages, <span class="c-kbd">F</span><span class="c-kbd">B</span><span class="c-kbd">E</span><span class="c-kbd">I</span><span class="c-kbd">H</span> tools. Touchpad mode: click to start a brush stroke or pan, click again to stop. Progress saves itself.</p>
       </section>
     </div>
     <div class="cb-pages-head">
       <h2>Pages</h2>
-      <div class="cb-pagebtns"><button class="c-btn" id="daily" type="button">📅 Today's page</button><button class="c-btn c-btn--ghost" id="rndPage" type="button">🎲 Surprise page</button></div>
+      <div class="cb-pagebtns"><button class="c-btn cb-a" id="daily" type="button">📅 Today's page</button><button class="c-btn c-btn--ghost" id="rndPage" type="button">🎲 Surprise page</button></div>
       <span class="c-muted" id="tally"></span>
     </div>
-    <div class="cb-cats" id="cats" role="group" aria-label="Filter pages"></div>
+    <div class="cb-cats cb-a" id="cats" role="group" aria-label="Filter pages"></div>
     <div class="cb-pages" id="pages"></div>
-    <section class="c-card cb-rec" aria-label="Stats and badges">
+    <section class="c-card cb-rec cb-a" aria-label="Stats and badges">
       <h2>🏅 Sticker shelf</h2>
       <div class="cb-stats2" id="stats2"></div>
       <div class="cb-badges" id="badges"></div>

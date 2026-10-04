@@ -20,7 +20,7 @@
   const $ = (id) => document.getElementById(id);
   const stage = $('stage'), cv = $('cv'), g = cv.getContext('2d');
   let mode = Curio.store.get('bd-mode', 'prompt');
-  if (!['prompt', 'friend', 'party'].includes(mode)) mode = 'prompt';
+  if (!['prompt', 'friend', 'party'].includes(mode) || Curio.simple) mode = 'prompt';
   let prompt = Curio.pick(PROMPTS);
   let strokes = [], cur = null;
   let state = 'ready';
@@ -30,6 +30,7 @@
   if (!INKS[ink]) ink = 'ink';
   let twistOn = Curio.store.get('bd-twist', false);
   let twist = null;
+  if (Curio.simple) { timeLimit = 0; twistOn = false; }
   let gallery = Curio.store.get('bd-gallery', []);
   if (!Array.isArray(gallery)) gallery = [];
   let kept = false, caption = '', judged = null;
@@ -388,11 +389,11 @@
   }
 
   function setMode(m) {
-    mode = m; Curio.store.set('bd-mode', m);
+    mode = Curio.simple ? 'prompt' : m; m = mode; if (!Curio.simple) Curio.store.set('bd-mode', m);
     party = null;
     document.body.classList.toggle('is-friend', m === 'friend');
     document.body.classList.toggle('is-party', m === 'party');
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-gm]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.gm === m)));
     $('skip').style.display = m === 'friend' ? 'none' : '';
     $('partyRes').hidden = true;
     if (m === 'friend' && !timeLimit) { timeLimit = 60; $('timer').value = '60'; }
@@ -400,7 +401,7 @@
     newRound(false);
   }
 
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  document.querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.gm)));
   $('timer').value = String(timeLimit);
   $('timer').addEventListener('change', (e) => { timeLimit = +e.target.value; Curio.store.set('bd-timer', timeLimit); if (state === 'ready') $('clock').textContent = limitNow() ? String(limitNow()) : ''; });
   $('pen').value = String(penW);

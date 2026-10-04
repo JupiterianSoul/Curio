@@ -317,7 +317,10 @@
     lcd(`${INST_BY[id].name}`);
     if (announce) { const m = 60; noteOn(m, 0.7); setTimeout(() => noteOff(m), 300); }
   }
+  const EASY_INST = ['piano', 'epiano', 'box', 'marimba', 'guitar', 'chip'];
+  if (Curio.simple && !EASY_INST.includes(S.inst)) S.inst = 'piano';
   INST.forEach((it) => {
+    if (Curio.simple && !EASY_INST.includes(it.id)) return;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'pn-inst'; b.dataset.i = it.id;
     b.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="${it.c}"/>${ICONS[it.id]}</svg><span></span>`;
     b.querySelector('span').textContent = it.name;
@@ -446,7 +449,7 @@
   let L = null;
   const hud = { score: $('hScore'), combo: $('hCombo'), acc: $('hAcc') };
   function bumpHud(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
-  function startSong(song, lmode = S.lmode) {
+  function startSong(song, lmode = Curio.simple ? 'wait' : S.lmode) {
     quitLearn(true); stopPlayback(); allOff();
     if (mode !== 'learn') setMode('learn', true);
     const evs = parseSong(song, lmode === 'watch' ? Math.max(0.75, S.lspeed) : S.lspeed);
@@ -600,7 +603,7 @@
     const p = document.createElement('p'); p.className = 'c-muted'; p.style.margin = '0';
     p.textContent = dailyMsg + (newBest ? 'New personal best! ' : '') + ['Keep at it, every pianist started with one finger.', 'Not bad! Try it slower to nail the tricky bits.', 'Lovely playing.', 'Concert hall material. Take a bow.'][stars];
     box.append(st, grid, p);
-    const idx = SONGS.indexOf(song), next = SONGS[(idx + 1) % SONGS.length];
+    const pool = dailyPool(), idx = pool.indexOf(song), next = pool[(idx + 1) % pool.length];
     const v = await Curio.modal({ emoji: stars === 3 ? '🏆' : stars ? '🎶' : '🎹', title: song.t, body: box, buttons: [{ label: '↻ Play again', value: 'again' }, { label: `Next: ${next.t.length > 22 ? next.t.slice(0, 21) + '…' : next.t}`, value: 'next' }, { label: '📋 Share', value: 'share' }, { label: 'Library', value: 'lib' }] });
     if (v === 'again') startSong(song, R.mode);
     else if (v === 'next') startSong(next, R.mode);
@@ -688,18 +691,19 @@
   function setMode(m, keepSong) {
     if (!keepSong) quitLearn(true);
     mode = m;
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-gm]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.gm === m)));
     document.querySelectorAll('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== m; });
     if (!keepSong) { kbBase = base; freeBuild(); }
     if (m === 'chords' && S.inst === 'piano') lcd('Tip: chord pads sound lush on Strings or Choir');
     else if (m === 'learn') lcd('Pick a song from the library below');
     else lcd(`${nameOf(lo)} to ${nameOf(hi)} · ${INST_BY[S.inst].name}`);
   }
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.mode); dismissSplash(); Curio.beep(560, 0.05, 'sine', 0.05); }));
+  document.querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.gm); dismissSplash(); Curio.beep(560, 0.05, 'sine', 0.05); }));
 
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
   function hashStr(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-  const dailySong = () => SONGS[hashStr('piano' + todayKey()) % SONGS.length];
+  const dailyPool = () => Curio.simple ? SONGS.filter((s) => s.lv === 1) : SONGS;
+  const dailySong = () => dailyPool()[hashStr('piano' + todayKey()) % dailyPool().length];
   function paintDaily() {
     const s = dailySong(), done = S.daily[todayKey()];
     const box = $('daily'); box.innerHTML = '';
@@ -718,7 +722,7 @@
   function paintLib() {
     $('cats').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.c === cat)));
     const box = $('lib'); box.innerHTML = '';
-    const list = SONGS.filter((s) => (cat === 'all' || s.cat === cat) && (!query || (s.t + ' ' + s.by).toLowerCase().includes(query)));
+    const list = SONGS.filter((s) => (!Curio.simple || s.lv === 1) && (cat === 'all' || s.cat === cat) && (!query || (s.t + ' ' + s.by).toLowerCase().includes(query)));
     if (!list.length) { const e = document.createElement('div'); e.className = 'pn-empty'; e.textContent = 'No songs match. Try "Beethoven" or "bells".'; box.append(e); return; }
     list.forEach((s) => {
       const r = S.songs[s.id], stars = r?.stars || 0;

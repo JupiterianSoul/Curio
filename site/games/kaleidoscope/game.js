@@ -529,7 +529,9 @@
     seg(c, s, ss, px, py, px + 0.01, py);
     for (let x = 22; x <= 222; x += 4) { const y = h / 2 + Math.sin(x / 22) * 16; seg(c, s, ss, px, py, x, y); px = x; py = y; }
   }
+  const EASY_B = ['neon', 'ribbon', 'spray', 'stars', 'petals', 'bubbles'];
   D.brushes.forEach((b) => {
+    if (Curio.simple && !EASY_B.includes(b.id)) return;
     const el = document.createElement('button'); el.type = 'button'; el.className = 'kd-brush'; el.title = b.tip;
     const cn = document.createElement('canvas'); cn.setAttribute('aria-hidden', 'true'); brushPreview(cn, b.id);
     const sp = document.createElement('span'); sp.textContent = b.name;
@@ -584,16 +586,16 @@
   });
   function setBg(id) { set.bg = id; bgEls.forEach((e) => e.setAttribute('aria-pressed', String(e.dataset.bg === id))); cv.style.background = BG[id].c; save(); }
 
-  const modeBtns = document.querySelectorAll('[data-mode]');
+  const modeBtns = document.querySelectorAll('[data-gm]');
   function setMode(m) {
-    set.mode = m; modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    set.mode = m; modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.gm === m)));
     $('pals').hidden = m !== 'palette';
     $('pickers').hidden = m === 'rainbow' || m === 'palette';
     $('c2').style.display = m === 'gradient' ? '' : 'none';
     $('cHint').textContent = m === 'gradient' ? 'Blends between two colours' : 'One colour, pure vibes';
     save();
   }
-  modeBtns.forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.mode); Curio.beep(560, 0.04, 'sine', 0.05); }));
+  modeBtns.forEach((b) => b.addEventListener('click', () => { setMode(b.dataset.gm); Curio.beep(560, 0.04, 'sine', 0.05); }));
   $('c1').addEventListener('input', () => { set.c1 = $('c1').value; save(); });
   $('c2').addEventListener('input', () => { set.c2 = $('c2').value; save(); });
 
@@ -749,6 +751,9 @@
   });
   $('go').addEventListener('click', () => { dismissIntro(); Curio.beep(660, 0.08, 'triangle', 0.08); });
   $('surprise').addEventListener('click', surprise);
+  $('surpriseS').addEventListener('click', () => { dismissIntro(); surprise(); });
+  $('clearS').addEventListener('click', () => { dismissIntro(); $('clear').click(); });
+  if (Curio.simple) { if (!EASY_B.includes(set.brush)) setBrush('neon'); if (set.brush === 'eraser') setBrush('neon'); }
   function surprise() {
     const pr = Curio.pick(D.prompts);
     applyPrompt(pr);

@@ -1,5 +1,5 @@
 (() => {
-  const CW = 960, CH = 720, ROUND = 5;
+  const CW = 960, CH = 720, ROUND = Curio.simple ? 3 : 5, MAXS = ROUND * 5, SK = Curio.simple ? 'stars:simple' : 'stars';
   const $ = (id) => document.getElementById(id);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const P = window.DOODLE_PROMPTS, CRITICS = window.DOODLE_CRITICS, L = window.DOODLE_LINES;
@@ -9,6 +9,7 @@
 
   const st = Curio.store.get('doodle-prompts:settings', {});
   let secs = st.secs || 40, mode = st.mode || 'solo';
+  if (Curio.simple) { secs = 45; mode = 'solo'; }
   let round = null, idx = 0, color = 0, width = 9, eraser = false;
   let timeLeft = 0, running = false, lastTick = 0, beepedAt = -1;
 
@@ -16,11 +17,11 @@
 
   function syncStart() {
     document.querySelectorAll('[data-time]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.time === secs)));
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    document.querySelectorAll('[data-gm]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.gm === mode)));
     $('modeInfo').textContent = mode === 'solo' ? 'Draw five prompts, then a distinguished critic rates each one out of five stars.' : 'One artist draws five prompts, then friends guess what each doodle is meant to be. Critics still attend.';
     $('stRounds').textContent = Curio.store.get('doodle-prompts:rounds', 0);
-    const b = Curio.getBest('stars'), gb = Curio.getBest('guessed');
-    $('stBest').textContent = b == null ? '-' : `${b}/25`; $('stGuess').textContent = gb == null ? '-' : `${gb}/5`;
+    const b = Curio.getBest(SK), gb = Curio.getBest('guessed');
+    $('stBest').textContent = b == null ? '-' : `${b}/${MAXS}`; $('stGuess').textContent = gb == null ? '-' : `${gb}/5`;
     const last = Curio.store.get('doodle-prompts:last', null);
     $('lastWrap').hidden = !last;
     if (last) {
@@ -29,8 +30,8 @@
     }
   }
   document.querySelectorAll('[data-time]').forEach((b) => b.addEventListener('click', () => { secs = +b.dataset.time; persist(); syncStart(); Curio.beep(500, .04, 'sine', .05); }));
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; persist(); syncStart(); Curio.beep(560, .04, 'sine', .05); }));
-  function persist() { Curio.store.set('doodle-prompts:settings', { secs, mode }); }
+  document.querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.gm; persist(); syncStart(); Curio.beep(560, .04, 'sine', .05); }));
+  function persist() { if (Curio.simple) return; Curio.store.set('doodle-prompts:settings', { secs, mode }); }
 
   function startRound() {
     const prompts = Curio.shuffle(P).slice(0, ROUND);
@@ -148,8 +149,8 @@
     show('sGallery');
     const total = round.items.reduce((a, it) => a + it.stars, 0);
     const party = round.mode === 'party';
-    const res = Curio.best('stars', total);
-    $('sumStars').textContent = `${total}/25`; $('sumBest').textContent = `${res.best}/25`;
+    const res = Curio.best(SK, total);
+    $('sumStars').textContent = `${total}/${MAXS}`; $('sumBest').textContent = `${res.best}/${MAXS}`;
     $('sumGuessWrap').hidden = !party;
     let newBest = res.isNew && total > 0;
     if (party) {
@@ -177,7 +178,7 @@
       card.append(fr, cap); gal.append(card);
       setTimeout(() => { card.classList.add('in'); Curio.beep(440 + i * 110, .08, 'triangle', .06); }, 250 + i * 380);
     });
-    if (newBest || total >= 20) setTimeout(() => { Curio.confetti(); Curio.toast(newBest ? 'New personal best!' : 'Critically acclaimed!'); }, 250 + ROUND * 380);
+    if (newBest || total >= MAXS * 0.8) setTimeout(() => { Curio.confetti(); Curio.toast(newBest ? 'New personal best!' : 'Critically acclaimed!'); }, 250 + ROUND * 380);
     Curio.store.set('doodle-prompts:last', { items: round.items.map((it) => ({ img: it.img, prompt: it.prompt, stars: it.stars })), total, mode: round.mode });
   }
   function saveGallery() {

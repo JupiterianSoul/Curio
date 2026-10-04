@@ -9,24 +9,25 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="one-line">
+<body data-game="one-line" data-modes>
   <main class="c-wrap">
     <div class="ol-head">
       <h1 class="c-title">One Line</h1>
-      <p class="c-sub">Draw the whole thing in a single stroke. The moment you lift your pen, it is finished.</p>
+      <p class="c-sub ol-s">Draw the word in one go without lifting your pen. Then watch it replay.</p>
+      <p class="c-sub ol-a">Draw the whole thing in a single stroke. The moment you lift your pen, it is finished.</p>
     </div>
-    <div class="ol-modes">
+    <div class="ol-modes ol-a">
       <div class="ol-seg" role="group" aria-label="Mode" id="modes">
-        <button type="button" data-mode="prompt">✏️ Prompts</button>
-        <button type="button" data-mode="speed">⏱️ Speed round</button>
-        <button type="button" data-mode="dots">🔵 Dot Run</button>
-        <button type="button" data-mode="free">🎨 Free</button>
+        <button type="button" data-gm="prompt">✏️ Prompts</button>
+        <button type="button" data-gm="speed">⏱️ Speed round</button>
+        <button type="button" data-gm="dots">🔵 Dot Run</button>
+        <button type="button" data-gm="free">🎨 Free</button>
       </div>
     </div>
     <div class="ol-prompt">
       <div class="ol-chip" id="chip"><span class="ol-emo" id="emo">🐱</span><span><small id="chipLbl">Draw</small><span id="word">a cat</span></span></div>
       <button class="c-btn c-btn--ghost" id="next" type="button">🔀 New prompt</button>
-      <div class="ol-seg" role="group" aria-label="Difficulty" id="diffs">
+      <div class="ol-seg ol-a" role="group" aria-label="Difficulty" id="diffs">
         <button type="button" data-d="easy">Easy</button>
         <button type="button" data-d="medium">Medium</button>
         <button type="button" data-d="hard">Hard</button>
@@ -46,7 +47,7 @@
       <div class="ol-cap" id="cap"></div>
       <div class="ol-stats" id="stats"></div>
     </div>
-    <div class="ol-tools">
+    <div class="ol-tools ol-a">
       <div class="ol-group" role="group" aria-label="Ink colour"><span>Ink</span><div class="ol-group" id="inks"></div></div>
       <div class="ol-seg" role="group" aria-label="Pen style" id="styles">
         <button type="button" data-s="ink">🖊️ Ink</button>
@@ -64,21 +65,21 @@
     </div>
     <div class="ol-actions">
       <button class="c-btn" id="replay" type="button" disabled>▶ Replay</button>
-      <button class="c-btn c-btn--ghost" id="keep" type="button" disabled>⭐ Keep</button>
-      <button class="c-btn c-btn--ghost" id="png" type="button" disabled>⬇ PNG</button>
+      <button class="c-btn c-btn--ghost ol-a" id="keep" type="button" disabled>⭐ Keep</button>
+      <button class="c-btn c-btn--ghost ol-a" id="png" type="button" disabled>⬇ PNG</button>
       <button class="c-btn c-btn--ghost" id="again" type="button">↺ Draw again</button>
     </div>
-    <div class="ol-gal-head">
+    <div class="ol-gal-head ol-a">
       <h2>Your one-liners</h2>
       <div class="ol-group"><span class="c-muted" id="galCount"></span><button class="c-btn c-btn--ghost" id="show" type="button" style="padding:7px 12px;font-size:14px">🎞️ Exhibition</button></div>
     </div>
-    <div class="ol-gal" id="gal"></div>
-    <section class="c-card ol-card2" aria-label="Stats and badges">
+    <div class="ol-gal ol-a" id="gal"></div>
+    <section class="c-card ol-card2 ol-a" aria-label="Stats and badges">
       <h2>✍️ Sketchbook stats</h2>
       <div class="ol-stats2" id="stats2"></div>
       <div class="ol-badges" id="badges"></div>
     </section>
-    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">R</span> replay · <span class="c-kbd">N</span> new prompt · <span class="c-kbd">K</span> keep · <span class="c-kbd">1</span>-<span class="c-kbd">5</span> pen style · Touchpad mode: click to start the line, click again to lift the pen</p>
+    <p class="c-muted ol-a" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">R</span> replay · <span class="c-kbd">N</span> new prompt · <span class="c-kbd">K</span> keep · <span class="c-kbd">1</span>-<span class="c-kbd">5</span> pen style · Touchpad mode: click to start the line, click again to lift the pen</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
-<defs><radialGradient id="o"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#c7b5ff"/><stop offset="1" stop-color="#7c5cff" stop-opacity="0"/></radialGradient></defs>
-<rect width="400" height="300" fill="#2b1c6e"/>
-<circle cx="200" cy="140" r="150" fill="#3a2a8c"/>
-<path d="M0 150 Q25 100 50 150 T100 150 T150 150 T200 150 T250 150 T300 150 T350 150 T400 150" fill="none" stroke="#7dffb2" stroke-width="5" opacity=".7"/>
-<rect x="70" y="210" width="260" height="46" rx="10" fill="#8d5a2b"/>
-<rect x="70" y="210" width="260" height="12" rx="6" fill="#b07a42"/>
-<rect x="88" y="232" width="16" height="16" rx="8" fill="#ffd34d"/><rect x="112" y="232" width="16" height="16" rx="8" fill="#ffd34d"/>
-<rect x="296" y="40" width="8" height="172" rx="4" fill="#d8d8e6"/>
-<circle cx="300" cy="38" r="8" fill="#ffffff"/>
-<path d="M78 214 V180 Q40 180 40 150 Q40 120 78 120 Q110 120 110 150" fill="none" stroke="#d8d8e6" stroke-width="7" stroke-linecap="round"/>
-<circle cx="214" cy="104" r="62" fill="url(#o)"/>
-<circle cx="214" cy="104" r="80" fill="none" stroke="#c7b5ff" stroke-width="3" opacity=".5"/>
-<circle cx="214" cy="104" r="100" fill="none" stroke="#c7b5ff" stroke-width="2" opacity=".25"/>
-<path d="M196 118 v-30 a6 6 0 0 1 12 0 v18 v-28 a6 6 0 0 1 12 0 v28 v-22 a6 6 0 0 1 12 0 v34 q0 26 -22 26 q-14 0 -24 -14 l-12 -18 a6 6 0 0 1 10 -7z" fill="#ffd9b8" stroke="#3a2a8c" stroke-width="3" stroke-linejoin="round"/>
-<g fill="#ffd34d"><circle cx="60" cy="50" r="4"/><circle cx="140" cy="30" r="3"/><circle cx="360" cy="90" r="4"/><circle cx="350" cy="190" r="3"/></g>
+<defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4628"/><stop offset="1" stop-color="#3b1f10"/></linearGradient><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3d999"/><stop offset="1" stop-color="#9c7531"/></linearGradient><radialGradient id="f" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#5a3fb8"/><stop offset="1" stop-color="#140d33"/></radialGradient><radialGradient id="o"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffd27a"/><stop offset="1" stop-color="#ff9d2e" stop-opacity="0"/></radialGradient></defs>
+<rect width="400" height="300" fill="#f1e2c6"/>
+<rect x="30" y="58" width="340" height="226" rx="22" fill="url(#w)"/>
+<g stroke="#ffdcaa" stroke-opacity=".08" stroke-width="3"><path d="M50 70v200M90 70v200M150 70v200M230 70v200M300 70v200M345 70v200"/></g>
+<rect x="52" y="104" width="296" height="160" rx="12" fill="#1c0f07"/>
+<rect x="58" y="110" width="284" height="148" rx="9" fill="url(#f)"/>
+<path d="M66 214 Q96 150 126 196 T186 182 T246 150 T306 196 T336 168" fill="none" stroke="#ffd27a" stroke-width="5" stroke-linecap="round"/>
+<circle cx="246" cy="150" r="34" fill="url(#o)"/>
+<circle cx="246" cy="150" r="7" fill="#fff"/>
+<rect x="138" y="70" width="124" height="24" rx="7" fill="url(#b)"/>
+<circle cx="154" cy="82" r="5" fill="#ffb547"/>
+<g fill="#3a2508"><rect x="168" y="78" width="60" height="8" rx="2"/><rect x="236" y="78" width="16" height="8" rx="2" opacity=".5"/></g>
+<rect x="352" y="8" width="7" height="80" rx="3" fill="url(#b)"/>
+<path d="M18 74 h40" stroke="url(#b)" stroke-width="7" stroke-linecap="round"/>
+<path d="M18 74 c-4 -18 6 -32 22 -32 c16 0 26 14 22 32" fill="none" stroke="#c99a46" stroke-width="6"/>
 </svg>

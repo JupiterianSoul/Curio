@@ -9,13 +9,14 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="mirror-drawing">
+<body data-game="mirror-drawing" data-modes>
   <main class="c-wrap">
     <div class="mi-head">
       <h1 class="c-title">Mirror Drawing</h1>
-      <p class="c-sub">Stay inside the track while your controls are flipped, rotated or slowly spinning. Twenty shapes, six brain-melting modes. It is much harder than it looks.</p>
+      <p class="c-sub mi-s">Start on the green dot and follow the track. Catch: left and right are swapped. Your brain will protest.</p>
+      <p class="c-sub mi-a">Stay inside the track while your controls are flipped, rotated or slowly spinning. Twenty shapes, six brain-melting modes. It is much harder than it looks.</p>
     </div>
-    <div class="mi-modes" id="modes" role="group" aria-label="Control mode"></div>
+    <div class="mi-modes mi-a" id="modes" role="group" aria-label="Control mode"></div>
     <div class="mi-desc" id="desc"></div>
     <div class="mi-shapes" id="shapes" role="group" aria-label="Shape"></div>
     <div class="mi-board" id="board">
@@ -47,16 +48,16 @@
     </div>
     <div class="mi-actions">
       <button class="c-btn c-btn--ghost" id="restart" type="button">↺ Restart</button>
-      <button class="c-btn c-btn--ghost" id="dailyB" type="button" aria-pressed="false">📅 Daily mirror</button>
+      <button class="c-btn c-btn--ghost mi-a" id="dailyB" type="button" aria-pressed="false">📅 Daily mirror</button>
       <button class="c-btn" id="finishB" type="button" disabled>✓ Score it</button>
     </div>
     <p class="c-muted" style="text-align:center;font-size:14px;margin:10px 0 0"><span class="c-kbd">←</span><span class="c-kbd">↑</span><span class="c-kbd">→</span><span class="c-kbd">↓</span> or <span class="c-kbd">WASD</span> steer the pen (flipped too!) · <span class="c-kbd">1</span>-<span class="c-kbd">6</span> modes · <span class="c-kbd">R</span> restart · <span class="c-kbd">Enter</span> score · Touchpad mode: click the green dot to start, click again to pause</p>
-    <section class="c-card mi-rec" aria-label="Stats and badges">
+    <section class="c-card mi-rec mi-a" aria-label="Stats and badges">
       <h2>🏅 Reflections</h2>
       <div class="mi-stats2" id="stats2"></div>
       <div class="mi-badges" id="badges"></div>
     </section>
-    <section class="mi-bests">
+    <section class="mi-bests mi-a">
       <h2>Personal bests</h2>
       <table class="mi-table">
         <thead><tr><th>Mode</th><th>Score</th><th>Time</th></tr></thead>

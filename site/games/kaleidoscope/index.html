@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="kaleidoscope">
+<body data-game="kaleidoscope" data-modes>
   <div class="kd-sky" aria-hidden="true"><i></i><i></i><i></i></div>
   <main class="kd">
     <section class="kd-stage">
@@ -59,6 +59,7 @@
         <button role="tab" data-tab="more" aria-selected="false">More</button>
       </div>
 
+      <p class="kd-easyhint">Draw on the glass. Pick a brush, or let it paint itself.</p>
       <div class="kd-pane" data-pane="brush">
         <div class="kd-brushes" id="brushes"></div>
         <div class="kd-field">
@@ -68,6 +69,10 @@
         <div class="kd-field">
           <label for="opac">Opacity <span id="opacV">100%</span></label>
           <input type="range" id="opac" min="10" max="100" value="100">
+        </div>
+        <div class="kd-easybtns">
+          <button class="kd-big" id="surpriseS" type="button">🎲 Surprise me</button>
+          <button class="kd-big kd-big--clear" id="clearS" type="button">✨ New glass</button>
         </div>
         <div class="kd-toggles">
           <button class="kd-tog" id="glow" type="button" aria-pressed="true">✨ Glow</button>
@@ -92,7 +97,7 @@
 
       <div class="kd-pane" data-pane="color" hidden>
         <div class="kd-seg" role="group" aria-label="Colour mode">
-          <button data-mode="rainbow" type="button">Rainbow</button><button data-mode="palette" type="button">Palette</button><button data-mode="gradient" type="button">Blend</button><button data-mode="solid" type="button">Solid</button>
+          <button data-gm="rainbow" type="button">Rainbow</button><button data-gm="palette" type="button">Palette</button><button data-gm="gradient" type="button">Blend</button><button data-gm="solid" type="button">Solid</button>
         </div>
         <div class="kd-pals" id="pals"></div>
         <div class="kd-colors" id="pickers">

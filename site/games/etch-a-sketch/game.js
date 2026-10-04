@@ -439,7 +439,7 @@
     });
   }
 
-  let glide = null, glideOn = Curio.store.get('es-glide', false);
+  let glide = null, glideOn = Curio.store.get('es-glide', Curio.simple);
   function stopGlide() { if (glide) { cancelAnimationFrame(glide.raf); glide = null; } }
   function glideTo(tx, ty) {
     stopGlide();

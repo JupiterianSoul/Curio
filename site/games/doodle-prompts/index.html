@@ -70,26 +70,39 @@
       .dp-board { width: 100%; }
       .dp-sw { width: 27px; height: 27px; }
     }
+    .dp { --dp-wall: #1f4d45; --dp-wall2: #163a34; --dp-gold: #d8b25a; --dp-gold2: #8f6a22; --dp-serif: "Didot", "Bodoni MT", "Playfair Display", Georgia, serif; }
+    .dp-hero .c-title { font-family: var(--dp-serif); font-style: italic; letter-spacing: .01em; }
+    #sStart .dp-hero, #sGallery .dp-hero { margin: 0 -16px 18px; padding: 26px 16px 22px; border-radius: 18px; color: #f6efe0; background: radial-gradient(ellipse at 50% -10%, rgba(255, 236, 180, .35), transparent 60%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .03) 0 2px, transparent 2px 18px), linear-gradient(180deg, var(--dp-wall), var(--dp-wall2)); box-shadow: inset 0 -10px 0 rgba(0, 0, 0, .2); }
+    #sStart .dp-hero .c-title, #sGallery .dp-hero .c-title { color: #fff6dc; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
+    #sStart .dp-hero .c-sub, #sGallery .dp-hero .c-sub { color: #dfe9e4; margin-bottom: 0; }
+    .dp-setup { border: 0; box-shadow: 0 0 0 6px var(--dp-gold), 0 0 0 9px var(--dp-gold2), 0 0 0 12px #f3d891, 0 20px 40px rgba(0, 0, 0, .25); }
+    .dp-board { box-shadow: 0 0 0 8px #6b4a2e, 0 0 0 12px #8a6440, 0 18px 30px rgba(40, 25, 10, .3); border: 0; }
+    .dp-s { display: none; }
+    html[data-mode="simple"] .dp-s { display: block; }
+    html[data-mode="simple"] .dp-a { display: none !important; }
+    html[data-mode="simple"] .dp-sw { width: 38px; height: 38px; }
+    html[data-mode="simple"] .dp-tb { height: 44px; font-size: 15px; }
   </style>
 </head>
-<body data-game="doodle-prompts">
+<body data-game="doodle-prompts" data-modes>
   <main class="dp">
     <section id="sStart">
       <div class="dp-hero">
         <h1 class="c-title">Doodle Prompts</h1>
-        <p class="c-sub">Five ridiculous prompts. A ticking clock. Then a very serious art critic reviews your work. Nobody is ready.</p>
+        <p class="c-sub dp-s">Three silly things to draw, 45 seconds each. Then a very serious art critic reviews them.</p>
+        <p class="c-sub dp-a">Five ridiculous prompts. A ticking clock. Then a very serious art critic reviews your work. Nobody is ready.</p>
       </div>
       <div class="dp-setup c-card">
-        <div>
+        <div class="dp-a">
           <span class="dp-lab">Time per drawing</span>
           <div class="dp-seg" role="group" aria-label="Time per drawing">
             <button data-time="20">20 s</button><button data-time="40">40 s</button><button data-time="60">60 s</button>
           </div>
         </div>
-        <div>
+        <div class="dp-a">
           <span class="dp-lab">Mode</span>
           <div class="dp-seg" role="group" aria-label="Mode">
-            <button data-mode="solo">🧐 Critic</button><button data-mode="party">👯 Pass and play</button>
+            <button data-gm="solo">🧐 Critic</button><button data-gm="party">👯 Pass and play</button>
           </div>
           <p class="dp-modeinfo" id="modeInfo"></p>
         </div>
@@ -97,7 +110,7 @@
         <div class="dp-stats">
           <div class="c-stat"><b id="stRounds">0</b><span>Rounds</span></div>
           <div class="c-stat"><b id="stBest">-</b><span>Best stars</span></div>
-          <div class="c-stat"><b id="stGuess">-</b><span>Best guesses</span></div>
+          <div class="c-stat dp-a"><b id="stGuess">-</b><span>Best guesses</span></div>
         </div>
         <div id="lastWrap" hidden>
           <span class="dp-lab" style="text-align:center">Your last gallery</span>
@@ -119,14 +132,14 @@
       </div>
       <div class="dp-tools">
         <div class="dp-pal" id="pal"></div>
-        <div class="dp-seg" role="group" aria-label="Pen size"><button data-w="4">S</button><button data-w="9">M</button><button data-w="18">L</button></div>
+        <div class="dp-seg dp-a" role="group" aria-label="Pen size"><button data-w="4">S</button><button data-w="9">M</button><button data-w="18">L</button></div>
         <button class="dp-tb" id="eraser" aria-pressed="false">🧽 Eraser</button>
         <button class="dp-tb" id="undo">↶ Undo</button>
         <button class="dp-tb" id="clear">Clear</button>
         <button class="dp-tb" id="reroll">🎲 New prompt</button>
         <button class="c-btn" id="done">Done ✓</button>
       </div>
-      <p class="dp-keys c-muted">Keys: <span class="c-kbd">1</span> to <span class="c-kbd">9</span> colours, <span class="c-kbd">[</span> <span class="c-kbd">]</span> pen size, <span class="c-kbd">E</span> eraser, <span class="c-kbd">U</span> undo, <span class="c-kbd">Enter</span> done. On a touchpad, turn on Touchpad mode in the top bar: click to put the pen down, click again to lift it.</p>
+      <p class="dp-keys c-muted dp-a">Keys: <span class="c-kbd">1</span> to <span class="c-kbd">9</span> colours, <span class="c-kbd">[</span> <span class="c-kbd">]</span> pen size, <span class="c-kbd">E</span> eraser, <span class="c-kbd">U</span> undo, <span class="c-kbd">Enter</span> done. On a touchpad, turn on Touchpad mode in the top bar: click to put the pen down, click again to lift it.</p>
     </section>
 
     <section id="sPass" hidden>
@@ -156,8 +169,8 @@
         <div class="c-stat"><b id="sumBest">0</b><span>Best</span></div>
         <div class="c-row">
           <button class="c-btn" id="again">Play again</button>
-          <button class="c-btn c-btn--ghost" id="saveAll">Save gallery</button>
-          <button class="c-btn c-btn--ghost" id="home">Change settings</button>
+          <button class="c-btn c-btn--ghost dp-a" id="saveAll">Save gallery</button>
+          <button class="c-btn c-btn--ghost dp-a" id="home">Change settings</button>
         </div>
       </div>
       <div class="dp-gal" id="gal"></div>

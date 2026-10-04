@@ -26,6 +26,7 @@
   let style = Curio.store.get('ol-style', 'ink');
   if (!STYLES.includes(style)) style = 'ink';
   let width = Curio.store.get('ol-width', 6);
+  if (Curio.simple) { mode = 'prompt'; diff = 'easy'; prompt = Curio.pick(PR.easy); style = 'rainbow'; width = 8; }
   let speedIdx = Curio.store.get('ol-speed', 2);
   let gallery = Curio.store.get('ol-gallery', []);
   if (!Array.isArray(gallery)) gallery = [];
@@ -527,8 +528,8 @@
   async function copy(t) { try { await navigator.clipboard.writeText(t); Curio.toast('Result copied 📋'); } catch { Curio.toast('Copy failed'); } }
   function setMode(m) {
     if (speed) { cancelAnimationFrame(speed.raf); speed = null; }
-    mode = m; Curio.store.set('ol-mode', mode);
-    $('modes').querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mode === mode)));
+    mode = Curio.simple ? 'prompt' : m; if (!Curio.simple) Curio.store.set('ol-mode', mode);
+    $('modes').querySelectorAll('[data-gm]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.gm === mode)));
     if (mode === 'dots') { dotsDaily = true; makeDots(); }
     lastShare = '';
     setPrompt(prompt); clearBoard();
@@ -595,7 +596,7 @@
   speedEl.value = speedIdx;
   const paintSpeed = () => { $('speedLbl').textContent = `${SPEEDS[speedIdx]}x`; };
   speedEl.addEventListener('input', () => { speedIdx = +speedEl.value; Curio.store.set('ol-speed', speedIdx); paintSpeed(); });
-  $('modes').querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  $('modes').querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.gm)));
   $('diffs').querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', () => setDiff(b.dataset.d)));
 
   $('next').addEventListener('click', nextPrompt);
@@ -615,8 +616,8 @@
     const k = e.key.toLowerCase();
     if (k === 'r') { if (!btnReplay.disabled) replay(); }
     else if (k === 'n') nextPrompt();
-    else if (k === 'k') keep();
-    else if (/^[1-5]$/.test(k)) setStyle(STYLES[+k - 1]);
+    else if (k === 'k' && Curio.advanced) keep();
+    else if (/^[1-5]$/.test(k) && Curio.advanced) setStyle(STYLES[+k - 1]);
   });
   (function idle() {
     requestAnimationFrame(idle);
@@ -629,7 +630,7 @@
 
   applyPaper();
   if (mode === 'dots') makeDots();
-  $('modes').querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mode === mode)));
+  $('modes').querySelectorAll('[data-gm]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.gm === mode)));
   $('diffs').querySelectorAll('[data-d]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.d === diff)));
   $('styles').querySelectorAll('[data-s]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === style)));
   paintInks(); paintWidths(); paintSpeed();

@@ -9,17 +9,18 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="piano">
+<body data-game="piano" data-modes>
   <main class="c-wrap pn-wrap">
     <header class="pn-hero">
       <h1 class="c-title">Piano</h1>
-      <p class="c-sub">No lessons required. Click, tap or mash your keyboard, or let the falling notes teach you a song.</p>
+      <p class="c-sub pn-sub-s">Tap the keys or play them with your computer keyboard. Pick a song and the glowing notes show you which key is next.</p>
+      <p class="c-sub pn-sub-a">No lessons required. Click, tap or mash your keyboard, or let the falling notes teach you a song.</p>
     </header>
 
     <div class="pn-modes" role="tablist" aria-label="Mode">
-      <button role="tab" data-mode="free" aria-selected="true"><i>🎹</i><span>Free play</span></button>
-      <button role="tab" data-mode="learn" aria-selected="false"><i>🎼</i><span>Learn songs</span></button>
-      <button role="tab" data-mode="chords" aria-selected="false"><i>🎸</i><span>Chord pads</span></button>
+      <button role="tab" data-gm="free" aria-selected="true"><i>🎹</i><span>Free play</span></button>
+      <button role="tab" data-gm="learn" aria-selected="false"><i>🎼</i><span>Learn songs</span></button>
+      <button role="tab" data-gm="chords" aria-selected="false"><i>🎸</i><span>Chord pads</span></button>
     </div>
 
     <div class="pn-insts" id="insts" role="group" aria-label="Instrument"></div>

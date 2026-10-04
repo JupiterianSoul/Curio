@@ -9,6 +9,7 @@
 
   const saved = Curio.store.get('flipbook:state', {});
   let tool = 'pen', color = saved.color ?? 0, width = saved.width || 8, onion = saved.onion ?? true, fps = saved.fps || 8, mode = saved.mode || 'loop';
+  if (Curio.simple) { onion = true; fps = 8; mode = 'loop'; width = 8; }
   let frames = [], cur = 0, uid = 1;
   const newFrame = () => ({ id: uid++, c: mk(), thumb: null });
 
@@ -373,14 +374,14 @@
   function syncUi() {
     document.querySelectorAll('[data-tool]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tool === tool)));
     document.querySelectorAll('[data-w]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.w === width)));
-    document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    document.querySelectorAll('[data-gm]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.gm === mode)));
     [...pal.children].forEach((b, i) => b.setAttribute('aria-pressed', String(i === color && tool === 'pen')));
     $('onion').setAttribute('aria-pressed', String(onion));
     $('fps').value = fps; $('fpsV').textContent = `${fps} fps`;
   }
   document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => { tool = b.dataset.tool; syncUi(); }));
   document.querySelectorAll('[data-w]').forEach((b) => b.addEventListener('click', () => { width = +b.dataset.w; syncUi(); scheduleSave(); }));
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; syncUi(); scheduleSave(); }));
+  document.querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.gm; syncUi(); scheduleSave(); }));
   document.querySelectorAll('[data-starter]').forEach((b) => b.addEventListener('click', () => loadStarter(b.dataset.starter)));
   $('onion').addEventListener('click', () => { onion = !onion; syncUi(); dirty = true; scheduleSave(); });
   $('fps').addEventListener('input', (e) => { fps = +e.target.value; $('fpsV').textContent = `${fps} fps`; scheduleSave(); });

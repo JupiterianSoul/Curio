@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="drum-machine">
+<body data-game="drum-machine" data-modes="live">
   <main class="c-wrap dm-wrap simple" id="wrap">
     <h1 class="c-title">Beat Maker</h1>
-    <p class="c-sub">Click the squares to place drum hits, press Play, and you have a beat. Zero talent required.</p>
+    <p class="c-sub dm-sub-s">Tap squares to light them up. Press the big Play button. That is a beat.</p>
+    <p class="c-sub dm-sub-a">A 12 track drum machine with bass line, chords, effects, songs and a beat matching challenge.</p>
     <div class="dm-modebar">
       <button class="dm-pill" id="helpBtn" type="button">❓ How to play</button>
-      <button class="dm-pill dm-pill--adv" id="advBtn" type="button" aria-pressed="false">⚙️ Advanced mode: Off</button>
     </div>
     <div class="dm-howto" id="howto" hidden>
       <ol>
@@ -23,7 +23,7 @@
         <li><b>2</b><span><strong>Press Play</strong> (or the Space bar). The light runs left to right and plays what is lit.</span></li>
         <li><b>3</b><span><strong>Try a preset</strong> or press <em>Make a beat</em>. Change the drum kit and the tempo to taste.</span></li>
       </ol>
-      <p>Made a mess? <strong>Clear</strong> empties the grid, <strong>Reset</strong> brings back the starter beat, and <strong>Undo</strong> takes back any change. Want bass lines, effects and songs? Turn on <strong>Advanced mode</strong>.</p>
+      <p>Made a mess? <strong>Clear</strong> empties the grid, <strong>Reset</strong> brings back the starter beat, and <strong>Undo</strong> takes back any change. Want bass lines, effects and songs? Switch to <strong>Advanced</strong> in the top bar.</p>
       <button class="c-btn" id="howtoOk" type="button">Got it</button>
     </div>
 
@@ -48,7 +48,7 @@
 
       <div class="dm-label">Drum kit <small>pick the sound of your drums</small></div>
       <div class="dm-kits" id="kits" role="group" aria-label="Drum kit"></div>
-      <div class="dm-quick">
+      <div class="dm-quick adv">
         <label class="dm-qitem"><span>Preset beat</span><select class="dm-genre" id="presetSel" aria-label="Load a preset beat"></select></label>
         <label class="dm-qitem"><span>Make a beat in style</span><select class="dm-genre" id="genre" aria-label="Style for a random beat"></select></label>
         <button class="dm-act dm-act--gen" id="rand" type="button" title="Make a random beat in the chosen style (G)">✨ Make a beat</button>
@@ -64,6 +64,11 @@
         </div>
       </div>
 
+      <div class="dm-easy">
+        <button class="dm-big dm-big--gen" id="randS" type="button">✨ Surprise me</button>
+        <button class="dm-big dm-big--clear" id="clearS" type="button">🧽 Wipe clean</button>
+        <div class="dm-tempo" role="group" aria-label="Speed"><button type="button" data-sp="80">🐢 Slow</button><button type="button" data-sp="110">🚶 Medium</button><button type="button" data-sp="140">🐇 Fast</button></div>
+      </div>
       <div class="dm-ledpad"><span></span><div class="dm-leds" id="leds"></div></div>
       <div class="dm-grid" id="grid"></div>
 
@@ -71,7 +76,7 @@
         <button class="dm-act" id="undo" type="button" title="Undo the last change (Ctrl+Z)">↶ Undo</button>
         <button class="dm-act" id="redo" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
         <button class="dm-act" id="clear" type="button" title="Empty the grid of this pattern (undoable)">🗑 Clear</button>
-        <button class="dm-act" id="reset" type="button" title="Back to the starter beat and default settings">⟲ Reset</button>
+        <button class="dm-act" id="reset" type="button" title="Back to the starter beat and default settings">⟲ Start over</button>
         <button class="dm-act adv" id="copy" type="button" title="Copy this pattern">⧉ Copy</button>
         <button class="dm-act adv" id="paste" type="button" title="Paste into this pattern">📋 Paste</button>
         <button class="dm-act adv" id="dup" type="button" title="Copy this pattern into the next slot">➕ Copy to next</button>
@@ -149,12 +154,13 @@
       <div class="dm-chal" id="chal"></div>
     </section>
 
-    <section class="dm-extra">
+    <section class="dm-extra adv">
       <div class="dm-stats" id="stats"></div>
       <h3 class="dm-h3">Badges <span id="achCount"></span></h3>
       <div class="dm-ach" id="ach"></div>
     </section>
-    <p class="c-muted dm-foot"><span class="c-kbd">Esc</span> stops the sound · <span class="c-kbd">Space</span> play/stop · <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> pick a track · <span class="c-kbd">1</span>-<span class="c-kbd">8</span> and <span class="c-kbd">Q</span>-<span class="c-kbd">I</span> toggle its 16 steps · <span class="c-kbd">Shift</span>+<span class="c-kbd">1</span>-<span class="c-kbd">8</span> switch pattern · <span class="c-kbd">F</span> fill · <span class="c-kbd">G</span> generate · <span class="c-kbd">C</span>/<span class="c-kbd">V</span> copy/paste pattern · every sound is synthesized live, no samples.</p>
+    <p class="c-muted dm-foot dm-foot-s"><span class="c-kbd">Space</span> play or stop · <span class="c-kbd">G</span> surprise beat · <span class="c-kbd">X</span> wipe clean</p>
+    <p class="c-muted dm-foot adv"><span class="c-kbd">Esc</span> stops the sound · <span class="c-kbd">Space</span> play/stop · <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> pick a track · <span class="c-kbd">1</span>-<span class="c-kbd">8</span> and <span class="c-kbd">Q</span>-<span class="c-kbd">I</span> toggle its 16 steps · <span class="c-kbd">Shift</span>+<span class="c-kbd">1</span>-<span class="c-kbd">8</span> switch pattern · <span class="c-kbd">F</span> fill · <span class="c-kbd">G</span> generate · <span class="c-kbd">C</span>/<span class="c-kbd">V</span> copy/paste pattern · every sound is synthesized live, no samples.</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

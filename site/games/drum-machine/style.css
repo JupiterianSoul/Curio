@@ -282,3 +282,25 @@
   .dm-play small { font-size: 15px; }
   .dm-power { font-size: 20px; padding: 14px 22px; }
 }
+.dm-easy { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 2px 0 14px; }
+.dm-big { flex: 1 1 150px; min-height: 54px; border: 0; border-radius: 14px; font: inherit; font-weight: 900; font-size: 18px; color: #fff; cursor: pointer; transition: transform .08s, filter .15s; }
+.dm-big:hover { filter: brightness(1.12); }
+.dm-big:active { transform: translateY(3px); }
+.dm-big--gen { background: linear-gradient(180deg, #a77bff, #7448e6); box-shadow: 0 4px 0 #4a2aa6, 0 8px 18px rgba(116, 72, 230, .35); }
+.dm-big--clear { background: linear-gradient(180deg, #5d4b63, #3f3245); box-shadow: 0 4px 0 #1c151f; }
+.dm-big:active { box-shadow: none; }
+.dm-tempo { flex: 1 1 280px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: #120d14; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .6); }
+.dm-tempo button { min-height: 46px; border: 0; border-radius: 10px; background: transparent; color: #cbbad2; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.dm-tempo button[aria-pressed="true"] { background: var(--kit); color: #fff; box-shadow: 0 0 14px color-mix(in srgb, var(--kit) 60%, transparent); }
+.dm-big:focus-visible, .dm-tempo button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.dm-sub-a, .dm-foot-s { display: none; }
+.dm-wrap:not(.simple) .dm-easy, .dm-wrap:not(.simple) .dm-sub-s { display: none; }
+.dm-wrap:not(.simple) .dm-sub-a { display: block; }
+.dm-wrap.simple .dm-foot-s { display: block; }
+.dm-wrap.simple #redo, .dm-wrap.simple #clear { display: none; }
+@media (min-width: 681px) { .dm-wrap.simple .dm-cell { min-height: 40px; } }
+.dm-wrap.simple .dm-play { min-width: 140px; }
+.dm-grid.dm-wiped { animation: dm-wipe .45s ease; }
+@keyframes dm-wipe { 0% { filter: brightness(1.8); transform: scale(.985); } 100% { filter: none; transform: none; } }
+@media (max-width: 680px) { .dm-big { font-size: 16px; min-height: 48px; } .dm-tempo button { font-size: 13px; } }
+html[data-mode="simple"] .dm-unlock { display: none; }

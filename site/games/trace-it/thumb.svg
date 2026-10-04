@@ -1,17 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
-  <rect width="400" height="300" fill="#00796b"/>
-  <circle cx="40" cy="40" r="60" fill="#00897b"/>
-  <circle cx="370" cy="270" r="80" fill="#00695c"/>
-  <rect x="80" y="22" width="240" height="256" rx="20" fill="#fffdf7"/>
-  <path d="M200 52 L223 116 L290 116 L236 156 L256 222 L200 182 L144 222 L164 156 L110 116 L177 116 Z" fill="none" stroke="#d9d2c4" stroke-width="16" stroke-linejoin="round"/>
-  <path d="M200 52 L223 116 L290 116 L236 156 L256 222 L200 182 L144 222 L164 156 L110 116 L177 116 Z" fill="none" stroke="#a49a8a" stroke-width="2" stroke-dasharray="6 5"/>
-  <path d="M200 53 C206 72 216 96 223 117 C246 116 268 117 289 116 C272 129 252 142 236 156 C243 178 249 200 255 221 C238 208 218 194 201 182" fill="none" stroke="#1fb35a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <g transform="translate(201 182) rotate(-30)">
-    <rect x="-7" y="-78" width="14" height="66" rx="3" fill="#ffc233"/>
-    <path d="M-7 -12 L0 6 L7 -12 Z" fill="#f5d7a1"/>
-    <path d="M-2.5 0 L0 6 L2.5 0 Z" fill="#333"/>
-    <rect x="-7" y="-88" width="14" height="11" rx="3" fill="#ff6fb5"/>
-  </g>
-  <rect x="112" y="238" width="96" height="30" rx="15" fill="#1d1b19"/>
-  <text x="160" y="259" fill="#5dfc9a" font-family="monospace" font-weight="900" font-size="20" text-anchor="middle">96%</text>
+<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d3d8e0"/><stop offset="1" stop-color="#5f6878"/></linearGradient><radialGradient id="g" cx=".5" cy=".5" r=".65"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9ecff"/></radialGradient></defs>
+<rect width="400" height="300" fill="#2f6f8f"/>
+<circle cx="200" cy="150" r="170" fill="#9fd4ff" opacity=".25"/>
+<rect x="66" y="18" width="268" height="264" rx="20" fill="url(#a)"/>
+<rect x="82" y="32" width="236" height="220" rx="9" fill="url(#g)" stroke="#3b4252" stroke-width="3"/>
+<path d="M200 62 L222 122 L286 124 L236 162 L254 224 L200 188 L146 224 L164 162 L114 124 L178 122 Z" fill="none" stroke="#9aa0ad" stroke-width="7" stroke-dasharray="10 9" stroke-linejoin="round"/>
+<path d="M200 62 L222 122 L286 124 L236 162 L248 206" fill="none" stroke="#e5397a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(248 206) rotate(35)"><rect x="-6" y="0" width="12" height="62" rx="3" fill="#ffcc33"/><path d="M-6 0 L0 -16 L6 0 Z" fill="#f2c9a0"/><path d="M-2 -10 L0 -16 L2 -10 Z" fill="#333"/></g>
+<rect x="66" y="44" width="56" height="16" fill="#f0d68c" opacity=".9" transform="rotate(-38 94 52)"/>
+<rect x="280" y="44" width="56" height="16" fill="#f0d68c" opacity=".9" transform="rotate(38 308 52)"/>
+<circle cx="168" cy="268" r="4" fill="#7dff9b"/><g fill="#2b3240"><rect x="178" y="265" width="56" height="6" rx="2"/></g>
 </svg>

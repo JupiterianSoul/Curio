@@ -176,3 +176,23 @@
   .pn-splash .c-btn { padding: 8px 12px; font-size: 14px; }
 }
 .pn-case, .pn-modes, .pn-insts, .pn-pads, .pn-tools { user-select: none; -webkit-user-select: none; }
+.pn-sub-s { display: none; }
+html[data-mode="simple"] .pn-sub-s { display: block; }
+html[data-mode="simple"] .pn-sub-a,
+html[data-mode="simple"] [data-gm="chords"],
+html[data-mode="simple"] #search,
+html[data-mode="simple"] #cats,
+html[data-mode="simple"] .pn-setup,
+html[data-mode="simple"] #pstats,
+html[data-mode="simple"] .pn-h3,
+html[data-mode="simple"] #ach,
+html[data-mode="simple"] #metro,
+html[data-mode="simple"] .pn-slide,
+html[data-mode="simple"] #labels,
+html[data-mode="simple"] #chordMode,
+html[data-mode="simple"] .pn-unlock,
+html[data-mode="simple"] .pn-help { display: none !important; }
+html[data-mode="simple"] .pn-insts { justify-content: center; }
+html[data-mode="simple"] .pn-tools { justify-content: center; }
+html[data-mode="simple"] .pn-tool { font-size: 17px; padding: 12px 22px; }
+html[data-mode="simple"] .pn-libtop { display: none; }

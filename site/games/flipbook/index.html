@@ -53,13 +53,26 @@
       .fb-pad { width: calc(100% - 10px); margin-left: 10px; }
       .dw-head h1 { font-size: 24px; }
     }
+    .dw-head h1 { font-family: "Chalkboard SE", "Marker Felt", "Comic Sans MS", var(--font, sans-serif); font-size: 34px; transform: rotate(-2deg); display: inline-block; }
+    .dw-head h1::after { content: ""; display: inline-block; width: 26px; height: 18px; margin-left: 8px; background: linear-gradient(90deg, #ffe066 0 30%, #ffd43b 30% 60%, #fcc419 60%); border-radius: 2px; transform: rotate(8deg) skewX(-8deg); box-shadow: 2px 2px 0 rgba(0, 0, 0, .15); vertical-align: middle; animation: fb-flip .9s steps(3) infinite; }
+    @keyframes fb-flip { 50% { transform: rotate(-6deg) skewX(8deg); } }
+    .fb-pad::after { content: ""; position: absolute; right: 18%; top: -12px; width: 64px; height: 26px; border-radius: 6px 6px 3px 3px; background: linear-gradient(180deg, #4b5563, #1f2937); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25), 0 3px 6px rgba(0, 0, 0, .3); pointer-events: none; z-index: 2; }
+    .fb-s { display: none; }
+    html[data-mode="simple"] .fb-s { display: block; }
+    html[data-mode="simple"] span.fb-s { display: inline; }
+    html[data-mode="simple"] .fb-a { display: none !important; }
+    html[data-mode="simple"] .dw-btns3 { grid-template-columns: 1fr; }
+    html[data-mode="simple"] #add, html[data-mode="simple"] .fb-play { font-size: 18px; padding: 13px; }
+    html[data-mode="simple"] .fb-pal { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    @media (prefers-reduced-motion: reduce) { .dw-head h1::after { animation: none; } }
   </style>
 </head>
-<body data-game="flipbook">
+<body data-game="flipbook" data-modes>
   <main class="dw">
     <header class="dw-head">
       <h1>Flipbook</h1>
-      <p>The oldest animation trick there is. Draw a frame, add another, nudge things a little, then flip.</p>
+      <p class="fb-s">Draw a picture. Press New page and draw it again, a tiny bit moved. Press Flip it and it moves!</p>
+      <p class="fb-a">The oldest animation trick there is. Draw a frame, add another, nudge things a little, then flip.</p>
     </header>
     <div class="dw-stage">
       <div class="fb-pad">
@@ -74,31 +87,31 @@
         <button data-tool="eraser" aria-pressed="false">🧽 Eraser</button>
       </div>
       <div class="fb-pal" id="pal"></div>
-      <div class="dw-field">
+      <div class="dw-field fb-a">
         <span class="dw-lab">Line</span>
         <div class="dw-seg" role="group" aria-label="Line width">
           <button data-w="4">Fine</button><button data-w="8">Medium</button><button data-w="16">Bold</button>
         </div>
       </div>
       <div class="fb-row">
-        <button class="dw-tog" id="onion" aria-pressed="true">🧅 Onion skin</button>
+        <button class="dw-tog fb-a" id="onion" aria-pressed="true">🧅 Onion skin</button>
         <button class="dw-tog" id="undo">↶ Undo</button>
         <button class="dw-tog" id="clearf">Clear frame</button>
       </div>
       <div class="dw-btns3">
-        <button class="c-btn c-btn--ghost" id="add" title="New blank frame (N)">＋ New</button>
-        <button class="c-btn c-btn--ghost" id="dup" title="Duplicate frame (D)">⧉ Copy</button>
-        <button class="c-btn c-btn--ghost" id="del" title="Delete frame">🗑 Del</button>
+        <button class="c-btn c-btn--ghost" id="add" title="New blank frame (N)">＋ New<span class="fb-s"> page</span></button>
+        <button class="c-btn c-btn--ghost fb-a" id="dup" title="Duplicate frame (D)">⧉ Copy</button>
+        <button class="c-btn c-btn--ghost fb-a" id="del" title="Delete frame">🗑 Del</button>
       </div>
-      <div class="dw-field">
+      <div class="dw-field fb-a">
         <label class="dw-lab" for="fps">Speed <span id="fpsV">8 fps</span></label>
         <input type="range" id="fps" min="1" max="24" value="8">
         <div class="dw-seg" role="group" aria-label="Playback mode">
-          <button data-mode="loop">🔁 Loop</button><button data-mode="pingpong">↔️ Ping-pong</button><button data-mode="once">1️⃣ Once</button>
+          <button data-gm="loop">🔁 Loop</button><button data-gm="pingpong">↔️ Ping-pong</button><button data-gm="once">1️⃣ Once</button>
         </div>
       </div>
       <button class="c-btn fb-play" id="play">▶ Flip it</button>
-      <div class="dw-btns">
+      <div class="dw-btns fb-a">
         <button class="c-btn c-btn--ghost" id="gif">Export GIF</button>
         <button class="c-btn c-btn--ghost" id="sheet">Frame sheet</button>
       </div>
@@ -111,7 +124,7 @@
           <button data-starter="rocket">🚀 Lift off</button>
         </div>
       </div>
-      <p class="dw-hint"><span class="c-kbd">Space</span> plays, <span class="c-kbd">←</span> <span class="c-kbd">→</span> flip pages, <span class="c-kbd">N</span> new, <span class="c-kbd">D</span> copy, <span class="c-kbd">P</span> pen, <span class="c-kbd">E</span> eraser, <span class="c-kbd">O</span> onion skin, <span class="c-kbd">U</span> undo. On a touchpad, turn on Touchpad mode in the top bar: click to put the pen down, click again to lift it. Your flipbook autosaves.</p>
+      <p class="dw-hint fb-a"><span class="c-kbd">Space</span> plays, <span class="c-kbd">←</span> <span class="c-kbd">→</span> flip pages, <span class="c-kbd">N</span> new, <span class="c-kbd">D</span> copy, <span class="c-kbd">P</span> pen, <span class="c-kbd">E</span> eraser, <span class="c-kbd">O</span> onion skin, <span class="c-kbd">U</span> undo. On a touchpad, turn on Touchpad mode in the top bar: click to put the pen down, click again to lift it. Your flipbook autosaves.</p>
     </aside>
   </main>
   <script src="../../games.js"></script>

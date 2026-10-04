@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="etch-a-sketch">
+<body data-game="etch-a-sketch" data-modes>
   <main class="c-wrap">
     <div class="es-head">
       <h1 class="c-title">Etch Sketch</h1>
-      <p class="c-sub">Two knobs, one line that never lifts. Draw a staircase, a house, a cat, or a heroic mess.</p>
+      <p class="c-sub es-s">Spin the white knobs (or use the arrow keys) to draw. Shake to wipe it clean.</p>
+      <p class="c-sub es-a">Two knobs, one line that never lifts. Draw a staircase, a house, a cat, or a heroic mess.</p>
     </div>
     <div class="es-toy" id="toy">
       <div class="es-logo" aria-hidden="true">Etch Sketch</div>
@@ -23,18 +24,18 @@
       <button class="es-knob l" id="kl" type="button" aria-label="Left knob: moves the line left and right. Use left and right arrow keys."><span class="es-grip"></span><span class="es-cap"></span><span class="es-mark"></span></button>
       <div class="es-mid">
         <button class="c-btn" id="shake" type="button">🫨 Shake</button>
-        <button class="c-btn c-btn--ghost" id="savePng" type="button">⬇ PNG</button>
+        <button class="c-btn c-btn--ghost es-a" id="savePng" type="button">⬇ PNG</button>
       </div>
       <button class="es-knob r" id="kr" type="button" aria-label="Right knob: moves the line up and down. Use up and down arrow keys."><span class="es-grip"></span><span class="es-cap"></span><span class="es-mark"></span></button>
     </div>
     <p class="es-help">Drag the knobs in circles, or use <span class="c-kbd">←</span><span class="c-kbd">→</span><span class="c-kbd">↑</span><span class="c-kbd">↓</span> / <span class="c-kbd">W</span><span class="c-kbd">A</span><span class="c-kbd">S</span><span class="c-kbd">D</span>. Hold <span class="c-kbd">Shift</span> to go faster, press <span class="c-kbd">Space</span> to shake. On a touchpad, two-finger scroll over the screen to etch, click a knob to grab it (Touchpad mode), or turn on <span class="c-kbd">G</span> click-to-glide.</p>
     <div class="es-tools">
       <button class="c-btn c-btn--ghost" id="glide" type="button" aria-pressed="false">🎯 Click-to-glide: off</button>
-      <button class="c-btn c-btn--ghost" id="snap" type="button">📸 Save to shelf</button>
-      <div class="es-skins" id="skins" role="group" aria-label="Toy colour"></div>
+      <button class="c-btn c-btn--ghost es-a" id="snap" type="button">📸 Save to shelf</button>
+      <div class="es-skins es-a" id="skins" role="group" aria-label="Toy colour"></div>
       <button class="c-btn c-btn--ghost" id="motion" type="button" hidden>📳 Enable shake-to-erase</button>
     </div>
-    <section class="c-card es-ch" aria-label="Challenges">
+    <section class="c-card es-ch es-a" aria-label="Challenges">
       <div class="es-chhead">
         <div><h2>🖍️ Trace challenges</h2><p class="c-muted" style="margin:0;font-size:14px">A guide appears on the screen. Etch over it as neatly as you can, then press Score.</p></div>
         <div class="c-row" style="gap:8px"><button class="c-btn" id="chDaily" type="button">📅 Daily challenge</button><button class="c-btn" id="chScore" type="button" disabled>✓ Score</button><button class="c-btn c-btn--ghost" id="chQuit" type="button" hidden>✕ Free draw</button></div>
@@ -42,11 +43,11 @@
       <p class="es-chres" id="chResult" aria-live="polite">Free drawing. Pick a challenge to trace a guide picture.</p>
       <div class="es-targets" id="targets"></div>
     </section>
-    <section class="c-card es-ch" aria-label="Saved sketches">
+    <section class="c-card es-ch es-a" aria-label="Saved sketches">
       <h2>🗄️ Your shelf</h2>
       <div class="es-gal" id="gal"></div>
     </section>
-    <section class="c-card es-ch" aria-label="Stats and badges">
+    <section class="c-card es-ch es-a" aria-label="Stats and badges">
       <h2>🏅 Knob records</h2>
       <div class="es-stats2" id="stats2"></div>
       <div class="es-badges" id="badges"></div>

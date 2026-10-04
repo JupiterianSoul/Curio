@@ -9,7 +9,7 @@
     '#b3e5fc', '#4fc3f7', '#1e88e5', '#0d47a1', '#c5cae9', '#7986cb', '#3949ab', '#1a237e',
     '#e1bee7', '#ba68c8', '#8e24aa', '#4a148c', '#d7ccc8', '#a1887f', '#6d4c41', '#3e2723'
   ];
-  const PAGES = window.COLOUR_PAGES;
+  const PAGES = Curio.simple ? window.COLOUR_PAGES.filter((p) => p.fn().length <= 33) : window.COLOUR_PAGES;
   const $ = (id) => document.getElementById(id);
   const view = $('view'), art = $('art'), paintCv = $('paint'), linesCv = $('lines');
   paintCv.width = paintCv.height = N; linesCv.width = linesCv.height = N;
@@ -17,7 +17,7 @@
   const lc = linesCv.getContext('2d', { willReadFrequently: true });
 
   let pageIdx = Math.max(0, PAGES.findIndex((p) => p.id === Curio.store.get('cb-page', 'mandala')));
-  let tool = 'fill', style = Curio.store.get('cb-style', 'solid');
+  let tool = 'fill', style = Curio.simple ? 'solid' : Curio.store.get('cb-style', 'solid');
   let colour = Curio.store.get('cb-colour', '#ff7043');
   let size = Curio.store.get('cb-size', 14);
   let lineA = null, nonLine = 1;
@@ -395,7 +395,8 @@
   };
   let theme = Curio.store.get('cb-theme', 'classic');
   if (!THEMES[theme]) theme = 'classic';
-  let PAL = THEMES[theme][1];
+  const CRAYONS = ['#e53935', '#fb8c00', '#fdd835', '#7cb342', '#2e7d32', '#26c6da', '#1e88e5', '#5e35b1', '#ec407a', '#8d6e63', '#212121', '#ffffff'];
+  let PAL = Curio.simple ? CRAYONS : THEMES[theme][1];
   const pal = $('pal');
   function buildPal() {
   pal.innerHTML = '';
@@ -418,6 +419,7 @@
 
   $('undo').addEventListener('click', doUndo);
   $('clear').addEventListener('click', async () => {
+    if (Curio.simple) { pushUndo(0, 0, N, N, pc.getImageData(0, 0, N, N).data); pc.fillStyle = '#fff'; pc.fillRect(0, 0, N, N); syncUndo(); saveNow(); Curio.toast('Fresh page. Undo brings your colours back.', 1800); Curio.beep(260, .08, 'triangle', .07); return; }
     const v = await Curio.modal({ emoji: '🧽', title: 'Start this page over?', body: 'All the colour on this page will be wiped. This cannot be undone.', buttons: [{ label: 'Wipe it', value: 'yes' }, { label: 'Keep it', value: 'no' }] });
     if (v !== 'yes') return;
     pc.fillStyle = '#fff'; pc.fillRect(0, 0, N, N);

@@ -9,17 +9,18 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="blind-drawing">
+<body data-game="blind-drawing" data-modes>
   <main class="c-wrap">
     <div class="bd-head">
       <h1 class="c-title">Blind Drawing</h1>
-      <p class="c-sub">The curtain stays shut while you draw. Trust your hand, then enjoy the big reveal.</p>
+      <p class="c-sub bd-s">Draw the thing on the curtain without seeing your lines. Then pull the curtain and laugh.</p>
+      <p class="c-sub bd-a">The curtain stays shut while you draw. Trust your hand, then enjoy the big reveal.</p>
     </div>
-    <div class="bd-top">
+    <div class="bd-top bd-a">
       <div class="bd-seg" role="group" aria-label="Mode">
-        <button type="button" data-mode="prompt" aria-pressed="true">🎲 Prompts</button>
-        <button type="button" data-mode="friend" aria-pressed="false">🧑 Friend's face</button>
-        <button type="button" data-mode="party" aria-pressed="false">🎉 Pass the pen</button>
+        <button type="button" data-gm="prompt" aria-pressed="true">🎲 Prompts</button>
+        <button type="button" data-gm="friend" aria-pressed="false">🧑 Friend's face</button>
+        <button type="button" data-gm="party" aria-pressed="false">🎉 Pass the pen</button>
       </div>
     </div>
     <div class="bd-stage" id="stage">
@@ -49,11 +50,11 @@
       <button class="c-btn" id="reveal" type="button" disabled>🎭 Reveal!</button>
     </div>
     <div class="bd-actions" id="doneBtns" hidden>
-      <button class="c-btn c-btn--ghost" id="keep" type="button">⭐ Keep</button>
-      <button class="c-btn c-btn--ghost" id="png" type="button">⬇ PNG</button>
+      <button class="c-btn c-btn--ghost bd-a" id="keep" type="button">⭐ Keep</button>
+      <button class="c-btn c-btn--ghost bd-a" id="png" type="button">⬇ PNG</button>
       <button class="c-btn" id="again" type="button">Next drawing ›</button>
     </div>
-    <div class="bd-opts">
+    <div class="bd-opts bd-a">
       <label>Timer
         <select class="c-input" id="timer" aria-label="Timer">
           <option value="0">None</option><option value="15">15 s</option><option value="30">30 s</option><option value="60">60 s</option><option value="90">90 s</option>
@@ -78,12 +79,12 @@
       <div class="bd-pgrid" id="partyGrid"></div>
       <div class="bd-actions"><button class="c-btn" id="partyAgain" type="button">🎉 Another round</button></div>
     </section>
-    <div class="bd-gal-head">
+    <div class="bd-gal-head bd-a">
       <h2>Expectation vs reality</h2>
       <span class="c-muted" id="galCount"></span>
     </div>
-    <div class="bd-gal" id="gal"></div>
-    <section class="c-card bd-rec" aria-label="Stats and badges">
+    <div class="bd-gal bd-a" id="gal"></div>
+    <section class="c-card bd-rec bd-a" aria-label="Stats and badges">
       <h2>🏅 Backstage</h2>
       <div class="bd-stats2" id="stats2"></div>
       <div class="bd-badges" id="badges"></div>

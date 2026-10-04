@@ -9,11 +9,14 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="theremin">
-  <main class="c-wrap">
+<body data-game="theremin" data-modes>
+  <main class="c-wrap th-wrap">
     <h1 class="c-title">Theremin</h1>
-    <p class="c-sub">The only instrument you play without touching it. Left and right bends the pitch, up and down sets the volume. On a phone, use several fingers for chords.</p>
+    <p class="c-sub th-sub-s">Wave your pointer over the glowing field. Left and right is the note, up is louder. That is it, you are a theremin player.</p>
+    <p class="c-sub th-sub-a">The only instrument you play without touching it. Left and right bends the pitch, up and down sets the volume. On a phone, use several fingers for chords.</p>
     <section class="th" aria-label="Theremin">
+      <div class="th-plate"><span class="th-lamp" aria-hidden="true"></span><b>ZOBLE</b><span>Etherwave model T-1</span><i class="th-grille" aria-hidden="true"></i></div>
+      <div class="th-easy" id="easy" role="group" aria-label="Sound"></div>
       <div class="th-field" id="field" tabindex="0" role="application" aria-label="Theremin field. Move the pointer to play. With the keyboard, use the arrow keys and hold Space.">
         <canvas id="cv" aria-hidden="true"></canvas>
         <div class="th-read" aria-live="off"><b id="note">~</b><span id="hz">silence</span></div>

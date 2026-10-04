@@ -1,5 +1,5 @@
 (() => {
-  const SHAPES = window.TRACE_SHAPES;
+  const SHAPES = Curio.simple ? window.TRACE_SHAPES.filter((x) => x.lvl === 1) : window.TRACE_SHAPES;
   const LVL = ['', 'Easy', 'Medium', 'Tricky'];
   const STEP = 0.6, COVER_R = 4, MARGIN = 7;
   const COMMENTS = [

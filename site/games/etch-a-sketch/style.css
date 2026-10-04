@@ -97,3 +97,10 @@
 .es-badge b { display: block; font-size: 13px; }
 .es-badge span { font-size: 12px; color: var(--ink-2); line-height: 1.25; display: block; }
 @media (max-width: 560px) { .es-targets { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.es-toy { width: min(100%, 760px, calc((100dvh - var(--bar-h, 52px) - 190px) * 1.4)); min-width: min(100%, 340px); }
+.es-head .c-title { font-family: "Brush Script MT", "Segoe Script", "Snell Roundhand", cursive; font-style: italic; color: #d81f26; text-shadow: 0 2px 0 #f6c945; }
+.es-s { display: none; }
+html[data-mode="simple"] .es-s { display: block; }
+html[data-mode="simple"] .es-a { display: none !important; }
+html[data-mode="simple"] #shake { font-size: 18px; padding: 12px 24px; }
+html[data-mode="simple"] .es-help { display: none; }

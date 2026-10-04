@@ -101,3 +101,8 @@ body.is-party .bd-partyopt { display: flex !important; }
 .bd-badge span { font-size: 12px; color: var(--ink-2); line-height: 1.25; display: block; }
 .bd-seg { flex-wrap: wrap; justify-content: center; }
 @media (max-width: 520px) { .bd-judge { width: 100px; } .bd-judge em { font-size: 11px; } }
+.bd-head .c-title { font-family: "Rockwell", "Didot", "Bodoni MT", "Playfair Display", Georgia, serif; font-weight: 900; letter-spacing: .02em; color: #9d1730; text-shadow: 0 2px 0 #f2c14e, 0 4px 0 rgba(60, 10, 20, .35); }
+.bd-s { display: none; }
+html[data-mode="simple"] .bd-s { display: block; }
+html[data-mode="simple"] .bd-a { display: none !important; }
+html[data-mode="simple"] .bd-actions .c-btn { font-size: 18px; padding: 12px 22px; }

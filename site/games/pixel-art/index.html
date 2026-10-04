@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="pixel-art">
+<body data-game="pixel-art" data-modes>
   <main class="c-wrap pa-wrap">
     <div class="pa-head">
       <div>
         <h1 class="c-title">Pixel Art</h1>
-        <p class="c-sub">Every masterpiece starts with one tiny square. <button type="button" class="pa-prompt" id="promptChip">💡 Daily prompt</button></p>
+        <p class="c-sub pa-sub-s">Pick a colour, tap the squares. Fill buckets and mirrors make it look pro.</p>
+        <p class="c-sub pa-sub-a">Every masterpiece starts with one tiny square. <button type="button" class="pa-prompt" id="promptChip">💡 Daily prompt</button></p>
       </div>
       <div class="pa-icons">
         <button type="button" id="tplBtn" title="Templates">📐 <span>Templates</span></button>
@@ -95,7 +96,7 @@
           <div class="pa-prev"><canvas id="preview" aria-label="Animation preview"></canvas><button type="button" class="pa-ib" id="playBtn" aria-label="Pause preview">⏸</button></div>
           <div class="pa-exp">
             <label>Scale <select id="scaleSel" class="pa-select"><option value="1">1×</option><option value="4">4×</option><option value="8">8×</option><option value="16" selected>16×</option><option value="32">32×</option></select></label>
-            <button type="button" class="c-btn" id="expPng">PNG</button>
+            <button type="button" class="c-btn" id="expPng"><span class="pa-sv">💾 Save picture</span><span class="pa-sa">PNG</span></button>
             <button type="button" class="c-btn" id="expGif">GIF</button>
             <button type="button" class="c-btn c-btn--ghost" id="expSheet">Sheet</button>
           </div>

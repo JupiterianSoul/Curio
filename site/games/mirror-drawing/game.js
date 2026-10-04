@@ -50,6 +50,7 @@
   holder.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
   holder.append(probe); document.body.append(holder);
 
+  if (Curio.simple) { MODES.splice(1); const keepS = ['circle', 'square', 'tri', 'heart', 'diamond', 'star']; for (let i = SHAPES.length - 1; i >= 0; i--) if (!keepS.includes(SHAPES[i].id)) SHAPES.splice(i, 1); }
   let modeIdx = Math.max(0, MODES.findIndex((m) => m.id === Curio.store.get('mi-mode', 'lr')));
   let shapeIdx = Math.max(0, SHAPES.findIndex((s) => s.id === Curio.store.get('mi-shape', 'star')));
   let samples = [], covered = null, path2d = null;
@@ -285,7 +286,7 @@
     $('rIn').textContent = Math.round(ins * 100) + '%';
     $('rErr').textContent = errors;
     $('rNew').innerHTML = b.isNew && had ? '<span class="mi-new">New best for this mode!</span>' : (had ? `<span class="c-muted">Best: ${b.best}</span>` : '');
-    $('nextMode').textContent = modeIdx < MODES.length - 1 ? `Next: ${MODES[modeIdx + 1].name} ›` : 'Back to Mirror ›';
+    $('nextMode').textContent = Curio.simple ? `Next: ${SHAPES[(shapeIdx + 1) % SHAPES.length].name} ›` : modeIdx < MODES.length - 1 ? `Next: ${MODES[modeIdx + 1].name} ›` : 'Back to Mirror ›';
     $('res').classList.add('is-on');
     syncStats();
     Curio.beep(330 + score * 5, .1, 'triangle', .12);
@@ -364,7 +365,7 @@
   $('dailyB').addEventListener('click', startDaily);
   $('retry').addEventListener('click', reset);
   $('finishB').addEventListener('click', finish);
-  $('nextMode').addEventListener('click', () => setMode((modeIdx + 1) % MODES.length));
+  $('nextMode').addEventListener('click', () => (Curio.simple ? setShape((shapeIdx + 1) % SHAPES.length) : setMode((modeIdx + 1) % MODES.length)));
   let started = false;
   Curio.drag(cv, { start: (q) => { started = down(q); }, move: (q) => { if (started) move(q); }, end: () => { if (started) up(); started = false; } });
   cv.addEventListener('pointermove', (e) => { if (pid === null && e.pointerType === 'mouse' && state !== 'done') showGhost(mapped(e), false); });
