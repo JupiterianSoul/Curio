@@ -36,3 +36,19 @@
   .dp-intro { max-width: calc(100% - 175px); }
   .dp-level b { font-size: 14px; }
 }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+.dp-intro h1 { font-family: var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); font-weight: 400; letter-spacing: 0; display: flex; align-items: center; gap: 10px; }
+.dp-crayon { display: inline-block; width: 64px; height: 14px; border-radius: 3px 8px 8px 3px; background: linear-gradient(90deg, #e53935 0 70%, #b71c1c 70% 76%, #e53935 76%); position: relative; transform: rotate(-12deg); box-shadow: 1px 2px 0 rgba(0, 0, 0, .25); }
+.dp-crayon::after { content: ""; position: absolute; right: -12px; top: 2px; border: 5px solid transparent; border-left: 12px solid #e8a19f; }
+.dp-tools { background: repeating-linear-gradient(90deg, transparent 0 46px, rgba(0, 0, 0, .04) 46px 47px), #f6e7c3; border-top: 3px solid #c8a46a; }
+.dp-t, .dp-b { border: 2px solid #3a2a12; color: #2b2010; background: #fffaf0; box-shadow: 2px 2px 0 #3a2a12; }
+.dp-t[aria-pressed="true"] { border-color: var(--accent); box-shadow: 2px 2px 0 var(--accent); background: #fff; }
+.dp-b:active, .dp-t:active { transform: translate(2px, 2px); box-shadow: none; }
+.dp-sel select { color: #2b2010; }
+.dp-sur { background: var(--c-sun, #ffcf3a); }
+.dp-stars { font-weight: 800; color: #b07f00; }
+html[data-mode="simple"] .dp-t { min-width: 70px; font-size: 13px; }
+html[data-mode="simple"] .dp-c { width: 36px; height: 36px; }
+@media (prefers-color-scheme: dark) { :root:not([data-look]) .dp-tools { background: #2b2418; border-top-color: #6a5430; } }
+@media (max-width: 600px) { .dp-crayon { display: none; } }

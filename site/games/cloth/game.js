@@ -441,9 +441,21 @@
     const ytone = (1.04 - 0.1 * (j / rows)) * (0.965 + 0.07 * hash(i, j));
     const heat = Math.max(BURN[a], BURN[b], BURN[c]);
     const st = style(rgb, (lit + sheen) * ytone, back, heat > 0 ? Math.min(1, heat) : 0);
-    ctx.fillStyle = st; ctx.strokeStyle = st;
-    ctx.beginPath(); ctx.moveTo(X[a], Y[a]); ctx.lineTo(X[b], Y[b]); ctx.lineTo(X[c], Y[c]); ctx.closePath();
-    ctx.fill(); ctx.stroke();
+    let bk = buckets.get(st);
+    if (!bk) { bk = []; buckets.set(st, bk); }
+    bk.push(X[a], Y[a], X[b], Y[b], X[c], Y[c]);
+  }
+  const buckets = new Map();
+  function flushTris() {
+    for (const [st, bk] of buckets) {
+      if (!bk.length) continue;
+      ctx.fillStyle = st; ctx.strokeStyle = st;
+      ctx.beginPath();
+      for (let q = 0; q < bk.length; q += 6) { ctx.moveTo(bk[q], bk[q + 1]); ctx.lineTo(bk[q + 2], bk[q + 3]); ctx.lineTo(bk[q + 4], bk[q + 5]); ctx.closePath(); }
+      ctx.fill(); ctx.stroke();
+      bk.length = 0;
+    }
+    if (buckets.size > 600) buckets.clear();
   }
 
   function drawRoom() {
@@ -463,6 +475,18 @@
     for (let x = -40; x < W + 40; x += 90) { ctx.moveTo(x, fy); ctx.lineTo(x - 30, H); }
     ctx.moveTo(0, fy + 22); ctx.lineTo(W, fy + 22);
     ctx.stroke();
+    ctx.fillStyle = C.dark ? '#c9a640' : '#f2cc4a';
+    ctx.fillRect(0, fy + 4, W, 13);
+    ctx.fillStyle = C.dark ? 'rgba(0,0,0,.55)' : 'rgba(60,40,10,.75)';
+    for (let x = 0, n = 0; x < W; x += 9, n++) ctx.fillRect(x, fy + 4, 1, n % 10 === 0 ? 9 : n % 5 === 0 ? 6 : 3);
+    ctx.font = '700 8px ui-monospace, monospace';
+    for (let x = 90, n = 10; x < W; x += 90, n += 10) ctx.fillText(String(n), x + 2, fy + 15);
+    const sp = (x, y, col) => {
+      ctx.fillStyle = C.dark ? '#5a4632' : '#c69a63'; ctx.fillRect(x - 11, y - 2, 22, 5); ctx.fillRect(x - 11, y + 21, 22, 5);
+      ctx.fillStyle = col; ctx.fillRect(x - 8, y + 3, 16, 18);
+      ctx.fillStyle = 'rgba(255,255,255,.25)'; for (let k = 0; k < 6; k++) ctx.fillRect(x - 8, y + 4 + k * 3, 16, 1);
+    };
+    if (W > 520) { ctx.fillStyle = C.dark ? 'rgba(0,0,0,.3)' : 'rgba(110,70,30,.35)'; ctx.fillRect(W - 150, 120, 130, 5); sp(W - 130, 93, '#d8343f'); sp(W - 100, 93, '#2a6fdb'); sp(W - 70, 93, '#3aa35b'); sp(W - 40, 93, '#f2b13a'); }
   }
 
   function drawObjs() {
@@ -528,6 +552,7 @@
       if (HL[k] >= 0 && LIVE[HL[k]] && VL[k] >= 0 && LIVE[VL[k]]) tri(k, r, d, rgb, i, j);
       if (VL[r] >= 0 && LIVE[VL[r]] && HL[d] >= 0 && LIVE[HL[d]]) tri(r, dr, d, rgb, i, j);
     }
+    flushTris();
     drawGhostFace();
     ctx.globalCompositeOperation = C.dark ? 'lighter' : 'source-over';
     for (let k = 0; k < nPts; k++) {
@@ -762,6 +787,47 @@
     else if (k === 'd') $('bDrop').click();
     else if (k === ' ') { e.preventDefault(); const left = Math.random() < 0.5, sx = left ? 30 : W - 30, sy = FL - 40; const tx = W / 2 + Curio.rand(-120, 120), ty = H * 0.4, d = Math.hypot(tx - sx, ty - sy) || 1; balls.push({ x: sx, y: sy, vx: (tx - sx) / d * 950, vy: (ty - sy) / d * 950 - 250, r: 13, t: 0, c: Curio.pick(['#ff5a36', '#3a86ff', '#2ec4b6', '#ffbe0b']) }); thrown++; thud(1); }
     else if (k === 'b') { const live = []; for (let i = 0; i < nPts; i++) if (!PIN[i] && BURN[i] === 0) live.push(i); if (live.length) { const i = Curio.pick(live); ignite(X[i], Y[i]); } }
+  });
+
+
+  const GM = Curio.mode;
+  let lastScene = scene;
+  function surprise() {
+    const sd = Curio.pick(SCENES.filter((x) => x.id !== lastScene)); lastScene = sd.id;
+    setScene(sd.id, true);
+    if (Math.random() < 0.6) setFabric(Math.floor(Math.random() * FABRICS.length), true);
+    intro.classList.add('is-faded');
+    Curio.toast(`${sd.name}: ${sd.d}`);
+    [523, 659, 784].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.06, 'triangle', 0.05), k * 60));
+  }
+  $('bSurprise').addEventListener('click', surprise);
+  addEventListener('keydown', (e) => { if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') surprise(); });
+  const ORDERS = [
+    ['Snip 100 threads', () => totals.cut, 100], ['Snip 1,000 threads', () => totals.cut, 1000], ['Burn 300 bits of cloth', () => totals.burn, 300],
+    ['Burn 3,000 bits of cloth', () => totals.burn, 3000], ['Visit every scene', () => triedScenes.size, SCENES.length], ['Earn 5 badges', () => badges.length, 5]
+  ];
+  function paintOrders() {
+    $('orders').replaceChildren(...ORDERS.map(([t, f, n]) => { const li = document.createElement('li'); const v = Math.min(n, f()); li.textContent = t; if (v >= n) li.classList.add('done'); const sm = document.createElement('small'); sm.textContent = `${Curio.fmt(v)}/${Curio.fmt(n)}`; li.append(sm); return li; }));
+  }
+  if (GM === 'advanced') { paintOrders(); setInterval(() => { if (!document.hidden && !$('panel').hidden) paintOrders(); }, 1500); }
+  const SL = ['grav', 'windS', 'stiff', 'tough'];
+  $('bCopy').addEventListener('click', async () => {
+    const c = 'ZCL1.' + btoa(JSON.stringify({ s: scene, f: fabric, v: SL.map((k) => +$(k).value) }));
+    try { await navigator.clipboard.writeText(c); Curio.toast('Setup code copied'); } catch { Curio.toast(c, 5000); }
+  });
+  $('bPaste').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'cl-code'; ta.placeholder = 'Paste a ZCL1 code'; ta.setAttribute('aria-label', 'Setup code');
+    const v = Curio.modal({ emoji: '📥', title: 'Paste a setup', body: ta, buttons: [{ label: 'Hang it up', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try {
+      const t = ta.value.trim(); if (!t.startsWith('ZCL1.')) throw 0;
+      const o = JSON.parse(atob(t.slice(5)));
+      SL.forEach((k, i) => { if (typeof o.v[i] === 'number') { $(k).value = o.v[i]; $(k).dispatchEvent(new Event('input')); } });
+      if (SCENES.some((x) => x.id === o.s)) setScene(o.s, true);
+      if (FABRICS[o.f]) setFabric(o.f, true);
+      Curio.toast('Setup loaded');
+    } catch { Curio.toast('That code did not work'); }
   });
 
   function resize() {

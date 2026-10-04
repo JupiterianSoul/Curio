@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="gravity">
+<body data-game="gravity" data-modes>
   <main class="c-wrap gp-main" id="main">
     <canvas id="space" role="img" aria-label="Space. Press and drag to fling a new body; the dotted line shows its predicted path. Tap a body to inspect it."></canvas>
 
     <div class="gp-hud-l">
       <div class="gp-mode" id="modeLbl">Sandbox</div>
+      <div class="gp-plate simple-only" aria-hidden="true">Zoble Observatory · Dome 2</div>
       <div class="gp-goal" id="goal" hidden>
         <b id="goalT"></b>
         <div class="gp-prog"><i id="goalBar"></i></div>
@@ -27,8 +28,9 @@
       <div class="gp-count"><span><b id="nb">0</b> bodies</span><span><b id="nm">0</b> crashes</span><span class="gp-dustn"><b id="nd">0</b> dust</span></div>
       <div class="gp-icons">
         <button type="button" id="helpBtn" aria-label="How to play" title="How to play">?</button>
-        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
-        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
+        <button type="button" id="saveBtn" class="adv-only" aria-label="Save, load and share" title="Save, load and share">💾</button>
+        <button type="button" id="trophyBtn" class="adv-only" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" id="menuBtn" class="adv-only" aria-label="Main menu" title="Main menu (Esc)">☰</button>
       </div>
     </div>
 
@@ -41,7 +43,12 @@
     </div>
 
     <div class="gp-dock" id="dock" data-mode="sandbox" role="toolbar" aria-label="Gravity controls">
-      <div class="gp-row gp-row--sandbox">
+      <div class="gp-row gp-row--simple simple-only" role="group" aria-label="What to fling">
+        <span class="gp-qs" id="quick"></span>
+        <button type="button" id="surpriseBtn" class="gp-surprise" title="Surprise me (S)">🎲 <span>Surprise me</span></button>
+        <button type="button" id="sClearBtn" class="gp-ic" aria-label="Clear to one sun" title="Clear">🧹</button>
+      </div>
+      <div class="gp-row gp-row--sandbox adv-only">
         <button type="button" class="gp-typebtn" id="typeBtn"></button>
         <button type="button" id="bhBtn" class="gp-ic" aria-label="Black hole" title="Black hole (B)">🕳️</button>
         <button type="button" id="eraseBtn" class="gp-ic" aria-label="Eraser" title="Eraser (E)" aria-pressed="false">🧽</button>
@@ -56,8 +63,8 @@
       </div>
       <div class="gp-row gp-row--view">
         <button type="button" id="pauseBtn" class="gp-ic" aria-label="Pause" aria-pressed="false" title="Pause (Space)">⏸</button>
-        <button type="button" id="speedBtn" class="gp-ic gp-speed" aria-label="Simulation speed" title="Speed ([ and ])">1×</button>
-        <button type="button" id="trailBtn" class="gp-ic" aria-label="Trails" aria-pressed="true" title="Trails (T)">〰️</button>
+        <button type="button" id="speedBtn" class="gp-ic gp-speed adv-only" aria-label="Simulation speed" title="Speed ([ and ])">1×</button>
+        <button type="button" id="trailBtn" class="gp-ic adv-only" aria-label="Trails" aria-pressed="true" title="Trails (T)">〰️</button>
         <button type="button" id="zoutBtn" class="gp-ic" aria-label="Zoom out" title="Zoom out (-)">−</button>
         <button type="button" id="homeBtn" class="gp-ic" aria-label="Reset view" title="Reset view">⌖</button>
         <button type="button" id="zinBtn" class="gp-ic" aria-label="Zoom in" title="Zoom in (+)">+</button>

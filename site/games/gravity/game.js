@@ -1222,6 +1222,7 @@
     btn.append(miniPlanet(save.settings.type, 30));
     const s = document.createElement('span'); s.textContent = TYPES[save.settings.type].name; btn.append(s);
     btn.setAttribute('aria-label', `Body type: ${TYPES[save.settings.type].name}. Change`);
+    paintQuick();
   }
   function openPresets() {
     openSheet('Presets', (box) => {
@@ -1422,7 +1423,7 @@
     paintGoal();
     paintCounts();
   }
-  function paintTool() { $('eraseBtn').setAttribute('aria-pressed', String(tool === 'erase')); canvas.style.cursor = tool === 'erase' ? 'not-allowed' : 'crosshair'; }
+  function paintTool() { paintQuick(); $('eraseBtn').setAttribute('aria-pressed', String(tool === 'erase')); canvas.style.cursor = tool === 'erase' ? 'not-allowed' : 'crosshair'; }
   function paintPresetLbl() { const p = D.PRESETS.find((x) => x.id === preset); $('presetBtn').querySelector('span').textContent = p ? p.name : 'Presets'; }
   function paintCounts() { $('nb').textContent = bodies.filter((b) => !b.probe).length; $('nm').textContent = merges; $('nd').textContent = dust.filter((p) => !p.dead).length; }
   function togglePause() { paused = !paused; $('pauseBtn').setAttribute('aria-pressed', String(paused)); $('pauseBtn').textContent = paused ? '▶' : '⏸'; $('pauseBtn').setAttribute('aria-label', paused ? 'Play' : 'Pause'); }
@@ -1453,7 +1454,7 @@
     if (e.target.closest && e.target.closest('input, textarea')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key;
-    if (k === 'Escape') { if (!sheet.hidden) closeSheet(); else if (!$('result').hidden) return; else showStart(); return; }
+    if (k === 'Escape') { if (!sheet.hidden) closeSheet(); else if (!$('result').hidden) return; else if (Curio.mode !== 'simple') showStart(); return; }
     if (!startEl.hidden || !sheet.hidden) return;
     if (k === ' ') { e.preventDefault(); togglePause(); }
     else if (k === 't' || k === 'T') setTrails(!trails);
@@ -1590,6 +1591,102 @@
   paintType(); paintTool(); setTrails(trails); setSpeed(SPEEDS.includes(speed) ? speed : 1);
   loadPreset('solar', true);
   setDock();
-  showStart();
+
+  const GM = Curio.mode;
+  const QUICK = ['moon', 'ocean', 'ringed', 'star', 'blackhole'];
+  const quickEl = $('quick');
+  function paintQuick() { document.querySelectorAll('#quick .gp-q').forEach((b) => b.setAttribute('aria-pressed', String(save.settings.type === b.dataset.t && tool !== 'erase'))); }
+  QUICK.forEach((t, n) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'gp-q'; b.dataset.t = t;
+    b.title = `${TYPES[t].name}: ${TYPES[t].blurb} (${n + 1})`; b.setAttribute('aria-label', TYPES[t].name);
+    b.append(miniPlanet(t, 40));
+    b.addEventListener('click', () => { if (GM === 'simple') save.settings.size = 1; setType(t); paintQuick(); });
+    quickEl.append(b);
+  });
+  let lastSurprise = '';
+  function surprise() {
+    const pool = D.PRESETS.filter((p) => p.id !== 'empty' && p.id !== lastSurprise);
+    const p = Curio.pick(pool); lastSurprise = p.id;
+    goSandbox(p.id);
+    chime([392, 523, 659, 784]);
+  }
+  $('surpriseBtn').addEventListener('click', surprise);
+  $('sClearBtn').addEventListener('click', () => goSandbox('empty'));
+  const SLOT = (n) => `gravity:slot${n}`;
+  function snapshot() {
+    return { v: 1, at: Date.now(), preset, cam: [cam.tx, cam.ty, cam.tz], b: bodies.filter((b) => !b.probe).map((b) => [b.t, +b.x.toFixed(3), +b.y.toFixed(3), +b.vx.toFixed(5), +b.vy.toFixed(5), +b.m.toFixed(4), b.seed, b.name, b.rk || 0]) };
+  }
+  function restore(o) {
+    if (!o || !Array.isArray(o.b)) return false;
+    if (mode !== 'sandbox') goSandbox('empty');
+    clearWorld();
+    for (const a of o.b) {
+      if (!TYPES[a[0]]) continue;
+      const b = mkBody(a[0], a[1], a[2], a[3], a[4], a[5], { seed: a[6], name: a[7] });
+      if (a[8]) { b.rk = a[8]; b.r = b.rk * Math.cbrt(b.m); }
+      bodies.push(b);
+    }
+    accel(bodies);
+    if (o.cam) { cam.tx = o.cam[0]; cam.ty = o.cam[1]; cam.tz = o.cam[2]; }
+    paintCounts();
+    return true;
+  }
+  async function pack(obj) {
+    const json = JSON.stringify(obj);
+    try {
+      const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+      let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]);
+      return 'ZGR1.' + btoa(bin);
+    } catch { return 'ZGR0.' + btoa(unescape(encodeURIComponent(json))); }
+  }
+  async function unpack(code) {
+    code = code.trim();
+    if (code.startsWith('ZGR0.')) return JSON.parse(decodeURIComponent(escape(atob(code.slice(5)))));
+    if (!code.startsWith('ZGR1.')) throw new Error('bad');
+    const bin = atob(code.slice(5)); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text());
+  }
+  function openSaves() {
+    openSheet('Star charts', (box) => {
+      const lead = document.createElement('p'); lead.className = 'gp-sheet__lead'; lead.textContent = 'Save the system you built into a chart, or copy a code to send it to a friend.';
+      const list = document.createElement('div'); list.className = 'gp-slots';
+      const paint = () => {
+        list.replaceChildren(...[1, 2, 3].map((n) => {
+          const o = Curio.store.get(SLOT(n), null);
+          const row = document.createElement('div'); row.className = 'gp-slot';
+          const sp = document.createElement('span'); sp.textContent = `Chart ${n}: ${o ? `${o.b.length} bodies · ${new Date(o.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : 'empty'}`;
+          const sv = document.createElement('button'); sv.type = 'button'; sv.textContent = 'Save';
+          sv.addEventListener('click', () => { Curio.store.set(SLOT(n), snapshot()); chime([659, 880]); paint(); });
+          const ld = document.createElement('button'); ld.type = 'button'; ld.textContent = 'Load'; ld.disabled = !o;
+          ld.addEventListener('click', () => { if (restore(Curio.store.get(SLOT(n), null))) { closeSheet(); feed(`📂 Chart ${n} restored`); chime([523, 784]); } });
+          row.append(sp, sv, ld);
+          return row;
+        }));
+      };
+      paint();
+      const share = document.createElement('div'); share.className = 'gp-share';
+      const ta = document.createElement('textarea'); ta.className = 'gp-code'; ta.placeholder = 'Paste a ZGR1 code here, then press Load code'; ta.setAttribute('aria-label', 'Share code');
+      const cp = document.createElement('button'); cp.type = 'button'; cp.textContent = '📋 Copy code';
+      cp.addEventListener('click', async () => { const c = await pack(snapshot()); ta.value = c; ta.select(); try { await navigator.clipboard.writeText(c); Curio.toast('Code copied. Send it to a friend!'); } catch { Curio.toast('Copy the code from the box'); } });
+      const lc = document.createElement('button'); lc.type = 'button'; lc.textContent = '📥 Load code';
+      lc.addEventListener('click', async () => { try { if (!restore(await unpack(ta.value))) throw new Error('bad'); closeSheet(); feed('📥 Shared system loaded'); chime(); } catch { Curio.toast('That code did not work'); } });
+      share.append(cp, lc);
+      box.append(lead, list, share, ta);
+    });
+  }
+  $('saveBtn').addEventListener('click', openSaves);
+  addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!startEl.hidden || !sheet.hidden) return;
+    if (e.key === 's' || e.key === 'S') surprise();
+    if (GM === 'simple' && /^[1-5]$/.test(e.key)) { e.stopImmediatePropagation(); setType(QUICK[+e.key - 1]); paintQuick(); }
+  }, true);
+  if (GM === 'simple') {
+    if (!QUICK.includes(save.settings.type)) save.settings.type = 'ocean';
+    save.settings.size = 1;
+    paintType();
+  }
+  paintQuick();
+  if (GM === 'simple') { goSandbox('solar'); } else showStart();
   start();
 })();

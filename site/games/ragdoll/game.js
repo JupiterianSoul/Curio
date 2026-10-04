@@ -166,8 +166,8 @@
 
   function theme() {
     return Curio.isDark()
-      ? { bg: '#161412', wall: '#22232e', stripe: 'rgba(255,255,255,.025)', floor: '#5b4330', floorTop: '#7a5a3e', base: '#3a2c20', ink: '#f3eee7', shadow: 'rgba(0,0,0,.35)' }
-      : { bg: '#fbf7f0', wall: '#fff4e3', stripe: 'rgba(255,170,90,.09)', floor: '#d9a066', floorTop: '#e8b77f', base: '#b07c48', ink: '#1d1b19', shadow: 'rgba(80,50,20,.16)' };
+      ? { bg: '#121418', wall: '#23272f', stripe: 'rgba(255,255,255,.03)', floor: '#5b4330', floorTop: '#2f5fa8', base: '#0b0c0e', ink: '#f3eee7', shadow: 'rgba(0,0,0,.4)', mark: 'rgba(255,255,255,.35)' }
+      : { bg: '#e9ebee', wall: '#f6f7f9', stripe: 'rgba(40,60,90,.05)', floor: '#d9a066', floorTop: '#3d78d6', base: '#1f2329', ink: '#1d1b19', shadow: 'rgba(20,30,50,.18)', mark: 'rgba(30,35,45,.45)' };
   }
 
   function limb(a, b, w, col) { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
@@ -266,6 +266,9 @@
     g.fillStyle = T.stripe;
     for (let x = 0; x < W; x += 80) g.fillRect(x, 0, 40, H);
     g.fillStyle = T.floorTop; g.fillRect(0, H - 4, W, 4);
+    g.fillStyle = T.mark; g.strokeStyle = T.mark; g.lineWidth = 2; g.font = '700 12px ui-monospace, monospace';
+    for (let y = H, m = 0; y > 40; y -= 120, m++) { g.fillRect(8, y - 1, m ? 26 : 14, 2); for (let k = 1; k < 4; k++) g.fillRect(8, y - k * 30, 10, 1.5); if (m) g.fillText(`${m} m`, 38, y + 4); }
+    for (let x = W - 160; x < W; x += 18) { g.fillStyle = (x / 18) % 2 < 1 ? '#ffcf1a' : '#111'; g.beginPath(); g.moveTo(x, H - 4); g.lineTo(x + 9, H - 4); g.lineTo(x + 18, H - 22); g.lineTo(x + 9, H - 22); g.fill(); }
     g.fillStyle = T.shadow;
     for (const o of objs) {
       if (o.k === 'pad') continue;
@@ -293,12 +296,12 @@
   function handleEvents() {
     for (const e of world.events) {
       const o = e.p.owner;
-      if (e.pad) { if (!e.pad.cool || simTime - e.pad.cool > 0.15) { e.pad.cool = simTime; SND.boing(); } if (o && o.k === 'doll') { o.hurt = Math.max(o.hurt, 0.5); } continue; }
+      if (e.pad) { if (!e.pad.cool || simTime - e.pad.cool > 0.15) { e.pad.cool = simTime; SND.boing(); if (touched) rec.pads++; } if (o && o.k === 'doll') { o.hurt = Math.max(o.hurt, 0.5); } continue; }
       if (!o) continue;
       if (grabbed && grabbed.o === o) continue;
       const v = e.speed;
       if (o.k === 'doll') {
-        if (v > 900 && touched && simTime - o.cool > 0.4) { o.cool = simTime; o.hurt = 1; ouches++; document.getElementById('nOuch').textContent = ouches; SND.ouch(o, v); }
+        if (v > 900 && touched && simTime - o.cool > 0.4) { o.cool = simTime; o.hurt = 1; ouches++; stuntHit(v); document.getElementById('nOuch').textContent = ouches; SND.ouch(o, v); }
         else if (e.wall && v > 400) SND.thud(v * 0.5);
       } else if (o.k === 'crate') { if (v > 300 && (!o.snd || simTime - o.snd > 0.08)) { o.snd = simTime; SND.wood(v); } }
       else if (o.k === 'ball') { if (v > 250 && (!o.snd || simTime - o.snd > 0.08)) { o.snd = simTime; SND.ball(v); } }
@@ -419,6 +422,7 @@
   document.getElementById('reset').addEventListener('click', () => { defaultScene(); spawnStack = []; setGravity('down', true); save(); Curio.toast('Fresh room, fresh ragdolls'); });
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
+    if (Curio.mode === 'simple' && (k.startsWith('arrow') || k === '0' || k === 's' || k === '3')) return;
     if (k === ' ') { e.preventDefault(); togglePause(); }
     else if (k === 's') toggleSlow();
     else if (k === 'arrowdown') { e.preventDefault(); setGravity('down'); }
@@ -430,6 +434,94 @@
     else if (k === 'x') doShake();
     else if (k >= '1' && k <= '6') setTool(['grab', 'doll', 'crate', 'ball', 'pad', 'erase'][+k - 1]);
   });
+
+
+  const GM = Curio.mode;
+  const rec = Object.assign({ ouch: 0, land: 0, pads: 0 }, Curio.store.get('ragdoll:rec', {}));
+  let minute = [];
+  function kmh(v) { return Math.round(v / 100 * 3.6 * 2); }
+  function stuntHit(v) {
+    rec.ouch++;
+    const k = kmh(v);
+    if (k > rec.land) { rec.land = k; if (touched && k > 60) Curio.toast(`💥 New hardest landing: ${k} km/h`, 1600); }
+    minute.push(performance.now());
+  }
+  function paintRec() { document.getElementById('rec').textContent = rec.land ? `record ${rec.land} km/h` : ''; }
+  paintRec();
+  const SURPRISES = [
+    ['Ragdoll rain!', () => { for (let i = 0; i < 4; i++) spawn('doll', Curio.rand(120, W - 120), 60 + i * 20); }],
+    ['Ball pit delivery', () => { for (let i = 0; i < 6; i++) spawn('ball', Curio.rand(100, W - 100), 50 + i * 15); }],
+    ['Crate tower', () => { const x = Curio.rand(200, W - 200); for (let i = 0; i < 5; i++) spawn('crate', x + Curio.rand(-4, 4), H - 40 - i * 64); }],
+    ['Gravity flip!', () => { setGravity('up', true); setTimeout(() => setGravity('down', true), 1400); }],
+    ['Sideways day', () => { const d = Math.random() < 0.5 ? 'left' : 'right'; setGravity(d, true); setTimeout(() => setGravity('down', true), 1200); }],
+    ['Earthquake', () => { doShake(); setTimeout(doShake, 400); setTimeout(doShake, 800); }],
+    ['Trampoline park', () => { for (let i = 0; i < 3; i++) spawn('pad', 150 + i * (W - 300) / 2, H - 11); spawn('doll', W / 2, 80); }],
+    ['Zero gravity party', () => { setGravity('zero', true); doShake(); setTimeout(() => setGravity('down', true), 2600); }]
+  ];
+  let lastS = -1;
+  function surprise() {
+    audioOk = true; if (!touched) { touched = true; intro.classList.add('is-faded'); }
+    let n; do n = Math.floor(Math.random() * SURPRISES.length); while (n === lastS);
+    lastS = n;
+    Curio.toast(SURPRISES[n][0]);
+    SURPRISES[n][1]();
+    save();
+  }
+  document.getElementById('surprise').addEventListener('click', surprise);
+  window.addEventListener('keydown', (e) => { if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') surprise(); });
+  const JOBS = [
+    ['10 ouches in one minute', () => minute.filter((t) => performance.now() - t < 60000).length >= 10], ['A landing over 120 km/h', () => rec.land >= 120], ['A landing over 200 km/h', () => rec.land >= 200],
+    ['50 bounces on bouncy pads', () => rec.pads >= 50], ['250 ouches in total', () => rec.ouch >= 250], ['Fill the room with 30 things', () => objs.length >= 30], ['Save a room', () => [1, 2, 3].some((n) => Curio.store.get(`ragdoll:slot${n}`, null))]
+  ];
+  const jobsDone = Curio.store.get('ragdoll:jobs', {});
+  const bookEl = document.getElementById('bookPanel'), bookBtn = document.getElementById('book');
+  bookBtn.addEventListener('click', () => { bookEl.hidden = !bookEl.hidden; bookBtn.setAttribute('aria-pressed', String(!bookEl.hidden)); paintBook(); });
+  function paintBook() {
+    if (bookEl.hidden) return;
+    document.getElementById('jobs').replaceChildren(...JOBS.map(([t], i) => { const li = document.createElement('li'); li.textContent = t; if (jobsDone[i]) li.classList.add('done'); return li; }));
+    document.getElementById('tO').textContent = Curio.fmt(rec.ouch); document.getElementById('tL').textContent = rec.land; document.getElementById('tB').textContent = Curio.fmt(rec.pads);
+    document.getElementById('slots').replaceChildren(...[1, 2, 3].map((n) => {
+      const o = Curio.store.get(`ragdoll:slot${n}`, null);
+      const r = document.createElement('div'); r.className = 'rg-slot';
+      const sp = document.createElement('span'); sp.textContent = `Room ${n}: ${o ? `${o.objs.length} things` : 'empty'}`;
+      const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'rg-b'; sv.textContent = 'Save';
+      sv.addEventListener('click', () => { Curio.store.set(`ragdoll:slot${n}`, serialize()); Curio.toast(`Saved to room ${n}`); paintBook(); });
+      const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'rg-b'; ld.textContent = 'Load'; ld.disabled = !o;
+      ld.addEventListener('click', () => { const v = Curio.store.get(`ragdoll:slot${n}`, null); if (v) { restore(v); save(); Curio.toast(`Room ${n} loaded`); } });
+      r.append(sp, sv, ld);
+      return r;
+    }));
+  }
+  async function packCode(obj) {
+    const json = JSON.stringify(obj);
+    try { const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]); return 'ZRG1.' + btoa(bin); }
+    catch { return 'ZRG0.' + btoa(unescape(encodeURIComponent(json))); }
+  }
+  async function unpackCode(c) {
+    c = c.trim();
+    if (c.startsWith('ZRG0.')) return JSON.parse(decodeURIComponent(escape(atob(c.slice(5)))));
+    if (!c.startsWith('ZRG1.')) throw new Error('bad');
+    const bin = atob(c.slice(5)); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text());
+  }
+  document.getElementById('copyCode').addEventListener('click', async () => { const c = await packCode(serialize()); try { await navigator.clipboard.writeText(c); Curio.toast('Room code copied'); } catch { Curio.toast('Could not copy. Try again.'); } });
+  document.getElementById('pasteCode').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'rg-code'; ta.placeholder = 'Paste a ZRG1 code'; ta.setAttribute('aria-label', 'Room code');
+    const v = Curio.modal({ emoji: '📥', title: 'Load a shared room', body: ta, buttons: [{ label: 'Load it', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try { const o = await unpackCode(ta.value); if (!o || !Array.isArray(o.objs)) throw 0; restore(o); save(); Curio.toast('Shared room loaded'); } catch { Curio.toast('That code did not work'); }
+  });
+  setInterval(() => {
+    if (document.hidden) return;
+    minute = minute.filter((t) => performance.now() - t < 60000);
+    let ch = false;
+    if (GM === 'advanced') JOBS.forEach(([t, f], i) => { if (!jobsDone[i] && f()) { jobsDone[i] = Date.now(); ch = true; Curio.toast(`🏆 Stunt done: ${t}`); } });
+    if (ch) Curio.store.set('ragdoll:jobs', jobsDone);
+    Curio.store.set('ragdoll:rec', rec);
+    paintRec(); paintBook();
+  }, 1000);
+  if (GM === 'simple' && !['grab', 'doll', 'ball', 'pad', 'erase'].includes(tool)) setTool('grab');
 
   let last = 0, acc = 0, raf = 0, saveT = 0;
   function frame(now) {

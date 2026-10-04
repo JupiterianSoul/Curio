@@ -9,16 +9,26 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="water-toy">
+<body data-game="water-toy" data-modes>
   <main class="c-wrap wt-main">
     <div class="wt-stage" id="stage">
       <canvas id="tank" role="img" aria-label="A water tank. Pour water, tilt the tank, drop ducks and rocks, draw walls."></canvas>
       <div class="wt-intro" id="intro">
-        <h1>Water Toy</h1>
-        <p>Pour, slosh and tilt. Ducks float, rocks sink, faster water turns white.</p>
+        <h1>Water Toy <span class="wt-duckie" aria-hidden="true">🦆</span></h1>
+        <p class="simple-only">Pour, tilt and splash. Press Surprise me for a bath-time trick.</p>
+        <p class="adv-only">Pour, slosh and tilt. Ducks float, rocks sink, faster water turns white.</p>
       </div>
       <div class="wt-count"><b id="nDrops">0</b> droplets</div>
       <div class="wt-tag" id="tag"></div>
+    </div>
+    <div class="wt-book adv-only" id="bookPanel" hidden>
+      <h2>Bath-time goals</h2>
+      <ol class="wt-jobs" id="jobs"></ol>
+      <h2>Readings</h2>
+      <div class="wt-tally"><div class="c-stat"><b id="tP">0</b><span>drops poured ever</span></div><div class="c-stat"><b id="tF">0%</b><span>tank full</span></div><div class="c-stat"><b id="tD">0</b><span>ducks afloat</span></div></div>
+      <h2>Saved tanks</h2>
+      <div class="wt-slots" id="slots"></div>
+      <div class="wt-share"><button type="button" class="wt-b" id="copyCode">📋 Copy code</button><button type="button" class="wt-b" id="pasteCode">📥 Paste code</button></div>
     </div>
     <div class="wt-tools">
       <div class="wt-row" role="toolbar" aria-label="Tools">
@@ -26,19 +36,21 @@
         <button type="button" class="wt-t" data-tool="hand" title="Stir (2)" aria-pressed="false"><span class="e">✋</span>Stir</button>
         <button type="button" class="wt-t" data-tool="duck" title="Duck (3)" aria-pressed="false"><span class="e">🦆</span>Duck</button>
         <button type="button" class="wt-t" data-tool="rock" title="Rock (4)" aria-pressed="false"><span class="e">🪨</span>Rock</button>
-        <button type="button" class="wt-t" data-tool="wall" title="Wall (5)" aria-pressed="false"><span class="e">🧱</span>Wall</button>
+        <button type="button" class="wt-t adv-only" data-tool="wall" title="Wall (5)" aria-pressed="false"><span class="e">🧱</span>Wall</button>
         <button type="button" class="wt-t" data-tool="erase" title="Sponge (6)" aria-pressed="false"><span class="e">🧽</span>Sponge</button>
-        <button type="button" class="wt-t" data-tool="tilt" title="Tilt by dragging (7)" aria-pressed="false"><span class="e">↻</span>Tilt</button>
+        <button type="button" class="wt-t adv-only" data-tool="tilt" title="Tilt by dragging (7)" aria-pressed="false"><span class="e">↻</span>Tilt</button>
       </div>
       <div class="wt-row">
         <button type="button" class="wt-b" id="tap" aria-pressed="false" title="Tap (T)">🚰 Tap</button>
         <label class="wt-tilt">Tilt <input type="range" id="tiltR" min="-30" max="30" value="0" aria-label="Tilt the tank" title="Tilt (arrow keys)"></label>
         <button type="button" class="wt-b" id="wave" title="Slosh (W)">🌊 Slosh</button>
+        <button type="button" class="wt-b wt-sur simple-only" id="surprise" title="Surprise me (G)">🎲 Surprise me</button>
         <button type="button" class="wt-b" id="phone">📱 Phone tilt</button>
-        <button type="button" class="wt-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
-        <button type="button" class="wt-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button type="button" class="wt-b adv-only" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <button type="button" class="wt-b adv-only" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
         <button type="button" class="wt-b" id="empty">🫗 Empty</button>
         <button type="button" class="wt-b" id="reset">↺ Reset</button>
+        <button type="button" class="wt-b adv-only" id="book" aria-pressed="false">🧾 Bath log</button>
       </div>
     </div>
   </main>

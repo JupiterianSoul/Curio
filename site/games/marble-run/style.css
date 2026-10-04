@@ -34,3 +34,34 @@
   .mr-intro p { font-size: 13px; }
   .mr-pc { min-width: 56px; font-size: 10.5px; }
 }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+.mr-intro h1 { font-family: var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); font-weight: 400; letter-spacing: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.mr-tag { font: 700 11px/1 var(--c-type, "American Typewriter", "Courier New", ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; padding: 5px 9px; color: #3a2610; background: linear-gradient(#f0c46a, #d79d3c); border-radius: 2px; transform: rotate(-2deg); box-shadow: 1px 2px 0 rgba(0, 0, 0, .25); }
+.mr-tools { background: linear-gradient(#b98552, #8f5f33); border-top: 3px solid var(--c-edge, var(--ink)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25); }
+.mr-pc { background: #f3e3c6; color: #3a2610; border: 2px solid #5b3a1c; box-shadow: 0 3px 0 #5b3a1c; }
+.mr-pc[aria-pressed="true"] { background: #fff6e2; border-color: var(--accent); box-shadow: 0 3px 0 var(--accent); transform: translateY(-2px); }
+.mr-b { border: 2px solid #3a2610; background: #f3e3c6; color: #3a2610; box-shadow: 0 2px 0 #3a2610; }
+.mr-b:active { transform: translateY(2px); box-shadow: none; }
+.mr-go { border: 2px solid #3a2610; box-shadow: 0 3px 0 #3a2610; }
+.mr-sur { background: var(--c-sun, #ffcf3a); }
+.mr-presets select { color: #3a2610; }
+html[data-mode="simple"] .mr-pc { min-width: 74px; padding: 6px 8px 4px; }
+html[data-mode="simple"] .mr-palette { justify-content: safe center; }
+.mr-book { position: absolute; right: 12px; top: 64px; z-index: 6; width: min(300px, calc(100% - 24px)); max-height: calc(100% - 230px); overflow: auto; padding: 12px 14px; border: 2.5px solid var(--c-edge, var(--ink)); border-radius: 6px 12px 12px 6px; background: repeating-linear-gradient(transparent 0 23px, color-mix(in srgb, var(--c-pop, #2f5bd3) 15%, transparent) 23px 24px), var(--surface); box-shadow: 4px 5px 0 var(--c-shade, rgba(0, 0, 0, .18)); display: grid; gap: 8px; }
+.mr-book[hidden] { display: none !important; }
+.mr-book h2 { margin: 2px 0 0; font: 400 19px/1 var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); }
+.mr-jobs { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; }
+.mr-jobs li { display: flex; gap: 7px; color: var(--ink-3); }
+.mr-jobs li::before { content: "○"; }
+.mr-jobs li.done { color: var(--ink); font-weight: 700; }
+.mr-jobs li.done::before { content: "●"; color: var(--good); }
+.mr-tally { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.mr-tally .c-stat b { font-size: 15px; }
+.mr-slots { display: grid; gap: 5px; }
+.mr-slot { display: flex; gap: 6px; align-items: center; font-size: 12.5px; }
+.mr-slot span { flex: 1; font-family: var(--mono); color: var(--ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mr-slot .mr-b, .mr-share .mr-b { padding: 5px 10px; font-size: 12.5px; }
+.mr-share { display: flex; gap: 6px; flex-wrap: wrap; }
+.mr-code { width: 100%; min-height: 80px; font: 12px var(--mono); padding: 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); }
+.mr-intro { padding: 6px 12px 8px; border-radius: 12px; background: color-mix(in srgb, var(--bg) 82%, transparent); }

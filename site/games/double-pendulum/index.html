@@ -9,22 +9,23 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="double-pendulum">
+<body data-game="double-pendulum" data-modes>
   <main class="c-wrap dp-main" id="main">
     <canvas id="cv" role="img" aria-label="A double pendulum swinging and tracing a colourful trail. Drag either bob to set a new starting position."></canvas>
     <div class="dp-intro" id="intro">
       <h1>Double Pendulum</h1>
-      <p>Two arms and a hinge. Grab a bob, lift it high and let go. It will never do the same thing twice.</p>
+      <p class="adv-only">Two arms and a hinge. Grab a bob, lift it high and let go. It will never do the same thing twice.</p>
+      <p class="simple-only">Grab a bob, lift it high, let go. Or press Surprise me and just watch.</p>
     </div>
     <div class="dp-stats" aria-live="off">
       <div class="c-stat"><b id="sTime">0.0</b><span>Seconds</span></div>
       <div class="c-stat"><b id="sFlips">0</b><span>Flips</span></div>
-      <div class="c-stat" title="How much the total energy has drifted. Zero damping should keep this near 0."><b id="sEnergy">0%</b><span>Energy drift</span></div>
+      <div class="c-stat adv-only" title="How much the total energy has drifted. Zero damping should keep this near 0."><b id="sEnergy">0%</b><span>Energy drift</span></div>
     </div>
     <canvas id="phase" class="phase" width="150" height="150" role="img" aria-label="Phase portrait: upper angle against lower angle"></canvas>
     <div class="dp-chaos-note" id="chaosNote"></div>
     <div class="challenge hidden" id="chal"><b id="chalTime">20.0</b><span id="chalMsg">Drag a bob and let go. You get 20 seconds of flips.</span></div>
-    <div class="panel" id="panel" hidden>
+    <div class="panel adv-only" id="panel" hidden>
       <h2>Presets</h2>
       <div class="presets" id="presets"></div>
       <h2>Look</h2>
@@ -39,20 +40,26 @@
       <label class="sl">Damping <output id="oB"></output><input type="range" id="B" min="0" max="0.6" step="0.01" value="0"></label>
       <label class="sl">Speed <output id="oS"></output><input type="range" id="S" min="0.1" max="2" step="0.05" value="1"></label>
       <label class="sl">Trail length <output id="oT"></output><input type="range" id="T" min="100" max="1500" step="50" value="1500"></label>
+      <h2>Share a setup</h2>
+      <div class="dp-share"><button type="button" class="chip" id="bCopy">📋 Copy code</button><button type="button" class="chip" id="bPaste">📥 Paste code</button></div>
+      <h2>Lifetime</h2>
+      <div class="dp-life"><div class="c-stat"><b id="lFlips">0</b><span>flips ever</span></div><div class="c-stat"><b id="lBest">0</b><span>best in 20 s</span></div><div class="c-stat"><b id="lDrops">0</b><span>drops</span></div></div>
       <h2>Badges</h2>
       <div class="badges" id="badges"></div>
-      <p class="keys">Keys: arrows lift the arms (let go to drop), Space pause, R random, C chaos, W swarm, F flip challenge, T trail, P phase plot, S snapshot.</p>
+      <p class="keys">Keys: arrows lift the arms (let go to drop), Space pause, R random, C chaos, W swarm, F flip challenge, T trail, P phase plot, S snapshot, G surprise.</p>
     </div>
+    <div class="dp-block" aria-hidden="true"><b>Fig. 2</b><span>Double pendulum</span><span>Scale 1 : 1</span><span>Drawn by: gravity</span><em>Chaos guaranteed</em></div>
     <div class="dock" role="toolbar" aria-label="Pendulum controls">
       <button type="button" class="chip" id="bPause" aria-pressed="false">⏸ Pause</button>
-      <button type="button" class="chip" id="bRandom">🎲 Random</button>
+      <button type="button" class="chip dp-surprise simple-only" id="bSurprise">🎲 Surprise me</button>
+      <button type="button" class="chip adv-only" id="bRandom">🎲 Random</button>
       <button type="button" class="chip" id="bChaos" aria-pressed="false">🦋 Chaos</button>
       <button type="button" class="chip" id="bSwarm" aria-pressed="false">🌈 Swarm</button>
-      <button type="button" class="chip" id="bChal" aria-pressed="false">🏆 Flip challenge</button>
+      <button type="button" class="chip adv-only" id="bChal" aria-pressed="false">🏆 Flip challenge</button>
       <button type="button" class="chip" id="bTrail" aria-pressed="true">〰 Trail</button>
-      <button type="button" class="chip" id="bPhase" aria-pressed="false">🌀 Phase</button>
-      <button type="button" class="chip" id="bSnap">📸</button>
-      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
+      <button type="button" class="chip adv-only" id="bPhase" aria-pressed="false">🌀 Phase</button>
+      <button type="button" class="chip adv-only" id="bSnap">📸</button>
+      <button type="button" class="chip adv-only" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
     </div>
   </main>
   <script src="../../games.js"></script>

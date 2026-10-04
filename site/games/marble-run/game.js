@@ -201,8 +201,11 @@
     pop: () => tone(900, 0.05, 'sine', 0.05, 1500)
   };
 
+  const tally = Object.assign({ m: 0, n: 0, b: 0, placed: 0 }, Curio.store.get('mr:tally', {}));
+  let runT = { n: 0, b: 0, u: 0 };
   function marbleColor() { colorIdx = (colorIdx + 1) % MARBLE_COLORS.length; return colorIdx; }
   function addMarble(x, y, vx = 0, vy = 0) {
+    tally.m++;
     const b = world.add({ x, y, vx, vy, shapes: [P.makeCircle(MR)], density: 1, friction: 0.3, restitution: 0.3, angDamp: 0.4, user: { marble: true, col: marbleColor() } });
     marbles.push(b);
     while (marbles.length > MAXM) world.remove(marbles.shift());
@@ -236,12 +239,12 @@
       const kind = other.user.kind;
       const pc = other.user.piece;
       if (pc) pc.flash = Math.min(1, (pc.flash || 0) + Math.min(1, v / 600));
-      if (kind === 'xylo') { if (v > 60) SND.note(pc.n || 0, v); }
-      else if (kind === 'bell') { if (v > 60) { SND.bell(v); pc.swing = Math.min(0.5, (pc.swing || 0) + v / 2500) * (e.x < other.x ? -1 : 1); } }
+      if (kind === 'xylo') { if (v > 60) { SND.note(pc.n || 0, v); tally.n++; runT.n++; } }
+      else if (kind === 'bell') { if (v > 60) { SND.bell(v); tally.b++; runT.b++; pc.swing = Math.min(0.5, (pc.swing || 0) + v / 2500) * (e.x < other.x ? -1 : 1); } }
       else if (kind === 'bumper') {
         const m = ma ? e.a : e.b, s = ma ? -1 : 1;
         m.vx += e.c.nx * s * 260; m.vy += e.c.ny * s * 260;
-        SND.bump(v);
+        SND.bump(v); runT.u++;
       } else if (kind === 'tramp') { if (v > 80) SND.boing(v); }
       else if (v > 90) SND.tick(v);
     }
@@ -407,7 +410,7 @@
 
   function themeCols() {
     const dark = Curio.isDark();
-    return dark ? { bg: '#161412', board: '#211e1b', dot: 'rgba(255,255,255,.07)', edge: '#3a352f', wall: '#3a352f' } : { bg: '#fbf7f0', board: '#fffdf8', dot: 'rgba(60,40,20,.08)', edge: '#e4dccf', wall: '#d8cdbb' };
+    return dark ? { bg: '#1d1712', board: '#4a3826', dot: 'rgba(0,0,0,.55)', edge: '#2a1d10', wall: '#6b4a2a', frame: '#7a5330' } : { bg: '#efe2c8', board: '#d9b483', dot: 'rgba(70,40,10,.42)', edge: '#6b4520', wall: '#8d5f34', frame: '#a8743f' };
   }
 
   let ghost = null;
@@ -416,11 +419,18 @@
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = T.bg; g.fillRect(0, 0, cw, ch);
     g.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
+    g.fillStyle = T.frame;
+    g.beginPath(); g.roundRect(-20, -20, W + 40, H + 40, 14); g.fill();
+    g.strokeStyle = T.edge; g.lineWidth = 3; g.stroke();
     g.fillStyle = T.board;
-    g.beginPath(); g.roundRect(-8, -8, W + 16, H + 16, 22); g.fill();
+    g.beginPath(); g.roundRect(-8, -8, W + 16, H + 16, 6); g.fill();
     g.strokeStyle = T.edge; g.lineWidth = 2; g.stroke();
     g.fillStyle = T.dot;
-    for (let y = 50; y < H; y += 50) for (let x = 50; x < W; x += 50) g.fillRect(x - 1.5, y - 1.5, 3, 3);
+    g.beginPath();
+    for (let y = 25; y < H; y += 25) for (let x = 25; x < W; x += 25) { g.moveTo(x + 2.6, y); g.arc(x, y, 2.6, 0, 6.2832); }
+    g.fill();
+    g.fillStyle = 'rgba(255,255,255,.18)';
+    g.fillRect(-14, -14, W + 28, 3);
     for (const p of pieces) drawPieceBodies(g, p);
     if (sel) {
       g.save(); g.setLineDash([8, 6]); g.strokeStyle = '#ff5a36'; g.lineWidth = 2;
@@ -520,6 +530,7 @@
     return p;
   }
   function placePiece(t, x, y) {
+    tally.placed = (tally.placed || 0) + 1;
     pushHistory();
     const p = makePiece(t, clampX(x), clampY(y));
     pieces.push(p); buildPiece(p);
@@ -758,6 +769,79 @@
       sel.x = clampX(sel.x); sel.y = clampY(sel.y); rebuild(sel); updateSel(); commit();
     }
   });
+
+
+  const GM = Curio.mode;
+  const SIMPLE_TOOLS = ['select', 'marble', 'ramp', 'curve', 'funnel', 'bumper', 'xylo', 'bell', 'tramp', 'loop', 'dispenser'];
+  if (GM === 'simple') for (const b of [...palette.children]) if (!SIMPLE_TOOLS.includes(b.dataset.tool)) b.remove();
+  let lastP = '';
+  function surprise() {
+    const keys = Object.keys(PRESETS).filter((k) => k !== lastP);
+    const k = Curio.pick(keys); lastP = k;
+    pushHistory(); clearMarbles(); loadPieces(PRESETS[k].pieces); commit(); fadeIntro();
+    Curio.toast(`${PRESETS[k].label}. Releasing!`);
+    setTimeout(release, 500);
+  }
+  document.getElementById('surprise').addEventListener('click', () => { unlockAudio(); surprise(); });
+  window.addEventListener('keydown', (e) => { if (e.target.closest?.('select, input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') { unlockAudio(); surprise(); } });
+  const JOBS = [
+    ['Play 40 notes in one run', () => runT.n >= 40], ['Ring a bell 15 times in one run', () => runT.b >= 15], ['Hit bumpers 80 times in one run', () => runT.u >= 80],
+    ['Keep 60 marbles rolling at once', () => marbles.length >= 60], ['Place 25 pieces by hand', () => tally.placed >= 25], ['Release 1,000 marbles in total', () => tally.m >= 1000],
+    ['Play 2,000 notes in total', () => tally.n >= 2000], ['Save a track to a shelf', () => [1, 2, 3].some((n) => Curio.store.get(`mr:slot${n}`, null))]
+  ];
+  const jobsDone = Curio.store.get('mr:jobs', {});
+  const bookEl = document.getElementById('bookPanel'), bookBtn = document.getElementById('book');
+  bookBtn.addEventListener('click', () => { bookEl.hidden = !bookEl.hidden; bookBtn.setAttribute('aria-pressed', String(!bookEl.hidden)); paintBook(); });
+  function paintBook() {
+    if (bookEl.hidden) return;
+    document.getElementById('jobs').replaceChildren(...JOBS.map(([t], i) => { const li = document.createElement('li'); li.textContent = t; if (jobsDone[i]) li.classList.add('done'); return li; }));
+    document.getElementById('tM').textContent = Curio.fmt(tally.m); document.getElementById('tN').textContent = Curio.fmt(tally.n);
+    document.getElementById('tB').textContent = Curio.fmt(tally.b); document.getElementById('tP').textContent = pieces.length;
+    document.getElementById('slots').replaceChildren(...[1, 2, 3].map((n) => {
+      const o = Curio.store.get(`mr:slot${n}`, null);
+      const row = document.createElement('div'); row.className = 'mr-slot';
+      const sp = document.createElement('span'); sp.textContent = `Shelf ${n}: ${o ? `${o.p.length} pieces` : 'empty'}`;
+      const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'mr-b'; sv.textContent = 'Save';
+      sv.addEventListener('click', () => { Curio.store.set(`mr:slot${n}`, { at: Date.now(), p: pieces.map(clean) }); Curio.toast(`Saved to shelf ${n}`); tone(880, 0.1, 'triangle', 0.08); paintBook(); });
+      const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'mr-b'; ld.textContent = 'Load'; ld.disabled = !o;
+      ld.addEventListener('click', () => { const v = Curio.store.get(`mr:slot${n}`, null); if (!v) return; pushHistory(); clearMarbles(); loadPieces(v.p); commit(); fadeIntro(); Curio.toast(`Shelf ${n} loaded`); });
+      row.append(sp, sv, ld);
+      return row;
+    }));
+  }
+  async function packCode(obj) {
+    const json = JSON.stringify(obj);
+    try { const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]); return 'ZMR1.' + btoa(bin); }
+    catch { return 'ZMR0.' + btoa(unescape(encodeURIComponent(json))); }
+  }
+  async function unpackCode(c) {
+    c = c.trim();
+    if (c.startsWith('ZMR0.')) return JSON.parse(decodeURIComponent(escape(atob(c.slice(5)))));
+    if (!c.startsWith('ZMR1.')) throw new Error('bad');
+    const bin = atob(c.slice(5)); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text());
+  }
+  document.getElementById('copyCode').addEventListener('click', async () => {
+    const c = await packCode(pieces.map(clean));
+    try { await navigator.clipboard.writeText(c); Curio.toast('Track code copied. Send it to a friend!'); } catch { Curio.toast('Could not copy. Try again.'); }
+  });
+  document.getElementById('pasteCode').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'mr-code'; ta.placeholder = 'Paste a ZMR1 code'; ta.setAttribute('aria-label', 'Track code');
+    const v = Curio.modal({ emoji: '📥', title: 'Load a shared track', body: ta, buttons: [{ label: 'Build it', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try { const list = await unpackCode(ta.value); if (!Array.isArray(list)) throw 0; pushHistory(); clearMarbles(); loadPieces(list.filter((p) => p && CAT[p.t])); commit(); fadeIntro(); Curio.toast('Shared track built. Hit Release!'); }
+    catch { Curio.toast('That code did not work'); }
+  });
+  setInterval(() => {
+    if (document.hidden) return;
+    if (!marbles.length) runT = { n: 0, b: 0, u: 0 };
+    let changed = false;
+    if (GM === 'advanced') JOBS.forEach(([t, f], i) => { if (!jobsDone[i] && f()) { jobsDone[i] = Date.now(); changed = true; Curio.toast(`🔧 Job done: ${t}`); [659, 880, 1175].forEach((fq, k) => setTimeout(() => tone(fq, 0.12, 'triangle', 0.08), k * 90)); } });
+    if (changed) { Curio.store.set('mr:jobs', jobsDone); if (JOBS.every((_, i) => jobsDone[i])) Curio.confetti(); }
+    Curio.store.set('mr:tally', tally);
+    paintBook();
+  }, 1000);
 
   let last = 0, acc = 0, raf = 0, sprayT = 0;
   function frame(now) {

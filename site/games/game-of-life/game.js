@@ -850,7 +850,7 @@
     else if (k === 'b') rewind();
     else if (k === 'r') { rot = (rot + 1) % 4; dirty = true; }
     else if (k === 'f') { flip = !flip; dirty = true; }
-    else if (k === '1') setTool('draw');
+    else if (k === '1') { setTool('draw'); if (typeof paintCritters === 'function') paintCritters(); }
     else if (k === '2') setTool('erase');
     else if (k === '3') setTool('pan');
     else if (k === '4') { if (stamp) setTool('stamp'); else { activeTab = 'library'; renderPanel(); } }
@@ -898,6 +898,64 @@
   stamp = null; undoStack = []; peak = pop; gen = 0;
   if (!S.rulesTried.includes(rule.id)) { S.rulesTried.push(rule.id); save(); }
   paintRule(); setTool('draw'); renderPanel();
+
+  const MODE = Curio.mode;
+  const FAVS = [['Glider', 'walks forever'], ['LWSS', 'a little spaceship'], ['Pulsar', 'beats like a heart'], ['Gosper glider gun', 'fires gliders'], ['R-pentomino', 'five cells, big mess'], ['Acorn', 'grows for ages'], ['Pentadecathlon', 'a 15 beat blinker'], ['Diehard', 'vanishes at 130']]
+    .map(([n, d]) => ({ p: D.patterns.find((x) => x.n === n), d })).filter((f) => f.p);
+  const critEl = $('critters');
+  function paintCritters() {
+    critEl.querySelectorAll('.critter').forEach((b) => b.setAttribute('aria-pressed', String(tool === 'stamp' && stamp && stamp.n === b.dataset.n)));
+    document.querySelectorAll('.pen').forEach((b) => b.setAttribute('aria-pressed', String(tool === b.dataset.pen)));
+  }
+  FAVS.forEach((f, n) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'critter'; b.dataset.n = f.p.n;
+    const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true');
+    const nm = document.createElement('span'); nm.textContent = f.p.n === 'Gosper glider gun' ? 'Glider gun' : f.p.n;
+    const sm = document.createElement('small'); sm.textContent = f.d;
+    b.append(cv, nm, sm);
+    b.title = `${f.p.n} (${n + 1})`;
+    b.addEventListener('click', () => pickCritter(f));
+    critEl.append(b);
+  });
+  function paintCritterArt() { critEl.querySelectorAll('.critter').forEach((b, n) => mini(b.querySelector('canvas'), patternCells(FAVS[n].p))); }
+  function pickCritter(f) {
+    stamp = { n: f.p.n, cells: patternCells(f.p), src: f.p }; rot = 0; flip = false;
+    setTool('stamp');
+    sfx.tone(780, 0.05, 'triangle', 0.06);
+    paintCritters();
+  }
+  document.querySelectorAll('.pen').forEach((b) => b.addEventListener('click', () => { setTool(b.dataset.pen); paintCritters(); sfx.tone(600, 0.04, 'triangle', 0.05); }));
+  function surprise() {
+    pushUndo();
+    cells.fill(0); age.fill(0); trail.fill(0);
+    gen = 0; peak = 0; history = []; hashes.clear(); popHist = []; settledAt = -1; setState('');
+    const keep = stamp, kt = tool;
+    const k = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < k; i++) {
+      const f = Curio.pick(FAVS);
+      stamp = { n: f.p.n, cells: patternCells(f.p) }; rot = Math.floor(Math.random() * 4); flip = Math.random() < 0.5;
+      placeStamp(Math.floor(GW * (0.2 + Math.random() * 0.6)), Math.floor(GH * (0.2 + Math.random() * 0.6)));
+    }
+    if (Math.random() < 0.4) { const cx0 = Math.floor(GW / 2), cy0 = Math.floor(GH / 2); for (let y = -8; y < 8; y++) for (let x = -8; x < 8; x++) if (Math.random() < 0.3) cells[(cy0 + y) * GW + cx0 + x] = 1; }
+    stamp = keep; tool = kt; rot = 0; flip = false;
+    recount(); setRunning(true); dirty = true;
+    Curio.toast(Curio.pick(['A fresh batch of critters', 'Shaken, not stirred', 'New culture, who knows', 'Let them loose!']));
+    [523, 659, 784].forEach((fq, i) => setTimeout(() => sfx.tone(fq, 0.06, 'triangle', 0.05), i * 60));
+  }
+  $('surprise').addEventListener('click', surprise);
+  addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 's' || e.key === 'S') surprise();
+  });
+  if (MODE === 'simple') {
+    if (rule.id !== 'B3/S23') { rule = parseRule('B3/S23'); palette(); paintRule(); }
+    addEventListener('keydown', (e) => { if (/^[5-9]$/.test(e.key) && FAVS[+e.key - 5] && !(e.target.closest && e.target.closest('input'))) pickCritter(FAVS[+e.key - 5]); });
+  }
+  paintCritterArt(); paintCritters();
+  if (MODE === 'simple') setTimeout(() => { s = Math.max(fitScale(), 5); cx = (GW - viewW / s) / 2; cy = (GH - viewH / s) / 2; clampView(); dirty = true; }, 60);
+  addEventListener('curio:theme', () => setTimeout(paintCritterArt, 30));
+
   $('badge-count').textContent = Object.keys(S.badges).length;
   if (!S.tipShown) { setTimeout(() => Curio.toast('Tip: on a touchpad, turn on Touchpad mode in the top bar', 3600), 1200); S.tipShown = true; save(); }
   setRunning(!reduce);

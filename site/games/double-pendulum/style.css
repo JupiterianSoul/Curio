@@ -64,3 +64,23 @@
   .challenge { top: 108px; font-size: 12px; }
   .challenge b { font-size: 20px; }
 }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+.dp-intro h1 { font-family: var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); font-weight: 400; letter-spacing: 0; }
+.dock { border: 2.5px solid var(--c-edge, var(--ink)); border-radius: var(--c-wob, 14px); box-shadow: 4px 5px 0 var(--c-shade, rgba(0, 0, 0, .18)); }
+.chip { border: 2px solid var(--c-edge, var(--ink)); box-shadow: 2px 2px 0 var(--c-shade, rgba(0, 0, 0, .18)); }
+.chip:active { box-shadow: none; }
+.dp-surprise { background: var(--c-sun, #ffcf3a); color: #1e2148; font-size: 15px; padding: 9px 16px; }
+html[data-mode="simple"] .chip { font-size: 15px; padding: 9px 15px; }
+.dp-block { position: absolute; right: 14px; bottom: 86px; display: grid; grid-template-columns: auto auto; gap: 0; border: 2px solid currentColor; color: var(--ink-2); font: 700 10.5px/1 var(--c-type, "American Typewriter", "Courier New", ui-monospace, monospace); text-transform: uppercase; letter-spacing: .06em; pointer-events: none; opacity: .75; background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.dp-block > * { padding: 5px 8px; border: 1px solid currentColor; margin: -.5px; }
+.dp-block b { grid-row: span 2; display: grid; place-items: center; font: 400 20px var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); }
+.dp-block em { grid-column: 1 / -1; font-style: normal; text-align: center; color: var(--accent); }
+.dark-scene .dp-block { color: rgba(255, 240, 220, .7); background: rgba(0, 0, 0, .2); }
+.dp-share { display: flex; gap: 6px; flex-wrap: wrap; }
+.dp-life { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.dp-life .c-stat b { font-size: 16px; }
+.dp-code { width: 100%; min-height: 70px; font: 12px var(--mono); padding: 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); }
+@media (max-width: 760px) { .dp-block { display: none; } }
+.dp-block { right: auto; left: 14px; }
+@media (max-width: 560px) { html[data-mode="advanced"] .dp-stats { bottom: 176px; } html[data-mode="simple"] .dp-stats { bottom: 132px; } }

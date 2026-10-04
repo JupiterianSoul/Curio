@@ -61,6 +61,7 @@
     quartic: { name: 'Multibrot 4', f: 'z⁴ + c', home: { cx: -0.1, cy: 0, h: 2.6 } }
   };
   if (!KINDS[kind]) kind = 'mandel';
+  if (Curio.mode === 'simple') kind = 'mandel';
   const BADGES = [
     ['deep6', '🔭 A million times', 'Zoom past 10⁶'],
     ['deep10', '🛸 Ten billion', 'Zoom past 10¹⁰'],
@@ -282,6 +283,8 @@
     if (lz > 10) award('deep10');
     if (lz > 13) award('deep13');
     if (lz > (paintInfo.best || 0) + 0.05) { paintInfo.best = Curio.best(`depth-${kind}`, Math.round(lz * 10) / 10).best; }
+    const gd = document.getElementById('gDepth');
+    if (gd) { gd.textContent = fmtZoom(z); document.getElementById('gNeedle').style.transform = `rotate(${-135 + Math.min(270, lz * 19)}deg)`; const rb = Curio.getBest(`depth-${kind}`) || 0; document.getElementById('gBest').textContent = `record ${fmtZoom(Math.pow(10, Math.max(rb, lz)))}`; }
     $('info').textContent = `${where}zoom ${fmtZoom(z)} · ${Curio.fmt(jobParams ? jobParams.maxIter : 0)} iterations · ${view.cx.toFixed(prec)} ${im < 0 ? '-' : '+'} ${Math.abs(im).toFixed(prec)}i`;
   }
 
@@ -822,6 +825,45 @@
   $('kinds').innerHTML = Object.entries(KINDS).map(([k, v]) => `<button type="button" data-k="${k}"><b>${v.name}</b><small>${v.f}</small></button>`).join('');
   $('kinds').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { setKind(b.dataset.k); intro.classList.add('is-faded'); } });
   $('bKind').addEventListener('click', () => { const ks = Object.keys(KINDS); setKind(ks[(ks.indexOf(kind) + 1) % ks.length]); intro.classList.add('is-faded'); });
+
+  const GM = Curio.mode;
+  let lastPlace = '';
+  function surprise() {
+    const list = PLACES[kind].filter((p) => p.name !== lastPlace);
+    const p = Curio.pick(list); lastPlace = p.name;
+    let pi = Math.floor(Math.random() * PALETTES.length);
+    setPalette(pi); if (GM === 'advanced') Curio.store.set('mb:pal', pi); else Curio.store.set('mb:spal', pi);
+    goPlace(p);
+    Curio.toast(`${p.name}: ${p.note}`);
+    [392, 523, 784].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.07, 'sine', 0.05), i * 70));
+  }
+  let palNow = Curio.store.get(GM === 'simple' ? 'mb:spal' : 'mb:pal', 0);
+  function nextColour() {
+    palNow = (palNow + 1) % PALETTES.length; setPalette(palNow);
+    Curio.store.set(GM === 'simple' ? 'mb:spal' : 'mb:pal', palNow);
+    Curio.toast(`🎨 ${PALETTES[palNow].name}`, 1200);
+    Curio.beep(600 + palNow * 40, 0.05, 'triangle', 0.05);
+  }
+  $('bSurprise').addEventListener('click', surprise);
+  $('bColour').addEventListener('click', nextColour);
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 's' || e.key === 'S') surprise();
+    else if (e.key === 'c' || e.key === 'C') nextColour();
+  });
+  $('bCopy').addEventListener('click', async () => {
+    const g = { kind, mode, jc: { ...jc }, cx: view.cx, cy: view.cy, h: view.scale * Math.min(W, H), pal: palIdx, den: density };
+    const c = 'ZFZ1.' + btoa(JSON.stringify(g));
+    try { await navigator.clipboard.writeText(c); Curio.toast('View code copied. Send it to someone!'); } catch { Curio.toast(c, 6000); }
+  });
+  $('bPaste').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'mb-code'; ta.placeholder = 'Paste a ZFZ1 code'; ta.setAttribute('aria-label', 'View code');
+    const v = Curio.modal({ emoji: '📥', title: 'Go to a shared view', body: ta, buttons: [{ label: 'Dive there', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try { const t = ta.value.trim(); if (!t.startsWith('ZFZ1.')) throw 0; const g = JSON.parse(atob(t.slice(5))); if (!KINDS[g.kind] || !isFinite(g.cx) || !isFinite(g.h)) throw 0; openGallery(g); }
+    catch { Curio.toast('That code did not work'); }
+  });
   $('bOrbit').addEventListener('click', () => setOrbit(!orbitOn));
   $('bGal').addEventListener('click', saveGallery);
   renderGallery();
@@ -829,7 +871,7 @@
   if (!Curio.store.get('mb:padtip', false)) { Curio.store.set('mb:padtip', true); setTimeout(() => Curio.toast('Tip: two-finger scroll pans, pinch zooms. Touchpad mode in the top bar makes dragging easy too.', 4200), 2500); }
   seenKinds.add(kind); Curio.store.set('mb:seen', [...seenKinds]);
   renderPlaces();
-  const savedPal = Curio.store.get('mb:pal', 0);
+  const savedPal = Curio.store.get(Curio.mode === 'simple' ? 'mb:spal' : 'mb:pal', 0);
   setPalette(PALETTES[savedPal] ? savedPal : 0);
   applyDen(); applyDet();
   resize();

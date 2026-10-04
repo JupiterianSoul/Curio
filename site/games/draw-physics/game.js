@@ -47,9 +47,43 @@
       name: 'Free draw', hint: 'No rules. Draw, pin and fling. Tap the ball to push it around.', free: true,
       ball: [180, 400], star: null,
       ground: [ground([[0, 600], [250, 590], [450, 610], [700, 560], [1000, 600], [1000, 650], [0, 650]]), ground([[760, 300], [920, 300], [920, 320], [760, 320]])]
+    },
+    {
+      name: 'Two gaps', hint: 'Two gaps this time. Bridge both, then tap the ball.',
+      ball: [150, 401], star: [890, 380],
+      ground: [ground([[0, 420], [250, 420], [250, 650], [0, 650]]), ground([[410, 420], [590, 420], [590, 650], [410, 650]]), ground([[750, 420], [1000, 420], [1000, 650], [750, 650]])]
+    },
+    {
+      name: 'Drop zone', hint: 'The star sits at the bottom of a pit. Build a slide down to it.',
+      ball: [90, 181], star: [870, 576],
+      ground: [ground([[0, 200], [200, 200], [200, 650], [0, 650]]), ground([[200, 600], [1000, 600], [1000, 650], [200, 650]]), ground([[740, 470], [770, 470], [770, 600], [740, 600]])]
+    },
+    {
+      name: 'Topple the tower', hint: 'No nudging. Knock the ball off its pillar and roll it left to the star.', noPoke: true,
+      ball: [520, 181], star: [90, 576],
+      ground: [ground([[0, 600], [1000, 600], [1000, 650], [0, 650]]), ground([[490, 200], [550, 200], [550, 600], [490, 600]])]
+    },
+    {
+      name: 'The moat', hint: 'A wide moat. One long bridge, or a few short ones with pins.',
+      ball: [110, 401], star: [900, 380],
+      ground: [ground([[0, 420], [230, 420], [230, 650], [0, 650]]), ground([[770, 420], [1000, 420], [1000, 650], [770, 650]]), ground([[230, 640], [770, 640], [770, 650], [230, 650]])]
+    },
+    {
+      name: 'Zigzag', hint: 'The star hides under a ledge. Zig out past the ledge, then zag back under it.',
+      ball: [70, 121], star: [300, 576],
+      ground: [ground([[0, 140], [150, 140], [150, 170], [0, 170]]), ground([[0, 600], [1000, 600], [1000, 650], [0, 650]]), ground([[200, 380], [600, 380], [600, 400], [200, 400]]), ground([[180, 400], [200, 400], [200, 600], [180, 600]])]
+    },
+    {
+      name: 'Sky star', hint: 'No nudging. The star floats in the air. Fling the ball with the see-saw.', noPoke: true,
+      ball: [262, 540], star: [640, 330],
+      ground: [ground([[0, 600], [1000, 600], [1000, 650], [0, 650]]), ground([[365, 600], [400, 540], [435, 600]])],
+      seesaw: { x: 400, y: 540, len: 330 }
     }
   ];
 
+  const FREE = LEVELS.findIndex((L) => L.free);
+  const ORDER = Curio.mode === 'simple' ? [0, 1, 2, 3, FREE] : [...LEVELS.keys()].filter((i) => i !== FREE).concat(FREE);
+  const nextOf = (i) => ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(i) + 1)] ?? FREE;
   const canvas = document.getElementById('board');
   const g = canvas.getContext('2d');
   const stage = document.getElementById('stage');
@@ -129,7 +163,7 @@
     }
     ball = world.add({ x: L.ball[0], y: L.ball[1], shapes: [P.makeCircle(BALL_R)], density: 1.2, friction: 0.6, restitution: 0.25, linDamp: 0.01, angDamp: 0.04, user: { ball: true } });
     t0 = simTime;
-    document.getElementById('lvlName').textContent = L.free ? 'Free draw' : `Level ${i + 1}: ${L.name}`;
+    document.getElementById('lvlName').textContent = L.free ? 'Free draw' : `Level ${ORDER.indexOf(i) + 1}: ${L.name}`;
     document.getElementById('hint').textContent = L.hint;
     document.getElementById('next').hidden = true;
     levelSel.value = String(i);
@@ -279,10 +313,10 @@
     const r = Curio.best(`lvl${level}`, strokes, false);
     done[level] = true; Curio.store.set('draw-physics:done', done);
     paintLevels(); paintStat();
-    const last = level >= LEVELS.length - 2;
-    const all = LEVELS.every((L, i) => L.free || done[i]);
+    const last = nextOf(level) === FREE;
+    const all = ORDER.every((i) => LEVELS[i].free || done[i]);
     const res = await Curio.modal({ emoji: '⭐', title: all && last ? 'You beat every level!' : 'Star collected!', body: `${strokes} stroke${strokes === 1 ? '' : 's'} in ${secs.toFixed(1)}s.${r.isNew ? ' A new personal best!' : ` Best: ${r.best} stroke${r.best === 1 ? '' : 's'}.`}`, buttons: [{ label: last ? 'Free draw ✏️' : 'Next level ▶', value: 'next' }, { label: 'Replay', value: 'again' }, { label: 'Admire it', value: 'stay' }] });
-    if (res === 'next') loadLevel(Math.min(LEVELS.length - 1, level + 1));
+    if (res === 'next') loadLevel(nextOf(level));
     else if (res === 'again') loadLevel(level, true);
     else document.getElementById('next').hidden = false;
   }
@@ -428,6 +462,8 @@
     }
     g.globalAlpha = 0.22; g.fillStyle = grainPattern(); g.fillRect(0, 0, W, H); g.globalAlpha = 1;
     g.restore();
+    g.lineWidth = 3; g.strokeStyle = T.ink === '#1d1b19' ? '#8a8f9c' : '#5d6270';
+    for (let x = 40; x < W - 20; x += 46) { g.fillStyle = T.bg; g.beginPath(); g.arc(x, 14, 5, 0, 7); g.fill(); g.beginPath(); g.ellipse(x, 4, 4, 13, 0, Math.PI * 0.55, Math.PI * 1.45 + Math.PI); g.stroke(); }
   }
 
   function handleEvents() {
@@ -498,13 +534,13 @@
   const levelSel = document.getElementById('level');
   function paintLevels() {
     levelSel.innerHTML = '';
-    LEVELS.forEach((L, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = L.free ? '✏️ Free draw' : `${done[i] ? '⭐' : '○'} ${i + 1}. ${L.name}`; levelSel.append(o); });
+    ORDER.forEach((i, n) => { const L = LEVELS[i]; const o = document.createElement('option'); o.value = String(i); o.textContent = L.free ? '✏️ Free draw' : `${done[i] ? '⭐' : '○'} ${n + 1}. ${L.name}`; levelSel.append(o); });
     levelSel.value = String(level);
   }
   levelSel.addEventListener('change', () => loadLevel(+levelSel.value));
   document.getElementById('undo').addEventListener('click', undo);
   document.getElementById('restart').addEventListener('click', () => loadLevel(level, true));
-  document.getElementById('next').addEventListener('click', () => loadLevel(Math.min(LEVELS.length - 1, level + 1)));
+  document.getElementById('next').addEventListener('click', () => loadLevel(nextOf(level)));
   function togglePause() {
     paused = !paused;
     const b = document.getElementById('pause');
@@ -522,10 +558,41 @@
     else if (k === 'p') setTool('pin');
     else if (k === 'x') setTool('erase');
     else if (k === 'f') setFixed(!fixed);
-    else if (k === 'n' && !document.getElementById('next').hidden) loadLevel(Math.min(LEVELS.length - 1, level + 1));
+    else if (k === 'n' && !document.getElementById('next').hidden) loadLevel(nextOf(level));
     else if (k >= '1' && k <= '5') { color = +k - 1; paintColors(); }
   });
   window.addEventListener('curio:theme', () => { grain = null; });
+
+
+  const SHAPES = {
+    circle: (cx, cy, r) => Array.from({ length: 22 }, (_, k) => [cx + Math.cos(k / 22 * 6.2832) * r, cy + Math.sin(k / 22 * 6.2832) * r]),
+    box: (cx, cy, r) => [[cx - r, cy - r * 0.7], [cx + r, cy - r * 0.7], [cx + r, cy + r * 0.7], [cx - r, cy + r * 0.7]].flatMap((p, k, a) => { const q = a[(k + 1) % 4]; return [0, 0.25, 0.5, 0.75].map((t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }),
+    tri: (cx, cy, r) => [[cx, cy - r], [cx + r, cy + r * 0.8], [cx - r, cy + r * 0.8]].flatMap((p, k, a) => { const q = a[(k + 1) % 3]; return [0, 0.25, 0.5, 0.75].map((t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }),
+    plank: (cx, cy, r) => Array.from({ length: 12 }, (_, k) => [cx - r * 1.6 + k * (r * 3.2 / 11), cy + Math.sin(k) * 2])
+  };
+  function surprise() {
+    audioOk = true;
+    const n = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const kind = Curio.pick(Object.keys(SHAPES));
+      const keep = color; color = Math.floor(Math.random() * CRAYONS.length);
+      const r = Curio.rand(26, 48);
+      const pts = SHAPES[kind](Curio.rand(140, 860), Curio.rand(40, 140), r);
+      const rough = pts.map(([x, y]) => [x + Curio.rand(-1.5, 1.5), y + Curio.rand(-1.5, 1.5)]);
+      if (kind !== 'plank') rough.push([rough[0][0] + 1, rough[0][1] + 1]);
+      const fx = fixed; fixed = false; finishStroke(rough); fixed = fx;
+      color = keep;
+    }
+    paintColors();
+    Curio.toast(Curio.pick(['It is raining doodles', 'Fresh doodles, coming down', 'Look out below!']));
+  }
+  document.getElementById('surprise').addEventListener('click', surprise);
+  window.addEventListener('keydown', (e) => { if (e.target.closest?.('select, input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') surprise(); });
+  if (Curio.mode === 'advanced') {
+    const stEl = document.getElementById('stars');
+    const paintStars = () => { const n = ORDER.filter((i) => !LEVELS[i].free && done[i]).length; stEl.textContent = `⭐ ${n} / ${ORDER.length - 1}`; };
+    paintStars(); setInterval(paintStars, 1500);
+  }
 
   let last = 0, acc = 0, raf = 0;
   function frame(now) {
@@ -558,6 +625,7 @@
   window.DrawPhysics = { get world() { return world; }, get ball() { return ball; }, loadLevel, stroke: (pts, opt = {}) => { if (opt.fixed != null) fixed = opt.fixed; finishStroke(pts); fixed = false; }, pinAt, poke: () => poke(0), get won() { return won; } };
 
   level = Math.min(LEVELS.length - 1, Math.max(0, Curio.store.get('draw-physics:level', 0) | 0));
+  if (!ORDER.includes(level)) level = ORDER[0];
   paintLevels();
   loadLevel(level);
   fit();

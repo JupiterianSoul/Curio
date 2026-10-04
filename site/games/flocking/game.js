@@ -738,6 +738,62 @@
     Curio.beep(660, 0.06, 'triangle', 0.06);
   });
 
+
+  const GM = Curio.mode;
+  let lastSur = '';
+  function surprise() {
+    const worlds = ['sky', 'sea', 'night'];
+    const pr = Curio.pick(PRESETS.filter((p) => p.id !== lastSur && p.id !== 'loners')); lastSur = pr.id;
+    setWorld(Curio.pick(worlds), true);
+    for (const [k, v] of Object.entries({ num: innerWidth < 560 ? 260 : 450, ...pr.v })) { const val = k === 'num' && innerWidth < 560 ? Math.min(v, 550) : v; sliders[k].el.value = val; sliders[k].apply(); }
+    if (GM === 'simple') Curio.store.set('flock:simple', pr.id);
+    for (let i = 0; i < N; i++) spawn(i);
+    intro.classList.add('is-faded');
+    Curio.toast(`${pr.name} in the ${world === 'sea' ? 'sea' : world === 'night' ? 'night sky' : 'sky'}`);
+    [523, 659, 784].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.06, 'triangle', 0.05), i * 60));
+  }
+  $('bSurprise').addEventListener('click', surprise);
+  addEventListener('keydown', (e) => { if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'r' || e.key === 'R') surprise(); });
+  const orderHist = [];
+  function readings() {
+    let sx = 0, sy = 0, sp = 0, fe = 0;
+    for (let i = 0; i < N; i++) { const v = Math.hypot(vx[i], vy[i]) || 1; sx += vx[i] / v; sy += vy[i] / v; sp += v; if (fear[i] > 0.2) fe++; }
+    const ord = N ? Math.hypot(sx, sy) / N : 0;
+    orderHist.push(ord); if (orderHist.length > 120) orderHist.shift();
+    if (GM !== 'advanced' || $('panel').hidden) return;
+    $('rOrder').textContent = `${Math.round(ord * 100)}%`;
+    $('rSpeed').textContent = N ? Math.round(sp / N) : 0;
+    $('rFear').textContent = fe;
+    const c = $('rSpark').getContext('2d'), w = 240, h = 40;
+    c.clearRect(0, 0, w, h);
+    c.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#dc2f6c'; c.lineWidth = 2; c.beginPath();
+    orderHist.forEach((v, i) => { const x = (i / 119) * w, y = h - 3 - v * (h - 6); i ? c.lineTo(x, y) : c.moveTo(x, y); });
+    c.stroke();
+  }
+  setInterval(() => { if (!document.hidden) readings(); }, 250);
+  const KEYS = ['sep', 'ali', 'coh', 'num', 'spd', 'vis', 'wind'];
+  $('bCopy').addEventListener('click', async () => {
+    const c = 'ZFL1.' + btoa(JSON.stringify({ w: world, v: KEYS.map((k) => +sliders[k].el.value) }));
+    try { await navigator.clipboard.writeText(c); Curio.toast('Flock code copied'); } catch { Curio.toast(c, 5000); }
+  });
+  $('bPaste').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'fl-code'; ta.placeholder = 'Paste a ZFL1 code'; ta.setAttribute('aria-label', 'Flock code');
+    const v = Curio.modal({ emoji: '📥', title: 'Paste a flock', body: ta, buttons: [{ label: 'Release them', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try {
+      const t = ta.value.trim(); if (!t.startsWith('ZFL1.')) throw 0;
+      const o = JSON.parse(atob(t.slice(5)));
+      if (['sky', 'sea', 'night'].includes(o.w)) setWorld(o.w, true);
+      KEYS.forEach((k, i) => { if (typeof o.v[i] === 'number') { sliders[k].el.value = o.v[i]; sliders[k].apply(); } });
+      Curio.toast('Flock loaded');
+    } catch { Curio.toast('That code did not work'); }
+  });
+  if (GM === 'simple') {
+    const pr = PRESETS.find((p) => p.id === Curio.store.get('flock:simple', 'classic')) || PRESETS[0];
+    for (const [k, v] of Object.entries({ wind: 0, num: innerWidth < 560 ? 220 : 400, ...pr.v })) { const val = k === 'num' && innerWidth < 560 ? Math.min(v, 550) : v; sliders[k].el.value = val; sliders[k].apply(); }
+  }
+
   function resize() {
     const r = cv.getBoundingClientRect();
     const oldW = W, oldH = H;

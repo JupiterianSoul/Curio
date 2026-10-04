@@ -616,5 +616,53 @@
   applyTheme();
   resize();
   start();
+
+  const GM = Curio.mode;
+  const life = Curio.store.get('dp:life', { flips: 0, drops: 0 });
+  let flipSeen = 0;
+  function paintLife() {
+    $('lFlips').textContent = Curio.fmt(life.flips);
+    $('lBest').textContent = Curio.getBest('flips20') ?? 0;
+    $('lDrops').textContent = Curio.fmt(life.drops);
+  }
+  setInterval(() => {
+    if (document.hidden || !pends.length) return;
+    const f = pends[0].flips;
+    if (f > flipSeen) { life.flips += f - flipSeen; Curio.store.set('dp:life', life); if (GM === 'advanced') paintLife(); }
+    flipSeen = f;
+  }, 500);
+  cv.addEventListener('pointerup', () => { life.drops++; flipSeen = 0; Curio.store.set('dp:life', life); });
+  const FUN = ['classic', 'heavy', 'whip', 'moon', 'jupiter', 'fan', 'butterfly', 'headstand', 'syrup'];
+  let lastFun = '';
+  function surprise() {
+    const pool = FUN.filter((id) => id !== lastFun);
+    const id = Curio.pick(pool); lastFun = id;
+    applyPreset(PRESETS.find((p) => p.id === id));
+    flipSeen = 0;
+  }
+  $('bSurprise').addEventListener('click', surprise);
+  addEventListener('keydown', (e) => { if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G' || (GM === 'simple' && (e.key === 'r' || e.key === 'R'))) { e.stopImmediatePropagation(); surprise(); } }, true);
+  const codeOf = () => 'ZDP1.' + btoa(JSON.stringify({ p: ['l1', 'l2', 'm1', 'm2', 'g', 'b'].map((k) => +P[k].toFixed(3)), a: pends.length ? [+pends[0].s[0].toFixed(4), +pends[0].s[1].toFixed(4)] : [2, 2.5], m: mode }));
+  $('bCopy').addEventListener('click', async () => {
+    const c = codeOf();
+    try { await navigator.clipboard.writeText(c); Curio.toast('Setup code copied'); } catch { Curio.toast(c, 5000); }
+  });
+  $('bPaste').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'dp-code'; ta.placeholder = 'Paste a ZDP1 code'; ta.setAttribute('aria-label', 'Setup code');
+    const v = Curio.modal({ emoji: '📥', title: 'Paste a setup', body: ta, buttons: [{ label: 'Release it', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try {
+      const t = ta.value.trim(); if (!t.startsWith('ZDP1.')) throw 0;
+      const o = JSON.parse(atob(t.slice(5)));
+      ['l1', 'l2', 'm1', 'm2', 'g', 'b'].forEach((k, i) => setParam(k, o.p[i]));
+      setup(o.a[0], o.a[1], ['single', 'chaos', 'swarm'].includes(o.m) ? o.m : 'single');
+      setPaused(false); intro.classList.add('is-faded'); Curio.toast('Setup loaded. Let it swing!');
+    } catch { Curio.toast('That code did not work'); }
+  });
+  if (GM === 'simple') {
+    for (const k of ['l1', 'l2', 'm1', 'm2', 'g', 'b', 'speed']) setParam(k, DEFAULTS[k]);
+    if (!pends.length || mode !== 'single') setup(2.1, 2.9, 'single');
+  } else paintLife();
   window.__dp = { get mode() { return mode; }, get pends() { return pends; }, get chal() { return chal; }, applyPreset: (id) => applyPreset(PRESETS.find((p) => p.id === id)), startRun, setTheme: (t) => { theme = t; applyTheme(); } };
 })();

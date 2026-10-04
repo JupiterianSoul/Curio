@@ -9,15 +9,16 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="cloth">
+<body data-game="cloth" data-modes>
   <main class="c-wrap cl-main">
     <canvas id="cv" role="img" aria-label="A sheet of cloth. Drag to pull it around, cut it with scissors, set it alight, throw balls at it or drape it over objects."></canvas>
     <div class="cl-intro" id="intro">
-      <h1>Cloth</h1>
-      <p>Grab the fabric and pull. Cut it, burn it, throw balls at it, or drape it over a table and make a ghost.</p>
+      <h1>Cloth <span class="cl-tag" aria-hidden="true">no. 9 haberdashery</span></h1>
+      <p class="simple-only">Grab it, cut it, burn it, pelt it. Press Surprise me for a new scene.</p>
+      <p class="adv-only">Grab the fabric and pull. Cut it, burn it, throw balls at it, or drape it over a table and make a ghost.</p>
     </div>
     <div class="cl-stats"><div class="c-stat"><b id="sCuts">0</b><span>Threads cut</span></div><div class="c-stat"><b id="sBurn">0</b><span>Burnt</span></div></div>
-    <div class="panel" id="panel" hidden>
+    <div class="panel adv-only" id="panel" hidden>
       <h2>Scenes</h2>
       <div class="scenes" id="scenes"></div>
       <h2>Fabric</h2>
@@ -28,9 +29,13 @@
       <label class="sl">Stiffness <output id="oStiff"></output><input type="range" id="stiff" min="2" max="24" step="1" value="8"></label>
       <label class="sl">Toughness <output id="oTough"></output><input type="range" id="tough" min="1.4" max="12" step="0.1" value="6"></label>
       <p>Low toughness means the fabric rips when you yank it. Drag the grey objects to move them.</p>
+      <h2>Tailor's orders</h2>
+      <ol class="cl-orders" id="orders"></ol>
+      <h2>Share a setup</h2>
+      <div class="cl-share"><button type="button" class="chip" id="bCopy">📋 Copy code</button><button type="button" class="chip" id="bPaste">📥 Paste code</button></div>
       <h2>Badges</h2>
       <div class="badges" id="badges"></div>
-      <p>Keys: 1 grab, 2 scissors, 3 fire, 4 throw, Space throws a ball, B lights a match, W wind, P pins, D drop, R reset.</p>
+      <p>Keys: 1 grab, 2 scissors, 3 fire, 4 throw, Space throws a ball, B lights a match, W wind, P pins, D drop, R reset, G surprise.</p>
     </div>
     <div class="dock" role="toolbar" aria-label="Cloth controls">
       <div class="tools" role="group" aria-label="Tool">
@@ -40,10 +45,11 @@
         <button type="button" class="chip" data-tool="throw" aria-pressed="false">🏐 Throw</button>
       </div>
       <button type="button" class="chip" id="bWind" aria-pressed="false">🌬️ Wind</button>
-      <button type="button" class="chip" id="bPins">📌 Pins</button>
-      <button type="button" class="chip" id="bDrop">🪂 Drop</button>
+      <button type="button" class="chip cl-surprise simple-only" id="bSurprise">🎲 Surprise me</button>
+      <button type="button" class="chip adv-only" id="bPins">📌 Pins</button>
+      <button type="button" class="chip adv-only" id="bDrop">🪂 Drop</button>
       <button type="button" class="chip" id="bReset">🔄</button>
-      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
+      <button type="button" class="chip adv-only" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
     </div>
   </main>
   <script src="../../games.js"></script>

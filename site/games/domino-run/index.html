@@ -9,30 +9,42 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="domino-run">
+<body data-game="domino-run" data-modes>
   <main class="c-wrap dr-main">
     <div class="dr-stage" id="stage">
       <canvas id="board" role="img" aria-label="Domino table. Drag a line to place dominoes, then press Topple to start the chain."></canvas>
       <div class="dr-intro" id="intro">
-        <h1>Dominoes</h1>
-        <p>Drag a line to set up dominoes, add stairs, balls and a bell, then tip the first one.</p>
+        <h1>Dominoes <span class="dr-tagline" aria-hidden="true">the parlour table</span></h1>
+        <p class="simple-only">Drag a line on the felt, then press Topple. Or let Surprise me set one up.</p>
+        <p class="adv-only">Drag a line to set up dominoes, add stairs, balls and a bell, then tip the first one.</p>
       </div>
       <div class="dr-count" aria-live="polite"><b id="nFallen">0</b> / <span id="nTotal">0</span> fallen</div>
       <div class="dr-tag" id="tag"></div>
+    </div>
+    <div class="dr-book adv-only" id="bookPanel" hidden>
+      <h2>Trick shots</h2>
+      <ol class="dr-jobs" id="jobs"></ol>
+      <h2>Scorecard</h2>
+      <div class="dr-tally"><div class="c-stat"><b id="tD">0</b><span>toppled ever</span></div><div class="c-stat"><b id="tR">0</b><span>runs</span></div><div class="c-stat"><b id="tBest">0</b><span>best perfect</span></div></div>
+      <h2>Saved tables</h2>
+      <div class="dr-slots" id="slots"></div>
+      <div class="dr-share"><button type="button" class="dr-b" id="copyCode">📋 Copy code</button><button type="button" class="dr-b" id="pasteCode">📥 Paste code</button></div>
     </div>
     <div class="dr-tools">
       <div class="dr-row" id="toolRow" role="toolbar" aria-label="Tools"></div>
       <div class="dr-row dr-row2">
         <button type="button" class="c-btn dr-go" id="go" title="Topple (Space)">👉 Topple!</button>
-        <button type="button" class="dr-b" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
-        <button type="button" class="dr-b" id="pause" aria-pressed="false" title="Pause (P)">⏸ Pause</button>
+        <button type="button" class="dr-b dr-sur simple-only" id="surprise">🎲 Surprise me</button>
+        <button type="button" class="dr-b adv-only" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
+        <button type="button" class="dr-b adv-only" id="pause" aria-pressed="false" title="Pause (P)">⏸ Pause</button>
         <button type="button" class="dr-b" id="stand" title="Stand up (R)">↺ Stand up</button>
-        <button type="button" class="dr-b" id="rotL" title="Rotate or flip the selected piece (Q)" aria-label="Rotate selected piece left">⟲</button>
-        <button type="button" class="dr-b" id="rotR" title="Rotate or flip the selected piece (E)" aria-label="Rotate selected piece right">⟳</button>
+        <button type="button" class="dr-b adv-only" id="rotL" title="Rotate or flip the selected piece (Q)" aria-label="Rotate selected piece left">⟲</button>
+        <button type="button" class="dr-b adv-only" id="rotR" title="Rotate or flip the selected piece (E)" aria-label="Rotate selected piece right">⟳</button>
         <button type="button" class="dr-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
-        <label class="dr-b dr-sel">🎨 <select id="pattern" aria-label="Colour pattern for new dominoes"></select></label>
-        <label class="dr-b dr-sel">📐 <select id="preset" aria-label="Load a preset"><option value="">Presets…</option></select></label>
+        <label class="dr-b dr-sel adv-only">🎨 <select id="pattern" aria-label="Colour pattern for new dominoes"></select></label>
+        <label class="dr-b dr-sel adv-only">📐 <select id="preset" aria-label="Load a preset"><option value="">Presets…</option></select></label>
         <button type="button" class="dr-b" id="clear">🗑 Clear</button>
+        <button type="button" class="dr-b adv-only" id="book" aria-pressed="false">📒 Scorecard</button>
       </div>
     </div>
   </main>

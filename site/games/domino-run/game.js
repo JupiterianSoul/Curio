@@ -230,8 +230,8 @@
   function colors() {
     const dark = Curio.isDark();
     return dark
-      ? { bg: '#161412', wall0: '#1f2a3a', wall1: '#262230', table: '#6b4a2f', tableTop: '#8a6240', tableEdge: '#4a321f', wood: '#a77a4f', woodEdge: '#5e4128', ink: '#f3eee7', grid: 'rgba(255,255,255,.04)' }
-      : { bg: '#fbf7f0', wall0: '#e9f3ff', wall1: '#fff3e6', table: '#c98f5a', tableTop: '#e0aa72', tableEdge: '#9a663a', wood: '#e8b77f', woodEdge: '#a8743f', ink: '#1d1b19', grid: 'rgba(60,40,20,.05)' };
+      ? { bg: '#100d0b', wall0: '#2a1c22', wall1: '#1b1418', table: '#173a2a', tableTop: '#c8a24a', tableEdge: '#0c2219', wood: '#a77a4f', woodEdge: '#5e4128', ink: '#f3eee7', grid: 'rgba(255,220,160,.05)', felt: '#1f4d38', dark: true }
+      : { bg: '#efe4cf', wall0: '#f7ead0', wall1: '#ead6b2', table: '#2f7d55', tableTop: '#c8a24a', tableEdge: '#1f5a3c', wood: '#e8b77f', woodEdge: '#a8743f', ink: '#1d1b19', grid: 'rgba(150,60,40,.045)', felt: '#3a9466' };
   }
 
   function shadeHsl(c, k) { return `color-mix(in srgb, ${c} ${Math.round((1 - k) * 100)}%, #000)`; }
@@ -329,9 +329,13 @@
     sky.addColorStop(0, C.wall0); sky.addColorStop(1, C.wall1);
     g.fillStyle = sky; g.beginPath(); g.roundRect(0, 0, W, FLOOR + 10, [20, 20, 0, 0]); g.fill();
     g.strokeStyle = C.grid; g.lineWidth = 1;
-    for (let x = 50; x < W; x += 50) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, FLOOR); g.stroke(); }
+    g.fillStyle = C.grid;
+    for (let x = 0; x < W; x += 60) { g.fillRect(x, 0, 22, FLOOR); g.fillRect(x + 28, 0, 3, FLOOR); }
+    g.fillStyle = C.dark ? 'rgba(255,200,120,.08)' : 'rgba(255,240,200,.55)';
+    for (const lx of [W * 0.25, W * 0.75]) { const rg = g.createRadialGradient(lx, 30, 0, lx, 30, 340); rg.addColorStop(0, g.fillStyle); rg.addColorStop(1, 'rgba(0,0,0,0)'); g.save(); g.fillStyle = rg; g.fillRect(lx - 340, 0, 680, FLOOR); g.restore(); }
     g.fillStyle = C.tableTop; g.fillRect(0, FLOOR, W, 12);
-    g.fillStyle = C.table; g.beginPath(); g.roundRect(0, FLOOR + 12, W, H - FLOOR - 12, [0, 0, 20, 20]); g.fill();
+    g.fillStyle = C.felt; g.beginPath(); g.roundRect(0, FLOOR + 12, W, H - FLOOR - 12, [0, 0, 20, 20]); g.fill();
+    g.save(); g.globalAlpha = 0.12; g.fillStyle = '#000'; for (let k = 0; k < 220; k++) g.fillRect((k * 97.3) % W, FLOOR + 14 + ((k * 31.7) % (H - FLOOR - 16)), 2, 1); g.restore();
     g.fillStyle = C.tableEdge; g.fillRect(0, FLOOR + 12, W, 3);
     g.save(); g.globalAlpha = 0.15; g.strokeStyle = C.tableEdge; g.lineWidth = 1.5;
     for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(0, FLOOR + 22 + i * 5); g.bezierCurveTo(W * 0.3, FLOOR + 18 + i * 6, W * 0.6, FLOOR + 28 + i * 5, W, FLOOR + 20 + i * 6); g.stroke(); }
@@ -650,6 +654,81 @@
   });
 
   let last = 0, acc = 0, raf = 0;
+
+  const GM = Curio.mode;
+  const SIMPLE_T = ['line', 'push', 'erase', 'stairs', 'ball', 'bell', 's1', 's2'];
+  if (GM === 'simple') { for (const b of [...row.children]) if (b.classList.contains('dr-sep') || !SIMPLE_T.includes(b.dataset.t)) b.remove(); if (size > 2 || size < 1) size = 1; paint(); }
+  const tally = Object.assign({ d: 0, runs: 0 }, Curio.store.get('dr:tally', {}));
+  let lastK = '';
+  function surprise() {
+    const k = Curio.pick(Object.keys(PRESETS).filter((x) => x !== lastK)); lastK = k;
+    unlock(); pushHistory(); loadItems(PRESETS[k].make()); save(); fadeIntro();
+    Curio.toast(`${PRESETS[k].label}. Here it goes!`);
+    setTimeout(topple, 700);
+  }
+  document.getElementById('surprise').addEventListener('click', surprise);
+  window.addEventListener('keydown', (e) => { if (e.target.closest?.('select, input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') surprise(); });
+  const JOBS = [
+    ['A perfect run of 30', () => (Curio.getBest('perfect') || 0) >= 30], ['A perfect run of 100', () => (Curio.getBest('perfect') || 0) >= 100], ['A perfect run of 200', () => (Curio.getBest('perfect') || 0) >= 200],
+    ['Topple 1,000 dominoes in total', () => tally.d >= 1000], ['Do 25 runs', () => tally.runs >= 25], ['Ring the bell at the end of a run', () => !!tally.rang],
+    ['Use all four sizes on one table', () => new Set(items.filter((it) => it.t === 'd').map((it) => it.s ?? 1)).size >= 4]
+  ];
+  const jobsDone = Curio.store.get('dr:jobs', {});
+  const bookEl = document.getElementById('bookPanel'), bookBtn = document.getElementById('book');
+  bookBtn.addEventListener('click', () => { bookEl.hidden = !bookEl.hidden; bookBtn.setAttribute('aria-pressed', String(!bookEl.hidden)); paintBook(); });
+  function paintBook() {
+    if (bookEl.hidden) return;
+    document.getElementById('jobs').replaceChildren(...JOBS.map(([t], i) => { const li = document.createElement('li'); li.textContent = t; if (jobsDone[i]) li.classList.add('done'); return li; }));
+    document.getElementById('tD').textContent = Curio.fmt(tally.d); document.getElementById('tR').textContent = Curio.fmt(tally.runs);
+    document.getElementById('tBest').textContent = Curio.getBest('perfect') || 0;
+    document.getElementById('slots').replaceChildren(...[1, 2, 3].map((n) => {
+      const o = Curio.store.get(`dr:slot${n}`, null);
+      const r = document.createElement('div'); r.className = 'dr-slot';
+      const sp = document.createElement('span'); sp.textContent = `Table ${n}: ${o ? `${o.i.filter((x) => x.t === 'd').length} dominoes` : 'empty'}`;
+      const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'dr-b'; sv.textContent = 'Save';
+      sv.addEventListener('click', () => { Curio.store.set(`dr:slot${n}`, { at: Date.now(), i: items.map(clean) }); Curio.toast(`Saved to table ${n}`); paintBook(); });
+      const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'dr-b'; ld.textContent = 'Load'; ld.disabled = !o;
+      ld.addEventListener('click', () => { const v = Curio.store.get(`dr:slot${n}`, null); if (!v) return; pushHistory(); loadItems(v.i); save(); fadeIntro(); Curio.toast(`Table ${n} set up`); });
+      r.append(sp, sv, ld);
+      return r;
+    }));
+  }
+  async function packCode(obj) {
+    const json = JSON.stringify(obj);
+    try { const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]); return 'ZDR1.' + btoa(bin); }
+    catch { return 'ZDR0.' + btoa(unescape(encodeURIComponent(json))); }
+  }
+  async function unpackCode(c) {
+    c = c.trim();
+    if (c.startsWith('ZDR0.')) return JSON.parse(decodeURIComponent(escape(atob(c.slice(5)))));
+    if (!c.startsWith('ZDR1.')) throw new Error('bad');
+    const bin = atob(c.slice(5)); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text());
+  }
+  document.getElementById('copyCode').addEventListener('click', async () => { const c = await packCode(items.map(clean)); try { await navigator.clipboard.writeText(c); Curio.toast('Table code copied'); } catch { Curio.toast('Could not copy. Try again.'); } });
+  document.getElementById('pasteCode').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'dr-code'; ta.placeholder = 'Paste a ZDR1 code'; ta.setAttribute('aria-label', 'Table code');
+    const v = Curio.modal({ emoji: '📥', title: 'Set up a shared table', body: ta, buttons: [{ label: 'Set it up', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try { const list = await unpackCode(ta.value); if (!Array.isArray(list)) throw 0; pushHistory(); loadItems(list.filter((x) => x && BUILD[x.t])); save(); fadeIntro(); Curio.toast('Shared table ready. Topple!'); }
+    catch { Curio.toast('That code did not work'); }
+  });
+  let seenRun = null;
+  setInterval(() => {
+    if (document.hidden) return;
+    if (run && run.done && seenRun !== run) {
+      seenRun = run; tally.runs++;
+      const { fallen } = counts(); tally.d += fallen;
+      if (run.rang) tally.rang = 1;
+      Curio.store.set('dr:tally', tally);
+    }
+    let changed = false;
+    if (GM === 'advanced') JOBS.forEach(([t, f], i) => { if (!jobsDone[i] && f()) { jobsDone[i] = Date.now(); changed = true; Curio.toast(`🏅 Trick shot: ${t}`); } });
+    if (changed) Curio.store.set('dr:jobs', jobsDone);
+    paintBook();
+  }, 800);
+
   function frame(now) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;

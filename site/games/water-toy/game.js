@@ -191,6 +191,7 @@
     for (let k = 0; k < count; k++) {
       if (fluid.n >= MAX) { if (!fullWarned) { fullWarned = true; Curio.toast('The tank is full! Use the sponge or Empty.'); } return; }
       fluid.add(x + Curio.rand(-5, 5), y + Curio.rand(-3, 3), vx + Curio.rand(-0.3, 0.3), vy + Curio.rand(-0.3, 0.3));
+      poured++;
     }
     fullWarned = false;
   }
@@ -279,7 +280,12 @@
   function draw() {
     const dark = Curio.isDark();
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.fillStyle = dark ? '#161412' : '#fbf7f0'; g.fillRect(0, 0, cw, ch);
+    g.fillStyle = dark ? '#10262c' : '#eaf6f6'; g.fillRect(0, 0, cw, ch);
+    g.fillStyle = dark ? '#173740' : '#ffffff';
+    const ts = 46;
+    for (let ty = 0; ty < ch; ty += ts) for (let tx = ((ty / ts) % 2) * 0; tx < cw; tx += ts) { g.beginPath(); g.roundRect(tx + 2, ty + 2, ts - 4, ts - 4, 6); g.fill(); }
+    g.fillStyle = dark ? 'rgba(255,255,255,.04)' : 'rgba(120,200,210,.18)';
+    for (let ty = 0; ty < ch; ty += ts) for (let tx = 0; tx < cw; tx += ts) if (((tx + ty) / ts) % 5 === 0) { g.beginPath(); g.roundRect(tx + 2, ty + 2, ts - 4, ts - 4, 6); g.fill(); }
     g.setTransform(dpr * scale * Math.cos(tilt), dpr * scale * Math.sin(tilt), -dpr * scale * Math.sin(tilt), dpr * scale * Math.cos(tilt), dpr * cx, dpr * cy);
     g.translate(-W / 2, -H / 2);
     g.fillStyle = dark ? 'rgba(0,0,0,.35)' : 'rgba(60,40,20,.12)';
@@ -450,13 +456,86 @@
     else if (k === ' ') { e.preventDefault(); togglePause(); }
     else if (k === 't') toggleTap();
     else if (k === 'w') document.getElementById('wave').click();
-    else if (k >= '1' && k <= '7') setTool(['pour', 'hand', 'duck', 'rock', 'wall', 'erase', 'tilt'][+k - 1]);
+    else if (k >= '1' && k <= '7' && !(Curio.mode === 'simple' && (k === '5' || k === '7'))) setTool(['pour', 'hand', 'duck', 'rock', 'wall', 'erase', 'tilt'][+k - 1]);
     else if (k === 'z' && (e.ctrlKey || e.metaKey)) document.getElementById('undo').click();
   });
   window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (keys[k]) { keys[k] = false; save(); } });
   window.addEventListener('blur', () => { keys.arrowleft = keys.arrowright = false; });
 
   let last = 0, raf = 0, saveT = 0, cntT = 0, dripT = 0;
+
+  const GM = Curio.mode;
+  let poured = 0;
+  const pour0 = Curio.store.get('water-toy:poured', 0);
+  const SURPRISES = [
+    ['Duck parade', () => { for (let i = 0; i < 7; i++) makeBody('duck', 70 + i * 80, 60 + (i % 2) * 30); }],
+    ['Rock slide', () => { for (let i = 0; i < 4; i++) makeBody('rock', 120 + i * 130, 40); }],
+    ['Tidal wave', () => { setTilt(-MAXTILT); setTimeout(() => setTilt(MAXTILT), 900); setTimeout(() => setTilt(0), 1900); slosh = 1.4; SND.slosh(); }],
+    ['Waterfall', () => { walls.push({ x1: 90, y1: 120, x2: 230, y2: 160, r: 6 }, { x1: 330, y1: 200, x2: 200, y2: 240, r: 6 }, { x1: 260, y1: 300, x2: 420, y2: 330, r: 6 }); fluid.setSegments(walls); if (!tapOn) toggleTap(); }],
+    ['Cannonball!', () => { makeBody('rock', W / 2, 20); makeBody('rock', W / 2 + 30, -20); slosh = 0.8; }],
+    ['Rubber duck rain', () => { for (let i = 0; i < 4; i++) makeBody('duck', Curio.rand(80, W - 80), Curio.rand(-60, 40)); if (fluid.n < 900) fillBlock(600); }],
+    ['Rock-a-bye tank', () => { let k = 0; const id = setInterval(() => { setTilt(Math.sin(k++ * 0.6) * MAXTILT * 0.8); if (k > 14) { clearInterval(id); setTilt(0); } }, 180); }]
+  ];
+  let lastS = -1;
+  function surprise() {
+    audioOk = true; budget++; if (!touched) { touched = true; intro.classList.add('is-faded'); }
+    let n; do n = Math.floor(Math.random() * SURPRISES.length); while (n === lastS);
+    lastS = n;
+    if (bodies.length > 24) bodies.splice(0, bodies.length - 16);
+    SURPRISES[n][1]();
+    Curio.toast(SURPRISES[n][0]);
+    SND.pop();
+  }
+  document.getElementById('surprise').addEventListener('click', surprise);
+  window.addEventListener('keydown', (e) => { if (e.target.closest?.('input, textarea') || e.ctrlKey || e.metaKey) return; if (e.key === 'g' || e.key === 'G') surprise(); });
+  const afloat = () => bodies.filter((b) => b.kind === 'duck' && b.sub > 0.05).length;
+  const sunk = () => bodies.filter((b) => b.kind === 'rock' && b.sub > 0.6).length;
+  const JOBS = [
+    ['Float 8 ducks at once', () => afloat() >= 8], ['Fill the tank to the brim', () => fluid.n >= MAX * 0.97], ['Sink 5 rocks at once', () => sunk() >= 5],
+    ['Build 8 walls', () => walls.length >= 8], ['Pour 20,000 drops in total', () => pour0 + poured >= 20000], ['Tilt all the way both ways', () => tiltSeen.l && tiltSeen.r], ['Save a tank', () => [1, 2, 3].some((n) => Curio.store.get(`water-toy:slot${n}`, null))]
+  ];
+  const tiltSeen = { l: false, r: false };
+  const jobsDone = Curio.store.get('water-toy:jobs', {});
+  const bookEl = document.getElementById('bookPanel'), bookBtn = document.getElementById('book');
+  bookBtn.addEventListener('click', () => { bookEl.hidden = !bookEl.hidden; bookBtn.setAttribute('aria-pressed', String(!bookEl.hidden)); paintBook(); });
+  function paintBook() {
+    if (bookEl.hidden) return;
+    document.getElementById('jobs').replaceChildren(...JOBS.map(([t], i) => { const li = document.createElement('li'); li.textContent = t; if (jobsDone[i]) li.classList.add('done'); return li; }));
+    document.getElementById('tP').textContent = Curio.fmt(pour0 + poured);
+    document.getElementById('tF').textContent = `${Math.round(fluid.n / MAX * 100)}%`;
+    document.getElementById('tD').textContent = afloat();
+    document.getElementById('slots').replaceChildren(...[1, 2, 3].map((n) => {
+      const o = Curio.store.get(`water-toy:slot${n}`, null);
+      const r = document.createElement('div'); r.className = 'wt-slot';
+      const sp = document.createElement('span'); sp.textContent = `Tank ${n}: ${o ? `${Curio.fmt(o.n)} drops` : 'empty'}`;
+      const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'wt-b'; sv.textContent = 'Save';
+      sv.addEventListener('click', () => { save(); Curio.store.set(`water-toy:slot${n}`, Curio.store.get(KEY, null)); Curio.toast(`Saved to tank ${n}`); paintBook(); });
+      const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'wt-b'; ld.textContent = 'Load'; ld.disabled = !o;
+      ld.addEventListener('click', () => { const v = Curio.store.get(`water-toy:slot${n}`, null); if (v) { restore(v); save(); Curio.toast(`Tank ${n} filled`); } });
+      r.append(sp, sv, ld);
+      return r;
+    }));
+  }
+  document.getElementById('copyCode').addEventListener('click', async () => { save(); const c = 'ZWT1.' + btoa(JSON.stringify(Curio.store.get(KEY, {}))); try { await navigator.clipboard.writeText(c); Curio.toast('Tank code copied'); } catch { Curio.toast('Could not copy. Try again.'); } });
+  document.getElementById('pasteCode').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'wt-code'; ta.placeholder = 'Paste a ZWT1 code'; ta.setAttribute('aria-label', 'Tank code');
+    const v = Curio.modal({ emoji: '📥', title: 'Fill a shared tank', body: ta, buttons: [{ label: 'Fill it', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 40);
+    if (await v !== 'go') return;
+    try { const t = ta.value.trim(); if (!t.startsWith('ZWT1.')) throw 0; const o = JSON.parse(atob(t.slice(5))); if (!o || typeof o !== 'object') throw 0; restore(o); save(); Curio.toast('Shared tank filled'); } catch { Curio.toast('That code did not work'); }
+  });
+  setInterval(() => {
+    if (document.hidden) return;
+    if (tiltT <= -MAXTILT + 0.02) tiltSeen.l = true;
+    if (tiltT >= MAXTILT - 0.02) tiltSeen.r = true;
+    let chg = false;
+    if (GM === 'advanced') JOBS.forEach(([t, f], i) => { if (!jobsDone[i] && f()) { jobsDone[i] = Date.now(); chg = true; Curio.toast(`🫧 Goal: ${t}`); } });
+    if (chg) Curio.store.set('water-toy:jobs', jobsDone);
+    if (poured) Curio.store.set('water-toy:poured', pour0 + poured);
+    paintBook();
+  }, 800);
+  if (GM === 'simple' && (tool === 'wall' || tool === 'tilt')) setTool('pour');
+
   function frame(now) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;

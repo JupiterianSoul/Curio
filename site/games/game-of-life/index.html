@@ -9,19 +9,21 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="game-of-life">
+<body data-game="game-of-life" data-modes>
   <main class="c-wrap gl" id="app">
     <div class="gl-head">
-      <h1 class="c-title">Game of Life</h1>
-      <p class="c-sub">A few simple rules, endless drama. Draw cells, drop in famous patterns, bend the rules, then watch it all breed, starve and fly away.</p>
+      <h1 class="c-title gl-logo"><span class="gl-glider" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>Game of Life</h1>
+      <p class="c-sub simple-only">Pick a critter, tap the dish, press Play. Then watch it breed, starve and fly away.</p>
+      <p class="c-sub adv-only">A few simple rules, endless drama. Draw cells, drop in famous patterns, bend the rules, then watch it all breed, starve and fly away.</p>
     </div>
 
     <div class="topbar">
       <button class="c-btn play" id="play" type="button"><span id="play-ico" aria-hidden="true">▶</span> <span id="play-txt">Play</span></button>
-      <button class="c-btn c-btn--ghost ib" id="back" type="button" aria-label="Rewind one generation" title="Rewind (B)">⏮</button>
+      <button class="c-btn c-btn--ghost ib adv-only" id="back" type="button" aria-label="Rewind one generation" title="Rewind (B)">⏮</button>
       <button class="c-btn c-btn--ghost ib" id="step" type="button" aria-label="Step one generation" title="Step (N)">⏭</button>
       <label class="speed"><span>Speed</span><input type="range" id="speed" min="0" max="100" value="55" aria-label="Speed"><b id="speedV"></b></label>
-      <button class="c-btn c-btn--ghost" id="random" type="button"><span aria-hidden="true">🎲</span> Soup</button>
+      <button class="c-btn c-btn--ghost adv-only" id="random" type="button"><span aria-hidden="true">🎲</span> Soup</button>
+      <button class="c-btn gl-surprise simple-only" id="surprise" type="button"><span aria-hidden="true">🎲</span> Surprise me</button>
       <button class="c-btn c-btn--ghost" id="clear" type="button"><span aria-hidden="true">🧹</span> Clear</button>
       <button class="c-btn c-btn--ghost" id="undo" type="button"><span aria-hidden="true">↶</span> Undo</button>
     </div>
@@ -34,7 +36,8 @@
         <div class="hstat"><b id="peak">0</b><span>peak</span></div>
         <canvas id="spark" width="120" height="34" aria-hidden="true"></canvas>
       </div>
-      <div class="rulechip" id="rulechip"></div>
+      <div class="rulechip adv-only" id="rulechip"></div>
+      <div class="gl-label" aria-hidden="true">culture no. 23 · B3/S23</div>
       <div class="state" id="state" aria-live="polite"></div>
       <div class="hint" id="hint"></div>
       <div class="zoom">
@@ -45,7 +48,16 @@
       <div class="chal-bar" id="chal-bar" hidden></div>
     </div>
 
-    <div class="tabs" role="tablist" aria-label="Panels">
+    <section class="shelf simple-only" aria-label="Critters">
+      <div class="shelf-head"><b>Critter shelf</b><span class="c-muted">pick one, then tap the dish</span>
+        <span class="shelf-tools" role="group" aria-label="Pen">
+          <button type="button" class="pen" data-pen="draw" aria-pressed="true">✏️ Draw</button>
+          <button type="button" class="pen" data-pen="erase" aria-pressed="false">🧽 Erase</button>
+        </span>
+      </div>
+      <div class="critters" id="critters"></div>
+    </section>
+    <div class="tabs adv-only" role="tablist" aria-label="Panels">
       <button type="button" role="tab" data-tab="tools">✏️ Tools</button>
       <button type="button" role="tab" data-tab="library">📚 Library</button>
       <button type="button" role="tab" data-tab="rules">🧪 Rules</button>
@@ -54,8 +66,8 @@
       <button type="button" role="tab" data-tab="chal">🏆 Challenges</button>
       <button type="button" role="tab" data-tab="badges">🏅 Badges <span class="pill" id="badge-count">0</span></button>
     </div>
-    <section class="c-card panel" id="panel"></section>
-    <p class="keys c-muted"><span class="c-kbd">Space</span> play · <span class="c-kbd">N</span> step · <span class="c-kbd">B</span> rewind · <span class="c-kbd">1</span>-<span class="c-kbd">4</span> tools · <span class="c-kbd">R</span> rotate · <span class="c-kbd">F</span> flip · arrows pan · <span class="c-kbd">+</span><span class="c-kbd">−</span> zoom · <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undo · two-finger scroll pans, pinch zooms</p>
+    <section class="c-card panel adv-only" id="panel"></section>
+    <p class="keys c-muted"><span class="c-kbd">S</span> surprise · <span class="c-kbd">Space</span> play · <span class="c-kbd">N</span> step · <span class="c-kbd">B</span> rewind · <span class="c-kbd">1</span>-<span class="c-kbd">4</span> tools · <span class="c-kbd">R</span> rotate · <span class="c-kbd">F</span> flip · arrows pan · <span class="c-kbd">+</span><span class="c-kbd">−</span> zoom · <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undo · two-finger scroll pans, pinch zooms</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

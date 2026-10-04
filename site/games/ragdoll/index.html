@@ -9,39 +9,51 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="ragdoll">
+<body data-game="ragdoll" data-modes>
   <main class="c-wrap rg-main">
     <div class="rg-stage" id="stage">
       <canvas id="room" role="img" aria-label="Playroom with floppy ragdolls. Drag anything to grab it, let go to fling it."></canvas>
       <div class="rg-intro" id="intro">
-        <h1>Ragdoll Playground</h1>
-        <p>Grab a ragdoll and fling it. They are fine. Mostly.</p>
+        <h1>Ragdoll Playground <span class="rg-badge" aria-hidden="true">stunt gym</span></h1>
+        <p class="simple-only">Grab a ragdoll and fling it, or press Surprise me. They are fine. Mostly.</p>
+        <p class="adv-only">Grab a ragdoll and fling it. They are fine. Mostly.</p>
       </div>
-      <div class="rg-count"><b id="nOuch">0</b> ouches</div>
+      <div class="rg-count"><b id="nOuch">0</b> ouches<small id="rec"></small></div>
       <div class="rg-tag" id="tag"></div>
+    </div>
+    <div class="rg-book adv-only" id="bookPanel" hidden>
+      <h2>Stunts</h2>
+      <ol class="rg-jobs" id="jobs"></ol>
+      <h2>Records</h2>
+      <div class="rg-tally"><div class="c-stat"><b id="tO">0</b><span>ouches ever</span></div><div class="c-stat"><b id="tL">0</b><span>hardest landing, km/h</span></div><div class="c-stat"><b id="tB">0</b><span>pad bounces</span></div></div>
+      <h2>Saved rooms</h2>
+      <div class="rg-slots" id="slots"></div>
+      <div class="rg-share"><button type="button" class="rg-b" id="copyCode">📋 Copy code</button><button type="button" class="rg-b" id="pasteCode">📥 Paste code</button></div>
     </div>
     <div class="rg-tools">
       <div class="rg-row" role="toolbar" aria-label="Tools">
         <button type="button" class="rg-t" data-tool="grab" title="Grab (1)" aria-pressed="true"><span class="e">✋</span>Grab</button>
         <button type="button" class="rg-t" data-tool="doll" title="Ragdoll (2)" aria-pressed="false"><span class="e">🧍</span>Ragdoll</button>
-        <button type="button" class="rg-t" data-tool="crate" title="Crate (3)" aria-pressed="false"><span class="e">📦</span>Crate</button>
+        <button type="button" class="rg-t adv-only" data-tool="crate" title="Crate (3)" aria-pressed="false"><span class="e">📦</span>Crate</button>
         <button type="button" class="rg-t" data-tool="ball" title="Ball (4)" aria-pressed="false"><span class="e">🏐</span>Ball</button>
         <button type="button" class="rg-t" data-tool="pad" title="Bouncy pad (5)" aria-pressed="false"><span class="e">🟩</span>Bouncy</button>
         <button type="button" class="rg-t" data-tool="erase" title="Erase (6)" aria-pressed="false"><span class="e">🧽</span>Erase</button>
       </div>
       <div class="rg-row">
-        <span class="rg-grav" role="group" aria-label="Gravity direction">
+        <span class="rg-grav adv-only" role="group" aria-label="Gravity direction">
           <button type="button" data-g="down" title="Gravity down (↓)" aria-label="Gravity down" aria-pressed="true">↓</button>
           <button type="button" data-g="up" title="Gravity up (↑)" aria-label="Gravity up" aria-pressed="false">↑</button>
           <button type="button" data-g="left" title="Gravity left (←)" aria-label="Gravity left" aria-pressed="false">←</button>
           <button type="button" data-g="right" title="Gravity right (→)" aria-label="Gravity right" aria-pressed="false">→</button>
           <button type="button" data-g="zero" title="Zero gravity (0)" aria-label="Zero gravity" aria-pressed="false">0</button>
         </span>
-        <button type="button" class="rg-b" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
+        <button type="button" class="rg-b rg-sur simple-only" id="surprise" title="Surprise me (G)">🎲 Surprise me</button>
+        <button type="button" class="rg-b adv-only" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
         <button type="button" class="rg-b" id="shake" title="Shake (X)">🌀 Shake</button>
-        <button type="button" class="rg-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
-        <button type="button" class="rg-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button type="button" class="rg-b adv-only" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <button type="button" class="rg-b adv-only" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
         <button type="button" class="rg-b" id="reset">↺ Reset room</button>
+        <button type="button" class="rg-b adv-only" id="book" aria-pressed="false">📋 Stunt log</button>
       </div>
     </div>
   </main>

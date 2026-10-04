@@ -1287,6 +1287,7 @@
       if (SPARSE[t] && rnd() > SPARSE[t]) return;
       if (brushShape === 'spray' && rnd() > 0.12) return;
       setCell(i, t);
+      poured++;
     }
   }
   function paintAt(gx, gy) {
@@ -1364,6 +1365,7 @@
     hover = g;
     if (tool === 'tool_pick' && !erase) { pickAt(g); return; }
     down = true;
+    acted++;
     erasing = erase;
     lastG = g;
     paintAt(g.x, g.y);
@@ -1374,7 +1376,7 @@
     hover = g;
     if (!down) return;
     if (tool === 'tool_drag' && !erasing) dragMove(lastG, g);
-    else paintLine(lastG, g);
+    else { paintLine(lastG, g); pourSound(); }
     lastG = g;
   }
   const up = () => { down = false; erasing = false; };
@@ -1767,6 +1769,7 @@
   }
   function select(k, jump) {
     tool = k;
+    syncJars();
     elsEl.querySelectorAll('.sl-el').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
     if (jump) {
       const cat = toolDefs[k] ? 'tools' : E[ID[k]].cat;
@@ -1783,7 +1786,7 @@
     const f = document.createElement('span'); f.className = 'sl-desc__facts'; f.textContent = d.facts.join(' · ');
     const top = document.createElement('span'); top.className = 'sl-desc__top'; top.append(sw, h);
     descEl.append(top, p, f);
-    C.store.set('sandlab:tool', k);
+    if (C.mode === 'advanced') C.store.set('sandlab:tool', k);
   }
 
   const brushEl = $('#brush'), brushV = $('#brushV');
@@ -1844,7 +1847,8 @@
   const layout = () => {
     const wide = innerWidth >= 980;
     const head = $('.sl-head').getBoundingClientRect().height;
-    const avail = innerHeight - 52 - head - (wide ? 150 : 280);
+    const barH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
+    const avail = innerHeight - barH - head - (wide ? 150 : 280);
     const maxW = Math.max(wide ? 520 : 260, (avail * W) / H);
     stage.style.maxWidth = innerWidth < 600 ? '' : `${Math.round(maxW)}px`;
     const panel = $('.sl-panel');
@@ -1864,6 +1868,224 @@
   const saved = C.store.get('sandlab:tool', 'sand');
   select(ID[saved] != null || toolDefs[saved] ? saved : 'sand', true);
   loadPreset('volcano');
+
+  const MODE = C.mode;
+  let poured = 0, lastPour = 0, acted = 0;
+  function pourSound() {
+    const now = performance.now();
+    if (C.muted || now - lastPour < 85 || erasing) return;
+    lastPour = now;
+    const t = ID[tool];
+    if (t == null) return;
+    const m = MOVE[t];
+    if (m === 4) C.beep(260 + Math.random() * 160, 0.05, 'sine', 0.035);
+    else if (m === 3) C.beep(1800 + Math.random() * 900, 0.015, 'square', 0.012);
+    else if (m === 5 || m === 6) C.beep(140 + Math.random() * 60, 0.06, 'sawtooth', 0.015);
+    else C.beep(420 + Math.random() * 60, 0.025, 'triangle', 0.025);
+  }
+  const popEl = $('#pop');
+  let popT = 0;
+  function pop(text) { popEl.textContent = text; popEl.classList.add('is-on'); clearTimeout(popT); popT = setTimeout(() => popEl.classList.remove('is-on'), 2200); }
+
+  const JARS = [
+    ['sand', '⏳'], ['water', '💧'], ['lava', '🌋'], ['fire', '🔥'], ['seed', '🌱'], ['wood', '🪵'], ['ice', '🧊'], ['oil', '🛢️'],
+    ['acid', '🧪'], ['tnt', '🧨'], ['fireworks', '🎆', 'Rocket'], ['lightning', '⚡', 'Zap'], ['cloud', '🌧️', 'Rain'], ['person', '🧍', 'People'], ['glitter', '✨'], ['tool_erase', '🧽']
+  ].filter(([k]) => ID[k] != null || toolDefs[k]);
+  const jarsEl = $('#jars');
+  function syncJars() { document.querySelectorAll('#jars .sl-jar').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.k === tool))); }
+  JARS.forEach(([k, icon, short], n) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sl-jar'; b.dataset.k = k;
+    b.title = `${nameOf(k)}${n < 9 ? ` (${n + 1})` : ''}`;
+    const g = document.createElement('span'); g.className = 'sl-jar__glass';
+    const f = document.createElement('span'); f.className = 'sl-jar__fill';
+    const sw = swatch(k);
+    f.style.setProperty('--fill', k === 'tool_erase' ? 'repeating-linear-gradient(45deg,#f2b8b8 0 6px,#fbe3e3 6px 12px)' : sw);
+    g.style.setProperty('--jar-lid', ['fire', 'lava', 'tnt', 'fireworks'].includes(k) ? '#d0503a' : ['water', 'ice', 'cloud'].includes(k) ? '#4f8fd6' : ['seed', 'wood', 'acid'].includes(k) ? '#4f9a5a' : '#8a8f9c');
+    const ic = document.createElement('span'); ic.className = 'sl-jar__icon'; ic.textContent = icon;
+    g.append(f, ic);
+    const nm = document.createElement('span'); nm.className = 'sl-jar__name'; nm.textContent = short || nameOf(k);
+    b.append(g, nm);
+    b.addEventListener('click', () => { select(k, true); if (!C.muted) { C.beep(1320 + n * 30, 0.04, 'sine', 0.06); setTimeout(() => C.beep(1760 + n * 30, 0.05, 'sine', 0.04), 45); } });
+    jarsEl.append(b);
+  });
+
+  const sPause = $('#sPause');
+  const paintPause = () => { sPause.textContent = paused ? '▶️ Play' : '⏸️ Pause'; sPause.setAttribute('aria-pressed', String(paused)); };
+  sPause.addEventListener('click', () => { setPaused(!paused); paintPause(); });
+  pauseBtn.addEventListener('click', paintPause);
+  $('#sClear').addEventListener('click', () => { clearAll(); baseline(); C.beep(220, 0.1, 'triangle', 0.08); pop('Fresh, empty tank'); });
+  const sizeBtns = document.querySelectorAll('[data-size]');
+  const setSize = (v) => { brushR = v; brushEl.value = v; brushV.textContent = v; rebuildBrush(); sizeBtns.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.size === v))); };
+  sizeBtns.forEach((b) => b.addEventListener('click', () => { setSize(+b.dataset.size); C.beep(500 + +b.dataset.size * 30, 0.04, 'triangle', 0.05); }));
+  const scenesEl = $('#sScenes');
+  Object.entries(PRESETS).forEach(([k, p]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sl-scene';
+    b.innerHTML = '<b aria-hidden="true"></b><span></span>';
+    b.firstChild.textContent = p.icon; b.lastChild.textContent = p.name.split(' ')[0];
+    b.title = p.name;
+    b.addEventListener('click', () => { loadPreset(k); baseline(); pop(`${p.icon} ${p.name}`); C.beep(660, 0.06, 'sine', 0.06); });
+    scenesEl.append(b);
+  });
+
+  const floor = (k = 'stone', h = 6) => rect(0, H - h, W - 1, H - 1, k);
+  const RECIPES = [
+    { name: 'Lava meets the sea', tool: 'lava', build() { floor('sand'); rect(0, Math.round(H * 0.62), W - 1, H - 7, 'water'); for (let k = 0; k < 4; k++) disc(Math.round(W * (0.2 + k * 0.2)), Math.round(H * 0.18 + rnd() * 20), 5, 'lava'); } },
+    { name: 'Rainy garden', tool: 'seed', build() { const g = Math.round(H * 0.78); rect(0, g, W - 1, H - 1, 'dirt'); rect(0, g, W - 1, g, 'grass'); for (let k = 0; k < 10; k++) put(W * 0.05 + rnd() * W * 0.9, g - 1, 'seed'); cloudAt(Math.round(W * 0.3), Math.round(H * 0.12), Math.round(W * 0.2)); cloudAt(Math.round(W * 0.72), Math.round(H * 0.16), Math.round(W * 0.18)); } },
+    { name: 'Popcorn party', tool: 'popcorn_kernel', build() { floor('brick'); const x0 = Math.round(W * 0.25), x1 = Math.round(W * 0.75), y = H - 8; rect(x0, y, x1, y + 1, 'super_heater'); rect(x0, y - 40, x0, y, 'glass'); rect(x1, y - 40, x1, y, 'glass'); rect(x0 + 2, y - 4, x1 - 2, y - 1, 'popcorn_kernel', 0.7); } },
+    { name: 'Mint in soda', tool: 'mint', build() { floor(); const x0 = Math.round(W * 0.38), x1 = Math.round(W * 0.62); rect(x0, Math.round(H * 0.35), x0, H - 7, 'glass'); rect(x1, Math.round(H * 0.35), x1, H - 7, 'glass'); rect(x0 + 1, Math.round(H * 0.45), x1 - 1, H - 7, 'soda'); disc(Math.round(W / 2), Math.round(H * 0.15), 3, 'mint'); } },
+    { name: 'TNT quarry', tool: 'fire', build() { floor('stone', 10); for (let x = 0; x < W; x++) { const h = Math.round(H * 0.3 + Math.sin(x / 13) * 10); rect(x, H - 10 - h, x, H - 11, x % 5 ? 'sand' : 'gravel'); } for (let k = 0; k < 5; k++) disc(Math.round(W * (0.15 + k * 0.17)), Math.round(H * 0.8), 4, 'tnt'); rect(2, Math.round(H * 0.3), 3, Math.round(H * 0.45), 'torch'); } },
+    { name: 'Thunder over the lake', tool: 'lightning', build() { floor('sand'); rect(0, Math.round(H * 0.6), W - 1, H - 7, 'water'); for (let k = 0; k < 6; k++) put(rnd() * W, H * 0.7 + rnd() * 20, 'fish'); cloudAt(Math.round(W * 0.5), Math.round(H * 0.12), Math.round(W * 0.4), 'thunder_cloud'); } },
+    { name: 'Ice versus lava', tool: 'lava', build() { floor(); rect(Math.round(W * 0.1), Math.round(H * 0.45), Math.round(W * 0.45), H - 7, 'ice'); disc(Math.round(W * 0.75), Math.round(H * 0.2), 9, 'lava'); } },
+    { name: 'Acid bath', tool: 'acid', build() { floor('glass'); rect(0, Math.round(H * 0.7), W - 1, H - 7, 'acid'); for (let k = 0; k < 4; k++) rect(Math.round(W * (0.12 + k * 0.22)), Math.round(H * 0.45), Math.round(W * (0.12 + k * 0.22)) + 10, Math.round(H * 0.82), ['iron', 'copper', 'wood', 'limestone'][k]); } },
+    { name: 'Fireworks show', tool: 'fireworks', build() { const g = H - 8; floor('dirt', 8); for (let k = 0; k < 4; k++) { const x = Math.round(W * (0.2 + k * 0.2)); put(x, g, 'heater'); put(x - 1, g, 'heater'); put(x + 1, g, 'heater'); put(x, g - 1, 'fireworks'); } for (let k = 0; k < 5; k++) person(Math.round(W * (0.1 + k * 0.2)), g - 1); } },
+    { name: 'Snow day', tool: 'snow', build() { floor('dirt', 8); cloudAt(Math.round(W * 0.3), Math.round(H * 0.1), Math.round(W * 0.28), 'snow_cloud'); cloudAt(Math.round(W * 0.75), Math.round(H * 0.14), Math.round(W * 0.22), 'snow_cloud'); for (let k = 0; k < 4; k++) person(Math.round(W * (0.15 + k * 0.22)), H - 9); } },
+    { name: 'Oil slick on fire', tool: 'fire', build() { floor('sand'); rect(0, Math.round(H * 0.62), W - 1, H - 7, 'water'); rect(0, Math.round(H * 0.56), W - 1, Math.round(H * 0.61), 'oil'); put(W * 0.1, H * 0.5, 'ember'); } },
+    { name: 'Black hole snack', tool: 'sand', build() { disc(Math.round(W / 2), Math.round(H * 0.55), 3, 'black_hole'); for (let k = 0; k < 6; k++) disc(Math.round(rnd() * W), Math.round(rnd() * H * 0.3), 5, ['sand', 'water', 'glitter', 'confetti', 'salt', 'gravel'][k]); } },
+    { name: 'Volcano in a jar', tool: 'water', build() { floor('stone'); const cx = Math.round(W / 2); for (let y = Math.round(H * 0.5); y < H - 6; y++) { const w = Math.round((y - H * 0.5) * 0.7) + 2; rect(cx - w, y, cx + w, y, 'basalt'); } rect(cx - 1, Math.round(H * 0.5), cx + 1, H - 7, 'lava'); rect(cx, Math.round(H * 0.6), cx, H - 7, 'super_heater'); } },
+    { name: 'Bakery', tool: 'dough', build() { floor('brick'); rect(Math.round(W * 0.1), H - 8, Math.round(W * 0.9), H - 7, 'heater'); rect(Math.round(W * 0.15), H - 12, Math.round(W * 0.35), H - 9, 'dough'); rect(Math.round(W * 0.42), H - 12, Math.round(W * 0.58), H - 9, 'cake_batter'); rect(Math.round(W * 0.65), H - 12, Math.round(W * 0.85), H - 9, 'cookie_dough'); } }
+  ].filter((r) => ID[r.tool] != null);
+  let lastRecipe = -1;
+  function surprise() {
+    let n;
+    do n = Math.floor(Math.random() * RECIPES.length); while (n === lastRecipe && RECIPES.length > 1);
+    lastRecipe = n;
+    const r = RECIPES[n];
+    clearAll();
+    try { r.build(); } catch {}
+    wakeAll();
+    baseline();
+    select(r.tool, true);
+    pop(`🎲 ${r.name}`);
+    flashAmt = 0.25;
+    if (!C.muted) [523, 659, 784, 1046].forEach((f, k) => setTimeout(() => C.beep(f, 0.07, 'triangle', 0.05), k * 55));
+  }
+  $('#surprise').addEventListener('click', surprise);
+
+  const GOALS = [
+    ['glass', 'Melt sand into glass', ['glass', 'molten_glass']], ['steam', 'Boil water into steam', ['steam']], ['obsidian', 'Cool lava into obsidian', ['obsidian']],
+    ['mud', 'Make mud', ['mud']], ['plant', 'Grow a plant from a seed', ['plant', 'sprout', 'flower']], ['leaf', 'Grow a whole tree', ['leaf']],
+    ['popcorn', 'Pop some popcorn', ['popcorn']], ['bread', 'Bake bread', ['bread', 'toast']], ['cake', 'Bake a cake', ['cake']],
+    ['caramel', 'Melt sugar into caramel', ['caramel']], ['foam', 'Mint in soda', ['foam']], ['rust', 'Rust some iron', ['rust']],
+    ['charcoal', 'Char wood into charcoal', ['charcoal']], ['salt_water', 'Dissolve salt in water', ['salt_water']], ['slaked_lime', 'Slake some quicklime', ['slaked_lime']],
+    ['cooked_egg', 'Fry an egg', ['cooked_egg']], ['toasted', 'Toast a marshmallow', ['toasted_marshmallow']], ['explosion', 'Set off an explosion', ['explosion']],
+    ['plasma', 'Make plasma', ['plasma']], ['ice', 'Freeze water solid', ['ice']], ['latte', 'Make a latte', ['latte']], ['chocolate_milk', 'Stir chocolate milk', ['chocolate_milk']]
+  ].map(([id, name, ks]) => ({ id, name, ks: ks.filter((k) => ID[k] != null).map((k) => ID[k]) })).filter((g) => g.ks.length);
+  const found = C.store.get('sandlab:found', {});
+  let base = new Set(), touched = false, baseAt = 0, pouredAtBase = 0;
+  function baseline() { base = new Set(); for (let i = 0; i < N; i++) if (type[i]) base.add(type[i]); touched = false; baseAt = performance.now(); pouredAtBase = poured + acted; }
+  const goalsEl = $('#goals');
+  function paintGoals(fresh) {
+    goalsEl.replaceChildren(...GOALS.map((g) => { const li = document.createElement('li'); li.textContent = g.name; if (found[g.id]) li.classList.add('is-done'); if (fresh === g.id) li.classList.add('is-new'); return li; }));
+    $('#discN').textContent = `${GOALS.filter((g) => found[g.id]).length} / ${GOALS.length}`;
+  }
+  const slotsEl = $('#slots');
+  const SLOT_KEYS = ['sandlab:scene', 'sandlab:scene2', 'sandlab:scene3'];
+  function paintSlots() {
+    slotsEl.replaceChildren(...SLOT_KEYS.map((key, n) => {
+      const o = C.store.get(key, null);
+      const row = document.createElement('div'); row.className = 'sl-slot';
+      const lbl = document.createElement('span'); lbl.className = 'sl-slot__lbl';
+      lbl.textContent = `Jar ${n + 1}: ${o ? (o.at ? new Date(o.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'saved') : 'empty'}`;
+      const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'c-btn c-btn--ghost'; sv.textContent = 'Save';
+      const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'c-btn c-btn--ghost'; ld.textContent = 'Load'; ld.disabled = !o;
+      sv.addEventListener('click', () => { try { C.store.set(key, { ...serialize(), at: Date.now() }); pop(`💾 Saved to jar ${n + 1}`); C.beep(660, 0.08, 'sine', 0.1); } catch { C.toast('Could not save, storage is full'); } paintSlots(); });
+      ld.addEventListener('click', () => { const s2 = C.store.get(key, null); if (s2 && deserialize(s2)) { baseline(); pop(`📂 Jar ${n + 1} poured back`); C.beep(520, 0.08, 'sine', 0.1); } });
+      row.append(lbl, sv, ld);
+      return row;
+    }));
+  }
+  async function packCode(obj) {
+    const json = JSON.stringify(obj);
+    try {
+      const cs = new CompressionStream('deflate-raw');
+      const buf = await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer();
+      let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]);
+      return 'ZSL1.' + btoa(bin);
+    } catch { return 'ZSL0.' + btoa(unescape(encodeURIComponent(json))); }
+  }
+  async function unpackCode(code) {
+    code = code.trim();
+    if (code.startsWith('ZSL0.')) return JSON.parse(decodeURIComponent(escape(atob(code.slice(5)))));
+    if (!code.startsWith('ZSL1.')) throw new Error('bad');
+    const bin = atob(code.slice(5)); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    const ds = new DecompressionStream('deflate-raw');
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(ds)).text());
+  }
+  $('#shareCopy').addEventListener('click', async () => {
+    const code = await packCode(serialize());
+    let ok = false;
+    try { await navigator.clipboard.writeText(code); ok = true; } catch {}
+    const ta = document.createElement('textarea'); ta.className = 'sl-code'; ta.value = code; ta.readOnly = true; ta.setAttribute('aria-label', 'Share code');
+    const wrap = document.createElement('div'); const p = document.createElement('p'); p.textContent = ok ? `Copied ${C.fmt(code.length)} characters. Send it to a friend; they paste it into their Sand Lab.` : 'Copy this code and send it to a friend.';
+    wrap.append(p, ta);
+    C.modal({ emoji: '📋', title: 'Share code', body: wrap, buttons: [{ label: 'Done', value: 1 }] });
+    setTimeout(() => ta.select(), 50);
+  });
+  $('#sharePaste').addEventListener('click', async () => {
+    const ta = document.createElement('textarea'); ta.className = 'sl-code'; ta.placeholder = 'Paste a ZSL1 code here'; ta.setAttribute('aria-label', 'Paste share code');
+    const v = C.modal({ emoji: '📥', title: 'Paste a share code', body: ta, buttons: [{ label: 'Pour it in', value: 'go' }, { label: 'Cancel', value: '' }] });
+    setTimeout(() => ta.focus(), 50);
+    if (await v !== 'go') return;
+    try { const o = await unpackCode(ta.value); if (!deserialize(o)) throw new Error('bad'); baseline(); pop('📥 Shared scene loaded'); C.beep(700, 0.08, 'sine', 0.1); }
+    catch { C.toast('That code did not work. Check it was copied whole.'); }
+  });
+  const totalPoured0 = C.store.get('sandlab:poured', 0);
+  function scan() {
+    const counts = new Map();
+    let hot = -273;
+    for (let i = 0; i < N; i++) { const t = type[i]; if (t) { counts.set(t, (counts.get(t) || 0) + 1); if (temp[i] > hot) hot = temp[i]; } }
+    if (performance.now() - baseAt < 9000) counts.forEach((_, t) => base.add(t));
+    else if (poured + acted > pouredAtBase) touched = true;
+    if (touched) {
+      for (const g of GOALS) {
+        if (found[g.id]) continue;
+        if (g.ks.some((t) => counts.get(t) && !base.has(t))) {
+          found[g.id] = Date.now(); C.store.set('sandlab:found', found);
+          paintGoals(g.id);
+          pop(`🔬 Discovery: ${g.name}`);
+          if (!C.muted) [784, 988, 1318].forEach((f, k) => setTimeout(() => C.beep(f, 0.09, 'sine', 0.07), k * 80));
+          if (GOALS.every((x) => found[x.id])) C.confetti();
+        }
+      }
+    }
+    if (MODE !== 'advanced') return;
+    let px = 0; counts.forEach((v) => { px += v; });
+    $('#stPx').textContent = C.fmt(px);
+    $('#stKinds').textContent = counts.size;
+    $('#stPoured').textContent = C.fmt(totalPoured0 + poured);
+    $('#stHot').textContent = px ? fmtT(hot) : '20°C';
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const max = top.length ? top[0][1] : 1;
+    $('#topList').replaceChildren(...top.map(([t, n]) => {
+      const li = document.createElement('li');
+      const sw = document.createElement('span'); sw.className = 'sl-sw'; sw.style.width = sw.style.height = '12px'; sw.style.background = swatch(keys[t]);
+      const bar = document.createElement('span'); const i = document.createElement('i'); i.style.width = `${Math.max(4, (n / max) * 100)}%`; bar.append(document.createTextNode(E[t].n), i);
+      const c = document.createElement('span'); c.textContent = C.fmt(n);
+      li.append(sw, bar, c);
+      return li;
+    }));
+  }
+  setInterval(() => { if (!document.hidden) { scan(); if (poured) C.store.set('sandlab:poured', totalPoured0 + poured); } }, 1000);
+  canvas.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    const v = Math.max(1, Math.min(30, brushR + (e.deltaY < 0 ? 1 : -1)));
+    if (v !== brushR) { brushR = v; brushEl.value = v; brushV.textContent = v; rebuildBrush(); }
+  }, { passive: false });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^[1-9]$/.test(e.key)) {
+      const list = MODE === 'simple' ? JARS.map((j) => j[0]) : [...elsEl.querySelectorAll('.sl-el')].map((b) => b.dataset.k);
+      const k = list[+e.key - 1];
+      if (k) { select(k, true); pop(nameOf(k)); }
+    } else if (e.key === 's' || e.key === 'S') surprise();
+  });
+  if (MODE === 'simple') { const v = C.store.get('sandlab:simpleTool', null); if (v && JARS.some((j) => j[0] === v)) select(v, true); else select('sand', true); setSize(6); }
+  addEventListener('pagehide', () => { if (MODE === 'simple') C.store.set('sandlab:simpleTool', tool); });
+  paintGoals(); paintSlots();
+  baseline();
   layout();
   requestAnimationFrame(layout);
   start();
@@ -1872,7 +2094,7 @@
   window.SandLab = {
     W, H, ID, keys, stats, elements: visible.length, rules: ruleCount, reactions: REACTIONS,
     select: (k) => select(k, true),
-    paint: (x, y, r = brushR) => { const o = brushR; brushR = r; rebuildBrush(); paintAt(x, y); brushR = o; rebuildBrush(); },
+    paint: (x, y, r = brushR) => { acted++; const o = brushR; brushR = r; rebuildBrush(); paintAt(x, y); brushR = o; rebuildBrush(); },
     rect: (x0, y0, x1, y1, k) => rect(x0, y0, x1, y1, k),
     tick: (n = 1) => { for (let k = 0; k < n; k++) tick(); },
     clear: clearAll,

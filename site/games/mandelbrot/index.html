@@ -9,18 +9,20 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="mandelbrot">
+<body data-game="mandelbrot" data-modes>
   <main class="c-wrap mb-main">
     <canvas id="cv" role="img" aria-label="The Mandelbrot set. Tap or scroll to zoom in, drag to pan, pinch to zoom on touch screens."></canvas>
     <canvas id="ov" class="ov" aria-hidden="true"></canvas>
     <div class="mb-progress" id="progress"></div>
     <div class="mb-intro" id="intro">
       <h1>Fractal Zoom</h1>
-      <p>One tiny formula, z² + c, repeated. Tap to dive in, pinch to zoom, drag or two-finger scroll to look around. Then try the Burning Ship.</p>
+      <p class="simple-only">Tap anywhere to dive deeper. Press Dive and hold your breath, or Surprise me for a famous spot.</p>
+      <p class="adv-only">One tiny formula, z² + c, repeated. Tap to dive in, pinch to zoom, drag or two-finger scroll to look around. Then try the Burning Ship.</p>
     </div>
     <div class="mb-preview" id="preview"><canvas id="pv" width="180" height="135" aria-hidden="true"></canvas><span id="pvLabel"></span></div>
-    <div class="mb-info" id="info" aria-live="off"></div>
-    <div class="panel" id="panel" hidden>
+    <div class="mb-info adv-only" id="info" aria-live="off"></div>
+    <div class="mb-gauge" aria-live="off"><div class="mb-gauge__dial" aria-hidden="true"><i id="gNeedle"></i></div><div><span>Dive depth</span><b id="gDepth">1×</b><small id="gBest">record 1×</small></div></div>
+    <div class="panel adv-only" id="panel" hidden>
       <h2>Fractal</h2>
       <div class="kinds" id="kinds"></div>
       <h2>Famous places</h2>
@@ -36,19 +38,23 @@
       <h2>Your gallery</h2>
       <button type="button" class="chip" id="bGal">⭐ Save view <span class="c-kbd">G</span></button>
       <div class="gallery" id="gallery"></div>
+      <h2>Share this view</h2>
+      <div class="row2"><button type="button" class="chip" id="bCopy">📋 Copy code</button><button type="button" class="chip" id="bPaste">📥 Paste code</button></div>
       <h2>Badges</h2>
       <div class="badges" id="badges"></div>
-      <p class="keys">Keys: + and - zoom, arrows pan, F next fractal, J Julia, O orbits, A auto-zoom, G save view, R reset.</p>
+      <p class="keys">Keys: + and - zoom, arrows pan, F next fractal, J Julia, O orbits, A auto-zoom, G save view, R reset, S surprise, C colours.</p>
     </div>
     <div class="dock" role="toolbar" aria-label="Fractal controls">
       <button type="button" class="chip chip--icon" id="bIn" aria-label="Zoom in">＋</button>
       <button type="button" class="chip chip--icon" id="bOut" aria-label="Zoom out">－</button>
       <button type="button" class="chip" id="bHome">🏠 Reset</button>
-      <button type="button" class="chip" id="bAuto" aria-pressed="false">🚀 Auto-zoom</button>
-      <button type="button" class="chip" id="bKind">🔷 Mandelbrot</button>
-      <button type="button" class="chip" id="bJulia" aria-pressed="false">🎯 Julia</button>
-      <button type="button" class="chip" id="bOrbit" aria-pressed="false">🌀 Orbits</button>
-      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">📍 Places</button>
+      <button type="button" class="chip" id="bAuto" aria-pressed="false">🚀 <span class="adv-only">Auto-zoom</span><span class="simple-only">Dive</span></button>
+      <button type="button" class="chip mb-surprise simple-only" id="bSurprise">🎲 Surprise me</button>
+      <button type="button" class="chip simple-only" id="bColour">🎨 Colours</button>
+      <button type="button" class="chip adv-only" id="bKind">🔷 Mandelbrot</button>
+      <button type="button" class="chip adv-only" id="bJulia" aria-pressed="false">🎯 Julia</button>
+      <button type="button" class="chip adv-only" id="bOrbit" aria-pressed="false">🌀 Orbits</button>
+      <button type="button" class="chip adv-only" id="bPanel" aria-pressed="false" aria-controls="panel">📍 Places</button>
     </div>
   </main>
   <script src="../../games.js"></script>

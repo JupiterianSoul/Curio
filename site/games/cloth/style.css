@@ -50,3 +50,21 @@
   .panel { top: 10px; right: 10px; max-height: calc(100% - 130px); }
 }
   
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+.cl-intro h1 { font-family: var(--c-hand, "Marker Felt", "Segoe Print", "Bradley Hand", var(--font)); font-weight: 400; letter-spacing: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
+.cl-tag { font: 700 11px/1 var(--c-type, "American Typewriter", "Courier New", ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; background: #f5e9c8; color: #5a3a1a; border: 1.5px dashed #b07a3c; border-radius: 3px; transform: rotate(-2deg); }
+.dock { border: 2.5px dashed var(--c-edge, var(--ink)) !important; border-radius: var(--c-wob, 14px) !important; outline: 5px solid var(--surface); box-shadow: 4px 5px 0 6px var(--c-shade, rgba(0, 0, 0, .18)) !important; }
+.chip { border: 2px dashed color-mix(in srgb, var(--ink) 45%, transparent); box-shadow: 0 0 0 3px var(--surface-2); margin: 3px; }
+.chip[aria-pressed="true"] { border-color: rgba(255, 255, 255, .7); box-shadow: 0 0 0 3px var(--accent); }
+html[data-mode="simple"] .chip { font-size: 15px; padding: 9px 14px; }
+.cl-surprise { background: var(--c-sun, #ffcf3a); color: #1e2148; }
+.cl-orders { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; }
+.cl-orders li { display: flex; gap: 8px; align-items: center; color: var(--ink-3); }
+.cl-orders li::before { content: ""; width: 12px; height: 12px; border: 2px dashed currentColor; border-radius: 50%; flex: none; }
+.cl-orders li.done { color: var(--ink); font-weight: 700; }
+.cl-orders li.done::before { background: var(--good); border: 2px solid var(--good); }
+.cl-orders small { margin-left: auto; font-family: var(--mono); color: var(--ink-3); }
+.cl-share { display: flex; gap: 6px; flex-wrap: wrap; }
+.cl-code { width: 100%; min-height: 70px; font: 12px var(--mono); padding: 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); }
+@media (max-width: 600px) { .cl-tag { display: none; } }

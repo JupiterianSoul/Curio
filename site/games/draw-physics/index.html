@@ -9,30 +9,31 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="draw-physics">
+<body data-game="draw-physics" data-modes>
   <main class="c-wrap dp-main">
     <div class="dp-stage" id="stage">
       <canvas id="board" role="img" aria-label="Drawing paper. Draw lines and shapes; they fall and collide like real objects. Get the red ball to touch the star."></canvas>
       <div class="dp-intro" id="intro">
-        <h1>Draw Physics</h1>
+        <h1>Draw Physics <span class="dp-crayon" aria-hidden="true"></span></h1>
         <p id="hint">Whatever you draw becomes real.</p>
       </div>
-      <div class="dp-level" aria-live="polite"><b id="lvlName">Level 1</b><span id="lvlStat"></span></div>
+      <div class="dp-level" aria-live="polite"><b id="lvlName">Level 1</b><span id="lvlStat"></span><span class="adv-only dp-stars" id="stars"></span></div>
       <div class="dp-tag" id="tag">PAUSED</div>
     </div>
     <div class="dp-tools">
       <div class="dp-row" role="toolbar" aria-label="Tools">
         <button type="button" class="dp-t" data-tool="draw" aria-pressed="true" title="Draw (D)"><span class="e">✏️</span>Draw</button>
-        <button type="button" class="dp-t" data-tool="pin" aria-pressed="false" title="Pin (P)"><span class="e">📌</span>Pin</button>
+        <button type="button" class="dp-t adv-only" data-tool="pin" aria-pressed="false" title="Pin (P)"><span class="e">📌</span>Pin</button>
         <button type="button" class="dp-t" data-tool="erase" aria-pressed="false" title="Erase (X)"><span class="e">🧽</span>Erase</button>
-        <button type="button" class="dp-t" id="static" aria-pressed="false" title="New drawings stay fixed in place (F)"><span class="e">🧱</span>Fixed</button>
+        <button type="button" class="dp-t adv-only" id="static" aria-pressed="false" title="New drawings stay fixed in place (F)"><span class="e">🧱</span>Fixed</button>
         <span class="dp-sep"></span>
         <div class="dp-colors" id="colors" role="radiogroup" aria-label="Crayon colour"></div>
       </div>
       <div class="dp-row dp-row2">
         <button type="button" class="dp-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
         <button type="button" class="dp-b" id="restart" title="Restart (R)">↺ Restart</button>
-        <button type="button" class="dp-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <button type="button" class="dp-b dp-sur simple-only" id="surprise" title="Drop some doodles (G)">🎲 Surprise me</button>
+        <button type="button" class="dp-b adv-only" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
         <label class="dp-b dp-sel">🗺 <select id="level" aria-label="Choose a level"></select></label>
         <button type="button" class="c-btn dp-next" id="next" hidden>Next level ▶</button>
       </div>

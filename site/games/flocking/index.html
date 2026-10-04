@@ -9,15 +9,16 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="flocking">
+<body data-game="flocking" data-modes>
   <main class="c-wrap fl-main" id="main">
     <canvas id="cv" role="img" aria-label="A sky full of flocking birds. Move the pointer to chase them with a predator, drop food, or place obstacles they steer around."></canvas>
     <div class="fl-intro" id="intro">
-      <h1>Flock</h1>
-      <p>Every bird follows three rules: don't crowd, match your neighbours, stay with the group. Move your pointer to send in the hawk.</p>
+      <h1>Flock <span class="fl-tag" aria-hidden="true">field notes, p. 12</span></h1>
+      <p class="simple-only">Glide your pointer to send in the hawk. Drop food, float balloons, or press Surprise me.</p>
+      <p class="adv-only">Every bird follows three rules: don't crowd, match your neighbours, stay with the group. Move your pointer to send in the hawk.</p>
     </div>
     <div class="hud hidden" id="hud"><b id="hTime">30</b><span>seconds</span><b id="hScore">0</b><span>caught</span><em id="hCombo"></em></div>
-    <div class="panel" id="panel" hidden>
+    <div class="panel adv-only" id="panel" hidden>
       <h2>World</h2>
       <div class="worlds" id="worlds">
         <button type="button" data-w="sky"><i>🐦</i>Sky</button>
@@ -37,9 +38,14 @@
       <label class="sl">Wind <output id="oWind"></output><input type="range" id="wind" min="-60" max="60" step="1" value="0"></label>
       <div class="sw-row"><span>Colour by heading</span><button type="button" class="sw" id="swHue" aria-pressed="false" aria-label="Colour by heading"></button></div>
       <div class="sw-row"><span>Inspect one bird</span><button type="button" class="sw" id="swInspect" aria-pressed="false" aria-label="Inspect one bird"></button></div>
+      <h2>Field readings</h2>
+      <div class="fl-read"><div class="c-stat"><b id="rOrder">0%</b><span>in step</span></div><div class="c-stat"><b id="rSpeed">0</b><span>avg speed</span></div><div class="c-stat"><b id="rFear">0</b><span>spooked</span></div></div>
+      <canvas id="rSpark" class="fl-spark" width="240" height="40" aria-label="How in step the flock has been lately"></canvas>
+      <h2>Share a flock</h2>
+      <div class="fl-share"><button type="button" class="chip" id="bCopy">📋 Copy code</button><button type="button" class="chip" id="bPaste">📥 Paste code</button></div>
       <h2>Badges</h2>
       <div class="badges" id="badges"></div>
-      <p>Keys: arrows steer the predator (and move the placing cursor), Space drops food or an obstacle, H predator, F food, B obstacles, S scatter, G hunt, 1 2 3 worlds.</p>
+      <p>Keys: arrows steer the predator (and move the placing cursor), Space drops food or an obstacle, H predator, F food, B obstacles, S scatter, G hunt, 1 2 3 worlds, R surprise.</p>
     </div>
     <div class="dock" role="toolbar" aria-label="Flock controls">
       <button type="button" class="chip" id="mHawk" aria-pressed="true">🦅 Hawk</button>
@@ -47,9 +53,10 @@
       <button type="button" class="chip" id="mBalloon" aria-pressed="false">🎈 Balloons</button>
       <span class="sep" aria-hidden="true"></span>
       <button type="button" class="chip" id="bScatter">💨 Scatter</button>
-      <button type="button" class="chip" id="bHunt">⏱️ Hunt</button>
+      <button type="button" class="chip fl-surprise simple-only" id="bSurprise">🎲 Surprise me</button>
+      <button type="button" class="chip adv-only" id="bHunt">⏱️ Hunt</button>
       <button type="button" class="chip" id="bClear">🧹</button>
-      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
+      <button type="button" class="chip adv-only" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
     </div>
   </main>
   <script src="../../games.js"></script>
