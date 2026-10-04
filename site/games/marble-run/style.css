@@ -65,3 +65,9 @@ html[data-mode="simple"] .mr-palette { justify-content: safe center; }
 .mr-share { display: flex; gap: 6px; flex-wrap: wrap; }
 .mr-code { width: 100%; min-height: 80px; font: 12px var(--mono); padding: 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); }
 .mr-intro { padding: 6px 12px 8px; border-radius: 12px; background: color-mix(in srgb, var(--bg) 82%, transparent); }
+.mr-book { box-sizing: border-box; overflow-x: hidden; }
+.mr-tally .c-stat { min-width: 0; }
+.mr-tally .c-stat span { font-size: 10px; letter-spacing: .04em; }
+.mr-slot { flex-wrap: wrap; }
+.mr-share { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 520px) { .mr-book { left: 10px; right: 10px; width: auto; } }
