@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="flag-quiz">
+<body data-game="flag-quiz" data-modes>
   <main class="c-wrap fq-wrap">
     <section id="menu">
       <div class="fq-hero">
         <div class="fq-marquee" aria-hidden="true"><div class="fq-marquee__row" id="mq1"></div><div class="fq-marquee__row fq-marquee__row--rev" id="mq2"></div></div>
+        <span class="fq-airmail"><i></i>Zoble Air Mail<i></i></span>
         <h1 class="c-title">Flag Quiz</h1>
         <p class="c-sub">196 flags, 174 country shapes, capitals and neighbours. How well do you know the world?</p>
       </div>
@@ -39,6 +40,7 @@
         <div class="c-stat"><b id="h-best">-</b><span>Best</span></div>
       </div>
       <div class="fq-timer" id="timer"><i></i></div>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="pmk" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="3"><circle cx="60" cy="60" r="46"/><circle cx="60" cy="60" r="34"/></g><path id="pmt" d="M24 60a36 36 0 0 1 72 0" fill="none"/><text font-family="Courier New,monospace" font-weight="700" font-size="11" fill="currentColor" letter-spacing="2"><textPath href="#pmt" startOffset="50%" text-anchor="middle">ZOBLE POST</textPath></text><text x="60" y="72" text-anchor="middle" font-family="Courier New,monospace" font-weight="700" font-size="13" fill="currentColor">AIR MAIL</text></symbol></svg>
       <div class="fq-stage">
         <div class="fq-prompt" id="prompt"></div>
         <p class="fq-question" id="question"></p>
@@ -66,7 +68,7 @@
         <div class="c-row">
           <button class="c-btn" type="button" id="again">Play again</button>
           <button class="c-btn c-btn--ghost" type="button" id="share">Share</button>
-          <button class="c-btn c-btn--ghost" type="button" id="to-menu">Menu</button>
+          <button class="c-btn c-btn--ghost fq-adv" type="button" id="to-menu">Menu</button>
         </div>
       </div>
       <h3 class="fq-h3">Review</h3>
@@ -91,7 +93,7 @@
       <h3 class="fq-h3">Recent rounds</h3>
       <ol class="fq-history" id="history"></ol>
     </section>
-    <p class="fq-credit c-muted">Flag artwork adapted from country-flag-icons (MIT). Outlines from Natural Earth (public domain). Currency and language facts from mledoze/countries (ODbL).</p>
+    <p class="fq-credit c-muted fq-adv">Flag artwork adapted from country-flag-icons (MIT). Outlines from Natural Earth (public domain). Currency and language facts from mledoze/countries (ODbL).</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

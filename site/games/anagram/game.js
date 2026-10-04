@@ -45,15 +45,26 @@
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
   }
+  function knock(f, vol, d = 0.05, when = 0) {
+    if (C.muted) return;
+    const ac = C.audioContext(); if (!ac) return;
+    const len = Math.floor(ac.sampleRate * d), b = ac.createBuffer(1, len, ac.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < len; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = b; fl.type = 'bandpass'; fl.frequency.value = f; fl.Q.value = 6; g.gain.value = vol; s.connect(fl).connect(g).connect(ac.destination); s.start(ac.currentTime + when);
+  }
+  const clack = (i) => { knock(1400 + i * 90, 0.9); knock(600, 0.4, 0.03); };
+  const press = () => { knock(180, 1.6, 0.14); knock(90, 1.2, 0.2, 0.02); };
   const buzz = (ms) => { try { navigator.vibrate?.(ms); } catch {} };
 
-  let mode = data.mode, diff = data.diff, theme = data.theme;
+  const SIMPLE = C.simple, SIMPLE_LENS = [4, 4, 4, 5, 5, 5, 5, 6, 6, 6];
+  let mode = SIMPLE ? 'simple' : data.mode, diff = data.diff, theme = data.theme;
   let word = '', tiles = [], slots = [], hinted = 0, running = false, timeLeft = DUR, elapsed = 0, score = 0, solved = [], streak = 0, maxStreak = 0, used = new Set(), lock = false, timer = 0, lastT = 0, newBadges = [], daily = [], penalty = 0;
   const sortKey = (s) => [...s].sort().join('');
   const lv = (w) => [...w].reduce((a, ch) => a + (LV[ch] || 1), 0);
   const baseFor = (w) => (POINTS[w.length] || 50) + lv(w) * 2;
   const worth = () => Math.max(10, Math.round(baseFor(word) * (1 - .3 * hinted)));
-  const bestKey = () => mode === 'daily' ? `daily-${today()}` : mode === 'themes' ? `theme-${theme}` : mode === 'zen' ? `zen-${diff}` : (diff === 'normal' ? 'score' : `sprint-${diff}`);
+  const bestKey = () => mode === 'simple' ? 'simple' : mode === 'daily' ? `daily-${today()}` : mode === 'themes' ? `theme-${theme}` : mode === 'zen' ? `zen-${diff}` : (diff === 'normal' ? 'score' : `sprint-${diff}`);
   const timed = () => mode === 'sprint' || mode === 'themes';
 
   function paintOpts() {
@@ -63,8 +74,8 @@
     if (!th.children.length) Object.entries(TH).forEach(([k, [label]]) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.t = k; b.textContent = label; th.append(b); });
     [...th.children].forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === theme)));
     th.parentElement.hidden = mode !== 'themes';
-    $('sTimeLabel').textContent = timed() ? 'Seconds' : mode === 'daily' ? 'Time' : 'Mode';
-    $('sTime').textContent = timed() ? DUR : mode === 'daily' ? '0:00' : '🧘';
+    $('sTimeLabel').textContent = timed() ? 'Seconds' : mode === 'daily' || mode === 'simple' ? 'Time' : 'Mode';
+    $('sTime').textContent = timed() ? DUR : mode === 'daily' || mode === 'simple' ? '0:00' : '🧘';
     $('passCost').textContent = timed() ? '(-3s)' : mode === 'daily' ? '(+20s)' : '';
     $('stop').hidden = mode !== 'zen';
     const b = C.getBest(bestKey());
@@ -74,6 +85,7 @@
 
   function pickWord() {
     if (mode === 'daily') return daily[solved.length];
+    if (mode === 'simple') { const L = SIMPLE_LENS[Math.min(9, solved.length)]; const pool = W[L].filter((w) => !used.has(w)); return C.pick(pool.length ? pool : W[L]); }
     if (mode === 'themes') {
       const list = TH[theme][1].filter((w) => !used.has(w));
       return C.pick(list.length ? list : TH[theme][1]);
@@ -96,7 +108,7 @@
     tag.innerHTML = '';
     tag.append(document.createTextNode(`${word.length} letters · ${worth()} pts`));
     if (mode === 'themes') { const s = document.createElement('span'); s.className = 'theme'; s.textContent = TH[theme][0]; tag.prepend(s); }
-    if (mode === 'daily') tag.prepend(document.createTextNode(`${solved.length + 1}/10 · `));
+    if (mode === 'daily' || mode === 'simple') tag.prepend(document.createTextNode(`${solved.length + 1}/10 · `));
     draw(true);
   }
 
@@ -136,7 +148,7 @@
     if (!running || lock || t.used) return;
     const i = slots.indexOf(null); if (i < 0) return;
     t.used = true; slots[i] = t;
-    tone(500 + i * 60, .05, 'triangle', .09);
+    clack(i);
     draw();
     if (!slots.includes(null)) check();
   }
@@ -227,12 +239,13 @@
     if (mode !== 'zen') { const f = document.createElement('div'); f.className = 'an-float'; f.textContent = `+${pts + bonus}`; $('board').append(f); setTimeout(() => f.remove(), 1000); }
     bump('sScore', mode === 'zen' ? solved.filter((s) => s.ok).length : score); bump('sWords', solved.filter((s) => s.ok).length);
     if (guess === word) msg(bonus ? `🔥 ${streak} in a row! +${bonus} bonus` : C.pick(['Nice!', 'Unscrambled!', 'Word wizard.', 'Yes!', 'Crisp.', 'Lovely tiles.']));
-    [523, 659, 784, 1046].slice(0, Math.min(4, 2 + Math.floor(word.length / 3))).forEach((f2, i) => tone(f2, .1, 'triangle', .1, i * .07));
+    press();
+    [523, 659, 784, 1046].slice(0, Math.min(4, 2 + Math.floor(word.length / 3))).forEach((f2, i) => tone(f2, .1, 'triangle', .08, .12 + i * .07));
     if (word.length >= 8 && hinted === 0) C.confetti(40);
     setTimeout(() => {
       lock = false;
       if (!running) return;
-      if (mode === 'daily' && solved.length >= 10) return end();
+      if ((mode === 'daily' || mode === 'simple') && solved.length >= 10) return end();
       newWord();
     }, 700);
   }
@@ -241,6 +254,7 @@
     solved.push({ w: word, ok: false });
     streak = 0;
     if (timed()) timeLeft = Math.max(0, timeLeft - 3);
+    if (mode === 'simple' && solved.length >= 10) { msg(`It was ${word.toUpperCase()}.`); return end(); }
     if (mode === 'daily') { penalty += 20; if (solved.length >= 10) { msg(`It was ${word.toUpperCase()}.`); return end(); } }
     msg(`It was ${word.toUpperCase()}.`);
     tone(260, .1, 'sine', .08);
@@ -277,7 +291,7 @@
       bar.style.transform = `scaleX(${Math.max(0, timeLeft / DUR)})`; bar.classList.toggle('low', timeLeft < 10);
       if (s !== lastSec) { lastSec = s; if (s <= 5 && s > 0) tone(900, .04, 'square', .05); }
       if (timeLeft <= 0) return end();
-    } else if (mode === 'daily') {
+    } else if (mode === 'daily' || mode === 'simple') {
       $('sTime').textContent = clock(elapsed + penalty);
       bar.style.transform = `scaleX(${solved.length / 10})`; bar.classList.remove('low');
     } else { bar.style.transform = 'scaleX(1)'; bar.classList.remove('low'); }
@@ -295,9 +309,9 @@
     if (!running) return;
     running = false;
     cancelAnimationFrame(timer);
-    if (word && mode !== 'daily' && !solved.some((s) => s.w === word && s.ok) && !solved.some((s) => s.w === word)) solved.push({ w: word, ok: false, last: true });
+    if (word && mode !== 'daily' && mode !== 'simple' && !solved.some((s) => s.w === word && s.ok) && !solved.some((s) => s.w === word)) solved.push({ w: word, ok: false, last: true });
     const got = solved.filter((s) => s.ok).length;
-    const total = mode === 'daily' ? Math.round(elapsed + penalty) : mode === 'zen' ? got : score;
+    const total = mode === 'daily' ? Math.round(elapsed + penalty) : mode === 'zen' || mode === 'simple' ? got : score;
     const before = C.getBest(bestKey());
     const { best, isNew } = C.best(bestKey(), total, mode !== 'daily');
     data.games++; data.bestStreak = Math.max(data.bestStreak, maxStreak);
@@ -313,10 +327,10 @@
     $('sBest').textContent = fmtv(best);
     $('logo').hidden = true;
     $('cBig').hidden = false;
-    $('cBig').textContent = fmtv(total);
+    $('cBig').textContent = mode === 'simple' ? `${total}/10` : fmtv(total);
     const isPB = isNew && before != null && total > 0;
-    $('cTitle').textContent = isPB ? '🏆 New best!' : mode === 'daily' ? 'Daily ten done!' : got >= 12 ? 'Word wizard!' : got >= 6 ? 'Nicely unscrambled' : mode === 'zen' ? 'Nice and calm' : 'Time!';
-    $('cText').textContent = mode === 'daily' ? `${got} of 10 solved, ${penalty / 20} passed · best ${fmtv(best)}` : `${got} word${got === 1 ? '' : 's'} · best ${fmtv(best)}`;
+    $('cTitle').textContent = mode === 'simple' ? (got === 10 ? 'All ten set in type!' : got >= 7 ? 'Neatly composed' : 'Ink still drying, again?') : isPB ? '🏆 New best!' : mode === 'daily' ? 'Daily ten done!' : got >= 12 ? 'Word wizard!' : got >= 6 ? 'Nicely unscrambled' : mode === 'zen' ? 'Nice and calm' : 'Time!';
+    $('cText').textContent = mode === 'simple' ? `${got} of 10 unscrambled in ${clock(elapsed)} · best ${best}/10` : mode === 'daily' ? `${got} of 10 solved, ${penalty / 20} passed · best ${fmtv(best)}` : `${got} word${got === 1 ? '' : 's'} · best ${fmtv(best)}`;
     $('cStats').innerHTML = '';
     [[got, 'Words'], [maxStreak, 'Best streak'], [solved.filter((s) => s.ok).reduce((a, s) => a.length >= s.w.length ? a : s.w, '').toUpperCase() || '-', 'Longest']].forEach(([v, l]) => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = v; const s = document.createElement('span'); s.textContent = l; d.append(b, s); $('cStats').append(d); });
     $('cBadges').innerHTML = '';
@@ -370,7 +384,7 @@
   $('stop').addEventListener('click', () => { if (running) end(); });
   $('share').addEventListener('click', () => {
     const got = solved.filter((s) => s.ok).length;
-    const line = mode === 'daily' ? `Daily ten ${today()}: ${$('cBig').textContent}` : mode === 'zen' ? `${got} words in Zen` : `${score} points, ${got} words (${mode === 'themes' ? TH[theme][0] : 'Sprint ' + diff})`;
+    const line = mode === 'simple' ? `${got}/10 words unscrambled` : mode === 'daily' ? `Daily ten ${today()}: ${$('cBig').textContent}` : mode === 'zen' ? `${got} words in Zen` : `${score} points, ${got} words (${mode === 'themes' ? TH[theme][0] : 'Sprint ' + diff})`;
     const t = `Zoble Anagram 🔤\n${line}\n${solved.map((s) => s.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(line));
   });
@@ -392,9 +406,11 @@
   paintOpts();
   paintPanels();
   idleCover();
+  if (SIMPLE) { $('cTitle').textContent = 'Ten words, no clock'; $('cText').textContent = 'Tap the tiles or just type. Short words first.'; }
   word = 'tiles';
   tiles = [...'listeqz'.slice(0, 5)].map((ch, i) => ({ ch, id: i, used: false }));
   slots = Array(5).fill(null);
   draw();
+  if (SIMPLE) setTimeout(start, 0);
   window.__an = { get word() { return word; }, get running() { return running; }, get lock() { return lock; } };
 })();

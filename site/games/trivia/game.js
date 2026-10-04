@@ -10,8 +10,10 @@
     classic: { name: 'Classic', rounds: 15, limit: 20, lives: 0 },
     survival: { name: 'Survival', rounds: Infinity, limit: 15, lives: 3 },
     blitz: { name: 'Blitz', rounds: Infinity, limit: 0, lives: 0, clock: 60 },
-    daily: { name: 'Daily', rounds: 10, limit: 20, lives: 0 }
+    daily: { name: 'Daily', rounds: 10, limit: 20, lives: 0 },
+    simple: { name: 'Quick quiz', rounds: 10, limit: 0, lives: 0 }
   };
+  const SIMPLE = C.simple;
   const BADGES = [
     ['first', '🍺', 'First Round', 'Finish a game'],
     ['perfect', '💯', 'Perfect Night', '15 out of 15 in Classic'],
@@ -49,12 +51,23 @@
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
   }
+  function ding() { tone(1318, .5, 'sine', .14); tone(2637, .3, 'sine', .04); tone(1760, .7, 'sine', .14, .16); tone(3520, .4, 'sine', .035, .16); }
+  function buzzer() {
+    if (C.muted) return;
+    const ac = C.audioContext(); if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+    o.type = 'square'; o2.type = 'sawtooth'; o.frequency.value = 110; o2.frequency.value = 116;
+    f.type = 'lowpass'; f.frequency.value = 900;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.02); g.gain.setValueAtTime(0.09, t + 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+    o.connect(f); o2.connect(f); f.connect(g).connect(ac.destination); o.start(t); o2.start(t); o.stop(t + 0.65); o2.stop(t + 0.65);
+  }
+  function jingle() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .14, 'triangle', .09, i * .08)); tone(1568, .4, 'sine', .07, .34); }
   const buzz = (ms) => { try { navigator.vibrate?.(ms); } catch {} };
 
-  let mode = data.mode, cat = 'mix', queue = [], round = 0, score = 0, streak = 0, bestStreak = 0, cur = null, answered = false;
+  let mode = SIMPLE ? 'simple' : data.mode, cat = 'mix', queue = [], round = 0, score = 0, streak = 0, bestStreak = 0, cur = null, answered = false;
   let lives = 3, used = { fifty: false, skip: false, freeze: false }, anyLifeline = false, log = [], timeLeft = 20, clockLeft = 60, frozen = 0, last = 0, raf = 0, advanceT = 0, askedAt = 0, newBadges = [], running = false;
   const M = () => MODES[mode];
-  const bestKey = () => mode === 'daily' ? `daily-${today()}` : mode === 'classic' ? cat : `${mode}-${cat}`;
+  const bestKey = () => mode === 'simple' ? 'simple' : mode === 'daily' ? `daily-${today()}` : mode === 'classic' ? cat : `${mode}-${cat}`;
 
   function drawMenu() {
     document.querySelectorAll('#modes .tv-mode').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === mode)));
@@ -84,7 +97,7 @@
       survival: ['❤️ Three wrong answers and you are out', '⏱️ 15 seconds each', '✂️ ⏭️ 🧊 one of each lifeline'],
       blitz: ['⚡ 60 seconds on the clock', '✅ +100 per right answer, streaks add more', '❌ Wrong answers cost 3 seconds'],
       daily: ['📅 Ten questions, same for everyone today', '⏱️ 20 seconds each', '📋 Share your score']
-    }[mode];
+    }[mode] || [];
     $('rules').innerHTML = rules.map((r) => `<span>${r}</span>`).join('');
   }
 
@@ -125,9 +138,10 @@
     clockLeft = M().clock || 0;
     running = true;
     $('sScore').textContent = 0; $('sStreak').textContent = 0;
-    $('fifty').hidden = $('skip').hidden = $('freeze').hidden = mode === 'blitz';
+    $('fifty').hidden = $('skip').hidden = $('freeze').hidden = mode === 'blitz' || mode === 'simple';
+    document.querySelector('.tv-timer').hidden = $('secs').hidden = mode === 'simple';
     show('game');
-    tone(520, .06, 'triangle', .1); tone(780, .09, 'triangle', .1, .07);
+    jingle();
     if (mode === 'blitz') { last = performance.now(); }
     next();
   }
@@ -165,7 +179,7 @@
     cur.opts.forEach((o, i) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'tv-opt'; b.dataset.v = o;
-      b.innerHTML = `<span class="k">${i + 1}</span><span class="t"></span>`;
+      b.innerHTML = `<span class="k"><b>${'ABCD'[i]}</b><small>${i + 1}</small></span><span class="t"></span>`;
       b.querySelector('.t').textContent = o;
       b.addEventListener('click', () => answer(o, b));
       box.append(b);
@@ -173,7 +187,8 @@
     $('note').textContent = '';
     $('fifty').disabled = used.fifty; $('skip').disabled = used.skip; $('freeze').disabled = used.freeze;
     timeLeft = M().limit; last = performance.now(); askedAt = last;
-    cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+    cancelAnimationFrame(raf);
+    if (mode !== 'simple') raf = requestAnimationFrame(tick);
   }
 
   let lastSec = 0;
@@ -217,7 +232,7 @@
     const took = (performance.now() - askedAt) / 1000;
     if (ok) {
       streak++; bestStreak = Math.max(bestStreak, streak);
-      const speed = mode === 'blitz' ? 0 : Math.round(Math.max(0, timeLeft) / M().limit * 100);
+      const speed = mode === 'blitz' || mode === 'simple' ? 0 : Math.round(Math.max(0, timeLeft) / M().limit * 100);
       const bonus = 20 * Math.min(streak - 1, 5);
       const pts = 100 + speed + bonus;
       score += pts;
@@ -226,7 +241,7 @@
       bump('sScore', C.fmt(score));
       bump('sStreak', streak);
       $('note').textContent = streak >= 3 ? `🔥 ${streak} in a row! Streak bonus +${bonus}` : C.pick(['Correct!', 'Nailed it.', 'Yes!', 'Spot on.', 'Big brain.', 'Textbook.', 'The table cheers.']);
-      tone(660, .08, 'triangle', .12); tone(990, .14, 'triangle', .1, .09);
+      ding();
       if (streak % 5 === 0) { C.confetti(50); tone(1320, .16, 'triangle', .08, .2); }
       if (took < 2) award('speedy');
     } else {
@@ -234,7 +249,7 @@
       if (btn) btn.classList.add('is-bad');
       const st = $('stage'); st.classList.remove('is-bad'); void st.offsetWidth; st.classList.add('is-bad');
       $('note').textContent = val == null ? `⏰ Time! It was ${cur.a}.` : `Nope, it was ${cur.a}.`;
-      tone(170, .3, 'sawtooth', .08);
+      buzzer();
       buzz(60);
       if (mode === 'survival') lives--;
       if (mode === 'blitz') { clockLeft -= 3; $('note').textContent += ' (-3s)'; }
@@ -298,7 +313,7 @@
     newBadges = [];
     const right = log.filter((l) => l.ok).length;
     const before = C.getBest(bestKey());
-    const { best, isNew } = C.best(bestKey(), score);
+    const { best, isNew } = C.best(bestKey(), mode === 'simple' ? right : score);
     data.games++; data.bestStreak = Math.max(data.bestStreak, bestStreak);
     data.played[cat] = 1;
     data.history.push({ m: mode, c: cat, s: score, r: right, n: log.length, t: Date.now() });
@@ -319,8 +334,8 @@
     const n = Math.max(1, log.length);
     $('ring').innerHTML = ringSvg(right / n, `${right} of ${log.length} right`);
     requestAnimationFrame(() => requestAnimationFrame(() => { const fg = $('ring').querySelector('.fg'); if (fg) fg.style.strokeDashoffset = fg.dataset.to; }));
-    $('rScore').textContent = C.fmt(score);
-    const label = mode === 'daily' ? `Daily ${today()}` : `${M().name} · ${cat === 'mix' ? 'Mixed bag' : catOf(cat).label}`;
+    $('rScore').textContent = mode === 'simple' ? `${right}/10` : C.fmt(score);
+    const label = mode === 'simple' ? 'Quick quiz' : mode === 'daily' ? `Daily ${today()}` : `${M().name} · ${cat === 'mix' ? 'Mixed bag' : catOf(cat).label}`;
     const isPB = isNew && before != null && score > 0;
     $('rLine').textContent = `${label} · best streak ${bestStreak} · best here ${C.fmt(best)}${isPB ? ' (new!)' : ''}`;
     const acc = right / n;
@@ -386,18 +401,19 @@
 
   function quit() {
     if ($('game').hidden) return;
+    if (mode === 'simple') { if (log.length) finish(); return; }
     running = false; cancelAnimationFrame(raf); clearTimeout(advanceT);
     save(); show('menu'); drawMenu(); paintPanels();
   }
 
-  $('modes').addEventListener('click', (e) => { const b = e.target.closest('.tv-mode'); if (!b) return; mode = b.dataset.m; data.mode = mode; save(); drawMenu(); tone(620, .05, 'triangle', .06); });
+  $('modes').addEventListener('click', (e) => { const b = e.target.closest('.tv-mode'); if (!b || SIMPLE) return; mode = b.dataset.m; data.mode = mode; save(); drawMenu(); tone(620, .05, 'triangle', .06); });
   $('fifty').addEventListener('click', fifty);
   $('skip').addEventListener('click', skip);
   $('freeze').addEventListener('click', freeze);
   $('again').addEventListener('click', () => start(cat));
   $('back').addEventListener('click', () => { show('menu'); drawMenu(); });
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Zoble Trivia Night, daily ${today()}` : `Zoble Trivia Night, ${M().name} (${cat === 'mix' ? 'Mixed bag' : catOf(cat).label})`;
+    const head = mode === 'simple' ? 'Zoble Trivia Night, quick quiz' : mode === 'daily' ? `Zoble Trivia Night, daily ${today()}` : `Zoble Trivia Night, ${M().name} (${cat === 'mix' ? 'Mixed bag' : catOf(cat).label})`;
     const t = `${head}\n🍻 ${C.fmt(score)} points, ${log.filter((l) => l.ok).length}/${log.length} right\n${log.map((l) => l.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(t.split('\n')[1]));
   });
@@ -419,5 +435,6 @@
 
   drawMenu();
   paintPanels();
+  if (SIMPLE) { document.body.classList.add('tv-simple'); start('mix'); }
   window.__tv = { get cur() { return cur; }, get running() { return running; }, get answered() { return answered; } };
 })();

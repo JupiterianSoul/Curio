@@ -112,9 +112,37 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
 .wr-badge { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
 .wr-badge.on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
 .wr-badge.new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+
+.arc-wrap { --slate: #23324a; --slate-2: #172234; --lcd: #8ff0ff; --coat: #ffd23f; --coat-2: #e2a900; --wr-round: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Segoe UI", system-ui, sans-serif; }
+.arc-hud { background: linear-gradient(var(--slate), var(--slate-2)); border-radius: 14px; padding: 4px 10px; box-shadow: inset 0 0 0 2px rgba(143, 240, 255, .18), 0 4px 10px rgba(0, 0, 0, .15); width: max-content; max-width: 100%; margin: 0 auto; }
+.arc-hud .c-stat b { color: var(--lcd); font-family: var(--mono); font-weight: 700; text-shadow: 0 0 8px rgba(143, 240, 255, .55); }
+.arc-hud .c-stat span { color: rgba(220, 235, 255, .65); }
+.arc-hud .arc-iconbtn { background: rgba(255, 255, 255, .08); border-color: rgba(143, 240, 255, .35); color: #fff; box-shadow: none; }
+#arc-canvas { border-radius: 18px; box-shadow: 0 0 0 4px var(--slate), 0 12px 26px rgba(10, 20, 40, .3); }
+.wr-menu { background: var(--coat); color: #2a2100; border: 0; border-radius: 22px; box-shadow: inset 0 0 0 6px var(--coat), inset 0 0 0 8px rgba(42, 33, 0, .35), 0 8px 0 var(--coat-2), 0 16px 30px rgba(0, 0, 0, .25); background-image: radial-gradient(rgba(255, 255, 255, .25) 1px, transparent 1.5px); background-size: 10px 10px; }
+.wr-menu .c-sub, .wr-menu .arc-help, .wr-menu .arc-small, .wr-menu .arc-label, .wr-menu .wr-more summary { color: #4a3b00; }
+.wr-menu .arc-seg { background: rgba(42, 33, 0, .12); }
+.wr-menu .arc-seg button { color: #4a3b00; }
+.wr-menu .arc-seg button[aria-pressed="true"] { background: var(--slate); color: var(--lcd); }
+.wr-menu .c-btn { background: var(--slate); color: #fff; box-shadow: 0 4px 0 #0c1420; font-size: 20px; padding: 12px 34px; }
+.wr-menu .c-kbd { background: #fff8d6; color: #2a2100; }
+.wr-bulletin { margin: 8px 0 0; font: 800 11px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #6b5600; }
+.wr-title { font-family: var(--wr-round); font-weight: 900; color: var(--slate); letter-spacing: -.01em; text-shadow: 0 3px 0 rgba(255, 255, 255, .5); position: relative; }
+.wr-title span { display: inline-block; width: 16px; height: 22px; margin-left: 6px; background: #3d8bff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; transform: rotate(0); clip-path: path('M8 0 C8 0 16 11 16 15 A8 8 0 0 1 0 15 C0 11 8 0 8 0Z'); animation: wr-drip 1.8s ease-in infinite; vertical-align: 2px; }
+@keyframes wr-drip { 0%, 40% { transform: translateY(0); opacity: 1; } 90% { transform: translateY(14px); opacity: 0; } 100% { opacity: 0; } }
+.wr-type .c-input { border-radius: 999px; border: 3px solid #3d8bff; background: color-mix(in srgb, #3d8bff 10%, var(--surface)); color: var(--ink); box-shadow: inset 0 3px 0 rgba(0, 0, 0, .06), 0 0 0 0 rgba(61, 139, 255, .4); transition: box-shadow .2s; font-family: var(--wr-round); }
+.wr-type .c-input:focus { box-shadow: inset 0 3px 0 rgba(0, 0, 0, .06), 0 0 0 6px rgba(61, 139, 255, .22); outline: none; }
+#ov-over .arc-card, #ov-pause .arc-card { border-radius: 22px; background: linear-gradient(var(--slate), var(--slate-2)); color: #eef6ff; border: 0; box-shadow: inset 0 0 0 2px rgba(143, 240, 255, .25), 0 16px 30px rgba(0, 0, 0, .3); }
+#ov-over .c-title, #ov-pause .c-title { color: #fff; }
+#ov-over .c-muted, #ov-over .arc-msg, #ov-pause .c-sub { color: rgba(225, 238, 255, .82); }
+#ov-over .arc-big { color: var(--lcd); text-shadow: 0 0 16px rgba(143, 240, 255, .5); font-family: var(--mono); }
+#ov-over .c-btn--ghost, #ov-pause .c-btn--ghost { color: #fff; border-color: rgba(255, 255, 255, .7); background: transparent; }
+html[data-mode="simple"] .wr-adv { display: none !important; }
+html[data-mode="simple"] .wr-menu .c-btn { font-size: 24px; padding: 16px 44px; }
+@media (prefers-reduced-motion: reduce) { .wr-title span { animation: none; } }
   </style>
 </head>
-<body data-game="word-rain" class="arc">
+<body data-game="word-rain" class="arc" data-modes>
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -137,9 +165,10 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
             <path d="M0 82q60-14 120-4t200-6V96H0z" fill="#5aa84a"/>
             <g transform="translate(250 60)"><path d="M-14 0a14 10 0 0 1 28 0z" fill="#ff5a36"/><path d="M0 0v16q0 3 3 3" stroke="#333" stroke-width="2" fill="none"/></g>
           </svg>
-          <h1 class="c-title">Word Rain</h1>
+          <p class="wr-bulletin">Zoble weather service · special bulletin</p>
+          <h1 class="c-title wr-title">Word Rain<span aria-hidden="true"></span></h1>
           <p class="c-sub">It is raining words. Type each one before it splashes into the grass. The forecast gets worse every level.</p>
-          <div class="arc-opts">
+          <div class="arc-opts wr-adv">
             <div class="arc-label">Mode</div>
             <div class="arc-seg" role="group" aria-label="Mode" data-seg="mode"><button type="button" data-v="classic">Classic</button><button type="button" data-v="sprint">60s Sprint</button><button type="button" data-v="zen">Zen</button><button type="button" data-v="daily">Daily</button></div>
             <div class="arc-label">Words</div>
@@ -150,7 +179,7 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
           <button class="c-btn" type="button" data-act="start">▶ Play</button>
           <p class="arc-help">Just <b>type</b>: the word you start is locked in, finish it to pop it · <span class="c-kbd">Enter</span> clears what you typed · <span class="c-kbd">Esc</span> pause<br>⭐ triple points · ❄️ slows the rain · ⚡ clears the sky · ☂️ gives a life. On a phone the keyboard opens under the game.</p>
           <p class="arc-small" data-mbest>Your best: <b data-hud="best">0</b></p>
-          <details class="wr-more"><summary>Stats and badges <span data-badge-count></span></summary><div class="wr-stats" data-stats></div><div class="wr-badges" data-badges></div></details>
+          <details class="wr-more wr-adv"><summary>Stats and badges <span data-badge-count></span></summary><div class="wr-stats" data-stats></div><div class="wr-badges" data-badges></div></details>
         </div>
       </section>
       <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>

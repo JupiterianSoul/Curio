@@ -66,6 +66,16 @@
     return d;
   }
   const save = load();
+  const SIMPLE = C.simple, SIMPLE_N = 10;
+  function spreadPick(n) {
+    const pool = shuffle(EVENTS), out = [];
+    for (const e of pool) {
+      if (out.length >= n) break;
+      const gap = Math.max(20, Math.abs(e.year) > 1000 ? 25 : 60);
+      if (out.every((o) => Math.abs(o.year - e.year) >= gap && o.year !== e.year)) out.push(e);
+    }
+    return out;
+  }
   const persist = () => C.store.set(SAVE_KEY, save);
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -94,7 +104,8 @@
     },
     good(streak) { const b = 523 * Math.pow(2, Math.min(12, streak) / 24); this.tone(b, 0.1); this.tone(b * 1.25, 0.1, 'triangle', 0.1, 0.07); this.tone(b * 1.5, 0.18, 'triangle', 0.1, 0.14); },
     bad() { this.tone(200, 0.35, 'sawtooth', 0.08, 0, 90); this.tone(150, 0.3, 'square', 0.04, 0.05); },
-    deal() { this.tone(900, 0.04, 'square', 0.03); this.tone(1300, 0.05, 'triangle', 0.04, 0.03); },
+    deal() { this.tone(160, 0.12, 'sine', 0.12, 0, 120); this.tone(2093, 0.5, 'sine', 0.025, 0.02); },
+    hang() { this.tone(120, 0.09, 'triangle', 0.14, 0, 70); this.tone(2637, 0.6, 'sine', 0.03, 0.05); this.tone(3136, 0.6, 'sine', 0.02, 0.12); },
     hint() { [880, 1175, 1568].forEach((f, i) => this.tone(f, 0.12, 'sine', 0.08, i * 0.05)); },
     fanfare() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => this.tone(f, 0.18, 'triangle', 0.11, i * 0.09)); },
     tick() { this.tone(1200, 0.03, 'square', 0.03); },
@@ -143,25 +154,26 @@
   const dock = $('dock'), list = $('list');
 
   function newGame() {
-    const mode = save.mode;
-    const deck = mode === 'daily' ? DECKS[0] : DECKS.find((d) => d.id === save.deck) || DECKS[0];
+    const mode = SIMPLE ? 'simple' : save.mode;
+    const deck = mode === 'daily' || mode === 'simple' ? DECKS[0] : DECKS.find((d) => d.id === save.deck) || DECKS[0];
     let cards;
     if (mode === 'daily') {
       const rnd = mulberry(hashStr('timeline-' + today()));
       cards = shuffle(EVENTS, rnd).slice(0, 13);
-    } else cards = shuffle(EVENTS.filter(deck.f));
+    } else if (mode === 'simple') cards = spreadPick(SIMPLE_N + 1);
+    else cards = shuffle(EVENTS.filter(deck.f));
     const first = cards.pop();
     G = {
       mode, deck, cards, timeline: [{ ...first, status: 'start' }], current: null, lives: mode === 'classic' ? 3 : mode === 'sudden' ? 1 : 0,
-      score: 0, wrong: 0, streak: 0, bestStreak: 0, hints: mode === 'daily' ? 0 : 3, hintsUsed: 0, hinted: false, grid: [], newBadges: [],
+      score: 0, wrong: 0, streak: 0, bestStreak: 0, hints: mode === 'daily' || mode === 'simple' ? 0 : 3, hintsUsed: 0, hinted: false, grid: [], newBadges: [],
       timeLeft: mode === 'blitz' ? 90 : 0, start: performance.now(), total: cards.length, lastPlaced: null, ended: false
     };
-    save.decks[deck.id] = (save.decks[deck.id] || 0) + 1;
+    if (mode !== 'simple') save.decks[deck.id] = (save.decks[deck.id] || 0) + 1;
     if (Object.keys(save.decks).length >= 5) award('decks5');
     persist();
-    $('deckname').textContent = mode === 'daily' ? `Daily deck · ${today()}` : `${MODES[mode].name} · ${deck.name}`;
+    $('deckname').textContent = mode === 'simple' ? 'A quick tour · 10 exhibits' : mode === 'daily' ? `Daily deck · ${today()}` : `${MODES[mode].name} · ${deck.name}`;
     $('timer').hidden = mode !== 'blitz';
-    $('lives-label').textContent = mode === 'blitz' ? 'Seconds' : mode === 'daily' ? 'Cards left' : 'Lives';
+    $('lives-label').textContent = mode === 'blitz' ? 'Seconds' : mode === 'daily' || mode === 'simple' ? 'Exhibits left' : 'Lives';
     paintHud();
     show('game');
     deal();
@@ -191,10 +203,10 @@
     $('best').textContent = b == null ? '-' : b;
     $('hints').textContent = G.hints;
     $('hint').disabled = G.hints <= 0 || !G.current || G.hinted;
-    $('hint').hidden = G.mode === 'daily';
+    $('hint').hidden = G.mode === 'daily' || G.mode === 'simple';
     const lv = $('lives');
     if (G.mode === 'blitz') paintTimer();
-    else if (G.mode === 'daily') lv.innerHTML = `<b style="font-size:24px;font-weight:900">${G.cards.length + (G.current ? 1 : 0)}</b>`;
+    else if (G.mode === 'daily' || G.mode === 'simple') lv.innerHTML = `<b style="font-size:24px;font-weight:900">${G.cards.length + (G.current ? 1 : 0)}</b>`;
     else {
       lv.innerHTML = '';
       const max = G.mode === 'classic' ? 3 : 1;
@@ -202,7 +214,7 @@
       lv.setAttribute('aria-label', `${G.lives} lives left`);
     }
   }
-  const bestKey = () => (G.mode === 'daily' ? `daily-${today()}` : `${G.mode}-${G.deck.id}`);
+  const bestKey = () => (G.mode === 'simple' ? 'simple' : G.mode === 'daily' ? `daily-${today()}` : `${G.mode}-${G.deck.id}`);
   function bumpEl(id) { const el = $(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
   function cardHtml(ev) {
@@ -235,7 +247,7 @@
   function slot(i) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'tl-slot'; b.dataset.i = i;
-    b.innerHTML = '<span>Place here</span>';
+    b.innerHTML = `${i < 10 ? `<kbd>${(i + 1) % 10}</kbd>` : ''}<span>Hang it here</span>`;
     b.setAttribute('aria-label', `Place card ${slotLabel(i)}`);
     b.addEventListener('click', () => place(i));
     const li = document.createElement('li'); li.append(b);
@@ -284,7 +296,7 @@
       G.score++; G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak);
       s.placed++; if (y < 0) s.bc++;
       if (G.mode === 'blitz') G.timeLeft = Math.min(99, G.timeLeft + 3);
-      sfx.good(G.streak); vib(12);
+      sfx.good(G.streak); sfx.hang(); vib(12);
       bumpEl('score'); bumpEl('streak');
       award('first');
       if (G.streak >= 5) award('streak5'); if (G.streak >= 10) award('streak10'); if (G.streak >= 20) award('streak20');
@@ -303,7 +315,7 @@
       if (G.mode === 'classic' || G.mode === 'sudden') G.lives--;
       if (G.mode === 'blitz') G.timeLeft = Math.max(0, G.timeLeft - 10);
       sfx.bad(); vib([30, 40, 30]);
-      C.toast(`Not quite: that was ${plainYear(y)}`);
+      C.toast(`The curator moves it: that was ${plainYear(y)}`);
     }
     s.bestStreak = Math.max(s.bestStreak, G.bestStreak);
     persist();
@@ -403,6 +415,7 @@
       sfx.tick();
     } else if ((e.key === 'Enter' || e.key === ' ') && sel >= 0 && !e.target.closest('button')) { e.preventDefault(); place(sel); }
     else if (e.key.toLowerCase() === 'h') useHint();
+    else if (/^[0-9]$/.test(e.key)) { const i = e.key === '0' ? 9 : +e.key - 1; if (i <= n) { e.preventDefault(); place(i); } }
   });
 
   function emblem(tier) {
@@ -430,20 +443,20 @@
       save.daily[today()] = d;
       const keys = Object.keys(save.daily).sort(); while (keys.length > 40) delete save.daily[keys.shift()];
     }
-    if (why === 'cleared' && G.mode !== 'daily' && G.wrong === 0) award('deckclear');
-    if (why === 'cleared' && G.mode !== 'daily' && G.deck.id !== 'all') award('deckclear');
-    save.history.unshift({ m: G.mode, d: G.deck.id, s: G.score, w: G.wrong, t: Date.now() });
+    if (why === 'cleared' && G.mode !== 'daily' && G.mode !== 'simple' && G.wrong === 0) award('deckclear');
+    if (why === 'cleared' && G.mode !== 'daily' && G.mode !== 'simple' && G.deck.id !== 'all') award('deckclear');
+    if (G.mode !== 'simple') save.history.unshift({ m: G.mode, d: G.deck.id, s: G.score, w: G.wrong, t: Date.now() });
     save.history.length = Math.min(15, save.history.length);
     persist();
     const acc = G.score + G.wrong ? Math.round(G.score / (G.score + G.wrong) * 100) : 0;
-    const tier = G.mode === 'daily' ? (G.score >= 11 ? 'gold' : G.score >= 8 ? 'silver' : G.score >= 5 ? 'bronze' : 'none') : (G.score >= 25 ? 'gold' : G.score >= 12 ? 'silver' : G.score >= 5 ? 'bronze' : 'none');
+    const tier = G.mode === 'simple' ? (G.score >= 9 ? 'gold' : G.score >= 7 ? 'silver' : G.score >= 4 ? 'bronze' : 'none') : G.mode === 'daily' ? (G.score >= 11 ? 'gold' : G.score >= 8 ? 'silver' : G.score >= 5 ? 'bronze' : 'none') : (G.score >= 25 ? 'gold' : G.score >= 12 ? 'silver' : G.score >= 5 ? 'bronze' : 'none');
     $('r-emblem').innerHTML = emblem(tier);
-    $('r-title').textContent = why === 'cleared' ? (G.mode === 'daily' ? 'Daily deck done!' : 'Deck cleared!') : why === 'time' ? "Time's up!" : 'Out of lives';
-    $('r-score').textContent = G.mode === 'daily' ? `${G.score}/12` : G.score;
+    $('r-title').textContent = why === 'cleared' ? (G.mode === 'simple' ? 'Tour complete' : G.mode === 'daily' ? 'Daily deck done!' : 'Deck cleared!') : why === 'time' ? "Time's up!" : 'Out of lives';
+    $('r-score').textContent = G.mode === 'daily' ? `${G.score}/12` : G.mode === 'simple' ? `${G.score}/${SIMPLE_N}` : G.score;
     $('r-new').hidden = !isNew;
     const rs = [[acc + '%', 'Accuracy'], [G.bestStreak, 'Best streak'], [G.timeline.length, 'Timeline'], [G.hintsUsed, 'Hints']];
     $('r-stats').innerHTML = rs.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
-    const quip = why === 'cleared' && G.mode !== 'daily' ? 'You placed the entire deck. Take a bow, professor.' : G.score >= 25 ? 'A walking history book.' : G.score >= 15 ? 'Genuinely impressive.' : G.score >= 8 ? 'Solid grasp of the past.' : G.score >= 3 ? 'History class was a while ago, huh?' : 'The past is a foreign country.';
+    const quip = G.mode === 'simple' ? (G.score === SIMPLE_N ? 'Every exhibit on the right hook. The curator weeps with joy.' : G.score >= 8 ? 'The museum would hire you tomorrow.' : G.score >= 5 ? 'A respectable tour. Mind the gift shop.' : 'History is long and the labels are small. Try another tour?') : why === 'cleared' && G.mode !== 'daily' ? 'You placed the entire deck. Take a bow, professor.' : G.score >= 25 ? 'A walking history book.' : G.score >= 15 ? 'Genuinely impressive.' : G.score >= 8 ? 'Solid grasp of the past.' : G.score >= 3 ? 'History class was a while ago, huh?' : 'The past is a foreign country.';
     $('r-msg').textContent = quip + (G.mode === 'daily' ? ` Come back tomorrow for a new deck.` : '');
     $('r-ribbon').innerHTML = ribbon(G.timeline);
     const earned = $('r-earned'); earned.innerHTML = '';
@@ -455,6 +468,7 @@
   }
   function shareText() {
     const grid = G.grid.map((g) => (g ? '🟩' : '🟥')).join('');
+    if (G.mode === 'simple') return `Zoble Timeline: ${G.score}/${SIMPLE_N} exhibits hung right\n${grid}`;
     if (G.mode === 'daily') return `Zoble Timeline daily ${today()}: ${G.score}/12\n${grid}`;
     return `Zoble Timeline (${MODES[G.mode].name}, ${G.deck.name}): ${G.score} placed, best streak ${G.bestStreak}\n${grid}`;
   }
@@ -503,7 +517,7 @@
   $('quit').addEventListener('click', async () => {
     if (!G || G.ended) return;
     const v = await C.modal({ emoji: '', title: 'Quit this game?', body: 'Your timeline so far will be scored.', buttons: [{ label: 'Keep playing', value: 'no' }, { label: 'Quit', value: 'yes' }] });
-    if (v === 'yes') finish('quit');
+    if (v === 'yes') finish(G.mode === 'simple' ? 'cleared' : 'quit');
   });
   $('share').addEventListener('click', async () => { const t = shareText(); try { await navigator.clipboard.writeText(t); C.toast('Copied to clipboard'); } catch { C.toast(t.split('\n')[0], 4000); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) lastT = performance.now(); });
@@ -513,6 +527,7 @@
     wrongSlot() { const ok = correctRange(G.current.year); for (let i = 0; i <= G.timeline.length; i++) if (!ok.includes(i)) return i; return -1; }
   };
   renderMenu();
+  if (SIMPLE) newGame();
   if (!C.store.get('tip:touchpad:timeline', false) && !matchMedia('(pointer: coarse)').matches) {
     C.store.set('tip:touchpad:timeline', true);
     setTimeout(() => C.toast('Tip: tap a gap to place a card, or turn on Touchpad mode in the top bar to carry cards without holding', 4200), 1200);

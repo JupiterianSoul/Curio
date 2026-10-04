@@ -9,11 +9,14 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="anagram">
+<body data-game="anagram" data-modes>
   <main class="c-wrap an">
-    <h1 class="c-title">Anagram</h1>
-    <p class="c-sub">Scrambled letter tiles. Put them back in order, fast. Longer words and rarer letters score more.</p>
-    <div class="an-row">
+    <header class="an-head">
+      <h1 class="c-title an-press" aria-label="Anagram"><span>A</span><span>N</span><span>A</span><span>G</span><span>R</span><span>A</span><span>M</span></h1>
+      <p class="an-imprint">Zoble Type Foundry · hand set daily</p>
+    </header>
+    <p class="c-sub">Spilled type from the compositor's tray. Set the letters back in order. Longer words and rarer letters print more points.</p>
+    <div class="an-row an-adv">
       <div class="an-seg" id="modes" role="group" aria-label="Mode">
         <button type="button" data-m="sprint">⏱️ Sprint</button>
         <button type="button" data-m="themes">🎯 Themes</button>
@@ -26,7 +29,7 @@
         <button type="button" data-d="hard">Hard</button>
       </div>
     </div>
-    <div class="an-row"><div class="an-seg" id="themes" role="group" aria-label="Theme"></div></div>
+    <div class="an-row an-adv"><div class="an-seg" id="themes" role="group" aria-label="Theme"></div></div>
     <div class="an-stats">
       <div class="c-stat"><b id="sTime">60</b><span id="sTimeLabel">Seconds</span></div>
       <div class="c-stat"><b id="sScore">0</b><span>Score</span></div>
@@ -61,7 +64,7 @@
     </div>
     <p class="an-msg" id="msg" aria-live="polite"></p>
     <p class="an-help c-muted">Type letters, <span class="c-kbd">Backspace</span> to undo, <span class="c-kbd">Space</span> to shuffle, <span class="c-kbd">?</span> hint, <span class="c-kbd">Enter</span> pass</p>
-    <section class="c-card an-panel">
+    <section class="c-card an-panel an-adv">
       <div class="an-ptabs" role="tablist">
         <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
         <button type="button" role="tab" data-tab="stats" aria-selected="false">Stats</button>

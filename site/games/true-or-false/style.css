@@ -106,3 +106,69 @@ body { overflow-x: clip; }
   .tf-seg button { padding: 6px 9px; font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) { .tf-hero .glass { animation: none; } }
+
+.tf { --manila: #edc77f; --manila-2: #dcae5d; --manila-ink: #3b2a14; --desk: #2f4a3c; --desk-2: #213629; --tf-good: #1d8a4d; --tf-bad: #c8352d; --tf-type: "American Typewriter", "Courier Prime", "Courier New", "Nimbus Mono PS", "Liberation Mono", monospace; }
+.tf-hero .st1 { animation: tf-stampbob 2.6s ease-in-out infinite; }
+.tf-hero .st2 { animation: tf-stampbob 2.6s 1.3s ease-in-out infinite; }
+@keyframes tf-stampbob { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(8px); } }
+.tf-title { font-family: var(--tf-type); font-weight: 700; letter-spacing: .02em; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; text-shadow: none; }
+.tf-title span { display: inline-block; padding: 2px 12px; border: 4px double currentColor; border-radius: 6px; mix-blend-mode: multiply; }
+:root[data-theme="dark"] .tf-title span { mix-blend-mode: normal; }
+.tf-title .t { color: var(--tf-good); transform: rotate(-4deg); }
+.tf-title .f { color: var(--tf-bad); transform: rotate(3deg); }
+:root[data-theme="dark"] .tf-title .t { color: #4fd08a; }
+:root[data-theme="dark"] .tf-title .f { color: #ff6b6b; }
+.tf-title i { font: italic 400 .5em Georgia, serif; text-transform: none; color: var(--ink-2); }
+.tf-dept { margin: 4px 0 6px; font: 700 12px var(--tf-type); letter-spacing: .3em; text-transform: uppercase; color: var(--ink-3); }
+.tf .c-sub { font-family: var(--tf-type); font-size: 15px; }
+.tf-seg { border-radius: 4px; background: var(--desk); padding: 3px; }
+.tf-seg button { border-radius: 3px; color: #d6e3d6; font-family: var(--tf-type); }
+.tf-seg button[aria-pressed="true"] { background: var(--manila); color: var(--manila-ink); }
+.tf-stats .c-stat b { font-family: var(--tf-type); font-weight: 700; }
+.tf-lives.is-timer { font-family: var(--tf-type); font-size: 18px; }
+.tf-stage { height: 370px; margin: 8px -14px 16px; padding: 0; border-radius: 10px; background: radial-gradient(ellipse at 50% 40%, rgba(255, 240, 200, .14), transparent 70%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .02) 0 2px, transparent 2px 5px), linear-gradient(var(--desk), var(--desk-2)); box-shadow: inset 0 0 0 6px #5b3b22, inset 0 0 0 8px #3d2715, 0 10px 24px rgba(0, 0, 0, .2); }
+.tf-card { inset: 26px 26px 18px; border-radius: 3px 3px 6px 6px; color: var(--manila-ink); border: 0;
+  background: radial-gradient(circle at 82% 78%, transparent 26px, rgba(120, 70, 20, .16) 27px 30px, transparent 31px), linear-gradient(170deg, var(--manila), var(--manila-2));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 14px 26px -8px rgba(0, 0, 0, .55); }
+.tf-card::before { left: 18px; right: auto; top: -14px; width: 120px; height: 18px; border-radius: 6px 6px 0 0; background: var(--manila); }
+.tf-card::after { content: ''; position: absolute; right: 30px; top: -8px; width: 14px; height: 40px; border: 3px solid #9aa3ad; border-radius: 8px; pointer-events: none; }
+.tf-card { overflow: visible; }
+.tf-card .pin { display: none; }
+.tf-card.back, .tf-card.back2 { background: linear-gradient(170deg, #e4bc70, #cf9f50); }
+:root[data-theme="dark"] .tf-card { filter: none; }
+.tf-num { font-family: var(--tf-type); color: #7a5a2a; letter-spacing: .18em; }
+.tf-fact { font-family: var(--tf-type); font-weight: 700; letter-spacing: 0; color: #2b1d0c; }
+.tf-stamp { font-family: var(--tf-type); border-style: double; border-width: 6px; border-radius: 6px; mix-blend-mode: multiply; }
+.tf-stamp.t { color: var(--tf-good); } .tf-stamp.f { color: var(--tf-bad); }
+.tf-big-stamp { font-family: var(--tf-type); border-style: double; border-width: 7px; border-radius: 6px; mix-blend-mode: multiply; font-size: 34px; }
+.tf-big-stamp.fact { color: var(--tf-good); } .tf-big-stamp.fib { color: var(--tf-bad); }
+.tf-badge { border-radius: 3px; font-family: var(--tf-type); }
+.tf-small { color: #6b4e22; font-family: var(--tf-type); }
+.tf-why { color: #3b2a14; }
+.tf-card.is-good { box-shadow: 0 0 0 4px var(--tf-good), 0 14px 26px -8px rgba(0, 0, 0, .55); }
+.tf-card.is-bad { box-shadow: 0 0 0 4px var(--tf-bad), 0 14px 26px -8px rgba(0, 0, 0, .55); }
+.tf-btns { gap: 18px; }
+.tf-btn { position: relative; flex-direction: column; gap: 2px; padding: 34px 12px 14px; min-height: 104px; border-radius: 10px 10px 6px 6px; background: linear-gradient(#7a4e2c, #4f311b) !important; box-shadow: 0 5px 0 #2d1b0e, 0 8px 14px rgba(0, 0, 0, .25) !important; }
+.tf-btn::before { content: ''; position: absolute; left: 50%; top: -16px; width: 34px; height: 34px; margin-left: -17px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a77447, #5d3b22); box-shadow: 0 3px 0 #2d1b0e; }
+.tf-btn .ink { font: 900 26px var(--tf-type); letter-spacing: .12em; text-transform: uppercase; padding: 2px 14px; border: 4px double; border-radius: 5px; background: #f5ecd8; }
+.tf-btn.f .ink { color: var(--tf-bad); transform: rotate(-3deg); }
+.tf-btn.t .ink { color: var(--tf-good); transform: rotate(3deg); }
+.tf-btn small { color: #f0dcc0; font-family: var(--mono); }
+.tf-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #2d1b0e !important; }
+.tf-next { font-family: var(--tf-type); background: var(--desk); }
+.tf-result { background: linear-gradient(170deg, var(--manila), var(--manila-2)); color: var(--manila-ink); border: 0; border-radius: 4px; }
+.tf-result::before { display: none; }
+.tf-result .c-muted { color: #6b4e22 !important; }
+.tf-result .c-stat span { color: #6b4e22; }
+.tf-result .c-btn--ghost { color: var(--manila-ink); border-color: var(--manila-ink); background: transparent; }
+.tf-rbig { font-family: var(--tf-type); }
+.tf-ring text { fill: var(--manila-ink); }
+.tf-list div { background: rgba(255, 255, 255, .35); }
+html[data-mode="simple"] .tf-adv { display: none !important; }
+@media (max-width: 520px) {
+  .tf-stage { height: 360px; margin: 6px -8px 14px; }
+  .tf-card { inset: 22px 14px 14px; padding: 24px 14px 16px; }
+  .tf-btn { min-height: 92px; padding-top: 30px; }
+  .tf-btn .ink { font-size: 21px; padding: 2px 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .tf-hero .st1, .tf-hero .st2 { animation: none; } }

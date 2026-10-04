@@ -133,3 +133,84 @@
   .tv-catbars div { grid-template-columns: 90px 1fr 40px; }
 }
 @media (prefers-reduced-motion: reduce) { .tv-hero .bulb { animation: none; } }
+
+.tv-head, .tv-game, .tv-result { --show: #1d1050; --show-2: #34188a; --gold: #ffd54a; --hot: #ff2d6f; --cyan: #5ff2ff; --tv-type: Impact, "Haettenschweiler", "Arial Black", "Liberation Sans", sans-serif; }
+.tv-hero { filter: drop-shadow(0 12px 18px rgba(40, 10, 90, .35)); }
+.tv-hero .bulb { animation: tv-chase 1.2s steps(1) infinite; }
+.tv-hero .bulb:nth-child(3n+1) { animation-delay: .4s; }
+.tv-hero .bulb:nth-child(3n+2) { animation-delay: .8s; }
+.tv-hero .beam { transform-origin: 30px 0; animation: tv-sweep 6s ease-in-out infinite; }
+.tv-hero .beam.b2 { transform-origin: 390px 0; animation-delay: -3s; }
+.tv-hero .onair { animation: tv-onair 2s ease-in-out infinite; }
+@keyframes tv-chase { 0% { opacity: 1; } 33% { opacity: .25; } 66% { opacity: .6; } }
+@keyframes tv-sweep { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(10deg); } }
+@keyframes tv-onair { 50% { opacity: .55; } }
+.tv-head .c-title { font-family: var(--tv-type); font-weight: 400; letter-spacing: .06em; text-transform: uppercase; color: var(--hot); text-shadow: 3px 3px 0 var(--gold); }
+.tv-label { font-family: var(--tv-type); font-weight: 400; letter-spacing: .24em; }
+.tv-mode { border: 0; background: linear-gradient(var(--show-2), var(--show)); color: #fff; border-radius: 12px; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .12), 0 5px 0 #0e0630; }
+.tv-mode span { color: rgba(255, 255, 255, .72); }
+.tv-mode b { font-family: var(--tv-type); font-weight: 400; letter-spacing: .08em; font-size: 17px; text-transform: uppercase; }
+.tv-mode[aria-pressed="true"] { background: linear-gradient(#ff5a8c, var(--hot)); box-shadow: inset 0 0 0 2px var(--gold), 0 5px 0 #8a0f3a, 0 0 22px rgba(255, 45, 111, .5); }
+.tv-cat b { font-family: var(--tv-type); font-weight: 400; letter-spacing: .05em; font-size: 20px; text-transform: uppercase; }
+.tv-cat--mix { background: linear-gradient(110deg, var(--show-2), var(--hot) 55%, #ff9a2e); }
+.tv-rules span { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+
+.tv-game { max-width: 760px; }
+.tv-stage {
+  color: #fff; border-radius: 22px; padding: 18px 18px 20px;
+  background:
+    radial-gradient(60% 50% at 50% 0, color-mix(in srgb, var(--c, #6a3df0) 55%, transparent), transparent 70%),
+    linear-gradient(200deg, transparent 40%, rgba(255, 246, 200, .1) 50%, transparent 60%),
+    linear-gradient(160deg, transparent 40%, rgba(255, 246, 200, .1) 50%, transparent 60%),
+    radial-gradient(120% 60% at 50% 115%, #4a1fa8, transparent 60%),
+    linear-gradient(var(--show), #0b0526);
+  box-shadow: 0 0 0 4px #0b0526, 0 0 0 7px var(--gold), 0 0 0 9px #0b0526, 0 22px 40px rgba(20, 0, 60, .4);
+}
+.tv-stage::after { content: ''; position: absolute; inset: 7px; border-radius: 16px; pointer-events: none; background: radial-gradient(circle, var(--gold) 2.4px, transparent 3px) 0 0 / 22px 22px; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); padding: 6px; opacity: .85; animation: tv-twinkle 1.4s steps(2) infinite; }
+@keyframes tv-twinkle { 50% { opacity: .45; } }
+.tv-stage > * { position: relative; z-index: 1; }
+.tv-stats .c-stat b { color: var(--gold); font-family: var(--tv-type); font-size: 30px; text-shadow: 0 0 12px rgba(255, 213, 74, .5); }
+.tv-stats .c-stat span { color: rgba(255, 255, 255, .7); }
+.tv-timer { background: rgba(255, 255, 255, .12); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2); }
+.tv-secs { color: var(--cyan); text-shadow: 0 0 8px rgba(95, 242, 255, .6); font-size: 18px; }
+.tv-chip { background: var(--c); box-shadow: 0 0 0 2px rgba(255, 255, 255, .5); font-family: var(--tv-type); font-weight: 400; letter-spacing: .08em; text-transform: uppercase; }
+.tv-flame i { background: rgba(255, 255, 255, .2); }
+.tv-lights { position: absolute; left: 10%; right: 10%; top: 0; height: 100%; pointer-events: none; z-index: 0; background: conic-gradient(from 160deg at 15% -10%, transparent 0 10deg, rgba(255, 246, 200, .12) 14deg 22deg, transparent 26deg), conic-gradient(from 178deg at 85% -10%, transparent 0 10deg, rgba(255, 246, 200, .12) 14deg 22deg, transparent 26deg); animation: tv-lights 7s ease-in-out infinite alternate; }
+@keyframes tv-lights { to { transform: translateX(4%); } }
+.tv-card { background: linear-gradient(#170b44, #2a1478); border: 0; border-radius: 16px; box-shadow: inset 0 0 0 2px var(--cyan), inset 0 0 26px rgba(95, 242, 255, .25), 0 0 26px rgba(95, 242, 255, .18); padding: 26px 20px 20px; }
+.tv-q { color: #fff; text-align: center; font-size: clamp(20px, 3.4vw, 26px); text-shadow: 0 2px 0 rgba(0, 0, 0, .4); }
+.tv-opts { gap: 12px 14px; }
+.tv-opt {
+  --oc: #2f6bff; color: #fff; border: 0; border-radius: 999px; padding: 14px 22px 14px 12px; min-height: 64px; font-size: 17px;
+  background: linear-gradient(#271166, #170947); box-shadow: inset 0 0 0 2.5px var(--oc), 0 0 0 3px #0b0526, 0 5px 0 #05021a;
+}
+.tv-opt:nth-child(1) { --oc: #ff4d6d; } .tv-opt:nth-child(2) { --oc: #3d8bff; } .tv-opt:nth-child(3) { --oc: #ffc233; } .tv-opt:nth-child(4) { --oc: #2fdc8c; }
+.tv-opt .k { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 0; padding: 0; background: var(--oc); color: #120634; position: relative; }
+.tv-opt .k b { font: 400 19px var(--tv-type); }
+.tv-opt .k small { position: absolute; right: -4px; bottom: -4px; font: 700 10px var(--mono); background: #fff; color: #120634; border-radius: 4px; padding: 0 3px; }
+.tv-opt:hover:not(:disabled) { background: linear-gradient(#3a1a90, #22106a); box-shadow: inset 0 0 0 3px var(--oc), 0 0 0 3px #0b0526, 0 5px 0 #05021a, 0 0 22px color-mix(in srgb, var(--oc) 60%, transparent); transform: translateY(-2px); }
+.tv-opt:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 3px var(--oc), 0 0 0 3px #0b0526; }
+.tv-opt.is-good { background: linear-gradient(#22c27a, #12884f); box-shadow: inset 0 0 0 3px #b9ffd9, 0 0 0 3px #0b0526, 0 0 30px rgba(47, 220, 140, .7); animation: tv-win .9s steps(2) 1; }
+.tv-opt.is-bad { background: linear-gradient(#ff4d6d, #b5173a); box-shadow: inset 0 0 0 3px #ffd0da, 0 0 0 3px #0b0526; }
+@keyframes tv-win { 25%, 75% { filter: brightness(1.5); } 50% { filter: none; } }
+.tv-life .c-btn { background: rgba(255, 255, 255, .08); color: #fff; border-color: rgba(255, 255, 255, .4); }
+.tv-note { color: var(--gold); font-size: 16px; }
+.tv-float { color: var(--gold); text-shadow: 0 0 10px rgba(255, 213, 74, .8); font-family: var(--tv-type); }
+.tv-result .c-card { background: linear-gradient(var(--show), #0b0526); color: #fff; border: 0; box-shadow: 0 0 0 4px #0b0526, 0 0 0 7px var(--gold), 0 0 0 9px #0b0526, 0 22px 40px rgba(20, 0, 60, .35); }
+.tv-result .c-card::before { background: conic-gradient(from 180deg at 50% -20%, transparent 150deg, rgba(255, 246, 200, .18) 170deg 190deg, transparent 210deg); height: 100%; }
+.tv-result .c-card .c-title { color: var(--gold); font-family: var(--tv-type); font-weight: 400; text-transform: uppercase; letter-spacing: .08em; }
+.tv-result .c-card .c-muted, .tv-result .c-card #rQuip { color: rgba(255, 255, 255, .8) !important; }
+.tv-result .c-card .c-btn--ghost { color: #fff; border-color: #fff; background: transparent; }
+.tv-big { font-family: var(--tv-type); font-weight: 400; color: #fff; text-shadow: 0 0 20px rgba(255, 213, 74, .7), 3px 3px 0 var(--hot); }
+.tv-ring text { fill: #fff; }
+.tv-catbars span.bar { background: rgba(255, 255, 255, .15); }
+html[data-mode="simple"] .tv-adv { display: none !important; }
+html[data-mode="simple"] .tv-opt { min-height: 74px; font-size: 18.5px; }
+@media (max-width: 520px) {
+  .tv-stage { padding: 14px 12px 16px; }
+  .tv-card { padding: 18px 12px 14px; }
+  .tv-opt { min-height: 56px; font-size: 16px; padding: 10px 16px 10px 10px; }
+  .tv-opt .k { width: 32px; height: 32px; }
+  html[data-mode="simple"] .tv-opt { min-height: 62px; font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) { .tv-hero .beam, .tv-lights, .tv-stage::after { animation: none; } }

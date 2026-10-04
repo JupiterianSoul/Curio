@@ -4,20 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Higher or Lower · Zoble</title>
-  <meta name="description" content="Two things, one number: is the second higher or lower? Twelve categories and over a thousand facts, from populations and box office to animal weights, landmark ages and planets.">
+  <meta name="description" content="Two facts step into the ring, one number walks out bigger. Twelve categories and over a thousand facts, from populations and box office to animal weights, landmark ages and planets.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="fx.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="higher-lower">
+<body data-game="higher-lower" data-modes>
   <main class="c-wrap hl">
-    <h1 class="c-title">Higher or Lower</h1>
-    <p class="c-sub">Two things. One number. Is the second one higher or lower? Twelve categories, over a thousand facts.</p>
-    <div class="hl-top">
-      <div id="oMode"></div>
+    <header class="hl-poster">
+      <p class="hl-poster__kick"><span>Tonight</span><b id="posterSub">Main event</b><span>Live</span></p>
+      <h1 class="c-title hl-title"><span class="hl-title__a">Higher</span><em>or</em><span class="hl-title__b">Lower</span></h1>
+      <p class="c-sub hl-tag" id="tag">Two facts step into the ring. Only one number walks out bigger.</p>
+    </header>
+    <div class="hl-adv">
+      <div class="hl-top"><div id="oMode"></div></div>
+      <div class="hl-cats" id="cats" role="group" aria-label="Category"></div>
     </div>
-    <div class="hl-cats" id="cats" role="group" aria-label="Category"></div>
     <div class="hl-hud">
       <div class="c-stat"><b id="streak">0</b><span id="scoreLabel">Streak</span></div>
       <div class="hl-extra" id="extra"></div>
@@ -25,11 +28,11 @@
     </div>
     <p class="hl-cat" id="cat"></p>
     <div class="hl-board" id="board">
-      <div class="hl-card" id="left"></div>
-      <div class="hl-vs" id="vs">VS</div>
-      <div class="hl-card" id="right"></div>
+      <div class="hl-card is-red" id="left"></div>
+      <div class="hl-vs" id="vs" aria-live="polite"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 2 L58 30 L84 14 L72 40 L98 50 L72 60 L84 86 L58 70 L50 98 L42 70 L16 86 L28 60 L2 50 L28 40 L16 14 L42 30Z"/></svg><span>VS</span></div>
+      <div class="hl-card is-blue" id="right"></div>
     </div>
-    <p class="hl-help c-muted">Keys: <span class="c-kbd">↑</span> higher · <span class="c-kbd">↓</span> lower · <span class="c-kbd">N</span> new game</p>
+    <p class="hl-help c-muted">Keys: <span class="c-kbd">1</span> or <span class="c-kbd">↑</span> higher · <span class="c-kbd">2</span> or <span class="c-kbd">↓</span> lower · <span class="c-kbd">N</span> new bout</p>
     <div id="tabs"></div>
   </main>
   <script src="../../games.js"></script>

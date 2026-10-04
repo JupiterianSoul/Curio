@@ -2,7 +2,9 @@
   const C = window.Curio;
   const $ = (id) => document.getElementById(id);
   const FACTS = window.TF_FACTS.map((f, i) => ({ s: f[0], v: f[1], why: f[2], id: i }));
-  const MODES = { classic: { lives: 3 }, sudden: { lives: 1 }, speed: { lives: 0, clock: 60 }, daily: { lives: 0, count: 10 } };
+  const MODES = { classic: { lives: 3 }, sudden: { lives: 1 }, speed: { lives: 0, clock: 60 }, daily: { lives: 0, count: 10 }, simple: { lives: 0, count: 10 } };
+  const SIMPLE = C.simple;
+  const tenRound = () => mode === 'daily' || mode === 'simple';
   const BADGES = [
     ['first', '🔎', 'Case Opened', 'Finish a game'],
     ['s10', '🧐', 'Fib Finder', '10 correct in one Classic game'],
@@ -40,11 +42,19 @@
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
   }
+  function thunk() {
+    if (C.muted) return;
+    const ac = C.audioContext(); if (!ac) return;
+    const len = Math.floor(ac.sampleRate * 0.12), b = ac.createBuffer(1, len, ac.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < len; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = b; fl.type = 'lowpass'; fl.frequency.value = 420; g.gain.value = 1.4; s.connect(fl).connect(g).connect(ac.destination); s.start();
+  }
   const buzz = (ms) => { try { navigator.vibrate?.(ms); } catch {} };
 
-  let mode = data.mode;
+  let mode = SIMPLE ? 'simple' : data.mode;
   let deck = [], cur = null, n = 0, score = 0, streak = 0, bestStreak = 0, lives = 3, phase = 'ask', log = [], clockLeft = 60, raf = 0, last = 0, newBadges = [];
-  const bestKey = () => mode === 'classic' ? 'score' : mode === 'daily' ? `daily-${today()}` : mode;
+  const bestKey = () => mode === 'simple' ? 'simple' : mode === 'classic' ? 'score' : mode === 'daily' ? `daily-${today()}` : mode;
 
   function buildDeck() {
     if (mode === 'daily') {
@@ -70,7 +80,8 @@
   const paintBest = () => { const b = C.getBest(bestKey()); $('sBest').textContent = b == null ? '-' : b; };
   function paintLives() {
     const el = $('lives');
-    el.classList.toggle('is-timer', mode === 'speed' || mode === 'daily');
+    el.classList.toggle('is-timer', mode === 'speed' || tenRound());
+    if (mode === 'simple') { el.textContent = `🗂️ Case ${Math.min(n, 10)} of 10`; return; }
     if (mode === 'speed') { el.textContent = `⏱️ ${Math.ceil(Math.max(0, clockLeft))}s`; return; }
     if (mode === 'daily') { el.textContent = `📅 ${Math.min(n, 10)}/10`; return; }
     el.innerHTML = '';
@@ -103,7 +114,7 @@
   }
 
   function nextFact() {
-    if (mode === 'daily' && n >= 10) return finish();
+    if (tenRound() && n >= 10) return finish();
     if (!deck.length) deck = buildDeck();
     cur = deck.shift(); n++;
     remember(cur.id);
@@ -113,7 +124,7 @@
     void card.offsetWidth; card.classList.add('in');
     $('stT').style.opacity = 0; $('stF').style.opacity = 0;
     const body = $('cardBody'); body.innerHTML = '';
-    const num = document.createElement('div'); num.className = 'tf-num'; num.textContent = mode === 'daily' ? `Daily fact ${n} of 10` : `Fact #${n}`;
+    const num = document.createElement('div'); num.className = 'tf-num'; num.textContent = mode === 'daily' ? `Daily case ${n} of 10` : `Case file #${String(n).padStart(3, '0')}`;
     const p = document.createElement('p'); p.className = 'tf-fact'; p.textContent = cur.s;
     body.append(num, p);
     fitText(p);
@@ -138,13 +149,13 @@
     if (ok) {
       score++; streak++; bestStreak = Math.max(bestStreak, streak);
       bump('sScore', score); bump('sStreak', streak);
-      tone(660, .08, 'triangle', .12); tone(990, .12, 'triangle', .1, .09);
+      thunk(); tone(784, .1, 'triangle', .08, .08); tone(1175, .14, 'triangle', .07, .16);
       if (streak % 10 === 0) { C.toast(`🔥 ${streak} in a row!`); C.confetti(50); }
       const f = document.createElement('div'); f.className = 'tf-float'; f.textContent = streak >= 5 ? `+1 🔥${streak}` : '+1'; $('stage').append(f); setTimeout(() => f.remove(), 900);
     } else {
       streak = 0; $('sStreak').textContent = 0;
       if (mode === 'speed') clockLeft -= 5; else if (MODES[mode].lives) lives--;
-      tone(170, .3, 'sawtooth', .09); buzz(70);
+      thunk(); tone(196, .28, 'triangle', .1, .06); tone(147, .4, 'triangle', .1, .22); buzz(70);
     }
     paintLives();
     if (mode === 'speed') {
@@ -182,14 +193,14 @@
     body.append(v, fact, why);
     tone(ok ? 1200 : 300, .08, 'square', .04, .05);
     $('btns').hidden = true; $('next').hidden = false;
-    const over = (MODES[mode].lives && lives <= 0) || (mode === 'daily' && n >= 10);
-    $('next').textContent = over ? 'See results →' : 'Next fact →';
+    const over = (MODES[mode].lives && lives <= 0) || (tenRound() && n >= 10);
+    $('next').textContent = over ? 'See results →' : 'Next case →';
     $('next').focus({ preventScroll: true });
   }
 
   function proceed() {
     if (phase !== 'shown') return;
-    if ((MODES[mode].lives && lives <= 0) || (mode === 'daily' && n >= 10)) return finish();
+    if ((MODES[mode].lives && lives <= 0) || (tenRound() && n >= 10)) return finish();
     nextFact();
   }
 
@@ -228,14 +239,14 @@
     $('ring').innerHTML = `<circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="13"/><circle class="fg" cx="70" cy="70" r="${r}" fill="none" stroke="${frac >= .8 ? 'var(--good)' : frac >= .5 ? 'var(--warn)' : 'var(--bad)'}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L}" transform="rotate(-90 70 70)"/><text x="70" y="76" text-anchor="middle" font-size="26" font-weight="900" fill="var(--ink)" font-family="system-ui, sans-serif">${Math.round(frac * 100)}%</text>`;
     requestAnimationFrame(() => requestAnimationFrame(() => { const fg = $('ring').querySelector('.fg'); if (fg) fg.style.strokeDashoffset = L * (1 - frac); }));
     const isPB = isNew && before != null && score > 0;
-    $('rTitle').textContent = isPB ? `🏆 ${score} correct` : `${score} correct`;
-    $('rQuip').textContent = (isPB ? 'New personal best! ' : '') + (score >= 30 ? 'Encyclopaedic. Are you a librarian?' : score >= 15 ? 'A finely tuned nonsense detector.' : score >= 7 ? 'Pretty good at sniffing out fibs.' : 'The internet would fool you too. Try again!');
+    $('rTitle').textContent = mode === 'simple' ? `${score}/10 cases closed` : isPB ? `🏆 ${score} correct` : `${score} correct`;
+    $('rQuip').textContent = (isPB ? 'New personal best! ' : '') + (mode === 'simple' ? (score === 10 ? 'Not a single fib got past you, detective.' : score >= 7 ? 'Sharp eyes. The bureau is impressed.' : score >= 4 ? 'A few fibs slipped through. Coffee and another case?' : 'The fibbers had a field day. Rematch?') : score >= 30 ? 'Encyclopaedic. Are you a librarian?' : score >= 15 ? 'A finely tuned nonsense detector.' : score >= 7 ? 'Pretty good at sniffing out fibs.' : 'The internet would fool you too. Try again!');
     $('rStats').innerHTML = '';
     [[log.length, 'Answered'], [bestStreak, 'Best streak'], [best, 'Best here'], [sb.best, 'Best streak ever']].forEach(([v, l]) => { const d = document.createElement('div'); d.className = 'c-stat'; const b = document.createElement('b'); b.textContent = v; const s = document.createElement('span'); s.textContent = l; d.append(b, s); $('rStats').append(d); });
     $('rBadges').innerHTML = '';
     newBadges.forEach((bd, i) => { const s = document.createElement('span'); s.textContent = `${bd[1]} ${bd[2]}`; s.style.animationDelay = `${.3 + i * .15}s`; $('rBadges').append(s); });
     const list = $('rList'); list.innerHTML = '';
-    log.filter((l) => !l.ok || mode === 'speed' || mode === 'daily').forEach((l) => {
+    log.filter((l) => !l.ok || mode === 'speed' || tenRound()).forEach((l) => {
       const d = document.createElement('div');
       const b = document.createElement('b'); b.textContent = l.ok ? '✅' : '❌';
       const t = document.createElement('span'); t.textContent = `${l.f.s} ${l.f.v ? 'TRUE' : 'FALSE'}: ${l.f.why}`;
@@ -288,9 +299,9 @@
   $('bT').addEventListener('click', () => answer(true));
   $('next').addEventListener('click', proceed);
   $('again').addEventListener('click', newGame);
-  $('modes').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.m; data.mode = mode; save(); newGame(); });
+  $('modes').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || SIMPLE) return; mode = b.dataset.m; data.mode = mode; save(); newGame(); });
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Zoble True or False, daily ${today()}` : `Zoble True or False, ${({ classic: 'Classic', sudden: 'Sudden death', speed: '60s Speed' })[mode]}`;
+    const head = mode === 'simple' ? 'Zoble True or False, ten cases' : mode === 'daily' ? `Zoble True or False, daily ${today()}` : `Zoble True or False, ${({ classic: 'Classic', sudden: 'Sudden death', speed: '60s Speed' })[mode]}`;
     const t = `${head}\n🔎 ${score} correct, best streak ${bestStreak}\n${log.map((l) => l.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(`${score} correct`));
   });
@@ -302,8 +313,8 @@
   document.addEventListener('keydown', (e) => {
     if (document.querySelector('.curio-modal') || e.metaKey || e.ctrlKey || e.altKey || $('play').hidden) return;
     if (phase === 'ask') {
-      if (e.key === 'ArrowLeft' || e.key === 'f' || e.key === 'F') { e.preventDefault(); answer(false); }
-      else if (e.key === 'ArrowRight' || e.key === 't' || e.key === 'T') { e.preventDefault(); answer(true); }
+      if (e.key === 'ArrowLeft' || e.key === '1' || e.key === 'f' || e.key === 'F') { e.preventDefault(); answer(false); }
+      else if (e.key === 'ArrowRight' || e.key === '2' || e.key === 't' || e.key === 'T') { e.preventDefault(); answer(true); }
     } else if (phase === 'shown' && mode !== 'speed' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter')) {
       e.preventDefault(); proceed();
     }

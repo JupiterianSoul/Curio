@@ -71,6 +71,11 @@
   const isClose = (cat, a, b) => (cat.close ? cat.close(a, b) : Math.max(a, b) / Math.min(a, b) < cat.minR);
 
   const MODES = [{ v: 'streak', label: 'Streak', sub: 'one miss ends it' }, { v: 'lives', label: '3 Lives', sub: 'three strikes' }, { v: 'time', label: 'Time attack', sub: '60 seconds' }, { v: 'daily', label: 'Daily', sub: '12 questions' }];
+  const SIMPLE = C.simple;
+  const SIMPLE_KEYS = ['pop', 'tall', 'peak', 'animals', 'space', 'films', 'rivers', 'speeds'];
+  const ROUNDS = 10;
+  let bouts = 0;
+  if (SIMPLE) document.getElementById('tag').textContent = 'Ten quick rounds. Pick the bigger number. No setup, no fuss.';
   const settings = FX.load('settings', 1, { mode: 'streak', cat: C.store.get('hl-mode', 'mix') });
   if (!MODES.some((m) => m.v === settings.mode)) settings.mode = 'streak';
   if (settings.cat !== 'mix' && !CATS[settings.cat]) settings.cat = 'mix';
@@ -97,8 +102,30 @@
     { id: 'games', emoji: '🎲', tier: 'silver', name: 'Regular', desc: 'Play 25 games' }
   ]);
 
-  const L = $('left'), R = $('right'), vs = $('vs'), board = $('board');
-  let shownSec = -1, mode = settings.mode, catKey, left, right, score = 0, run = 0, catRun = 0, busy = false, used = new Set(), gi = 0, lives = 3, timeLeft = 0, timerRaf = 0, lastT = 0, rand = Math.random, dailyQ = 0, dailyMarks = [], over = false;
+  const L = $('left'), R = $('right'), vs = $('vs'), vsText = vs.querySelector('span'), board = $('board');
+  function bell(n = 1) {
+    const ac = C.muted ? null : C.audioContext(); if (!ac) return;
+    for (let k = 0; k < n; k++) {
+      const t = ac.currentTime + k * 0.32;
+      [[1180, 0.16], [2770, 0.06], [3910, 0.03]].forEach(([f, v]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1.25);
+      });
+    }
+  }
+  function crowd(dur, from, to, vol) {
+    const ac = C.muted ? null : C.audioContext(); if (!ac) return;
+    const len = Math.floor(ac.sampleRate * dur), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin((Math.PI * i) / len);
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(), t = ac.currentTime;
+    s.buffer = buf; f.type = 'bandpass'; f.Q.value = 1.4; f.frequency.setValueAtTime(from, t); f.frequency.linearRampToValueAtTime(to, t + dur);
+    g.gain.value = vol; s.connect(f).connect(g).connect(ac.destination); s.start(t);
+  }
+  const cheer = () => crowd(0.7, 900, 1500, 0.22);
+  const groan = () => crowd(0.8, 600, 260, 0.3);
+  let shownSec = -1, mode = SIMPLE ? 'simple' : settings.mode, catKey, left, right, score = 0, run = 0, catRun = 0, busy = false, used = new Set(), gi = 0, lives = 3, timeLeft = 0, timerRaf = 0, lastT = 0, rand = Math.random, dailyQ = 0, dailyMarks = [], over = false;
 
   const pickR = (arr) => arr[Math.floor(rand() * arr.length)];
   function pickItem(cat, avoid) {
@@ -108,6 +135,7 @@
     for (let i = 0; i < 60; i++) {
       const c = pickR(src);
       if (c.name === avoid.name || isClose(cat, c.value, avoid.value)) continue;
+      if (SIMPLE && !cat.close && i < 50 && Math.max(c.value, avoid.value) / Math.min(c.value, avoid.value) < 1.6) continue;
       if (!cat.close) { const r = Math.max(c.value, avoid.value) / Math.min(c.value, avoid.value); if (r > (i < 30 ? 15 : 300)) continue; }
       return c;
     }
@@ -124,26 +152,29 @@
     $('cats').style.opacity = mode === 'daily' ? '.45' : '';
     $('cats').style.pointerEvents = mode === 'daily' ? 'none' : '';
   }
-  const bestKey = () => (mode === 'daily' ? 'daily' : `${mode}:${settings.cat}`);
+  const bestKey = () => (mode === 'simple' ? 'simple' : mode === 'daily' ? 'daily' : `${mode}:${settings.cat}`);
   const paintBest = () => { const b = stats.best[bestKey()] ?? (mode === 'streak' ? C.getBest(settings.cat) : null); $('best').textContent = b == null ? '-' : b; };
   function paintExtra() {
     const ex = $('extra');
     if (mode === 'lives') ex.innerHTML = [0, 1, 2].map((i) => `<span class="${i >= lives ? 'is-lost' : ''}">❤️</span>`).join('');
     else if (mode === 'time') ex.innerHTML = `<span class="hl-timer${timeLeft < 10000 ? ' low' : ''}">${Math.ceil(timeLeft / 1000)}s</span>`;
     else if (mode === 'daily') ex.innerHTML = `<span class="hl-timer">${Math.min(dailyQ + 1, 12)}/12</span>`;
+    else if (mode === 'simple') ex.innerHTML = `<span class="hl-rounds" role="img" aria-label="Round ${Math.min(dailyQ + 1, ROUNDS)} of ${ROUNDS}">${Array.from({ length: ROUNDS }, (_, i) => `<i class="${i < dailyMarks.length ? (dailyMarks[i] ? 'is-win' : 'is-loss') : i === dailyQ ? 'is-now' : ''}"></i>`).join('')}</span>`;
     else ex.innerHTML = '';
-    $('scoreLabel').textContent = mode === 'streak' ? 'Streak' : 'Score';
+    $('scoreLabel').textContent = mode === 'streak' ? 'Streak' : mode === 'simple' ? `Round ${Math.min(dailyQ + 1, ROUNDS)}/${ROUNDS}` : 'Score';
   }
 
   function newGame() {
     cancelAnimationFrame(timerRaf);
-    mode = settings.mode;
+    mode = SIMPLE ? 'simple' : settings.mode;
     score = 0; run = 0; catRun = 0; used = new Set(); busy = false; over = false; lives = 3; timeLeft = 60000; dailyQ = 0; dailyMarks = [];
     rand = mode === 'daily' ? FX.rng(FX.daySeed('hl')) : Math.random;
     $('streak').textContent = 0;
     renderCats(); paintBest(); paintExtra();
-    catKey = mode === 'daily' ? pickR(KEYS) : settings.cat === 'mix' ? pickR(KEYS) : settings.cat;
+    catKey = mode === 'simple' ? pickR(SIMPLE_KEYS) : mode === 'daily' ? pickR(KEYS) : settings.cat === 'mix' ? pickR(KEYS) : settings.cat;
+    $('posterSub').textContent = mode === 'simple' ? 'Ten rounds' : MODES.find((m) => m.v === mode).label;
     startCategory();
+    if (bouts++) bell(2);
     if (mode === 'time') { lastT = 0; timerRaf = requestAnimationFrame(tickTimer); }
   }
   function tickTimer(now) {
@@ -183,10 +214,12 @@
   function fill(el, it, known, grad) {
     const cat = CATS[catKey];
     el.style.setProperty('--g', G(...grad));
-    el.innerHTML = `<svg class="art" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${ART[cat.art]}</svg>${badgeHtml(it)}<div class="nm"></div><div class="sb"></div>
+    const red = el === L;
+    el.classList.toggle('is-red', red); el.classList.toggle('is-blue', !red);
+    el.innerHTML = `<div class="corner">${red ? 'Red corner' : 'Blue corner'}<small>${red ? 'the champ' : 'the challenger'}</small></div><svg class="art" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${ART[cat.art]}</svg>${badgeHtml(it)}<div class="nm"></div><div class="sb"></div>
       ${known
         ? `<div class="lead">${cat.lead}</div><div class="val">${cat.fmt(it.value)}</div><div class="unit">${cat.unit}</div>${it.note ? `<div class="note">${it.note}</div>` : ''}`
-        : `<div class="lead">${cat.lead === 'is' ? 'is it' : cat.lead}</div><div class="hl-btns"><button type="button" class="hl-btn" data-g="1">▲ ${cat.hi}</button><button type="button" class="hl-btn" data-g="-1">▼ ${cat.lo}</button></div><div class="unit">${cat.q} <span class="than"></span></div>`}`;
+        : `<div class="lead">${cat.lead === 'is' ? 'is it' : cat.lead}</div><div class="hl-btns"><button type="button" class="hl-btn" data-g="1"><kbd>1</kbd>▲ ${cat.hi}</button><button type="button" class="hl-btn" data-g="-1"><kbd>2</kbd>▼ ${cat.lo}</button></div><div class="unit">${cat.q} <span class="than"></span></div>`}`;
     el.querySelector('.nm').textContent = it.name;
     el.querySelector('.sb').textContent = it.sub;
     const than = el.querySelector('.than'); if (than) than.textContent = left.name;
@@ -197,7 +230,7 @@
     const g = CATS[catKey].grads;
     fill(L, left, true, g[gi % 4]);
     fill(R, right, false, g[(gi + 1) % 4]);
-    vs.className = 'hl-vs'; vs.textContent = 'VS';
+    vs.className = 'hl-vs'; vsText.textContent = 'VS';
     [both ? L : null, R].forEach((el) => { if (!el) return; el.classList.remove('hl-in'); void el.offsetWidth; el.classList.add('hl-in'); });
   }
 
@@ -237,9 +270,9 @@
     if (right.note) { const n = document.createElement('div'); n.className = 'note'; n.textContent = right.note; R.append(n); }
     const rt = document.createElement('div'); rt.className = 'hl-ratio'; rt.textContent = ratioText(cat, right.value, left.value); R.append(rt);
     R.classList.add(ok ? 'good' : 'bad');
-    vs.className = 'hl-vs ' + (ok ? 'good' : 'bad'); vs.textContent = ok ? '✓' : '✗';
+    vs.className = 'hl-vs ' + (ok ? 'good' : 'bad'); vsText.textContent = ok ? 'KO!' : 'MISS';
     if (ok) {
-      FX.sfx.good(); FX.buzz(12);
+      FX.sfx.good(); cheer(); FX.buzz(12);
       score++; run++; catRun++; stats.right++;
       const s = $('streak'); s.textContent = score; s.classList.remove('bump'); void s.offsetWidth; s.classList.add('bump');
       FX.burstAt(vs, { count: 14, speed: 5, colors: ['#2ecc71', '#ffffff', '#ffd166'] });
@@ -251,11 +284,11 @@
       if (mode === 'time' && score >= 20) BADGES.unlock('time');
       if (run > 0 && run % 10 === 0) { C.toast(`🔥 ${run} in a row!`); C.confetti(60); }
     } else {
-      FX.sfx.bad(); FX.buzz([40, 30, 60]);
+      FX.sfx.bad(); groan(); FX.buzz([40, 30, 60]);
       board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake');
       run = 0; catRun = 0;
     }
-    if (mode === 'daily') dailyMarks.push(ok);
+    if (mode === 'daily' || mode === 'simple') dailyMarks.push(ok);
     saveStats();
     await wait(ok ? 1000 : 1300);
     if (!ok) {
@@ -264,6 +297,14 @@
       if (mode === 'time') { timeLeft = Math.max(0, timeLeft - 5000); FX.floatAt($('extra'), '-5s', 'var(--bad)'); paintExtra(); }
     }
     if (over) return;
+    if (mode === 'simple') {
+      dailyQ++; paintExtra();
+      if (dailyQ >= ROUNDS) return endGame('Final bell!');
+      bell(1);
+      if (dailyQ % 3 === 0 || !ok) { catKey = pickR(SIMPLE_KEYS.filter((k) => k !== catKey)); startCategory(); }
+      else { left = right; right = pickItem(cat, left); used.add(right.name); gi++; render(true); }
+      busy = false; return;
+    }
     if (mode === 'daily') {
       dailyQ++; paintExtra();
       if (dailyQ >= 12) return endGame('Daily complete!');
@@ -289,23 +330,24 @@
     const isNew = score > 0 && prev != null && score > prev;
     if (prev == null || score > prev) stats.best[k] = score;
     if (mode === 'streak') C.best(settings.cat, score);
+    if (mode === 'simple') C.best('simple', score);
     stats.games++;
-    stats.recent.unshift({ m: mode, c: mode === 'daily' ? 'daily' : settings.cat, v: score, d: Date.now() }); stats.recent.length = Math.min(12, stats.recent.length);
+    if (mode !== 'simple') stats.recent.unshift({ m: mode, c: mode === 'daily' ? 'daily' : settings.cat, v: score, d: Date.now() }); stats.recent.length = Math.min(12, stats.recent.length);
     if (mode === 'daily') { const dk = FX.dayKey(); stats.daily[dk] = Math.max(stats.daily[dk] || 0, score); BADGES.unlock('daily'); if (score === 12) BADGES.unlock('dailyp'); }
     saveStats();
     BADGES.unlock('first');
     if (stats.games >= 25) BADGES.unlock('games');
     paintBest(); tabsApi.refresh();
     if (isNew) { C.confetti(); FX.sfx.fanfare(); } else FX.sfx.lose();
-    const quip = score >= 30 ? 'Walking almanac.' : score >= 20 ? 'Seriously impressive.' : score >= 10 ? 'Great run!' : score >= 5 ? 'Nice going.' : score >= 2 ? 'A decent start.' : 'Ouch. Shake it off.';
+    const quip = mode === 'simple' ? (score === 10 ? 'Flawless victory. Undisputed champ.' : score >= 8 ? 'Won on points, comfortably.' : score >= 6 ? 'Split decision, but you take it.' : score >= 4 ? 'Went the distance. Respect.' : 'Saved by the bell. Rematch?') : score >= 30 ? 'Walking almanac.' : score >= 20 ? 'Seriously impressive.' : score >= 10 ? 'Great run!' : score >= 5 ? 'Nice going.' : score >= 2 ? 'A decent start.' : 'Ouch. Shake it off.';
     const body = document.createElement('div');
     body.className = 'hl-res';
-    const label = mode === 'daily' ? `Daily #${FX.dayNumber()}` : `${MODES.find((m) => m.v === mode).label} · ${settings.cat === 'mix' ? 'Mixed' : CATS[settings.cat].label}`;
-    body.innerHTML = `<div>${reason}</div><div>${quip} Best: ${stats.best[k]}${isNew ? ' (new!)' : ''}</div>${mode === 'daily' ? `<div class="grid">${dailyMarks.map((x) => (x ? '🟩' : '🟥')).join('')}</div>` : ''}<div class="c-muted">${label}</div>`;
-    const v = await C.modal({ emoji: isNew ? '🏆' : score >= 10 ? '🔥' : '📉', title: `${mode === 'streak' ? 'Streak' : 'Score'}: ${score}${mode === 'daily' ? '/12' : ''}`, body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }] });
+    const label = mode === 'simple' ? 'Simple bout · 10 rounds' : mode === 'daily' ? `Daily #${FX.dayNumber()}` : `${MODES.find((m) => m.v === mode).label} · ${settings.cat === 'mix' ? 'Mixed' : CATS[settings.cat].label}`;
+    body.innerHTML = `<div>${reason}</div><div>${quip} Best: ${stats.best[k]}${isNew ? ' (new!)' : ''}</div>${mode === 'daily' || mode === 'simple' ? `<div class="grid">${dailyMarks.map((x) => (x ? '🟩' : '🟥')).join('')}</div>` : ''}<div class="c-muted">${label}</div>`;
+    const v = await C.modal({ emoji: isNew ? '🏆' : score >= 10 ? '🔥' : '📉', title: `${mode === 'streak' ? 'Streak' : 'Score'}: ${score}${mode === 'daily' ? '/12' : mode === 'simple' ? '/10' : ''}`, body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }] });
     if (v === 'share') {
-      const head = mode === 'daily' ? `Higher or Lower daily #${FX.dayNumber()}: ${score}/12` : `Higher or Lower (${label}): ${score}`;
-      FX.copy(`${head} 📈\n${mode === 'daily' ? dailyMarks.map((x) => (x ? '🟩' : '🟥')).join('') : '🟩'.repeat(Math.min(score, 20))}`);
+      const head = mode === 'simple' ? `Higher or Lower on Zoble: ${score}/10` : mode === 'daily' ? `Higher or Lower daily #${FX.dayNumber()}: ${score}/12` : `Higher or Lower (${label}): ${score}`;
+      FX.copy(`${head} 📈\n${mode === 'daily' || mode === 'simple' ? dailyMarks.map((x) => (x ? '🟩' : '🟥')).join('') : '🟩'.repeat(Math.min(score, 20))}`);
     }
     newGame();
   }
@@ -313,8 +355,8 @@
   FX.seg($('oMode'), MODES, settings.mode, (v) => { settings.mode = v; saveSettings(); newGame(); }, 'Game mode');
 
   FX.onKey((e) => {
-    if (e.key === 'ArrowUp' || e.key === 'h' || e.key === 'H') { e.preventDefault(); guess(1); }
-    else if (e.key === 'ArrowDown' || e.key === 'l' || e.key === 'L') { e.preventDefault(); guess(-1); }
+    if (e.key === 'ArrowUp' || e.key === '1' || e.key === 'h' || e.key === 'H') { e.preventDefault(); guess(1); }
+    else if (e.key === 'ArrowDown' || e.key === '2' || e.key === 'l' || e.key === 'L') { e.preventDefault(); guess(-1); }
     else if ((e.key === 'n' || e.key === 'N') && (!busy || over)) newGame();
   });
 

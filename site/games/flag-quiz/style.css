@@ -180,3 +180,81 @@
   .fq-rv { font-size: 11px; padding: 4px; }
   .fq-prompt { min-height: 170px; }
 }
+
+.fq-wrap {
+  --air-r: #d23a32; --air-b: #23489e; --card: #fbf5e6; --card-2: #f1e7cf; --card-ink: #2b2a33; --card-ink-2: #5d5a66; --pm: #4f4a7a;
+  --type: "American Typewriter", "Courier Prime", "Courier New", "Nimbus Mono PS", "Liberation Mono", ui-monospace, monospace;
+  --air: repeating-linear-gradient(-45deg, var(--air-r) 0 10px, var(--card) 10px 17px, var(--air-b) 17px 27px, var(--card) 27px 34px);
+  --perf: radial-gradient(circle 4.2px at 6px 6px, #0000 96%, #000) -6px -6px / 12px 12px round;
+}
+.fq-airmail { display: inline-flex; align-items: center; gap: 10px; font: 700 12px var(--type); letter-spacing: .32em; text-transform: uppercase; color: var(--air-b); border: 2px solid currentColor; padding: 4px 10px 4px 14px; transform: rotate(-2deg); margin-top: 4px; }
+:root[data-theme="dark"] .fq-airmail { color: #8fb0ff; }
+.fq-airmail i { width: 34px; height: 12px; background: var(--air); display: inline-block; }
+.fq-wrap .fq-hero .c-title { font-family: var(--type); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: clamp(36px, 7vw, 58px); margin: 10px 0 2px; text-shadow: 3px 3px 0 color-mix(in srgb, var(--air-r) 45%, transparent); }
+.fq-wrap .c-sub { font-family: var(--type); font-size: 15px; }
+.fq-marquee__row span { width: 70px; height: 52px; border-radius: 0; padding: 5px; background: #fff; box-shadow: none; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .2)); -webkit-mask: linear-gradient(#000 0 0) content-box, var(--perf); mask: linear-gradient(#000 0 0) content-box, var(--perf); }
+.fq-marquee__row span:nth-child(3n) { transform: rotate(-3deg); }
+.fq-marquee__row span:nth-child(4n) { transform: rotate(2deg); }
+.fq-mode { position: relative; border: 0; border-radius: 3px; background: var(--card); color: var(--card-ink); box-shadow: 0 0 0 1px var(--card-2), 3px 4px 0 rgba(0, 0, 0, .14); padding: 14px 6px 10px; overflow: hidden; }
+.fq-mode::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--air); }
+.fq-mode b { font-family: var(--type); letter-spacing: .02em; }
+.fq-mode small { color: var(--card-ink-2); }
+.fq-mode[aria-checked="true"] { background: var(--card); box-shadow: 0 0 0 3px var(--air-b), 3px 4px 0 rgba(0, 0, 0, .14); transform: rotate(-1deg); }
+.fq-label { font-family: var(--type); letter-spacing: .2em; }
+.fq-seg { border-radius: 3px; background: var(--card-2); }
+.fq-seg button { border-radius: 2px; color: var(--card-ink-2); font-family: var(--type); }
+.fq-seg button[aria-pressed="true"] { background: var(--air-b); color: #fff; }
+.fq-play { background: var(--air-r); box-shadow: 0 3px 0 #8c1f19; font-family: var(--type); letter-spacing: .1em; text-transform: uppercase; }
+.fq-modeinfo { font-family: var(--type); font-size: 14px; }
+
+.fq-hud .c-stat b { font-family: var(--type); font-weight: 700; }
+.fq-timer { border-radius: 0; height: 9px; border: 0; background: var(--card-2); }
+.fq-timer i { background: var(--air); }
+.fq-stage { position: relative; max-width: 600px; padding: 26px 22px 22px; color: var(--card-ink); background: linear-gradient(var(--card), var(--card)) padding-box, var(--air) border-box; border: 10px solid transparent; box-shadow: 0 14px 30px rgba(0, 0, 0, .18); }
+.fq-stage::before { content: 'Par avion · By air mail · Zoble post'; position: absolute; top: 6px; left: 14px; font: 700 10px var(--type); letter-spacing: .18em; text-transform: uppercase; color: var(--air-b); opacity: .8; }
+.fq-prompt { position: relative; }
+.fq-flag { width: min(340px, 74vw); padding: 11px; border-radius: 0; background: #fff; box-shadow: none; filter: drop-shadow(0 8px 12px rgba(20, 30, 60, .25)); -webkit-mask: linear-gradient(#000 0 0) content-box, var(--perf); mask: linear-gradient(#000 0 0) content-box, var(--perf); transform: rotate(-1.5deg); }
+.fq-flag.sm { width: 128px; padding: 7px; }
+.fq-flag::after { inset: 11px; }
+.fq-postmark { position: absolute; right: max(0px, calc(50% - 230px)); top: -8px; width: 112px; height: 112px; pointer-events: none; color: var(--pm); opacity: .55; transform: rotate(14deg); }
+.fq-shape path { fill: var(--air-b); stroke: #10245a; }
+.fq-name b { font-family: var(--type); color: var(--card-ink); }
+.fq-name span { background: var(--air-r); border-radius: 0; font-family: var(--type); }
+.fq-question { font-family: var(--type); color: var(--card-ink); font-size: 17px; letter-spacing: .01em; }
+.fq-opt { border: 0; border-radius: 2px; background: #fffdf6; color: var(--card-ink); box-shadow: 0 0 0 1.5px #d9cdb0, 2px 3px 0 rgba(0, 0, 0, .12); padding: 16px 12px 16px 50px; min-height: 64px; font-size: 16.5px; }
+.fq-opt::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 6px; background: var(--air); opacity: .85; }
+.fq-opt .k { left: 10px; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px dashed var(--pm); color: var(--pm); font: 700 13px var(--type); }
+.fq-opt:hover:not(:disabled) { box-shadow: 0 0 0 2px var(--air-b), 2px 3px 0 rgba(0, 0, 0, .12); transform: translateY(-2px) rotate(-.4deg); }
+.fq-opt.good { background: #e3f5e7; box-shadow: 0 0 0 3px #1d8a52; }
+.fq-opt.bad { background: #fbe1dc; box-shadow: 0 0 0 3px var(--air-r); }
+.fq-opt.flagopt { padding: 10px 14px 10px 46px; }
+.fq-opt.flagopt .fq-fl { border-radius: 0; }
+.fq-stampmark { position: absolute; left: 50%; top: 50%; z-index: 5; pointer-events: none; font: 900 clamp(22px, 5vw, 34px) var(--type); letter-spacing: .14em; text-transform: uppercase; padding: 4px 14px; border: 4px double currentColor; border-radius: 6px; mix-blend-mode: multiply; animation: fq-thunk .38s cubic-bezier(.2, 1.6, .4, 1) both; white-space: nowrap; }
+.fq-stampmark.ok { color: #18834a; --rot: -12deg; }
+.fq-stampmark.no { color: var(--air-r); --rot: 9deg; }
+@keyframes fq-thunk { 0% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(2.4); opacity: 0; } 60% { opacity: .92; } 100% { transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); opacity: .85; } }
+.fq-reveal { background: var(--card-2); color: var(--card-ink); border: 1px dashed #b9a985; border-radius: 2px; box-shadow: none; }
+.fq-reveal h3 { font-family: var(--type); }
+.fq-reveal dt { color: var(--card-ink-2); }
+.fq-mini { background: #dfe8f3; border-radius: 2px; }
+.fq-mini path { fill: #a99f86; }
+.fq-type .c-input { font-family: var(--type); background: #fffdf6; color: var(--card-ink); border-color: #b9a985; }
+.fq-bottom .fq-link { font-family: var(--type); }
+.fq-rcard { position: relative; border-radius: 2px; background: linear-gradient(var(--card), var(--card)) padding-box, var(--air) border-box; border: 10px solid transparent; color: var(--card-ink); }
+.fq-rcard .c-btn--ghost { color: var(--card-ink); border-color: var(--card-ink); }
+.fq-rtitle { font-family: var(--type); text-transform: uppercase; letter-spacing: .06em; }
+.fq-rbig { font-family: var(--type); color: var(--air-b); }
+.fq-rstats div { background: var(--card-2); border-radius: 2px; }
+.fq-rstats span { color: var(--card-ink-2); }
+.fq-rmsg { color: var(--card-ink-2); font-family: var(--type); font-size: 14px; }
+.fq-rv { border-radius: 2px; }
+.fq-h3 { font-family: var(--type); letter-spacing: .2em; }
+html[data-mode="simple"] .fq-adv { display: none !important; }
+html[data-mode="simple"] .fq-opt { min-height: 74px; font-size: 18px; }
+@media (max-width: 560px) {
+  .fq-stage { padding: 22px 10px 14px; border-width: 8px; margin: 0 -6px; }
+  .fq-opt { padding: 12px 8px 12px 44px; min-height: 58px; font-size: 14.5px; }
+  .fq-opt .k { width: 24px; height: 24px; left: 8px; }
+  .fq-postmark { width: 80px; height: 80px; right: -6px; top: -14px; }
+  html[data-mode="simple"] .fq-opt { min-height: 66px; font-size: 15.5px; }
+}

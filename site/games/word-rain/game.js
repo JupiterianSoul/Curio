@@ -486,8 +486,9 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     ];
     const SKEY = 'wr2';
     const loadS = () => { const base = { v: 1, mode: 'classic', pack: 'mixed', diff: 'normal', ach: {}, packs: {}, stats: { games: 0, words: 0, chars: 0, bestWpm: 0, bestCombo: 0 }, daily: {} }; const d = Curio.store.get(SKEY, null); return d && d.v === 1 ? { ...base, ...d, stats: { ...base.stats, ...(d.stats || {}) } } : base; };
-    const S = loadS();
-    const save = () => Curio.store.set(SKEY, S);
+    const SIMPLE = Curio.simple;
+    const S = SIMPLE ? { ...loadS(), mode: 'sprint', pack: 'mixed', diff: 'easy' } : loadS();
+    const save = () => Curio.store.set(SKEY, SIMPLE ? { ...loadS(), stats: S.stats, ach: S.ach, packs: S.packs, daily: S.daily } : S);
     const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
     let rnd = Math.random;
     const pickR = (arr) => arr[Math.floor(rnd() * arr.length)];
@@ -500,7 +501,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         width: 800, height: H, reset, update, draw, pointer, idle, start: onStart,
         size: (w, h) => ({ w: Math.round(Math.max(340, Math.min(1000, H * w / h))), h: H })
     });
-    const bestKey = () => (S.mode === 'classic' ? 'score' : S.mode === 'daily' ? 'daily-' + today() : S.mode);
+    const bestKey = () => (SIMPLE ? 'simple' : S.mode === 'classic' ? 'score' : S.mode === 'daily' ? 'daily-' + today() : S.mode);
     A.bestKey = bestKey();
     const measure = A.ctx;
     function textW(s) {
@@ -569,7 +570,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         if (a && A.state === 'play') Curio.toast(`🏅 ${a.name}`);
     }
     function pickWord() {
-        const weights = [1, level >= 2 ? Math.min(1.2, (level - 1) * 0.4) : 0, level >= 4 ? Math.min(1, (level - 3) * 0.3) : 0, level >= 6 ? Math.min(0.8, (level - 5) * 0.2) : 0];
+        const weights = SIMPLE ? [1, level >= 2 ? 0.6 : 0, 0, 0] : [1, level >= 2 ? Math.min(1.2, (level - 1) * 0.4) : 0, level >= 4 ? Math.min(1, (level - 3) * 0.3) : 0, level >= 6 ? Math.min(0.8, (level - 5) * 0.2) : 0];
         let r = rnd() * weights.reduce((a, b) => a + b, 0), t = 0;
         while (t < 3 && r > weights[t]) { r -= weights[t]; t++; }
         let w;
@@ -755,7 +756,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             const before = Math.ceil(timeLeft);
             timeLeft -= dt;
             if (Math.ceil(timeLeft) !== before) { hud(); if (timeLeft < 5.5 && timeLeft > 0) A.beep(880, 0.04, 'square', 0.04); }
-            if (timeLeft <= 0) { finish(S.mode === 'daily' ? 'Daily rain over' : 'Time!', '⏱️'); return; }
+            if (timeLeft <= 0) { finish(SIMPLE ? 'The shower passes' : S.mode === 'daily' ? 'Daily rain over' : 'Time!', SIMPLE ? '🌈' : '⏱️'); return; }
         }
         spawnT -= dt * (slowT > 0 ? 0.5 : 1);
         if (spawnT <= 0) {
@@ -932,6 +933,16 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             g.ellipse((i + 0.5) * W / 4 + ((i * 37) % 30), GROUND + 24, 40 + puddle * 50, 6 + puddle * 3, 0, 0, 7);
             g.fill();
         }
+        {
+            const wx = ((A.time * 22) % (W + 120)) - 60, wy = GROUND + 2, step = Math.sin(A.time * 7);
+            g.strokeStyle = dark ? '#c9d6ea' : '#2a3448'; g.lineWidth = 3; g.lineCap = 'round';
+            g.beginPath(); g.moveTo(wx, wy - 16); g.lineTo(wx - 4 * step, wy); g.moveTo(wx, wy - 16); g.lineTo(wx + 4 * step, wy); g.stroke();
+            g.fillStyle = '#ffd23f'; rrect(g, wx - 6, wy - 34, 12, 20, 5); g.fill();
+            g.fillStyle = dark ? '#f2e0c8' : '#f6d2b0'; g.beginPath(); g.arc(wx, wy - 39, 5, 0, 7); g.fill();
+            g.beginPath(); g.moveTo(wx + 2, wy - 30); g.lineTo(wx + 4, wy - 56); g.stroke();
+            g.fillStyle = '#ff5a36'; g.beginPath(); g.moveTo(wx - 18, wy - 52); g.quadraticCurveTo(wx + 4, wy - 78, wx + 26, wy - 52); g.closePath(); g.fill();
+            g.lineCap = 'butt';
+        }
         for (const s of splashes) {
             g.strokeStyle = `rgba(200,230,255,${1 - s.t / 0.8})`;
             g.lineWidth = 2;
@@ -963,7 +974,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             g.globalAlpha = Math.min(1, 3 - playT);
             g.font = `700 16px ${FONT}`;
             g.fillStyle = '#ffffff';
-            g.fillText(S.mode === 'zen' ? 'Zen mode: no lives, just rain. Pause and pick Menu to stop.' : 'Type the words before they hit the grass', W / 2, GROUND - 20);
+            g.fillText(SIMPLE ? 'Type the words before they land!' : S.mode === 'zen' ? 'Zen mode: no lives, just rain. Pause and pick Menu to stop.' : 'Type the words before they hit the grass', W / 2, GROUND - 20);
             g.globalAlpha = 1;
         }
         g.restore();
@@ -992,7 +1003,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     }));
     document.querySelector('[data-share]').addEventListener('click', () => {
         const r = lastResult || { wpm: 0, acc: 100, cleared: 0 };
-        const what = S.mode === 'daily' ? `Daily ${today()}` : S.mode === 'sprint' ? '60s Sprint' : S.mode === 'zen' ? 'Zen' : 'Classic';
+        const what = SIMPLE ? 'One minute shower' : S.mode === 'daily' ? `Daily ${today()}` : S.mode === 'sprint' ? '60s Sprint' : S.mode === 'zen' ? 'Zen' : 'Classic';
         const txt = `Zoble Word Rain · ${what} (${packId()})\n🌧️ ${A.score} points, ${r.cleared} words, ${r.wpm} wpm, ${r.acc}% accuracy`;
         (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
     });
@@ -1017,7 +1028,8 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     const vv = window.visualViewport;
     const fitVV = () => {
         if (!vv) return;
-        const h = Math.round(vv.height - 52);
+        const barH = parseFloat(getComputedStyle(document.body).paddingTop) || 0;
+        const h = Math.round(vv.height - barH);
         if (vv.height < innerHeight - 80) wrap.style.height = h + 'px';
         else wrap.style.height = '';
         window.scrollTo(0, 0);
@@ -1033,6 +1045,13 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         setTime(t) { timeLeft = t; },
         set(k, v) { S[k] = v; paintMenu(); }
     });
+    if (SIMPLE) {
+        document.querySelector('#ov-menu .c-sub').textContent = 'A one minute shower of easy words. Type each one before it splashes down. Press Play, or just start typing.';
+        addEventListener('keydown', (e) => {
+            if (A.state !== 'menu' || e.metaKey || e.ctrlKey || e.altKey || !/^[a-zA-Z]$/.test(e.key)) return;
+            e.preventDefault(); A.start(); input.value = e.key.toLowerCase(); onInput();
+        });
+    }
     reset();
     paintMenu();
     A.boot();

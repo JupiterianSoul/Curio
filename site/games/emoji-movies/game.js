@@ -42,15 +42,27 @@
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
   }
+  function noise(d, f, vol, type, when = 0) {
+    if (C.muted) return;
+    const ac = C.audioContext(); if (!ac) return;
+    const len = Math.floor(ac.sampleRate * d), b = ac.createBuffer(1, len, ac.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < len; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = b; fl.type = type; fl.frequency.value = f; g.gain.value = vol; s.connect(fl).connect(g).connect(ac.destination); s.start(ac.currentTime + when);
+  }
+  const tear = () => { noise(0.09, 3200, 0.25, 'highpass'); noise(0.06, 1800, 0.2, 'bandpass', 0.07); };
+  const projector = () => { for (let i = 0; i < 6; i++) noise(0.02, 2400, 0.12, 'bandpass', i * 0.06); };
   const buzz = (ms) => { try { navigator.vibrate?.(ms); } catch {} };
   const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
   const graphemes = (s) => seg ? [...seg.segment(s)].map((x) => x.segment) : Array.from(s);
 
-  let set = data.set, mode = data.mode, input = data.input;
+  const SIMPLE = C.simple;
+  let set = SIMPLE ? 'films' : data.set, mode = SIMPLE ? 'classic' : data.mode, input = SIMPLE ? 'choice' : data.input;
+  if (SIMPLE) document.getElementById('tag').textContent = 'Ten films told in emoji. Pick the right ticket. Popcorn optional.';
   let deck = [], n = 0, score = 0, cur = null, revealed = new Set(), hints = 0, busy = false, results = [], wrongs = 0, streak = 0, bestStreak = 0, hintsUsed = 0;
   let rushLeft = 90, raf = 0, last = 0, running = false, newBadges = [];
   const rounds = () => mode === 'classic' ? 10 : mode === 'daily' ? 5 : Infinity;
-  const bestKey = () => mode === 'daily' ? `daily-${today()}` : mode === 'rush' ? `rush-${set}` : (input === 'choice' ? `${set}-pick` : set);
+  const bestKey = () => SIMPLE ? 'simple' : mode === 'daily' ? `daily-${today()}` : mode === 'rush' ? `rush-${set}` : (input === 'choice' ? `${set}-pick` : set);
   const kindOf = (p) => p.set ? SETS[p.set][1] : SETS[set][1];
 
   const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ')
@@ -155,7 +167,7 @@
       graphemes(cur[0]).forEach((g, i) => { const s = document.createElement('span'); s.textContent = g; s.style.animationDelay = `${.15 + i * .12}s`; e.append(s); });
       e.setAttribute('aria-label', `Emoji clue: ${cur[0]}`);
       th.classList.remove('is-closed');
-      tone(330, .08, 'triangle', .06); tone(440, .1, 'triangle', .06, .08);
+      projector();
     }, mode === 'rush' ? 120 : 380);
     $('screen').classList.remove('win');
     $('msg').textContent = ''; $('msg').className = 'em-msg';
@@ -174,7 +186,7 @@
     opts.forEach((o, i) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'em-choice'; b.dataset.v = o;
-      b.innerHTML = `<span class="k">${i + 1}</span><span class="t"></span>`;
+      b.innerHTML = `<span class="k">${i + 1}</span><span class="t"></span><span class="adm" aria-hidden="true">Admit one</span>`;
       b.querySelector('.t').textContent = o;
       b.addEventListener('click', () => pickChoice(b));
       box.append(b);
@@ -272,7 +284,7 @@
     $('screen').classList.add('win');
     const f = document.createElement('div'); f.className = 'em-float'; f.textContent = `+${pts}`; $('theatre').append(f); setTimeout(() => f.remove(), 1000);
     msg(C.pick(['🎉 Yes! ', '🍿 Got it! ', '⭐ Bravo! ', '🎬 That is a wrap! ']) + cur[1] + (bonus ? ` · 🔥 streak +${bonus}` : ''), 'good');
-    tone(660, .08, 'triangle', .1); tone(880, .08, 'triangle', .1, .09); tone(1320, .16, 'triangle', .09, .18);
+    tear(); tone(784, .12, 'triangle', .09, .06); tone(1047, .12, 'triangle', .09, .16); tone(1568, .3, 'sine', .07, .26);
     if (streak % 5 === 0) C.confetti(50);
     lock();
     setTimeout(next, mode === 'rush' ? 700 : 1600);
@@ -302,8 +314,8 @@
     cancelAnimationFrame(raf);
     newBadges = [];
     const before = C.getBest(bestKey());
-    const { best, isNew } = C.best(bestKey(), score);
     const got = results.filter((r) => r.pts > 0).length;
+    const { best, isNew } = C.best(bestKey(), SIMPLE ? got : score);
     data.games++; data.bestStreak = Math.max(data.bestStreak, bestStreak);
     if (mode === 'daily') { data.daily[today()] = Math.max(data.daily[today()] || 0, score); award('daily'); }
     award('first');
@@ -321,8 +333,8 @@
     $('sBest').textContent = best;
     $('play').hidden = true; $('result').hidden = false;
     const total = results.length;
-    $('rScore').textContent = score;
-    const isPB = isNew && before != null && score > 0;
+    $('rScore').textContent = SIMPLE ? `${got}/${total}` : score;
+    const isPB = isNew && before != null && (SIMPLE ? got : score) > 0;
     $('rLine').textContent = `${got} of ${total} solved · best streak ${bestStreak} · best ${best}${isPB ? ' (new!)' : ''}`;
     const frac = total ? got / total : 0;
     const stars = frac >= .95 ? 5 : frac >= .75 ? 4 : frac >= .5 ? 3 : frac >= .25 ? 2 : 1;
@@ -371,7 +383,7 @@
   $('skip').addEventListener('click', skip);
   $('again').addEventListener('click', start);
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Zoble Emoji Movies, daily ${today()}` : `Zoble Emoji Movies, ${mode === 'rush' ? '90s Rush' : 'Classic'} (${SETS[set][0].slice(3)})`;
+    const head = SIMPLE ? 'Zoble Emoji Movies, ten films' : mode === 'daily' ? `Zoble Emoji Movies, daily ${today()}` : `Zoble Emoji Movies, ${mode === 'rush' ? '90s Rush' : 'Classic'} (${SETS[set][0].slice(3)})`;
     const t = `${head}\n🍿 ${score} points\n${results.map((r) => r.pts ? '🟩' : '🟥').join('')}\n${results.slice(0, 3).map((r) => r.e).join('  ')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(`${score} points`));
   });

@@ -9,14 +9,18 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="emoji-movies">
+<body data-game="emoji-movies" data-modes>
   <main class="c-wrap em">
-    <h1 class="c-title">Emoji Movies</h1>
-    <p class="c-sub">Lights down, emoji up. Name the film, show, song or book. Hints reveal letters but nibble your points.</p>
-    <div class="em-row">
+    <header class="em-marquee">
+      <div class="em-marquee__cap" aria-hidden="true">Now showing</div>
+      <h1 class="c-title em-board"><span>Emoji</span> <span>Movies</span></h1>
+      <div class="em-marquee__feet" aria-hidden="true"><i></i><i></i></div>
+    </header>
+    <p class="c-sub em-tag" id="tag">Lights down, emoji up. Name the film, show, song or book. Hints reveal letters but nibble your points.</p>
+    <div class="em-row em-adv">
       <div class="em-seg" id="sets" role="group" aria-label="Puzzle set"></div>
     </div>
-    <div class="em-row">
+    <div class="em-row em-adv">
       <div class="em-seg" id="modes" role="group" aria-label="Mode">
         <button type="button" data-m="classic">🎬 Classic 10</button>
         <button type="button" data-m="rush">⏱️ 90s Rush</button>
@@ -79,7 +83,7 @@
       </div>
     </section>
 
-    <section class="c-card em-panel">
+    <section class="c-card em-panel em-adv">
       <div class="em-ptabs" role="tablist">
         <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
         <button type="button" role="tab" data-tab="stats" aria-selected="false">Stats</button>

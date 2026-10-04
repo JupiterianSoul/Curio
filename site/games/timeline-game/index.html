@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="timeline-game">
+<body data-game="timeline-game" data-modes>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <linearGradient id="g-world" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b267"/><stop offset="1" stop-color="#fbe3c0"/></linearGradient>
@@ -38,20 +38,21 @@
           <div class="tl-fan__card" style="--r:0deg;--x:0px"><svg><use href="#art-space"/></svg><b>1969</b></div>
           <div class="tl-fan__card" style="--r:14deg;--x:70px"><svg><use href="#art-world"/></svg><b>1066</b></div>
         </div>
-        <h1 class="c-title">Timeline</h1>
-        <p class="c-sub">Drop each moment where it belongs in history. 539 events, 14 decks, one very long time.</p>
+        <div class="tl-banner"><small>The Hall of When</small><h1 class="c-title">Timeline</h1></div>
+        <p class="c-sub">Hang each moment where it belongs on the gallery wall. 539 exhibits, 14 wings, one very long corridor.</p>
       </div>
       <div class="tl-modes" role="radiogroup" aria-label="Mode"></div>
-      <h2 class="tl-h2">Pick a deck</h2>
+      <h2 class="tl-h2">Choose a wing</h2>
       <div class="tl-decks" id="decks"></div>
       <div class="tl-go">
         <button class="c-btn tl-play" type="button" id="play">Play</button>
-        <button class="c-btn c-btn--ghost" type="button" id="open-stats">Badges &amp; stats</button>
+        <button class="c-btn c-btn--ghost tl-adv" type="button" id="open-stats">Badges &amp; stats</button>
       </div>
-      <p class="tl-help c-muted">Drag the card into your timeline, tap a gap, or use <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> and <span class="c-kbd">Enter</span>. <span class="c-kbd">H</span> uses a hint.</p>
+      <p class="tl-help c-muted">Drag the exhibit onto the wall, tap a gap, press its number key, or use <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> and <span class="c-kbd">Enter</span>. <span class="c-kbd">H</span> asks the curator for a hint.</p>
     </section>
 
     <section id="game" class="tl-game" hidden>
+      <div class="tl-hero"><div class="tl-banner tl-banner--sm"><small>The Hall of When</small><b>Timeline</b></div></div>
       <div class="tl-hud">
         <div class="c-stat"><b id="score">0</b><span>Placed</span></div>
         <div class="c-stat"><div class="tl-lives" id="lives" aria-label="Lives"></div><span id="lives-label">Lives</span></div>
@@ -81,7 +82,7 @@
         <div class="c-row">
           <button class="c-btn" type="button" id="again">Play again</button>
           <button class="c-btn c-btn--ghost" type="button" id="share">Share</button>
-          <button class="c-btn c-btn--ghost" type="button" id="to-menu">Change deck</button>
+          <button class="c-btn c-btn--ghost tl-adv" type="button" id="to-menu">Change wing</button>
         </div>
       </div>
       <h3 class="tl-h2">Your timeline</h3>

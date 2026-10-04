@@ -67,6 +67,7 @@
     return d;
   }
   const save = load();
+  const SIMPLE = C.simple, SIMPLE_N = 10;
   const persist = () => C.store.set(SAVE_KEY, save);
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -94,7 +95,16 @@
     },
     good(s) { const b = 587 * Math.pow(2, Math.min(12, s) / 24); this.tone(b, 0.1); this.tone(b * 1.26, 0.1, 'triangle', 0.1, 0.06); this.tone(b * 1.5, 0.2, 'triangle', 0.1, 0.12); },
     bad() { this.tone(210, 0.3, 'sawtooth', 0.08, 0, 100); },
-    flip() { this.tone(500, 0.12, 'sine', 0.05, 0, 1100); },
+    flip() { this.noise(0.14, 2600, 0.08, 'highpass'); },
+    stamp(v = 1) { this.noise(0.07, 380, 0.5 * v, 'lowpass'); this.tone(90, 0.09, 'sine', 0.18 * v, 0, 60); },
+    noise(d, f, vol, type) {
+      if (C.muted) return;
+      const ac = C.audioContext(); if (!ac) return;
+      const len = Math.floor(ac.sampleRate * d), b = ac.createBuffer(1, len, ac.sampleRate), x = b.getChannelData(0);
+      for (let i = 0; i < len; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2;
+      const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+      s.buffer = b; fl.type = type; fl.frequency.value = f; g.gain.value = vol; s.connect(fl).connect(g).connect(ac.destination); s.start();
+    },
     tick() { this.tone(1300, 0.03, 'square', 0.03); },
     fanfare() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.18, 'triangle', 0.11, i * 0.08)); }
   };
@@ -162,7 +172,7 @@
     if (mode === 'neighbours') p = p.filter((c) => c.borders.length);
     return p;
   }
-  const bestKey = (mode = save.mode) => (mode === 'daily' ? `daily-${today()}` : `${mode}-${save.region}-${mode === 'type' || mode === 'blitz' ? 'x' : save.diff}`);
+  const bestKey = (mode = save.mode) => (mode === 'simple' ? 'simple' : mode === 'daily' ? `daily-${today()}` : `${mode}-${save.region}-${mode === 'type' || mode === 'blitz' ? 'x' : save.diff}`);
   function renderMenu() {
     modesEl.querySelectorAll('.fq-mode').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === save.mode)));
     const daily = save.mode === 'daily';
@@ -177,7 +187,8 @@
 
   let R = null, qTimer = 0, timerRaf = 0, autoT = 0;
   function makeQuestions() {
-    const mode = save.mode;
+    const mode = SIMPLE ? 'simple' : save.mode;
+    if (mode === 'simple') return shuffle(ALL.filter((c) => c.pop > 9e6)).slice(0, SIMPLE_N).map((c) => ({ kind: 'flags', c }));
     if (mode === 'daily') {
       const rnd = mulberry(hashStr('flags-' + today()));
       const kinds = ['flags', 'flags', 'flags', 'shapes', 'shapes', 'capitals', 'capitals', 'reverse', 'reverse', 'neighbours'];
@@ -190,7 +201,7 @@
   }
   function distractors(q, rnd = Math.random) {
     const { kind, c } = q;
-    const diff = save.mode === 'daily' ? 'normal' : save.diff;
+    const diff = SIMPLE ? 'easy' : save.mode === 'daily' ? 'normal' : save.diff;
     const keyOf = (x) => (kind === 'capitals' ? x.capital : x.code);
     let cands = ALL.filter((x) => x.code !== c.code);
     if (kind === 'neighbours') {
@@ -200,7 +211,7 @@
       return { answer: right, opts: shuffle([right, ...others.slice(0, 3)], rnd) };
     }
     if (kind === 'shapes') cands = cands.filter((x) => x.shape);
-    const region = save.mode === 'daily' ? 'world' : save.region;
+    const region = SIMPLE || save.mode === 'daily' ? 'world' : save.region;
     if (region !== 'world') { const same = cands.filter((x) => x.cont === region); if (same.length >= 3) cands = same; }
     let picks;
     if (diff === 'hard') {
@@ -220,7 +231,7 @@
   }
 
   function start() {
-    const mode = save.mode;
+    const mode = SIMPLE ? 'simple' : save.mode;
     R = { mode, qs: makeQuestions(), i: -1, score: 0, right: 0, wrong: 0, streak: 0, bestStreak: 0, log: [], newBadges: [], timeLeft: 60, typed: 0, hintsUsed: 0, start: performance.now(), done: false };
     $('h-best').textContent = C.getBest(bestKey()) ?? '-';
     $('h-qlabel').textContent = mode === 'blitz' ? 'Seconds' : 'Question';
@@ -259,7 +270,7 @@
     q.answer = d.answer; q.opts = d.opts;
     if (R.mode !== 'blitz') $('h-q').textContent = `${R.i + 1}/${R.qs.length}`;
     paintHud();
-    const prompt = $('prompt'); prompt.innerHTML = '';
+    const prompt = $('prompt'); prompt.innerHTML = '<svg class="fq-postmark" aria-hidden="true"><use href="#pmk"/></svg>';
     const kind = q.kind, c = q.c;
     let question = '';
     if (kind === 'flags' || kind === 'type') { const f = flagEl(c.code, 'fq-flag'); f.setAttribute('aria-label', 'Mystery flag'); prompt.append(f); question = kind === 'type' ? 'Type the country:' : 'Which country is this?'; }
@@ -283,10 +294,11 @@
       opts.append(b);
     });
     sfx.flip();
-    if (R.mode !== 'blitz') { $('timer').hidden = false; qLimit = typing ? 25 : 15; qStart = performance.now(); qTimer = 0; cancelAnimationFrame(timerRaf); timerRaf = requestAnimationFrame(qTick); }
+    if (R.mode === 'simple') { $('timer').hidden = true; cancelAnimationFrame(timerRaf); }
+    else if (R.mode !== 'blitz') { $('timer').hidden = false; qLimit = typing ? 25 : 15; qStart = performance.now(); qTimer = 0; cancelAnimationFrame(timerRaf); timerRaf = requestAnimationFrame(qTick); }
   }
   function paintHud() {
-    $('h-score').textContent = C.fmt(R.score);
+    $('h-score').textContent = R.mode === 'simple' ? R.right : C.fmt(R.score);
     $('h-streak').textContent = R.streak;
   }
   function bump(id) { const el = $(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
@@ -297,7 +309,7 @@
     R.answered = true;
     if (R.mode !== 'blitz') cancelAnimationFrame(timerRaf);
     const ok = typedOk != null ? typedOk : !!o && o.code === q.answer.code;
-    const left = R.mode === 'blitz' ? 1 : Math.max(0, qLimit - (performance.now() - qStart) / 1000) / qLimit;
+    const left = R.mode === 'blitz' || R.mode === 'simple' ? 1 : Math.max(0, qLimit - (performance.now() - qStart) / 1000) / qLimit;
     const code = q.c.code;
     const m = save.m[code] || [0, 0];
     if (ok) {
@@ -306,7 +318,7 @@
       R.score += Math.max(10, pts);
       m[0]++; save.stats.right++;
       if (q.kind === 'type') R.typed++;
-      sfx.good(R.streak); vib(10);
+      sfx.good(R.streak); sfx.stamp(); vib(10);
       bump('h-score');
       award('first');
       if (R.streak >= 10) award('streak10'); if (R.streak >= 25) award('streak25');
@@ -314,9 +326,10 @@
     } else {
       R.wrong++; R.streak = 0; m[1]++; save.stats.wrong++;
       if (R.mode === 'blitz') R.timeLeft = Math.max(0, R.timeLeft - 3);
-      sfx.bad(); vib([25, 35, 25]);
+      sfx.bad(); sfx.stamp(0.6); vib([25, 35, 25]);
     }
     save.m[code] = m;
+    if (q.kind !== 'type' || ok) { const sm = document.createElement('div'); sm.className = 'fq-stampmark ' + (ok ? 'ok' : 'no'); sm.textContent = ok ? 'Approved' : 'Return to sender'; $('prompt').append(sm); }
     if (!save.seen.includes(code)) { save.seen.push(code); if (save.seen.length >= ALL.length) award('all196'); }
     save.stats.bestStreak = Math.max(save.stats.bestStreak, R.bestStreak);
     R.log.push({ kind: q.kind, code, ok, pick: o ? o.code : null, ans: q.answer.code });
@@ -389,7 +402,7 @@
     R.done = true; cancelAnimationFrame(timerRaf); clearTimeout(autoT);
     const total = R.right + R.wrong, mode = R.mode;
     save.stats.rounds++;
-    const isNew = C.best(bestKey(mode), R.score).isNew && R.score > 0;
+    const isNew = mode === 'simple' ? C.best('simple', R.right).isNew && R.right > 0 : C.best(bestKey(mode), R.score).isNew && R.score > 0;
     const perfect = total > 0 && R.wrong === 0 && mode !== 'blitz' && R.right === R.qs.length;
     if (perfect && mode !== 'daily') award('perfect');
     if (perfect && mode === 'flags' && save.region !== 'world') award('ace' + save.region);
@@ -408,14 +421,14 @@
     }
     const mastered = Object.values(save.m).filter(([r, w]) => r >= 3 && r > w * 2).length;
     if (mastered >= 50) award('master50'); if (mastered >= 150) award('master150');
-    save.history.unshift({ m: mode, r: save.region, s: R.score, ok: R.right, n: total, t: Date.now() });
+    if (mode !== 'simple') save.history.unshift({ m: mode, r: save.region, s: R.score, ok: R.right, n: total, t: Date.now() });
     save.history.length = Math.min(15, save.history.length);
     persist();
     const acc = total ? Math.round(R.right / total * 100) : 0;
     const tier = acc === 100 && total >= 10 ? 'gold' : acc >= 80 ? 'silver' : acc >= 50 ? 'bronze' : 'none';
     $('r-medal').innerHTML = medal(tier, R.log[0]?.code || 'UN');
-    $('r-title').textContent = perfect ? 'Flawless!' : acc >= 80 ? 'Globetrotter!' : acc >= 50 ? 'Not bad, traveller' : 'Time to hit the atlas';
-    $('r-score').textContent = C.fmt(R.score);
+    $('r-title').textContent = perfect ? 'Every letter delivered!' : acc >= 80 ? 'Globetrotter!' : acc >= 50 ? 'Not bad, traveller' : 'Lost in the post';
+    $('r-score').textContent = mode === 'simple' ? `${R.right}/${SIMPLE_N}` : C.fmt(R.score);
     $('r-new').hidden = !isNew;
     const rs = [[`${R.right}/${total}`, 'Correct'], [acc + '%', 'Accuracy'], [R.bestStreak, 'Best streak'], [mastered, 'Mastered']];
     $('r-stats').innerHTML = rs.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
@@ -441,6 +454,7 @@
   }
   function shareText() {
     const grid = R.log.map((l) => (l.ok ? '🟩' : '🟥')).join('');
+    if (R.mode === 'simple') return `Zoble Flag Quiz: ${R.right}/${SIMPLE_N} flags\n${grid}`;
     if (R.mode === 'daily') return `Zoble Flag Quiz daily ${today()}: ${R.right}/10\n${grid}`;
     return `Zoble Flag Quiz (${MODES[R.mode].name}, ${REGIONS.find((r) => r[0] === save.region)[1]}): ${C.fmt(R.score)} points, ${R.right}/${R.right + R.wrong}\n${grid}`;
   }
@@ -528,7 +542,7 @@
   $('open-stats').addEventListener('click', openStats);
   document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { renderMenu(); show('menu'); }));
   $('atlas-q').addEventListener('input', renderAtlas);
-  $('quit').addEventListener('click', () => { if (R && !R.done) { if (R.right + R.wrong === 0) { R.done = true; cancelAnimationFrame(timerRaf); renderMenu(); show('menu'); } else finish(); } });
+  $('quit').addEventListener('click', () => { if (R && !R.done) { if (R.right + R.wrong === 0 && !SIMPLE) { R.done = true; cancelAnimationFrame(timerRaf); renderMenu(); show('menu'); } else finish(); } });
   $('share').addEventListener('click', async () => { const t = shareText(); try { await navigator.clipboard.writeText(t); C.toast('Copied to clipboard'); } catch { C.toast(t.split('\n')[0], 4000); } });
   addEventListener('keydown', (e) => {
     if (view.game.hidden || !R || R.done || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -541,6 +555,7 @@
 
   window.__flags = { get R() { return R; }, save, start, answerRight() { const q = R.qs[R.i]; if (q.kind === 'type') answer(q.c, true); else answer(q.answer); }, answerWrong() { const q = R.qs[R.i]; answer(q.kind === 'type' ? { code: '??' } : q.opts.find((o) => o.code !== q.answer.code), false); }, next: () => next(), typedMatches: (t, c) => typedMatches(t, BY[c]) };
   renderMenu();
+  if (SIMPLE) start();
   if (!C.store.get('tip:touchpad:flag-quiz', false) && !matchMedia('(pointer: coarse)').matches) {
     C.store.set('tip:touchpad:flag-quiz', true);
     setTimeout(() => C.toast('Tip: press 1 to 4 to answer and Enter for the next flag, no pointing needed', 4000), 1200);
