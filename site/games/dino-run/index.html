@@ -20,8 +20,9 @@
     .dr-perk { font-size: 13px; color: var(--ink-2); margin: 0; min-height: 1.4em; }
     @media (max-width: 520px) { .dr-chars canvas { width: 36px; height: 36px; } .dr-chars em { font-size: 10px; } }
   </style>
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="dino-run" class="arc">
+<body data-game="dino-run" data-modes class="arc">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Metres</span></div>
@@ -151,6 +152,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Dino Run', style: 'pixel', tag: 'No internet? No problem. Run.', art: '#ov-menu .arc-hero svg',
+      pal: { a: '#f2ecda', b: '#ffb347', c: '#7ed957', side: '#2a241c', marq: '#3d3428', glow: '#ffb347', btn: '#ffb347', btnInk: '#2a1500' },
+      logo: { fill: ['#ffffff', '#cfc6b0'], depth: 5, shade: '#e0702a', gap: 0.5 },
+      wave: 'square', jingle: [[880, 50], [0, 30], [880, 50], [1320, 140]],
+      seed: 2400, step: 10,
+      keyLabel: (k) => (k === 'simple' ? 'Classic run' : k.replace('score-', '')),
+      help: [['Space  ↑', 'Jump (hold to jump higher)'], ['↓', 'Duck, or drop fast in the air'], ['Tap', 'Jump on a phone, swipe down to duck'], ['Cacti', 'Jump them. Birds: duck them.'], ['P', 'Pause']]
+    });
+  </script>
   <script src="engine.js"></script>
   <script src="data.js"></script>
   <script src="game.js"></script>

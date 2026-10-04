@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The back room · Zoble</title>
+  <meta name="description" content="Staff only. Which is you, now.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .room { position: relative; min-height: calc(100dvh - var(--bar-h)); overflow: hidden; background: #2a2236; color: #f4ead6; padding: 40px 16px 60px; }
+    .room::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .03) 0 2px, transparent 2px 90px), linear-gradient(#3b3050, #241d2f 70%); pointer-events: none; }
+    .wallpaper { position: absolute; inset: 0; background: radial-gradient(rgba(255, 255, 255, .06) 1.4px, transparent 2px) 0 0 / 26px 26px; pointer-events: none; }
+    .dark { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(circle at var(--x, 50%) var(--y, 40%), rgba(10, 6, 16, 0) 0 90px, rgba(10, 6, 16, .82) 170px, rgba(6, 4, 10, .97) 260px); transition: opacity .6s ease; }
+    .room.lit .dark { opacity: 0; }
+    .room.lit { background: #f6e7c8; color: #2a1c0f; }
+    .room.lit::before { background: repeating-linear-gradient(90deg, rgba(120, 80, 30, .06) 0 2px, transparent 2px 90px), linear-gradient(#f9eccf, #ecd5a8 70%); }
+    .inner { position: relative; z-index: 2; width: min(100%, 960px); margin: 0 auto; text-align: center; }
+    .sign { display: inline-block; font-family: var(--c-hand); font-size: clamp(30px, 6vw, 52px); line-height: 1; padding: 12px 22px 8px; border: 3px solid currentColor; border-radius: 8px; transform: rotate(-2deg); margin: 20px 0 6px; background: rgba(0, 0, 0, .12); }
+    .sign small { display: block; font-family: var(--c-type); font-size: 14px; margin-top: 6px; opacity: .8; }
+    .lede { font-family: var(--c-type); font-size: 15px; opacity: .85; max-width: 520px; margin: 14px auto 30px; }
+    .chain { position: absolute; z-index: 6; top: 0; right: 14%; width: 44px; display: flex; flex-direction: column; align-items: center; border: 0; background: none; padding: 0; cursor: pointer; color: inherit; }
+    .chain__line { width: 3px; height: 120px; background: repeating-linear-gradient(#c9b27a 0 6px, #8a744a 6px 9px); }
+    .chain__knob { width: 22px; height: 22px; border-radius: 50%; background: #e9c75a; border: 3px solid #1b1830; box-shadow: 0 0 18px rgba(233, 199, 90, .5); }
+    .chain.pull { animation: pull .5s cubic-bezier(.3, 1.6, .5, 1); }
+    @keyframes pull { 40% { transform: translateY(26px); } }
+    .chain__tag { margin-top: 6px; font-family: var(--c-hand); font-size: 15px; white-space: nowrap; }
+    .bulb { position: absolute; z-index: 6; top: 0; left: 50%; width: 2px; height: 50px; background: #6b5a3e; }
+    .bulb::after { content: ""; position: absolute; top: 46px; left: -12px; width: 26px; height: 32px; border-radius: 50% 50% 46% 46%; background: #5a5040; border: 2px solid #1b1830; }
+    .room.lit .bulb::after { background: #ffe58a; box-shadow: 0 0 60px 30px rgba(255, 220, 120, .55); }
+    .shelves { display: grid; gap: 34px; margin-top: 10px; }
+    .shelf { display: flex; justify-content: center; align-items: flex-end; flex-wrap: wrap; gap: 14px 22px; padding: 0 10px 10px; border-bottom: 14px solid #6b4a2b; box-shadow: 0 10px 0 -4px rgba(0, 0, 0, .25); border-radius: 2px; position: relative; }
+    .room.lit .shelf { border-bottom-color: #a06d3c; }
+    .jar { width: 104px; padding: 0; border: 0; background: none; cursor: pointer; color: inherit; transition: transform .3s cubic-bezier(.3, 1.6, .5, 1); }
+    .jar:hover { transform: translateY(-6px) rotate(-3deg); }
+    .jar.wobble { animation: jwob .5s ease; }
+    .jar.float { animation: jfloat 2.4s ease-in-out; }
+    @keyframes jwob { 25% { transform: rotate(-9deg); } 75% { transform: rotate(8deg); } }
+    @keyframes jfloat { 40%, 60% { transform: translateY(-60px) rotate(10deg); } }
+    .jar svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .jar span { display: block; font-family: var(--c-hand); font-size: 15px; line-height: 1.05; margin-top: 6px; min-height: 32px; }
+    .door { display: inline-flex; align-items: center; gap: 10px; margin-top: 44px; }
+    .ghost { position: absolute; z-index: 3; right: 6%; bottom: 80px; width: 80px; opacity: .85; animation: boo 5s ease-in-out infinite; }
+    @keyframes boo { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-16px, -12px); } }
+    .book { margin: 36px auto 0; max-width: 520px; background: rgba(0, 0, 0, .14); border: 2px dashed currentColor; border-radius: 12px; padding: 16px; }
+    .book h2 { font-family: var(--c-hand); font-weight: 400; font-size: 28px; margin: 0 0 6px; }
+    .book p { margin: 0 0 12px; font-size: 14.5px; opacity: .85; }
+    .marks { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 30px; margin-bottom: 12px; }
+    .marks i { width: 22px; height: 22px; border-radius: 50%; display: inline-block; border: 2px solid #1b1830; }
+    @media (max-width: 560px) { .jar { width: 84px; } .chain { right: 6%; } .chain__line { height: 90px; } }
+  </style>
+</head>
+<body data-title="The back room">
+  <main class="room" id="room">
+    <div class="wallpaper"></div>
+    <div class="bulb" aria-hidden="true"></div>
+    <button class="chain" id="chain" type="button" aria-label="Pull the light chain" aria-pressed="false"><span class="chain__line"></span><span class="chain__knob"></span><span class="chain__tag">pull</span></button>
+    <div class="inner">
+      <div class="sign">Staff only<small>(that's you now)</small></div>
+      <p class="lede">This is where Zob keeps the things that did not fit on the shelves out front. It is a bit dark. You could look around with your torch, or find the light.</p>
+      <div class="shelves" id="shelves"></div>
+      <section class="book">
+        <h2>The visitors' wall</h2>
+        <p>Leave a thumbprint. Only you can see it, but Zob counts them anyway.</p>
+        <div class="marks" id="marks"></div>
+        <button class="c-btn" id="mark" type="button">Press your thumb here</button>
+      </section>
+      <a class="c-btn c-btn--ghost door" href="index.html">Back out to the cabinet</a>
+    </div>
+    <div class="dark" id="dark" aria-hidden="true"></div>
+  </main>
+  <script src="games.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      const C = window.Curio;
+      const room = document.getElementById('room');
+      const dark = document.getElementById('dark');
+      C.unlock('snoop');
+      const JARS = [
+        ['A jar of Tuesday', 'Still a bit Tuesday-ish. Do not open on a Monday.', '#6fb7ff', 'wob'],
+        ['One (1) sneeze', 'Collected in 2017. Bless it.', '#ffe58a', 'sneeze'],
+        ['The last pixel of 2019', 'It is a very nice pixel. Slightly teal.', '#2fbfa8', 'wob'],
+        ['Unused confetti', 'Saved for a special occasion. This is one.', '#ff7aa8', 'confetti'],
+        ['Mild suspense', 'Shake gently and wait...', '#b18cff', 'suspense'],
+        ['Spare gravity', 'For emergencies. Handle with care.', '#9fd36f', 'float'],
+        ['An echo', 'Do not shout into this jar.', '#e3d7c5', 'echo'],
+        ['Assorted vowels', 'Zob ran out of consonants years ago.', '#ffb14a', 'vowels'],
+        ['Leftover high scores', 'Nobody claimed them. Help yourself.', '#ff6b6b', 'score'],
+        ['Static from an old TV', 'Crackles if you tap it.', '#cfcfcf', 'static'],
+        ['The smell of new paper', 'Imagine it. Yes, that one.', '#fff6dc', 'wob'],
+        ['Zob\'s first drawing', 'It is a circle. He is very proud.', '#ffd23f', 'wob']
+      ];
+      const jar = (fill, i) => `<svg viewBox="0 0 100 120" aria-hidden="true"><rect x="22" y="6" width="56" height="14" rx="3" fill="#8a6a3f" stroke="#1b1830" stroke-width="3"/><path d="M26 20h48c8 6 12 14 12 26v54c0 8-6 14-14 14H28c-8 0-14-6-14-14V46c0-12 4-20 12-26z" fill="rgba(255,255,255,.14)" stroke="#1b1830" stroke-width="3"/><path d="M18 ${70 - (i % 3) * 8}c20-6 44 6 64-2v34c0 6-5 10-10 10H28c-5 0-10-4-10-10z" fill="${fill}" opacity=".85"/><path d="M24 34c-2 10-2 30 0 46" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".5"/><rect x="30" y="52" width="40" height="22" rx="2" fill="#fffaf0" stroke="#1b1830" stroke-width="2" transform="rotate(${(i % 5) - 2} 50 63)"/><path d="M36 60h28M36 66h18" stroke="#1b1830" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>`;
+      const shelves = document.getElementById('shelves');
+      for (let s = 0; s < 3; s++) {
+        const row = document.createElement('div');
+        row.className = 'shelf';
+        JARS.slice(s * 4, s * 4 + 4).forEach(([name, text, fill, act], k) => {
+          const i = s * 4 + k;
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'jar';
+          b.innerHTML = `${jar(fill, i)}<span></span>`;
+          b.querySelector('span').textContent = name;
+          b.setAttribute('aria-label', `${name}: ${text}`);
+          b.addEventListener('click', () => {
+            b.classList.remove('wobble', 'float'); void b.offsetWidth;
+            b.classList.add(act === 'float' ? 'float' : 'wobble');
+            C.toast(text, 2600);
+            if (act === 'confetti') C.confetti(90);
+            else if (act === 'echo') [0, 350, 700, 1050].forEach((t, j) => setTimeout(() => C.beep(520, 0.25, 'sine', 0.14 / (j + 1)), t));
+            else if (act === 'vowels') C.toast(Array.from({ length: 7 }, () => C.pick(['a', 'e', 'i', 'o', 'u'])).join(' '), 2200);
+            else if (act === 'suspense') setTimeout(() => C.toast('...ok, that was it. That was the suspense.', 2400), 2800);
+            else if (act === 'sneeze') { C.sfx('whoosh'); setTimeout(() => C.toast('Achoo!', 1200), 300); }
+            else if (act === 'static') { for (let j = 0; j < 6; j++) setTimeout(() => C.sfx('tap'), j * 40); }
+            else if (act === 'score') { const r = C.best('jar', C.randInt(1, 999)); C.toast(`You took a ${r.best}. ${r.isNew ? 'A personal best for jar raiding.' : 'Not your best jar raid.'}`, 2600); }
+            else C.sfx('tap');
+          });
+          row.append(b);
+        });
+        shelves.append(row);
+      }
+      const move = (x, y) => { const r = room.getBoundingClientRect(); dark.style.setProperty('--x', `${x - r.left}px`); dark.style.setProperty('--y', `${y - r.top}px`); };
+      room.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
+      room.addEventListener('pointerdown', (e) => move(e.clientX, e.clientY));
+      const chain = document.getElementById('chain');
+      let lit = false;
+      chain.addEventListener('click', () => {
+        lit = !lit;
+        room.classList.toggle('lit', lit);
+        chain.setAttribute('aria-pressed', String(lit));
+        chain.classList.remove('pull'); void chain.offsetWidth; chain.classList.add('pull');
+        C.sfx(lit ? 'on' : 'off');
+        chain.querySelector('.chain__tag').textContent = lit ? 'pull again' : 'pull';
+        if (lit) { C.unlock('lights'); C.toast('Click. Oh, it is actually quite cosy in here.'); }
+      });
+      if (new Date().getMonth() === 9) room.insertAdjacentHTML('beforeend', '<svg class="ghost" viewBox="0 0 80 90" aria-hidden="true"><path d="M8 84V38C8 18 22 6 40 6s32 12 32 32v46l-8-8-8 8-8-8-8 8-8-8-8 8-8-8z" fill="#fffdf6" stroke="#1b1830" stroke-width="3" stroke-linejoin="round"/><circle cx="30" cy="38" r="4" fill="#1b1830"/><circle cx="50" cy="38" r="4" fill="#1b1830"/><path d="M34 52c4 4 8 4 12 0" stroke="#1b1830" stroke-width="3" fill="none" stroke-linecap="round"/></svg>');
+      const marks = document.getElementById('marks');
+      const paint = () => {
+        const n = C.store.get('hub:thumbs', []);
+        marks.replaceChildren(...n.map((c) => { const i = document.createElement('i'); i.style.background = c; return i; }));
+      };
+      paint();
+      document.getElementById('mark').addEventListener('click', () => {
+        const n = C.store.get('hub:thumbs', []);
+        n.push(C.pick(['#ff7aa8', '#6fb7ff', '#ffd23f', '#9fd36f', '#b18cff', '#ff9a5c']));
+        C.store.set('hub:thumbs', n.slice(-40));
+        paint();
+        C.sfx('stamp');
+        C.toast(n.length === 1 ? 'Zob has noted your thumb. Lovely thumb.' : `${n.length} thumbprints. Zob is running out of wall.`);
+      });
+    })();
+  </script>
+</body>
+</html>

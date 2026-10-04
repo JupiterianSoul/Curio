@@ -147,3 +147,21 @@ body { overflow-x: hidden; }
   .wg-pals button i { width: 14px; height: 14px; }
   .c-wrap.wg { padding-top: 12px; }
 }
+:root { --hit: #4f9a52; --near: #d2a531; --miss: #7d746a; }
+:root[data-theme="dark"] { --hit: #4f9a52; --near: #c99b2a; --miss: #5a524a; }
+.wg-float { display: none; }
+.wg-board { width: max-content; max-width: 100%; margin: 0 auto; padding: 10px; border-radius: 14px; background: linear-gradient(180deg, #6b4428, #4e301b); box-shadow: inset 0 2px 0 rgba(255, 220, 170, .3), inset 0 -3px 0 rgba(0, 0, 0, .3), 0 18px 26px -10px rgba(30, 15, 5, .55); }
+.wg-tile { border: 0; border-radius: 7px; color: #2b2620; font-family: Georgia, "Times New Roman", serif; background: linear-gradient(180deg, rgba(0, 0, 0, .25), rgba(0, 0, 0, .12)); box-shadow: inset 0 3px 5px rgba(0, 0, 0, .45), inset 0 -1px 0 rgba(255, 220, 170, .15); }
+.wg-tile.full, .wg-tile.ghost, .wg-tile.hinted { background: linear-gradient(160deg, #fffdf6, #efe4cc 70%, #e2d3b2); box-shadow: inset 0 -4px 0 rgba(120, 90, 40, .25), inset 0 2px 0 #fff, 0 3px 3px rgba(0, 0, 0, .35); }
+.wg-tile.ghost { color: rgba(43, 38, 32, .3); }
+.wg-tile.hit, .wg-tile.near, .wg-tile.miss { box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .22), inset 0 2px 0 rgba(255, 255, 255, .35), 0 3px 3px rgba(0, 0, 0, .35); }
+.wg-tile.hit::before, .wg-tile.near::before, .wg-tile.miss::before { content: ""; position: absolute; left: 8%; top: 6%; width: 50%; height: 26%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .45), transparent); pointer-events: none; }
+.wg-kb { padding: 12px 10px 14px; border-radius: 18px 18px 26px 26px; background: linear-gradient(180deg, #3b3f3a, #23261f); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .15), 0 14px 22px -8px rgba(20, 10, 2, .55); }
+.wg-key { border-radius: 999px; background: radial-gradient(circle at 50% 38%, #4a4a48, #1b1b1a 70%); color: #f3ead6; border: 2px solid #c9c5bb; box-shadow: 0 3px 0 #0b0b0a, 0 0 0 1px #6c6a64, inset 0 1px 0 rgba(255, 255, 255, .25); font-family: Georgia, "Times New Roman", serif; }
+.wg-key.wide { border-radius: 14px; }
+.wg-key.hit { background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--hit) 80%, #fff), var(--hit) 70%); color: #fff; }
+.wg-key.near { background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--near) 80%, #fff), var(--near) 70%); color: #fff; }
+.wg-key.miss { background: radial-gradient(circle at 50% 38%, #5d5852, #3a3530 70%); color: #9c958b; opacity: 1; }
+.wg-key:active, .wg-key.press { transform: translateY(3px); box-shadow: 0 0 0 #0b0b0a, 0 0 0 1px #6c6a64; }
+html[data-mode="simple"] #backBtn { visibility: hidden; }
+html[data-mode="simple"] .wg-result [data-a="menu"] { display: none; }

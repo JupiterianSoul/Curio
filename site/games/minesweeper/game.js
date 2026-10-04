@@ -25,17 +25,19 @@
     { id: 'nohint', icon: '🦉', name: 'No help needed', desc: 'Win Expert without using a hint.' },
     { id: 'eff', icon: '📈', name: 'Efficient', desc: 'Win Intermediate or Expert at 1.5 3BV per second or faster.' },
     { id: 'boom', icon: '💥', name: 'Kaboom', desc: 'Step on your first mine. It happens to everyone.' },
-    { id: 'themes', icon: '🎨', name: 'Decorator', desc: 'Try all five themes.' }
+    { id: 'themes', icon: '🎨', name: 'Decorator', desc: 'Try every theme.' }
   ];
   let got = load('ach', {});
   let stats = load('stats', {});
   let hist = load('hist', []);
-  const set = Object.assign({ diff: Curio.store.get('mines:diff', 'beginner'), noguess: false, qmarks: false, skin: 'classic', custom: { r: 12, c: 20, m: 45 }, zoom: {} }, load('set', {}));
+  const set = Object.assign({ diff: Curio.store.get('mines:diff', 'beginner'), noguess: false, qmarks: false, skin: 'tabletop', custom: { r: 12, c: 20, m: 45 }, zoom: {} }, load('set', {}));
   if (!LEVELS[set.diff] && set.diff !== 'custom' && set.diff !== 'daily') set.diff = 'beginner';
   if (!SKINS[set.skin]) set.skin = 'classic';
   if (!set.custom || typeof set.custom !== 'object') set.custom = { r: 12, c: 20, m: 45 };
   if (!set.zoom || typeof set.zoom !== 'object') set.zoom = {};
-  const saveSet = () => save('set', set);
+  const keepDiff = set.diff;
+  if (Curio.simple) set.diff = 'beginner';
+  const saveSet = () => save('set', Curio.simple ? { ...set, diff: keepDiff } : set);
 
   let gameId = 0, L, cells, els, state, flags, opened, elapsed, t0, timer, flagMode = false, focusIdx = 0;
   let clicks, hintsUsed, chords, flagsPlaced, ng, lastClick, bv3, nbCache = null;
@@ -203,6 +205,7 @@
     for (const k in map) fieldEl.style.setProperty('--' + k, map[k]);
     v.nums.forEach((c, i) => fieldEl.style.setProperty(`--n${i + 1}`, c));
     fieldEl.classList.toggle('glow', !!S.glow);
+    fieldEl.dataset.skin = set.skin;
     document.querySelectorAll('.m-skin').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skin === set.skin)));
   }
   addEventListener('curio:theme', applySkin);
@@ -361,9 +364,9 @@
     if (!quiet) {
       if (order.length > 1) {
         const ac = !Curio.muted && order.length > 6;
-        Curio.beep(520, 0.05, 'triangle', 0.06);
+        Curio.beep(520, 0.05, 'triangle', 0.05); window.Cafe?.sound('pebble', 0.8);
         if (ac) [660, 784, 988].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.05, 'triangle', 0.04), 40 + k * 45));
-      } else Curio.beep(380 + c.n * 60, 0.035, 'triangle', 0.06);
+      } else { Curio.beep(380 + c.n * 60, 0.03, 'triangle', 0.035); window.Cafe?.sound('tile', 0.6); }
     }
     checkWin();
   }
@@ -407,7 +410,7 @@
     else c.q = false;
     paint(i);
     if (c.flag) els[i].classList.add('flagged');
-    Curio.beep(c.flag ? 880 : 440, 0.05, 'square', 0.035);
+    Curio.beep(c.flag ? 880 : 440, 0.04, 'square', 0.02); window.Cafe?.sound('wood', 0.5);
     try { navigator.vibrate?.(15); } catch {}
     hud();
   }

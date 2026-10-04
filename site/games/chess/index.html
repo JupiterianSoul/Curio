@@ -7,9 +7,10 @@
   <meta name="description" content="Full legal chess against an alpha-beta AI, 60+ verified mate puzzles, hints, an analysis bar and board themes.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="cafe.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="chess">
+<body data-game="chess" data-modes class="cafe" data-table="mahogany" data-simple-sub="You play White, the computer plays Black. Tap a piece, then a square. Advanced has levels, puzzles and two players.">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <linearGradient id="gIvory" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f6efe2"/><stop offset="1" stop-color="#d9ccb4"/></linearGradient>
@@ -142,6 +143,7 @@
   <script src="../../shared.js"></script>
   <script src="logic.js"></script>
   <script src="data.js"></script>
+  <script src="cafe.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

@@ -31,8 +31,9 @@ function Arcade(o) {
       if (el.closest('.arc-hud')) { el.classList.remove('arc-bump'); void el.offsetWidth; el.classList.add('arc-bump'); }
     }
   };
+  A.tableKey = () => (Curio.simple ? 'simple' : A.bestKey);
   A.showBest = () => {
-    const b = Curio.getBest(A.bestKey) ?? 0;
+    const b = Curio.getBest(A.tableKey()) ?? 0;
     A.hud('best', Curio.fmt(Math.max(b, A.state === 'play' || A.state === 'paused' ? A.score : 0)));
   };
   A.setScore = (n) => { A.score = Math.max(0, Math.round(n)); A.hud('score', Curio.fmt(A.score)); A.showBest(); };
@@ -50,7 +51,7 @@ function Arcade(o) {
   addEventListener('curio:theme', () => requestAnimationFrame(readColors));
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => requestAnimationFrame(readColors));
 
-  A.opts = Object.assign({}, o.defaults || {}, A.load('opts', {}));
+  A.opts = Object.assign({}, o.defaults || {}, Curio.simple ? (o.simple || {}) : A.load('opts', {}));
   function paintOpts() {
     $$('[data-opt]').forEach((el) => {
       const k = el.dataset.opt;
@@ -59,7 +60,7 @@ function Arcade(o) {
     });
     o.optsChanged?.(A.opts);
   }
-  A.setOpt = (k, v) => { A.opts[k] = v; A.save('opts', A.opts); paintOpts(); };
+  A.setOpt = (k, v) => { A.opts[k] = v; if (!Curio.simple) A.save('opts', A.opts); paintOpts(); };
   A.paintOpts = paintOpts;
   $$('[data-opt]').forEach((el) => {
     const k = el.dataset.opt;
@@ -312,14 +313,14 @@ function Arcade(o) {
   };
   A.hold = (name) => { releaseAll(); A.state = 'hold'; show(name); };
   A.unhold = () => { A.state = 'play'; show(null); last = 0; acc = 0; if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); };
-  A.menu = () => { releaseAll(); A.state = 'menu'; o.menu?.(); paintOpts(); show('menu'); A.showBest(); };
+  A.menu = () => { releaseAll(); A.state = 'menu'; o.menu?.(); paintOpts(); show('menu'); A.showBest(); window.Cab?.menu(); };
 
   const MEDAL = (col, col2, glyph) => `<svg viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="mg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".25" stop-color="${col}"/><stop offset="1" stop-color="${col2}"/></radialGradient></defs><path d="M40 6h16l10 30H50zM80 6H64L54 36h16z" fill="#e84a5f"/><path d="M47 6h7l10 30h-7zM73 6h-7L56 36h7z" fill="#fff" opacity=".35"/><circle cx="60" cy="72" r="40" fill="${col2}"/><circle cx="60" cy="70" r="38" fill="url(#mg)"/><circle cx="60" cy="70" r="29" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-dasharray="4 5"/><text x="60" y="82" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">${glyph}</text></svg>`;
   A.over = ({ title = 'Game over', msg = '', rows = [], share = '', medal = null } = {}) => {
     if (A.state === 'over') return;
     releaseAll();
     A.state = 'over';
-    const r = Curio.best(A.bestKey, A.score);
+    const r = Curio.best(A.tableKey(), A.score);
     const isNew = r.isNew && A.score > 0;
     A.stat('runs');
     A.saveStats();
@@ -362,6 +363,7 @@ function Arcade(o) {
     overAt = performance.now();
     show('over');
     A.showBest();
+    window.Cab?.over(A.score, { key: A.tableKey() });
   };
   let shareText = '';
   A.share = (text) => {

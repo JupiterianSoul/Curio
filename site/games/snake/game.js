@@ -48,7 +48,9 @@
     return out;
   }
   const save = load();
-  const persist = () => Curio.store.set(SAVE_KEY, save);
+  const advKeep = { mode: save.mode, skin: save.skin, map: save.settings.map, speed: save.settings.speed };
+  if (Curio.simple) { save.mode = 'classic'; save.skin = 'garden'; save.settings.map = 'open'; save.settings.speed = 'normal'; }
+  const persist = () => Curio.store.set(SAVE_KEY, Curio.simple ? { ...save, mode: advKeep.mode, skin: advKeep.skin, settings: { ...save.settings, map: advKeep.map, speed: advKeep.speed } } : save);
 
   function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function mulberry(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -836,6 +838,7 @@
   function bump(k) { for (const el of hudEls[k] || []) { el.classList.remove('is-bump'); void el.offsetWidth; el.classList.add('is-bump'); } }
   function bestKey() {
     if (!G) return null;
+    if (Curio.simple && G.mode !== 'demo') return 'simple';
     if (G.mode === 'classic') return `classic-${save.settings.map}-${save.settings.speed}`;
     if (G.mode === 'campaign') return `lvl-${G.level.n}`;
     if (G.mode === 'daily') return `daily-${G.daily.date}`;
@@ -990,6 +993,7 @@
     if (isNew && mode !== 'campaign') { Curio.confetti(); audio.win(); }
     show('over');
     renderChips();
+    if (mode !== 'campaign') window.Cab?.over(score, { key: bestKey() });
   }
   const fmtTime = (t) => { t = Math.floor(t); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 
@@ -1041,6 +1045,7 @@
     setHud('score', 0); setHud('length', 4);
     $('[data-hud-box="goal"]').hidden = true; $('[data-hud-box="timer"]').hidden = true;
     setHud('best', Curio.fmt(Math.max(0, save.stats.bestScore)));
+    window.Cab?.menu();
   }
   function pause() { if (state !== 'play' && state !== 'countdown') return; state = 'paused'; show('pause'); audio.tone(392, 0.06, 'triangle', 0.08); }
   function resume() { if (state !== 'paused') return; state = 'countdown'; countdown = 0.99; show(null); }

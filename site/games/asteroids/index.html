@@ -33,8 +33,9 @@
     .arc-seg button.is-locked::before { content: '🔒'; transform: none; }
     @media (max-width: 520px) { .as-ups { grid-template-columns: 1fr; } .as-up small { display: none; } }
   </style>
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="asteroids" class="arc">
+<body data-game="asteroids" data-modes class="arc">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -191,6 +192,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Asteroids', style: 'vector', tag: 'Big rocks. Small rocks. Since 1979.', art: '#ov-menu .arc-hero svg',
+      pal: { a: '#ffffff', b: '#9ad7ff', c: '#ff7ad9', side: '#101018', marq: '#1a1a28', glow: '#b9c6ff', btn: '#ffffff', btnInk: '#0a0a14' },
+      logo: { lines: ['#ffffff'], width: 4.4, blur: 2.6 },
+      wave: 'square', jingle: [[55, 130, 0, 0.12], [0, 90], [52, 130, 0, 0.12], [0, 60], [880, 160, 110, 0.05]],
+      seed: 30000, step: 50,
+      keyLabel: (k) => (k === 'simple' ? 'Classic' : k.replace('score-', '').replace('-', ' ')),
+      help: [['← →', 'Rotate the ship'], ['↑', 'Thrust'], ['Space', 'Fire'], ['H', 'Hyperspace when cornered'], ['P', 'Pause']]
+    });
+  </script>
   <script src="engine.js"></script>
   <script src="data.js"></script>
   <script src="game.js"></script>

@@ -83,6 +83,7 @@
     width: 640, height: H, reset, update, draw, key, pointer, swipe, idle, swipeDist: 20, achievements: ACH, tip: 'Tip for touchpads: one click or Space jumps, Down arrow ducks. No dragging needed.',
     size: (w, h) => { W = Math.round(Math.max(400, Math.min(940, H * w / h))); return { w: W, h: H }; },
     defaults: { mode: 'endless', char: 'rex' },
+    simple: { mode: 'endless', char: 'rex' },
     statsList: [['runs', 'Runs'], ['dist', 'Metres run'], ['amber', 'Amber found'], ['jumps', 'Jumps'], ['best', 'Longest run'], ['cleared', 'Obstacles passed'], ['powers', 'Power-ups'], ['ducks', 'Limbo ducks']],
     modeName: () => ({ endless: 'Endless', daily: 'Daily', hardcore: 'Hardcore' }[A.opts.mode] || 'Run'),
     histText: () => `${Curio.fmt(Math.floor(dist))} m`,
@@ -386,7 +387,7 @@
     const grounded = obs.filter((o) => !o.fall);
     const last = grounded[grounded.length - 1];
     if (dist > 14 && (!last || W - (last.x + last.w) > nextGap)) spawn();
-    if (mode !== 'hardcore' && dist > nextPower) spawnPower();
+    if (mode !== 'hardcore' && !Curio.simple && dist > nextPower) spawnPower();
     for (const c of clouds) { c.x -= sp * 0.12 * c.s * dt; if (c.x < -80) { c.x = W + Math.random() * 200; c.y = 26 + Math.random() * 70; } }
     for (const b of bumps) { b.x -= sp * dt; if (b.x < -10) b.x += 1200; }
     for (const f of flakes) { f.x -= (sp * 0.3 + 20) * f.s * dt; f.y += 40 * f.s * dt; if (f.x < -5) f.x += W + 10; if (f.y > H) f.y -= H; }

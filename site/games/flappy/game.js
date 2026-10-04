@@ -37,7 +37,9 @@
     return d;
   }
   const save = load();
-  const persist = () => Curio.store.set(SAVE_KEY, save);
+  const advKeep = { char: save.char, world: save.world, trail: save.trail, mode: save.mode, sky: save.sky };
+  if (Curio.simple) Object.assign(save, { char: 'chick', world: 'meadow', trail: 'none', mode: 'classic', sky: 'day' });
+  const persist = () => Curio.store.set(SAVE_KEY, Curio.simple ? { ...save, ...advKeep } : save);
 
   function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function mulberry(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -699,7 +701,7 @@
   $$('[data-hud]').forEach((el) => (hudEls[el.dataset.hud] ||= []).push(el));
   const setHud = (k, v) => { for (const el of hudEls[k] || []) if (el.textContent !== String(v)) el.textContent = v; };
   function bump(k) { for (const el of hudEls[k] || []) { el.classList.remove('is-bump'); void el.offsetWidth; el.classList.add('is-bump'); } }
-  const bestKey = (m = menuMode) => (m === 'daily' ? `daily-${today()}` : m);
+  const bestKey = (m = menuMode) => (Curio.simple ? 'simple' : m === 'daily' ? `daily-${today()}` : m);
   function paintHud() { setHud('coins', Curio.fmt(save.coins)); setHud('best', Curio.fmt(Curio.getBest(bestKey(F && state !== 'menu' ? F.mode : menuMode)) ?? 0)); }
 
   function award(id) {
@@ -754,6 +756,7 @@
     if (isNew) { Curio.confetti(); audio.medal(); }
     show('over');
     paintHud();
+    window.Cab?.over(value, { key: bestKey(F.mode) });
   }
   function shareText() {
     if (!F) return '';
@@ -776,7 +779,7 @@
     show(null); paintHud();
     if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
   }
-  function toMenu() { newRun(menuMode); state = 'menu'; show('menu'); renderMenu(); paintHud(); }
+  function toMenu() { newRun(menuMode); state = 'menu'; show('menu'); renderMenu(); paintHud(); window.Cab?.menu(); }
   function pause() { if (state !== 'play') return; state = 'paused'; show('pause'); audio.tone(392, 0.06, 'triangle', 0.08); }
   function resume() { if (state !== 'paused') return; state = 'play'; show(null); }
 

@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="maze-muncher" class="arc" style="--arc-hue: #ffd400">
+<body data-game="maze-muncher" data-modes class="arc" style="--arc-hue: #ffd400">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -68,6 +69,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Maze Muncher', style: 'toon', tag: 'Eat every dot. Mind the ghosts. Since 1980.',
+      pal: { a: '#ffd400', b: '#4f8bff', c: '#ff5fae', side: '#0b1036', marq: '#141c5c', glow: '#2f6bff', btn: '#ffd400', btnInk: '#1a1400', t1: '#fff8b0', t2: '#ffc400', tout: '#13207a', tdeep: '#060b33' },
+      logo: { kind: 'bubble' },
+      wave: 'triangle', jingle: [[523, 70], [659, 70], [784, 70], [1047, 140], [784, 70], [1047, 220]],
+      seed: 24000, step: 10,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic' : k.replace('score-', '')),
+      help: [['Arrows  WASD', 'Steer (turns are remembered)'], ['Swipe', 'Steer on a phone'], ['Power pellet', 'Ghosts turn blue: eat them'], ['Fruit', 'Bonus points, grab it fast'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

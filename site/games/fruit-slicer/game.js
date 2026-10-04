@@ -15,7 +15,7 @@ function Arcade(o) {
         if (el.textContent !== s)
             el.textContent = s; };
     A.showBest = () => {
-        const b = Curio.getBest(A.bestKey) ?? 0;
+        const b = Curio.getBest(A.tableKey()) ?? 0;
         A.hud('best', Curio.fmt(Math.max(b, A.state === 'play' || A.state === 'paused' ? A.score : 0)));
     };
     A.setScore = (n) => { A.score = n; A.hud('score', Curio.fmt(n)); A.showBest(); };
@@ -122,13 +122,14 @@ function Arcade(o) {
         if (document.activeElement && document.activeElement !== document.body)
             document.activeElement.blur();
     };
-    A.menu = () => { releaseAll(); A.state = 'menu'; o.menu?.(); show('menu'); A.showBest(); };
+    A.tableKey = () => (Curio.simple ? 'simple' : A.bestKey);
+    A.menu = () => { releaseAll(); A.state = 'menu'; o.menu?.(); show('menu'); A.showBest(); window.Cab?.menu(); };
     A.over = ({ title = 'Game over', emoji = '💥', msg = '' } = {}) => {
         if (A.state === 'over')
             return;
         releaseAll();
         A.state = 'over';
-        const r = Curio.best(A.bestKey, A.score);
+        const r = Curio.best(A.tableKey(), A.score);
         const box = ov.over;
         const set = (n, v) => { const el = box.querySelector(`[data-o="${n}"]`); if (el)
             el.textContent = v; };
@@ -146,6 +147,7 @@ function Arcade(o) {
         overAt = performance.now();
         show('over');
         A.showBest();
+        window.Cab?.over(A.score, { key: A.tableKey() });
     };
     $$('[data-act]').forEach((b) => b.addEventListener('click', () => {
         const a = b.dataset.act;
@@ -422,7 +424,9 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     const SKEY = 'fs2';
     const loadS = () => { const base = { v: 1, mode: 'classic', wide: false, hover: false, blade: 'classic', ach: {}, stats: { games: 0, fruit: 0, bestCombo: 0, best: {} }, daily: {} }; const d = Curio.store.get(SKEY, null); return d && d.v === 1 ? { ...base, ...d, stats: { ...base.stats, ...(d.stats || {}) } } : base; };
     const S = loadS();
-    const save = () => Curio.store.set(SKEY, S);
+    const advMode = S.mode, advSkin = S.blade;
+    if (Curio.simple) { S.mode = 'classic'; S.blade = 'classic'; }
+    const save = () => Curio.store.set(SKEY, Curio.simple ? { ...S, mode: advMode, blade: advSkin } : S);
     const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
     const BLADES = [
         { id: 'classic', name: 'Steel', need: 0, glow: 'rgba(140,220,255,.45)', core: '#ffffff' },

@@ -118,8 +118,9 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
 .fs-badge.on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
 .fs-badge.new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
   </style>
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="fruit-slicer" class="arc">
+<body data-game="fruit-slicer" data-modes class="arc">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -188,6 +189,18 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Fruit Slicer', style: 'toon', tag: 'Swipe the fruit. Never the bombs.', art: '#ov-menu .fs-hero',
+      pal: { a: '#ffcf3f', b: '#7ee04a', c: '#ff4a5a', side: '#2a1810', marq: '#4a2a18', glow: '#ff7a3c', btn: '#ffcf3f', btnInk: '#2a1600', t1: '#fff6dc', t2: '#ff6a3c', tout: '#2a1206', tdeep: '#7a1f0a' },
+      logo: { kind: 'slash' },
+      wave: 'sawtooth', jingle: [[1800, 110, 300, 0.05], [0, 40], [660, 60, 0, 0.06, 'triangle'], [990, 160, 0, 0.06, 'triangle']],
+      seed: 260, step: 5,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic' : k),
+      help: [['Swipe', 'Slash through the fruit'], ['Touchpad', 'Touchpad mode: click, glide, click'], ['Combo', 'Three or more in one swipe'], ['Bombs', 'Do not slice them. Ever.'], ['3 drops', 'And the game is over']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

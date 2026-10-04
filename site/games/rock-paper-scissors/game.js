@@ -81,7 +81,7 @@
       g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
       src.connect(f).connect(g).connect(ac.destination); src.start(t, Math.random() * 0.3); src.stop(t + d + 0.02);
     },
-    thump(k) { this.tone(110 + k * 12, 0.12, 'sine', 0.22, 60); this.noise(0.05, 0.06, 600, 0, 0.8); },
+    thump(k) { this.tone(110 + k * 12, 0.12, 'sine', 0.22, 60); this.noise(0.05, 0.06, 600, 0, 0.8); window.Cafe?.sound('thock', 0.5 + k * 0.2); },
     whoosh() { this.noise(0.18, 0.08, 900, 0, 0.6); },
     clap() { this.noise(0.09, 0.22, 2400, 0, 0.9); this.noise(0.07, 0.15, 1300, 0.02, 1.2); },
     win() { [659, 880, 1175].forEach((f, k) => this.tone(f, 0.16, 'triangle', 0.12, 0, k * 0.07)); },
@@ -659,7 +659,7 @@
   $('sheet-x').addEventListener('click', () => { const h = sheetHandler; closeSheet(); if (h && !$('game').hidden && score && (score.you >= matchTarget || score.ai >= matchTarget)) toMenu(); });
   $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet')) $('sheet-x').click(); });
 
-  function toMenu() { token++; busy = false; closeSheet(); show('menu'); buildMenu(); }
+  function toMenu() { if (Curio.simple) { closeSheet(); startMatch('mind', 'classic', 5, 'quick'); return; } token++; busy = false; closeSheet(); show('menu'); buildMenu(); }
 
   function showStats() {
     const tw = Object.values(S.throws).reduce((a, b) => a + b, 0);
@@ -749,5 +749,6 @@
   });
 
   buildMenu();
+  if (Curio.simple) startMatch('mind', 'classic', 5, 'quick');
   window.__rps = { play, get busy() { return busy; }, get score() { return score; }, get history() { return history; }, startMatch, S, get tour() { return tour; } };
 })();

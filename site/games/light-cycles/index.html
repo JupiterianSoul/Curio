@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="light-cycles" class="arc" style="--arc-hue: #22d8ff">
+<body data-game="light-cycles" data-modes class="arc" style="--arc-hue: #22d8ff">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -26,7 +27,7 @@
           <h1 class="c-title">Light Cycles</h1>
           <p class="c-sub">Your bike leaves a wall of light behind it. So do theirs. Last one riding wins the round.</p>
           <div class="arc-opts"><div class="arc-label">Rivals</div><div class="arc-seg" role="group" aria-label="Number of rivals" data-opt="rivals" data-def="2"><button type="button" data-val="1">1 bike</button><button type="button" data-val="2">2 bikes</button><button type="button" data-val="3">3 bikes</button></div>
-<div class="arc-label">Arena</div><div class="arc-seg" role="group" aria-label="Arena" data-opt="arena" data-def="tour"><button type="button" data-val="open">Open grid</button><button type="button" data-val="tour">🗺️ Arena tour</button></div>
+<div class="arc-label">Arena</div><div class="arc-seg" role="group" aria-label="Arena" data-opt="arena" data-def="tour" data-simple="open"><button type="button" data-val="open">Open grid</button><button type="button" data-val="tour">🗺️ Arena tour</button></div>
 <div class="arc-label">Bike colour</div><div class="lc-skins" id="skins" role="group" aria-label="Bike colour"></div>
 <p class="arc-small" style="margin:0">Hold <span class="c-kbd">Space</span> to <b style="color:#e6a100">boost</b>. Grab <b style="color:#e6a100">energy orbs</b> to refill it. Make rivals crash into your trail for a cut-off bonus.</p></div>
           <button class="c-btn" type="button" data-act="start">▶ Play</button>
@@ -70,6 +71,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Light\nCycles', style: 'vector', tag: 'Leave a wall of light. Outlast them all. Since 1982.',
+      pal: { a: '#22e6ff', b: '#ff9a1f', c: '#ff3df0', side: '#04121c', marq: '#062033', glow: '#22e6ff', btn: '#22e6ff', btnInk: '#00141a' },
+      logo: { short: 'Light Cycles', lines: ['#8ff6ff', '#ffb35c'], ghost: '#ff3df0', width: 4.4 },
+      wave: 'sawtooth', jingle: [[220, 120, 880, 0.04], [440, 260, 1760, 0.04]],
+      seed: 3000, step: 10,
+      keyLabel: (k) => (k === 'simple' ? 'Classic' : `${k.replace('score-', '')} rival${k.endsWith('-1') ? '' : 's'}`),
+      help: [['← → ↑ ↓', 'Turn your cycle'], ['Space', 'Boost (uses energy)'], ['Swipe', 'Turn on a phone'], ['Orbs', 'Refill boost, score points'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 'use strict';
 window.T48 = {
   themes: {
+    wood: { name: 'Wood blocks', board: '#7a5230', cell: '#8f6640', dboard: '#3e2814', dcell: '#4d331c', tiles: ['#f3dfb8', '#ecd09c', '#e2b878', '#d9a05c', '#cc8848', '#bb6f3a', '#a85a30', '#924828', '#7a3a22', '#5f2c1a', '#3f1d10', '#2a140a', '#1f0e07', '#170a05', '#100703', '#0b0502', '#000000'], ink: ['#4a2e14', '#fbeed6'], darkUntil: 5, wood: true },
     classic: { name: 'Classic', board: '#bbada0', cell: '#cdc1b4', dboard: '#3d3630', dcell: '#4d453d', tiles: ['#eee4da', '#ede0c8', '#f2b179', '#f59563', '#f67c5f', '#f65e3b', '#edcf72', '#edcc61', '#edc850', '#edc53f', '#edc22e', '#3c3a32', '#2f2c26', '#24221d', '#1a1814', '#100f0c', '#000000'], ink: ['#776e65', '#f9f6f2'], darkUntil: 2 },
     sunset: { name: 'Sunset', board: '#f3c9a9', cell: '#f8dcc6', dboard: '#3a2230', dcell: '#4d2d3f', tiles: ['#fde2c8', '#fcd0a4', '#fbb47a', '#f99560', '#f4734f', '#e85a4f', '#d6435e', '#b9346b', '#962a74', '#6f2477', '#4b1f70', '#2e1a5c', '#22144a', '#190f3a', '#120a2c', '#0b061f', '#05030f'], ink: ['#7a4a3a', '#ffffff'] },
     ocean: { name: 'Ocean', board: '#9fd3df', cell: '#c4e6ee', dboard: '#0f2e3a', dcell: '#173f4d', tiles: ['#e0f7fa', '#b2ebf2', '#80deea', '#4dd0e1', '#26c6da', '#00acc1', '#0097a7', '#00838f', '#006064', '#1565c0', '#0d47a1', '#0a2a6b', '#081f52', '#06173d', '#04102b', '#020a1c', '#01050f'], ink: ['#24646f', '#ffffff'] },

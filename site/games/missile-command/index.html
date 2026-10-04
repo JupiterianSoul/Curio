@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="missile-command" class="arc" style="--arc-hue: #ff6fb5">
+<body data-game="missile-command" data-modes class="arc" style="--arc-hue: #ff6fb5">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -70,6 +71,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Missile\nDefence', style: 'vector', tag: 'Six cities. Three bases. Since 1980.',
+      pal: { a: '#ff4b4b', b: '#4be8ff', c: '#ffe14d', side: '#160a26', marq: '#2a0f3f', glow: '#ff4b4b', btn: '#ff4b4b', btnInk: '#1a0000' },
+      logo: { short: 'Missile Defence', lines: ['#ff5a5a', '#5ae9ff'], width: 4.2 },
+      wave: 'triangle', jingle: [[660, 170, 880], [880, 170, 660], [660, 240, 990]],
+      seed: 16000, step: 25,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic' : k.replace('score-', '')),
+      help: [['Click / tap', 'Fire from the nearest base'], ['1 2 3', 'Fire from a chosen base'], ['Arrows + Space', 'Aim and fire by keyboard'], ['Blasts', 'Chain reactions score big'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

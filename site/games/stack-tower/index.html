@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="stack-tower" class="arc" style="--arc-hue: #29b6f6">
+<body data-game="stack-tower" data-modes class="arc" style="--arc-hue: #29b6f6">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Height</span></div>
@@ -68,6 +69,17 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Stack', style: 'chrome', tag: 'Drop it. Trim it. Build it tall.',
+      pal: { a: '#ffb36b', b: '#7fd8ff', c: '#ff7aa8', side: '#1d1830', marq: '#2b2250', glow: '#ff9a6b', btn: '#ffb36b', btnInk: '#2a1300', t1: '#ffd2a8', t2: '#ff7aa8', tout: '#1d1830', tdeep: '#3b2a7a' },
+      wave: 'triangle', jingle: [[392, 60], [523, 60], [659, 60], [784, 60], [1047, 180]],
+      seed: 60, step: 1,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic' : k.replace('score-', '')),
+      help: [['Space / click', 'Drop the block'], ['Tap', 'Drop on a phone'], ['Perfect', 'Land it exactly to grow it back'], ['Overhang', 'Gets chopped off'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

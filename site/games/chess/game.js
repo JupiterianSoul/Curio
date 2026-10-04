@@ -51,6 +51,7 @@
   let mode = Curio.store.get('chess:mode', 'medium');
   if (!['easy', 'medium', 'hard', 'two', 'puzzle'].includes(mode)) mode = 'medium';
   let human = Curio.store.get('chess:side', 1) === -1 ? -1 : 1;
+  if (Curio.simple) { mode = 'medium'; human = 1; }
   const records = Curio.store.get('chess:records', {});
   const rec = () => (records[mode] ||= { w: 0, l: 0, d: 0 });
 
@@ -440,7 +441,8 @@
     if (check) { Curio.beep(880, 0.09, 'square', 0.07); setTimeout(() => Curio.beep(660, 0.1, 'square', 0.06), 90); buzz(25); }
     else if (m.c) { Curio.beep(240, 0.09, 'triangle', 0.16); setTimeout(() => Curio.beep(150, 0.08, 'sine', 0.12), 40); buzz(15); }
     else if (m.fl === 3) { Curio.beep(400, 0.05, 'triangle', 0.1); setTimeout(() => Curio.beep(500, 0.05, 'triangle', 0.1), 70); }
-    else Curio.beep(380, 0.05, 'triangle', 0.12);
+    else Curio.beep(380, 0.04, 'triangle', 0.05);
+    window.Cafe?.sound(m.c ? 'thock' : 'wood', m.c ? 1 : 0.85);
     if (m.pr) setTimeout(() => [660, 880, 1100].forEach((fq, k) => setTimeout(() => Curio.beep(fq, 0.08, 'triangle', 0.1), k * 70)), 100);
   }
 
@@ -938,7 +940,7 @@
     else if (k === 'n') isPuzzle() ? nextPuzzle() : newGame();
     else if (k === 'f') $('flip').click();
     else if (k === 'h') askHint();
-    else if (k === 'p') $('modes').querySelector('[data-mode="puzzle"]').click();
+    else if (k === 'p' && !Curio.simple) $('modes').querySelector('[data-mode="puzzle"]').click();
     else if (k === 'escape') { sel = null; render(); }
   });
 

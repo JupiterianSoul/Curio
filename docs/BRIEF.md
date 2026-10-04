@@ -107,3 +107,21 @@ character anywhere in any file (copy and data included). Use a hyphen, comma or 
 
 Read the "Touchpad first" section of `POLISH.md` and follow it: use `Curio.drag` for every drag,
 no right-click-only or hover-only controls, keyboard alternatives.
+
+## Zoble (new name, new repo)
+
+The site is now called Zoble and lives in its own repo at /home/user/curio (GitHub JupiterianSoul/Zoble, live at zoble.pages.dev). Pages are in `site/`, checks in `tools/` (`node tools/smoke.mjs <slugs>`, `node tools/sweep.mjs`, run from /home/user/curio; sweep now sees game folders too). Every visible text says Zoble, never Curio, and page titles are `Game Title · Zoble`. Internal names stay: `window.Curio`, `curio:*` events, `.curio-*` classes, `CURIO_GAMES`, store keys.
+
+## Simple and Advanced (required for every game)
+
+Every game and toy has two versions, switched with the Simple / Advanced pill that `shared.js` puts in the top bar.
+
+- Opt in with `<body data-game="<slug>" data-modes>`. Read `Curio.mode` (`'simple'` or `'advanced'`, also `Curio.simple`, `Curio.advanced`) when the game starts. Switching reloads the page by default. If the game can switch live, use `data-modes="live"` and listen for the `curio:mode` window event.
+- Simple: fewer features and content, instant to understand and fast to play, one main loop, few or no menus, big clear controls. Someone bored for two minutes should have fun right away.
+- Advanced: everything, more content, modes, progression, settings, stats, meant to be played longer.
+- Keep separate saves and bests per mode where they differ (for example `Curio.best(\`score:${Curio.mode}\`, ...)`).
+- `html[data-mode]` is set to the mode, for CSS.
+
+## Identity
+
+Each game must have its own identity: its own art direction, palette, typography treatment, sounds and copy voice that fit its theme, while still feeling part of Zoble (shared top bar, tokens for UI chrome, light and dark readable). No two games should look like the same template.

@@ -59,8 +59,8 @@
       o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
     },
     tick() { this.tone(1800, 0.02, 'sine', 0.03); },
-    place(d) { const sc = [0, 523, 587, 659, 698, 784, 880, 988, 1047, 1175]; this.tone(sc[d] || 600, 0.12, 'triangle', 0.08); this.tone((sc[d] || 600) * 2, 0.06, 'sine', 0.02, 0.01); },
-    note() { this.tone(1400, 0.035, 'sine', 0.035); },
+    place(d) { const sc = [0, 523, 587, 659, 698, 784, 880, 988, 1047, 1175]; this.tone(sc[d] || 600, 0.12, 'triangle', 0.05); this.tone((sc[d] || 600) * 2, 0.06, 'sine', 0.015, 0.01); window.Cafe?.sound('pencil', 0.9); },
+    note() { this.tone(1400, 0.03, 'sine', 0.02); window.Cafe?.sound('pencil', 0.4); },
     bad() { this.tone(180, 0.15, 'square', 0.05, 0, 120); },
     unit(k = 0) { [659, 784, 988, 1319].forEach((f, i) => this.tone(f * (1 + k * 0.06), 0.16, 'triangle', 0.06, i * 0.06)); },
     erase() { this.tone(500, 0.07, 'sine', 0.05, 0, 250); },
@@ -422,7 +422,7 @@
       box.onclick = async (e) => {
         const a = e.target.closest('[data-a]')?.dataset.a;
         if (a === 'next') newGame(G.variant, G.level);
-        else if (a === 'menu') { show('home'); paintHome(); }
+        else if (a === 'menu') { if (Curio.simple) newGame('classic', 'easy'); else { show('home'); paintHome(); } }
         else if (a === 'share') {
           const text = `Zoble Sudoku${G.daily ? ` · Daily ${G.daily}` : ''}\n${VARIANTS[G.variant].name}, ${LEVELS[G.level]} solved in ${fmtT(secs)}\n${'⭐'.repeat(stars)} · ${G.hints} hints · ${G.mistakes} mistakes`;
           try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); }
@@ -525,5 +525,9 @@
   });
 
   paintHome();
+  if (Curio.simple) {
+    if (S.game && S.game.status === 'playing' && S.game.variant === 'classic' && !S.game.daily) resume();
+    else newGame('classic', 'easy');
+  }
   window.__sudoku = { E, get G() { return G; }, input, setSel, hint, autoNotes, newGame, get shape() { return shape; }, S };
 })();

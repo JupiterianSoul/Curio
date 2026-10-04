@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="snake" class="sn">
+<body data-game="snake" data-modes class="sn">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <symbol id="i-apple" viewBox="0 0 40 40"><path d="M20 12c-3-3-10-3-12 3-2 6 2 16 7 18 2 1 3 0 5 0s3 1 5 0c5-2 9-12 7-18-2-6-9-6-12-3z" fill="#e53935"/><path d="M14 16c-2 2-2 6-1 8" stroke="#fff" stroke-opacity=".6" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M20 12c0-3 1-6 3-8" stroke="#6d4c41" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M22 8c3-3 8-3 9 0-3 2-6 2-9 0z" fill="#43a047"/></symbol>
@@ -137,6 +138,21 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Snake', style: 'pixel', tag: 'Eat. Grow. Do not bite yourself. Since 1976.',
+      wrap: '.sn-wrap', stage: '.sn-stage', hud: '.sn-hud', pad: '.sn-pad', over: '#ov-over .sn-card', ovs: '.sn-ov', canvas: '#board', art: null,
+      artHtml: '<svg class="cab-art" viewBox="0 0 300 120" aria-hidden="true"><rect width="300" height="120" rx="12" fill="#9bbc0f"/><rect x="6" y="6" width="288" height="108" rx="8" fill="#8bac0f"/><g fill="#306230"><rect x="40" y="70" width="12" height="12"/><rect x="54" y="70" width="12" height="12"/><rect x="68" y="70" width="12" height="12"/><rect x="82" y="70" width="12" height="12"/><rect x="82" y="56" width="12" height="12"/><rect x="82" y="42" width="12" height="12"/><rect x="96" y="42" width="12" height="12"/><rect x="110" y="42" width="12" height="12"/><rect x="124" y="42" width="12" height="12"/><rect x="138" y="42" width="12" height="12"/><rect x="152" y="42" width="12" height="12"/></g><rect x="166" y="42" width="12" height="12" fill="#0f380f"/><rect x="172" y="45" width="3" height="3" fill="#9bbc0f"/><g class="blink"><rect x="222" y="44" width="10" height="10" fill="#0f380f"/><rect x="226" y="38" width="3" height="6" fill="#306230"/></g><g fill="#306230" opacity=".5"><rect x="6" y="6" width="288" height="2"/><rect x="6" y="112" width="288" height="2"/></g></svg>',
+      pal: { a: '#c7f464', b: '#ffe66d', c: '#ff6b6b', side: '#14240c', marq: '#1f3a12', glow: '#9be15d', btn: '#c7f464', btnInk: '#0f2a05' },
+      logo: { fill: ['#e9ffb0', '#9be15d', '#4d8f1f'], depth: 5, shade: '#0f380f', gap: 0.6, radius: 2 },
+      wave: 'square', jingle: [[392, 70], [523, 70], [659, 70], [523, 70], [784, 160]],
+      start: () => window.__snake?.start('classic'),
+      seed: 900, step: 10,
+      keyLabel: (k) => (k === 'simple' ? 'Classic' : k.replace(/^classic-/, '').replace('-', ' ')),
+      help: [['Arrows  WASD', 'Steer (turns are buffered)'], ['Swipe', 'Steer on a phone, or use the pad'], ['Apples', 'Grow and score'], ['Walls, tail', 'End the game'], ['P', 'Pause']]
+    });
+  </script>
   <script src="data.js"></script>
   <script src="game.js"></script>
 </body>

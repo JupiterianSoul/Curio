@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lost and found · Zoble</title>
+  <meta name="description" content="Things people dropped in the cabinet.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .lf-box { position: relative; margin: 26px auto 0; max-width: 760px; background: #c9a26f; border: 3px solid #2a1c0f; border-radius: 6px 10px 8px 12px; padding: 54px 18px 24px; box-shadow: 6px 7px 0 rgba(42, 28, 15, .3); color: #2a1c0f; }
+    .lf-box::before { content: "LOST + FOUND"; position: absolute; top: 12px; left: 50%; transform: translateX(-50%) rotate(-1.5deg); font-family: var(--c-hand); font-size: 26px; letter-spacing: .08em; padding: 2px 14px 0; border: 2.5px solid #2a1c0f; background: #f6e7c8; white-space: nowrap; }
+    .lf-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .lf-tag { position: relative; background: #fffaf0; border: 2px solid #2a1c0f; border-radius: 4px 14px 14px 4px; padding: 12px 12px 12px 26px; text-align: left; transform: rotate(var(--r)); }
+    .lf-tag::before { content: ""; position: absolute; left: 8px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; border: 2px solid #2a1c0f; background: #c9a26f; }
+    .lf-tag b { display: block; font-family: var(--c-hand); font-weight: 400; font-size: 20px; line-height: 1.05; }
+    .lf-tag small { display: block; font-family: var(--c-type); font-size: 12px; margin: 4px 0 8px; opacity: .75; }
+    .lf-tag .c-btn { font-size: 15px; padding: 5px 12px 4px; --c-edge: #2a1c0f; }
+    .lf-tag.gone { opacity: .45; }
+    .lf-report { margin: 24px auto 0; max-width: 760px; }
+    .lf-report form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .lf-report .c-input { flex: 1; min-width: 0; }
+    .lf-back { margin-top: 30px; }
+  </style>
+</head>
+<body data-title="Lost and found">
+  <main class="c-wrap c-center">
+    <h1 class="c-title">Lost and found</h1>
+    <p class="c-sub">Everything people have dropped down the back of the cabinet. If it is yours, claim it. Zob will check.</p>
+    <div class="lf-box"><div class="lf-items" id="items"></div></div>
+    <section class="lf-report c-card">
+      <p style="margin:0 0 10px;font-weight:700">Lost something? Describe it and Zob will put a tag on the pile.</p>
+      <form id="form"><input class="c-input" id="what" maxlength="60" placeholder="a blue mitten, my train of thought..." aria-label="What did you lose?"><button class="c-btn" type="submit">Report it</button></form>
+    </section>
+    <a class="c-btn c-btn--ghost lf-back" href="index.html">Back to the cabinet</a>
+  </main>
+  <script src="games.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      const C = window.Curio;
+      C.unlock('lost');
+      const BASE = [
+        ['One left sock', 'striped, slightly crunchy'],
+        ['Your keys', 'no wait, these are someone else\'s'],
+        ['A perfectly round circle', 'scored 99.8%, then dropped'],
+        ['Somebody\'s train of thought', 'it was going somewhere important'],
+        ['The TV remote', 'it was in the sofa the whole time'],
+        ['An umbrella', 'still slightly damp, mysteriously'],
+        ['The point', 'of a conversation from 2021'],
+        ['Half a password', 'the half without the emoji'],
+        ['A very small dragon', 'fed, watered, a bit bitey'],
+        ['The game you just lost', 'sorry. we all lose it eventually.'],
+        ['Seven marbles', 'from the marble run. there were eight.'],
+        ['A good mood', 'found under the toy box. take it.']
+      ];
+      const REPLIES = ['That is not yours. Zob checked the label.', 'Yours! Zob hands it over with a little bow.', 'Zob squints. Zob is not convinced.', 'Claimed. Please sign the invisible form.', 'Somebody already claimed it. Twice.', 'Zob says it is yours if you really need it.'];
+      const items = document.getElementById('items');
+      const paint = () => {
+        const mine = C.store.get('hub:lost', []);
+        const all = [...mine.map((m) => [m, 'reported by you. Zob is keeping an eye out.', true]), ...BASE];
+        items.replaceChildren(...all.map(([name, note, own], i) => {
+          const t = document.createElement('div');
+          t.className = 'lf-tag';
+          t.style.setProperty('--r', `${((i * 7) % 5 - 2) * 0.9}deg`);
+          t.innerHTML = '<b></b><small></small>';
+          t.querySelector('b').textContent = name;
+          t.querySelector('small').textContent = note;
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'c-btn c-btn--ghost';
+          b.textContent = own ? 'Found it!' : 'Claim';
+          b.addEventListener('click', () => {
+            if (own) {
+              C.store.set('hub:lost', C.store.get('hub:lost', []).filter((m) => m !== name));
+              C.confetti(60); C.toast('Reunited. Zob is a little emotional.'); paint(); return;
+            }
+            const r = C.pick(REPLIES);
+            C.toast(r, 2400);
+            C.sfx(r.startsWith('Yours') || r.startsWith('Claimed') ? 'success' : 'error');
+            if (r.startsWith('Yours')) t.classList.add('gone');
+          });
+          t.append(b);
+          return t;
+        }));
+      };
+      paint();
+      document.getElementById('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = document.getElementById('what').value.trim();
+        if (!v) { C.toast('Zob cannot look for nothing. He tried once.'); return; }
+        const mine = C.store.get('hub:lost', []);
+        mine.unshift(v.slice(0, 60));
+        C.store.set('hub:lost', mine.slice(0, 8));
+        document.getElementById('what').value = '';
+        C.sfx('stamp');
+        C.toast('Tagged and added to the pile.');
+        paint();
+      });
+    })();
+  </script>
+</body>
+</html>

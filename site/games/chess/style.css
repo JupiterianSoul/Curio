@@ -159,3 +159,7 @@ details.c-card[open] summary { margin-bottom: 12px; }
   .seg button { padding: 7px 11px; font-size: 14px; }
   .promo-row button { width: 54px; height: 54px; }
 }
+.board-wrap { box-shadow: 0 7px 0 var(--frame-2), 0 2px 0 9px rgba(0, 0, 0, .06), 0 30px 40px -12px rgba(25, 10, 2, .6), inset 0 1px 0 rgba(255, 230, 190, .35); }
+.board-wrap::after { content: ""; position: absolute; inset: 5px; border-radius: 14px; border: 1.5px solid rgba(232, 196, 120, .45); pointer-events: none; }
+.status { color: var(--ink); }
+html[data-mode="simple"] .controls, html[data-mode="simple"] #evalbar, html[data-mode="simple"] #hint, html[data-mode="simple"] #flip, html[data-mode="simple"] #moves-card, html[data-mode="simple"] .record, html[data-mode="simple"] .panel details, html[data-mode="simple"] .tips, html[data-mode="simple"] .opening, html[data-mode="simple"] #puz-card, html[data-mode="simple"] #puz-list { display: none !important; }

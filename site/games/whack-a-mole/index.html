@@ -115,8 +115,9 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
 .wm-badge.on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
 .wm-badge.new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
   </style>
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="whack-a-mole" class="arc">
+<body data-game="whack-a-mole" data-modes class="arc">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -184,6 +185,18 @@ body.arc-touch .arc-pad { display: flex; flex-direction: column; }
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Whack-a-Mole', style: 'toon', tag: 'Nine holes. Too many moles.', art: '#ov-menu .wm-hero',
+      pal: { a: '#ffc53d', b: '#8fe36a', c: '#ff6b6b', side: '#2d1d12', marq: '#4a3020', glow: '#ffb02e', btn: '#ffc53d', btnInk: '#2a1600', t1: '#fff1c1', t2: '#ffb02e', tout: '#3b2412', tdeep: '#1c1008' },
+      logo: { kind: 'slab' },
+      wave: 'square', jingle: [[200, 70, 110, 0.09], [0, 50], [523, 60, 0, 0.06, 'triangle'], [784, 160, 0, 0.06, 'triangle']],
+      seed: 3000, step: 50,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic 60s' : k),
+      help: [['Click / tap', 'Bonk a mole'], ['1 to 9', 'Numpad layout, one key per hole'], ['Gold mole', 'Worth extra, and fast'], ['Bunnies', 'Leave them alone'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

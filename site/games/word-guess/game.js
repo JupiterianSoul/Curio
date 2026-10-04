@@ -61,9 +61,9 @@
       src.buffer = buf; f.type = 'highpass'; f.frequency.value = freq; g.gain.value = vol;
       src.connect(f).connect(g).connect(ac.destination); src.start();
     },
-    key() { this.noise(0.035, 0.09, 2500); this.tone(900 + Math.random() * 200, 0.025, 'sine', 0.02); },
+    key() { this.noise(0.03, 0.16, 3200); this.noise(0.05, 0.08, 600); this.tone(160 + Math.random() * 30, 0.05, 'triangle', 0.06); },
     del() { this.noise(0.03, 0.06, 1200); },
-    flip(s, i) { const base = s === 'hit' ? 660 : s === 'near' ? 520 : 300; this.tone(base * (1 + i * 0.04), 0.09, 'triangle', 0.06); },
+    flip(s, i) { const base = s === 'hit' ? 660 : s === 'near' ? 520 : 300; this.tone(base * (1 + i * 0.04), 0.09, 'triangle', 0.04); window.Cafe?.sound('tile', 0.7); },
     bad() { this.tone(150, 0.14, 'square', 0.05, 0, 110); },
     win() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.2, 'triangle', 0.08, i * 0.08)); },
     lose() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.25, 'sawtooth', 0.04, i * 0.15)); },
@@ -425,7 +425,7 @@
     const pct = st && st.played ? Math.round(st.wins / st.played * 100) : 0;
     const max = st ? Math.max(1, ...st.dist) : 1;
     const dist = st ? st.dist.map((n, i) => `<div>${i + 1}<i class="${won && G.guesses.length === i + 1 ? 'cur' : ''}" style="width:${Math.max(8, n / max * 100)}%;animation-delay:${i * 60}ms">${n}</i></div>`).join('') : '';
-    const next = G.mode === 'daily' ? ([4, 5, 6].find((L) => S.daily[`${L}:${todayKey()}`]?.status !== 'won' && S.daily[`${L}:${todayKey()}`]?.status !== 'lost') || null) : null;
+    const next = G.mode === 'daily' && !Curio.simple ? ([4, 5, 6].find((L) => S.daily[`${L}:${todayKey()}`]?.status !== 'won' && S.daily[`${L}:${todayKey()}`]?.status !== 'lost') || null) : null;
     box.innerHTML = `<div class="wg-rcard" role="dialog" aria-label="Game over"><h3>${won ? `${PRAISE[G.guesses.length - 1]}!` : 'So close.'}</h3>
       <div class="ans ${won ? '' : 'lost'}">${G.answer.split('').map((c, i) => `<b style="animation-delay:${i * 90}ms">${c}</b>`).join('')}</div>
       ${st ? `<div class="wg-rstats"><div><b>${st.played}</b><span>Played</span></div><div><b>${pct}</b><span>Win %</span></div><div><b>${st.streak}</b><span>Streak</span></div><div><b>${st.max}</b><span>Best</span></div></div><div class="wg-dist">${dist}</div>` : ''}
@@ -437,7 +437,7 @@
       if (a === 'next') { if (G.mode === 'theme') startTheme(G.theme); else startEndless(G.L); }
       else if (a === 'daily') startDaily(+b.dataset.l);
       else if (a === 'endless') startEndless(G.L);
-      else if (a === 'menu') { show('home'); paintHome(); }
+      else if (a === 'menu') { if (Curio.simple) startEndless(5); else { show('home'); paintHome(); } }
       else if (a === 'share') {
         const head = G.mode === 'daily' ? `Daily #${dayNumber() + 1} (${G.L} letters)` : G.mode === 'theme' ? `${X.themes[G.theme].name} pack` : `Endless, ${G.L} letters`;
         copy(`Zoble Word Guess · ${head}${G.hard ? ' · hard' : ''}\n${won ? G.guesses.length : 'X'}/${ROWS}\n\n${emojiGrid()}`);
@@ -473,7 +473,7 @@
     if (document.activeElement && document.activeElement.closest('.wg-result, .curio-modal')) return;
     if (e.key === 'Enter' || e.key === 'Backspace') { if (document.activeElement && document.activeElement.closest('.wg-bar')) document.activeElement.blur(); e.preventDefault(); press(e.key); }
     else if (/^[a-zA-Z]$/.test(e.key)) press(e.key.toLowerCase());
-    else if (e.key === 'Escape') { if (G.mode === 'rush' && rush) return; show('home'); paintHome(); }
+    else if (e.key === 'Escape') { if ((G.mode === 'rush' && rush) || Curio.simple) return; show('home'); paintHome(); }
   });
   kbEl.addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) { press(b.dataset.k); b.blur(); } });
   $('backBtn').addEventListener('click', async () => {
@@ -509,5 +509,6 @@
 
   buildFloat();
   paintHome();
+  if (Curio.simple) { const d = S.daily[`5:${todayKey()}`]; if (d && d.status !== 'playing' && d.answer === dailyWord(5)) startEndless(5); else startDaily(5); }
   window.__wg = { score, valid, get answer() { return G && G.answer; }, press, get G() { return G; }, startDaily, startEndless, startTheme, startRush, get rush() { return rush; }, counts: { a4: ANS[4].length, a5: ANS[5].length, a6: ANS[6].length } };
 })();

@@ -18,8 +18,9 @@
     .bk-pows span { display: flex; align-items: center; gap: 6px; font-size: 13px; }
     .bk-pows i { width: 22px; height: 12px; border-radius: 6px; flex: none; }
   </style>
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="breakout" class="arc">
+<body data-game="breakout" data-modes class="arc">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -155,6 +156,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Breakout', style: 'pixel', tag: 'One paddle. One wall. Since 1976.', art: '#ov-menu .arc-hero svg',
+      pal: { a: '#ff944d', b: '#4db8ff', c: '#ffd84d', side: '#1c1420', marq: '#2c1f33', glow: '#ff944d', btn: '#ffd84d', btnInk: '#2a1a00' },
+      logo: { rows: ['#ff4d4d', '#ff944d', '#ffd84d', '#5bd65b', '#4db8ff', '#4d6bff', '#b44dff'], depth: 4, shade: '#000', gap: 1.6, radius: 1.5 },
+      wave: 'square', jingle: [[440, 60], [880, 60], [660, 60], [1320, 160]],
+      seed: 9000, step: 10,
+      keyLabel: (k) => (k === 'simple' ? 'Classic wall' : k.replace('score-', '').replace('-', ' ')),
+      help: [['Mouse', 'Glide the pointer, no clicking'], ['← →  A D', 'Move the paddle'], ['Space', 'Launch the ball'], ['Edges', 'Paddle edges send sharp angles'], ['P', 'Pause']]
+    });
+  </script>
   <script src="engine.js"></script>
   <script src="levels.js"></script>
   <script src="game.js"></script>

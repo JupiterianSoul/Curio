@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="tetris" class="bk">
+<body data-game="tetris" data-modes class="bk">
   <main class="c-wrap bk-wrap">
     <div class="bk-hud">
       <div class="bk-stat"><b data-hud="score">0</b><span data-hud="scorelabel">Score</span></div>
@@ -137,6 +138,23 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Blocks', style: 'pixel', tag: 'Stack, spin and clear. Since 1984.',
+      wrap: '.bk-wrap', stage: '.bk-stage', hud: '.bk-hud', pad: '.bk-pad', over: '#ov-over .bk-card', ovs: '.bk-ov', canvas: '#board', art: null,
+      artHtml: '<svg class="cab-art" viewBox="0 0 300 120" aria-hidden="true"><rect width="300" height="120" rx="12" fill="#160f2e"/><g stroke="#000" stroke-opacity=".35" stroke-width="2"><g fill="#00d8ff"><rect x="60" y="96" width="18" height="18"/><rect x="78" y="96" width="18" height="18"/><rect x="96" y="96" width="18" height="18"/><rect x="114" y="96" width="18" height="18"/></g><g fill="#ffd500"><rect x="132" y="96" width="18" height="18"/><rect x="150" y="96" width="18" height="18"/><rect x="132" y="78" width="18" height="18"/><rect x="150" y="78" width="18" height="18"/></g><g fill="#b347ff"><rect x="168" y="96" width="18" height="18"/><rect x="186" y="96" width="18" height="18"/><rect x="204" y="96" width="18" height="18"/><rect x="186" y="78" width="18" height="18"/></g><g fill="#2ee66b"><rect x="60" y="78" width="18" height="18"/><rect x="78" y="78" width="18" height="18"/><rect x="78" y="60" width="18" height="18"/><rect x="96" y="60" width="18" height="18"/></g><g fill="#ff3b3b"><rect x="222" y="96" width="18" height="18"/><rect x="222" y="78" width="18" height="18"/><rect x="240" y="78" width="18" height="18"/><rect x="240" y="60" width="18" height="18"/></g><g class="bob" fill="#ff8a1f"><rect x="150" y="12" width="18" height="18"/><rect x="150" y="30" width="18" height="18"/><rect x="150" y="48" width="18" height="18"/><rect x="168" y="48" width="18" height="18"/></g></g><rect x="56" y="10" width="2" height="106" fill="#3b2f6b"/><rect x="262" y="10" width="2" height="106" fill="#3b2f6b"/></svg>',
+      pal: { a: '#00d8ff', b: '#ffd500', c: '#b347ff', side: '#170f2e', marq: '#24184a', glow: '#8a5cff', btn: '#00d8ff', btnInk: '#001a20' },
+      logo: { letters: ['#00d8ff', '#ffd500', '#b347ff', '#2ee66b', '#ff3b3b', '#3b6bff'], bevel: true, gap: 0.2, depth: 4, shade: '#000' },
+      wave: 'square', jingle: [[659, 120], [494, 60], [523, 60], [587, 120], [523, 60], [494, 60], [440, 160]],
+      start: () => window.__blocks?.start('marathon'),
+      seed: (k) => (k === 'zen' ? 150 : 60000), step: 100,
+      low: (k) => k === 'sprint' || k === 'dig',
+      fmt: (v, k) => (k === 'sprint' || k === 'dig' ? `${Math.floor(v / 60000)}:${String(Math.floor(v / 1000) % 60).padStart(2, '0')}.${String(Math.floor(v / 100) % 10)}` : Curio.fmt(v)),
+      keyLabel: (k) => (k === 'simple' ? 'Marathon' : k),
+      help: [['← →', 'Move the piece'], ['↑  X  Z', 'Rotate'], ['↓ / Space', 'Soft drop / hard drop'], ['C / Shift', 'Hold a piece'], ['P', 'Pause']]
+    });
+  </script>
   <script src="data.js"></script>
   <script src="game.js"></script>
 </body>

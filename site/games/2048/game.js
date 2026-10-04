@@ -32,8 +32,11 @@
   let stats = load('stats', {});
   let hist = load('hist', []);
   if (!Array.isArray(hist)) hist = [];
-  const set = Object.assign({ mode: 'classic', size: '4', undo: '1', goal: '2048', theme: 'classic' }, load('set', {}));
-  if (!THEMES[set.theme]) set.theme = 'classic';
+  const set = Object.assign({ mode: 'classic', size: '4', undo: '1', goal: '2048', theme: 'wood' }, load('set', {}));
+  if (!THEMES[set.theme]) set.theme = 'wood';
+  const keepSet = { mode: set.mode, size: set.size, undo: set.undo };
+  if (Curio.simple) Object.assign(set, { mode: 'classic', size: '4', undo: '1' });
+  const saveSet = () => save('set', Curio.simple ? { ...set, ...keepSet } : set);
   let N, cfg, grid, score, moves, won, over, stack, undosLeft, nextId = 1, R, timeLeft, timer, started, topTile, hintsUsed, mergesGame;
   const els = new Map();
 
@@ -93,6 +96,7 @@
     const dark = Curio.isDark();
     boardEl.style.setProperty('--board', dark ? T.dboard : T.board);
     boardEl.style.setProperty('--cell', dark ? T.dcell : T.cell);
+    boardEl.classList.toggle('wood', !!T.wood);
     for (const row of grid || []) for (const t of row) if (t) styleEl(els.get(t.id), t.v);
     document.querySelectorAll('.t-theme').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.val === set.theme)));
   }
@@ -424,7 +428,8 @@
       scorePop(res.gained);
       const top = res.made.reduce((a, b) => (b.v > a.v ? b : a));
       const st = tileStyle(top.v);
-      Curio.beep(200 + 40 * Math.log2(top.v), 0.09, 'triangle', 0.11);
+      Curio.beep(200 + 40 * Math.log2(top.v), 0.09, 'triangle', 0.07);
+      window.Cafe?.sound('tile', 0.9);
       if (res.made.length >= 2) setTimeout(() => Curio.beep(300 + 40 * Math.log2(top.v), 0.08, 'triangle', 0.08), 60);
       for (const m of res.made) if (m.v >= 32) tilePop(m, '+' + m.v, m.v >= 512);
       for (const m of res.made) if (m.v >= 64) burst(m, Math.min(40, 6 + Math.log2(m.v) * 2), tileStyle(m.v).bg);
@@ -446,7 +451,7 @@
         if (cfg.mode === 'rocks' && topTile >= 512) unlock('rocks');
         if (cfg.undo === 0 && topTile >= 2048) unlock('purist');
       }
-    } else Curio.beep(520, 0.025, 'sine', 0.035);
+    } else { Curio.beep(520, 0.02, 'sine', 0.02); window.Cafe?.sound('wood', 0.35); }
     if (score >= 20000) unlock('score20k');
     if (score >= 100000) unlock('score100k');
     $('live').textContent = `Score ${score}`;
@@ -610,7 +615,7 @@
       recordGame(false);
     }
     set[k] = v;
-    save('set', set);
+    saveSet();
     fresh();
   }
   document.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => { if (!b.disabled) changeSetting(b.dataset.set, b.dataset.val); }));
@@ -635,7 +640,7 @@
     for (const i of [1, 4, 7, 10]) { const s = document.createElement('i'); s.style.background = T.tiles[i]; b.append(s); }
     b.addEventListener('click', () => {
       set.theme = id;
-      save('set', set);
+      saveSet();
       applyTheme();
       Curio.beep(700, 0.04, 'triangle', 0.05);
       const tried = new Set(load('tried', []));
@@ -730,6 +735,7 @@
     }
     try {
       if (!s || !s.cfg || !Array.isArray(s.vals) || s.vals.length !== s.cfg.size || s.over) return false;
+      if (Curio.simple && (s.cfg.mode !== 'classic' || s.cfg.size !== 4)) return false;
       if (s.cfg.mode === 'daily' && s.cfg.date !== today()) return false;
       cfg = s.cfg;
       N = cfg.size;
@@ -759,9 +765,9 @@
     if (sizeBoard && N) requestAnimationFrame(() => sizeBoard());
   }
   setupBtn.addEventListener('click', () => toggleSetup(setupEl.hidden));
-  toggleSetup(innerWidth > 700 && innerHeight > 760);
+  toggleSetup(!Curio.simple && innerWidth > 700 && innerHeight > 760);
   if (!restore()) fresh('quiet');
-  if (!Curio.store.get('2048:welcomed', false)) showWelcome();
+  if (!Curio.simple && !Curio.store.get('2048:welcomed', false)) showWelcome();
   renderTab('help');
 
   window.__g2048 = {

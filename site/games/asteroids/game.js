@@ -36,6 +36,7 @@
     width: 800, height: 600, reset, update, draw, key, idle, achievements: ACH, tip: 'Tip for laptops: it is all keyboard. Arrows to fly, Space to fire, H hyperspace, B bomb.', capture: ['h', 'b', 'Shift'],
     size: (w, h) => ({ w: Math.round(Math.max(460, Math.min(1000, 600 * w / h))), h: 600 }),
     defaults: { mode: 'classic', diff: 'normal', skin: 'arrow', auto: false },
+    simple: { mode: 'classic', diff: 'normal', skin: 'arrow', auto: false },
     statsList: [
       ['runs', 'Runs'], ['rocks', 'Rocks smashed'], ['ufos', 'UFOs downed'], ['bosses', 'Bosses beaten'],
       ['crystals', 'Crystals found'], ['wave', 'Best wave'], [(s) => s.shots ? Math.round(100 * (s.hits || 0) / s.shots) : 0, 'Accuracy', (v) => v + '%'], ['deaths', 'Ships lost']
@@ -624,7 +625,7 @@
         const bonus = 100 * wave;
         addPoints(bonus);
         A.chord([523, 659, 784, 1047], 0.08, 'triangle', 0.09);
-        if (ship.alive) openShop(); else nextWave();
+        if (ship.alive && !Curio.simple) openShop(); else nextWave();
         return;
       }
     }

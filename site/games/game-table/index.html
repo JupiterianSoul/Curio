@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Game Table · Zoble</title>
+  <meta name="description" content="Six quick classics for one or two players: Tic Tac Toe, Connect Four, Dots and Boxes, Reversi, Checkers and Mancala.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="cafe.css">
+  <link rel="stylesheet" href="table.css">
+</head>
+<body data-game="game-table" data-modes class="cafe" data-table="oak" data-cafe-sign="off">
+  <header class="tp-head">
+    <div class="tp-sign">
+      <span class="cafe-plate">Zoble Classics</span>
+      <p class="tp-title">Game Table</p>
+      <span id="table-tools" class="tp-tools"></span>
+    </div>
+    <p class="tp-tag">Six quick classics on one table. Pick a box, pull up a chair.</p>
+    <nav id="table-pick" class="tp-pick" aria-label="Choose a game"></nav>
+  </header>
+  <div id="table-stage" class="tp-stage"></div>
+  <template id="v-tic-tac-toe">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="tg-gold" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff3a8"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#f08a00"/></radialGradient>
+      <radialGradient id="tg-planet" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#c6a8ff"/><stop offset=".55" stop-color="#7c4dff"/><stop offset="1" stop-color="#3b1f8f"/></radialGradient>
+      <radialGradient id="tg-berry" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#ff8a80"/><stop offset=".6" stop-color="#e53935"/><stop offset="1" stop-color="#a51d1d"/></radialGradient>
+      <radialGradient id="tg-orange" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffe0a3"/><stop offset=".7" stop-color="#ffab2e"/><stop offset="1" stop-color="#f57c00"/></radialGradient>
+      <radialGradient id="tg-slime" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#b9f6a8"/><stop offset=".6" stop-color="#4caf50"/><stop offset="1" stop-color="#1b7a2a"/></radialGradient>
+      <radialGradient id="tg-monster" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#e1b3ff"/><stop offset=".6" stop-color="#9c4dcc"/><stop offset="1" stop-color="#5e1f8a"/></radialGradient>
+      <linearGradient id="tg-metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd8e3"/><stop offset="1" stop-color="#7d8ea3"/></linearGradient>
+    </defs>
+  </svg>
+  <div class="tt-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <main class="c-wrap tt">
+    <section id="menu" class="tt-menu">
+      <header class="tt-hero">
+        <div class="tt-cast" id="cast" aria-hidden="true"></div>
+        <h1 class="c-title">Tic Tac Toe</h1>
+        <p class="c-sub">Four ways to play the oldest game on the napkin. Pick a board, pick a rival, pick your pieces.</p>
+      </header>
+      <h2 class="tt-h">1. Board</h2>
+      <div class="tt-modes" id="modes" role="radiogroup" aria-label="Board"></div>
+      <h2 class="tt-h">2. Opponent</h2>
+      <div class="tt-opps" id="opps" role="radiogroup" aria-label="Opponent"></div>
+      <h2 class="tt-h">3. Pieces</h2>
+      <div class="tt-skins" id="skins" role="radiogroup" aria-label="Pieces"></div>
+      <div class="tt-go">
+        <button class="c-btn tt-play" id="playBtn" type="button">Play</button>
+      </div>
+      <div class="c-row tt-links">
+        <button class="c-btn c-btn--ghost" id="howBtn" type="button">📖 How to play</button>
+        <button class="c-btn c-btn--ghost" id="trophyBtn" type="button">🏆 Trophies <span id="trophyCount"></span></button>
+        <button class="c-btn c-btn--ghost" id="statsBtn" type="button">📊 Stats</button>
+      </div>
+    </section>
+
+    <section id="game" class="tt-game" hidden>
+      <div class="tt-top">
+        <div class="tt-player" id="pX">
+          <div class="tt-face" id="faceX"></div>
+          <div class="tt-pinfo"><b id="nameX">You</b><span id="scoreX">0</span></div>
+        </div>
+        <div class="tt-mid">
+          <div class="tt-modechip" id="modeChip"></div>
+          <div class="tt-draws"><b id="scoreD">0</b><span>draws</span></div>
+        </div>
+        <div class="tt-player tt-player--o" id="pO">
+          <div class="tt-pinfo"><b id="nameO">Hoot</b><span id="scoreO">0</span></div>
+          <div class="tt-face" id="faceO"></div>
+          <div class="tt-bubble" id="bubble" aria-live="polite"></div>
+        </div>
+      </div>
+      <p class="tt-status" id="status" aria-live="polite"></p>
+      <div class="tt-stage" id="stage">
+        <div class="tt-board" id="board" role="grid" aria-label="Board"></div>
+        <div class="tt-result" id="result" hidden></div>
+      </div>
+      <div class="tt-tools">
+        <button class="tt-tool" id="undoBtn" type="button"><i>↶</i>Undo</button>
+        <button class="tt-tool" id="hintBtn" type="button"><i>💡</i>Hint</button>
+        <button class="tt-tool" id="newBtn" type="button"><i>↻</i>Restart</button>
+        <button class="tt-tool" id="ruleBtn" type="button"><i>📖</i>Rules</button>
+        <button class="tt-tool" id="menuBtn" type="button"><i>☰</i>Menu</button>
+      </div>
+      <p class="c-muted tt-keys">Keys: <span class="c-kbd">1</span>-<span class="c-kbd">9</span> on the classic boards, arrows plus <span class="c-kbd">Enter</span> anywhere, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">N</span> new round, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+  </main>
+  <div class="tt-fx" id="fx" aria-hidden="true"></div>
+  <div class="tt-badge" id="badge" role="status" aria-live="polite"></div>
+  </template>
+  <template id="v-connect-four">
+    <main class="c-wrap c4" id="app">
+    <header class="c4-head">
+      <h1 class="c-title">Connect Four</h1>
+      <p class="c-sub">Drop discs, stack them up, line up four. Four robot rivals, four rule sets and one very satisfying clunk.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero" aria-hidden="true">
+        <svg viewBox="0 0 640 220" class="hero-svg" id="hero"></svg>
+      </div>
+
+      <div class="daily c-card" id="daily-card">
+        <div class="daily-ico" aria-hidden="true">📅</div>
+        <div class="daily-txt"><b>Daily challenge</b><span id="daily-sub">A fresh opening every day against Vega.</span></div>
+        <button type="button" class="c-btn" id="daily-go">Play today</button>
+      </div>
+
+      <div class="pick-grid">
+        <section class="c-card pick">
+          <h2>Opponent</h2>
+          <div class="opps" id="opps" role="radiogroup" aria-label="Opponent"></div>
+        </section>
+        <section class="c-card pick">
+          <h2>Rules</h2>
+          <div class="variants" id="variants" role="radiogroup" aria-label="Rule variant"></div>
+        </section>
+        <section class="c-card pick">
+          <h2>Look and feel</h2>
+          <div class="skins" id="skins" role="radiogroup" aria-label="Disc colours"></div>
+          <div class="toggles">
+            <label class="tog"><input type="checkbox" id="opt-clock"> <span>Shot clock (8 seconds a move)</span></label>
+            <div class="seg" id="first" role="radiogroup" aria-label="Who goes first">
+              <button type="button" data-first="you">You first</button>
+              <button type="button" data-first="alt">Take turns</button>
+              <button type="button" data-first="ai">Rival first</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Drop in <span aria-hidden="true">↓</span></button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Game">
+      <div class="hud">
+        <div class="pchip" id="chip-1"><span class="ring"></span><span class="ava" id="ava-1"></span><span class="pmeta"><b id="name-1">You</b><small id="sub-1"></small></span><b class="pscore" id="score-1">0</b></div>
+        <div class="vs"><span id="variant-tag">Classic</span><span class="c-muted" id="draws">0 draws</span></div>
+        <div class="pchip right" id="chip-2"><b class="pscore" id="score-2">0</b><span class="pmeta"><b id="name-2">Gizmo</b><small id="sub-2"></small></span><span class="ava" id="ava-2"></span><span class="ring"></span></div>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+
+      <div class="stage" id="stage">
+        <div class="preview" id="preview" aria-hidden="true"><div class="disc ghost" id="ghost"><i></i></div><div class="hint-arrow" id="hint-arrow">▼</div></div>
+        <div class="board-shell" id="shell">
+          <div class="board" id="board">
+            <div class="back"></div>
+            <div class="discs" id="discs"></div>
+            <svg class="front" id="front" aria-hidden="true"></svg>
+            <svg class="fx" id="fx" aria-hidden="true"></svg>
+            <div class="cols" id="cols" role="group" aria-label="Columns"></div>
+          </div>
+          <svg class="legs" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 0 L10 0 L7 20 L0 20 Z M90 0 L98 0 L100 20 L93 20 Z" /></svg>
+        </div>
+        <div class="pops" id="pops" role="group" aria-label="Pop out a disc"></div>
+        <div class="result" id="result" hidden></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="c-btn c-btn--ghost" id="undo"><span aria-hidden="true">↶</span> Undo</button>
+        <button type="button" class="c-btn c-btn--ghost" id="hint"><span aria-hidden="true">💡</span> Hint</button>
+        <button type="button" class="c-btn c-btn--ghost" id="restart"><span aria-hidden="true">⟳</span> Restart</button>
+        <button type="button" class="c-btn c-btn--ghost" id="back"><span aria-hidden="true">☰</span> Menu</button>
+      </div>
+      <p class="keys c-muted">Tap a column, or press <span class="c-kbd">1</span> to <span class="c-kbd">9</span>. <span class="c-kbd">←</span><span class="c-kbd">→</span> aim, <span class="c-kbd">Enter</span> drop, <span class="c-kbd">P</span> pop, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">R</span> restart, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  </template>
+  <template id="v-dots-and-boxes">
+    <main class="c-wrap db">
+    <svg class="hero" viewBox="0 0 120 64" aria-hidden="true">
+      <g fill="#1d1b19"><circle cx="20" cy="14" r="4"/><circle cx="50" cy="14" r="4"/><circle cx="80" cy="14" r="4"/><circle cx="20" cy="44" r="4"/><circle cx="50" cy="44" r="4"/><circle cx="80" cy="44" r="4"/></g>
+      <rect x="22" y="16" width="26" height="26" fill="#ff5a36" opacity=".25"/><path d="M20 14H50V44H20Z" stroke="#ff5a36" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
+      <path class="stroke" d="M80 14V44" stroke="#2f7de1" stroke-width="3.5" stroke-linecap="round"/>
+      <g class="pen"><path d="M84 46l22-30 6 4-22 30-8 3z" fill="#ffc233" stroke="#a87400" stroke-width="1.5"/><path d="M84 46l-2 7 8-3z" fill="#1d1b19"/></g>
+    </svg>
+    <h1 class="c-title">Dots and Boxes</h1>
+    <p class="c-sub">Draw a line. Close a box and you go again. Never, ever hand over the third side.</p>
+    <div class="controls">
+      <div class="seg" id="sizes" role="group" aria-label="Board size">
+        <button type="button" data-size="3x3">3×3</button>
+        <button type="button" data-size="4x4">4×4</button>
+        <button type="button" data-size="5x5">5×5</button>
+        <button type="button" data-size="6x6">6×6</button>
+        <button type="button" data-size="7x7">7×7</button>
+        <button type="button" data-size="5x8">8×5</button>
+      </div>
+      <div class="seg" id="modes" role="group" aria-label="Opponent">
+        <button type="button" data-mode="easy">Easy AI</button>
+        <button type="button" data-mode="medium">Clever AI</button>
+        <button type="button" data-mode="hard">Sneaky AI</button>
+        <button type="button" data-mode="two">2 players</button>
+        <button type="button" data-mode="three">3 players</button>
+        <button type="button" data-mode="four">4 players</button>
+      </div>
+    </div>
+    <div class="scores" id="scores"></div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="paper" id="paper"><svg class="board" id="board" role="group" aria-label="Dots and boxes board"></svg></div>
+    <div class="row2">
+      <button type="button" class="c-btn c-btn--ghost" id="hint">💡 Hint</button>
+      <button type="button" class="c-btn c-btn--ghost" id="undo">↶ Undo</button>
+      <button type="button" class="c-btn" id="new">New game</button>
+      <label class="toggle"><input type="checkbox" id="safety"> Warn me about third sides</label>
+    </div>
+    <div class="panels">
+      <details class="c-card">
+        <summary>📖 How to play and strategy</summary>
+        <ul class="rules">
+          <li>Take turns drawing one line between two neighbouring dots.</li>
+          <li>Complete the fourth side of a box to claim it, then you must draw again.</li>
+          <li>A box with three sides is a gift to whoever moves next. Turn on the warning to see risky lines in red dashes.</li>
+          <li>Late in the game the board becomes long chains. Whoever is forced to open the first long one usually loses.</li>
+          <li>The double-cross: when taking a chain, decline the last two boxes so your opponent has to open the next chain. The Sneaky AI knows this trick.</li>
+          <li>Keys: Tab to a line, <span class="c-kbd">Enter</span> draws it, <span class="c-kbd">H</span> hint, <span class="c-kbd">U</span> undo, <span class="c-kbd">N</span> new game.</li>
+        </ul>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+  </main>
+  </template>
+  <template id="v-reversi">
+    <main class="c-wrap rv">
+    <svg class="hero" viewBox="0 0 150 64" aria-hidden="true">
+      <defs><radialGradient id="hk" cx=".35" cy=".3"><stop offset="0" stop-color="#6a6460"/><stop offset=".6" stop-color="#1e1c1b"/></radialGradient><radialGradient id="hl" cx=".35" cy=".3"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d8d2c6"/></radialGradient></defs>
+      <rect x="10" y="6" width="130" height="52" rx="10" fill="#2e7d32"/><path d="M42.5 6v52M75 6v52M107.5 6v52M10 32h130" stroke="#1b5e20" stroke-width="2"/>
+      <circle cx="26" cy="19" r="10" fill="url(#hk)"/><circle cx="58" cy="45" r="10" fill="url(#hl)"/><circle class="flipper" cx="91" cy="19" r="10" fill="url(#hk)"/><circle cx="124" cy="45" r="10" fill="url(#hl)"/><circle cx="58" cy="19" r="10" fill="url(#hl)"/><circle cx="91" cy="45" r="10" fill="url(#hk)"/>
+    </svg>
+    <h1 class="c-title">Reversi</h1>
+    <p class="c-sub">Trap your opponent's discs between yours to flip them. Corners are gold. The AI knows it.</p>
+    <div class="controls">
+      <div class="seg" id="levels" role="group" aria-label="Opponent">
+        <button type="button" data-level="easy">Easy</button>
+        <button type="button" data-level="medium">Medium</button>
+        <button type="button" data-level="hard">Hard</button>
+        <button type="button" data-level="expert">Expert</button>
+        <button type="button" data-level="two">2 players</button>
+      </div>
+      <div class="seg" id="sides" role="group" aria-label="Your colour">
+        <button type="button" data-side="1">Play Black</button>
+        <button type="button" data-side="-1">Play White</button>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="board-wrap" id="board-wrap">
+        <div class="board tex" id="board" role="grid" aria-label="Reversi board"></div>
+      </div>
+      <aside class="panel">
+        <section class="c-card">
+          <p class="status" id="status" aria-live="polite"></p>
+          <div class="score">
+            <div class="side k" id="side-k"><i><span class="disc"><span class="f k"></span><span class="f l"></span></span></i><div><b id="n-k">2</b><span id="lbl-k">You</span></div></div>
+            <div class="side l" id="side-l"><i><span class="disc w"><span class="f k"></span><span class="f l"></span></span></i><div><b id="n-l">2</b><span id="lbl-l">AI</span></div></div>
+          </div>
+          <div class="bar" aria-hidden="true"><div id="bar"></div></div>
+          <div class="btns">
+            <button type="button" class="c-btn c-btn--ghost" id="hint">🎯 Best move</button>
+            <button type="button" class="c-btn c-btn--ghost" id="undo">↶ Undo</button>
+            <button type="button" class="c-btn c-btn--ghost" id="hints" aria-pressed="true">💡 Dots</button>
+            <button type="button" class="c-btn c-btn--ghost" id="new">New game</button>
+          </div>
+        </section>
+        <section class="c-card">
+          <h2 class="small">Moves</h2>
+          <div class="history" id="history"></div>
+        </section>
+        <p class="record" id="record"></p>
+        <details class="c-card">
+          <summary>📖 How to play</summary>
+          <p class="rules"><b>Place a disc</b> so a straight line of your opponent's discs is sandwiched between it and another of yours. Every sandwiched disc flips. No legal move? You pass. Most discs when the board fills wins. Hover or Tab onto a dot to preview which discs would flip. Keys: arrows move, <span class="c-kbd">Enter</span> plays, <span class="c-kbd">B</span> best move, <span class="c-kbd">U</span> undo, <span class="c-kbd">N</span> new.</p>
+        </details>
+        <details class="c-card">
+          <summary>🎨 Board and discs</summary>
+          <p class="sub">Board</p>
+          <div class="swatches" id="boards"></div>
+          <p class="sub">Discs</p>
+          <div class="swatches" id="discs"></div>
+        </details>
+        <details class="c-card">
+          <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+          <div class="statgrid" id="statgrid"></div>
+          <div class="achs" id="achs"></div>
+        </details>
+      </aside>
+    </div>
+  </main>
+  </template>
+  <template id="v-checkers">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.38" numOctaves="3" seed="7" result="n"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 -0.45"/>
+      </filter>
+      <filter id="grain2" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.4 0.015" numOctaves="3" seed="3" result="n"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.3 -0.42"/>
+      </filter>
+      <symbol id="crown" viewBox="0 0 40 30"><path d="M4 24 L2 8 L12 15 L20 3 L28 15 L38 8 L36 24 Z" fill="#ffd54f" stroke="#a87b00" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="23" width="32" height="5" rx="2" fill="#ffca28" stroke="#a87b00" stroke-width="2"/><circle cx="20" cy="15" r="2.6" fill="#e53935"/><circle cx="11" cy="19" r="1.8" fill="#42a5f5"/><circle cx="29" cy="19" r="1.8" fill="#42a5f5"/></symbol>
+    </defs>
+  </svg>
+  <main class="c-wrap ck" id="app">
+    <header class="ck-head">
+      <h1 class="c-title">Checkers</h1>
+      <p class="c-sub">Five rule sets from three continents on a proper wooden board. Jumps are compulsory, kings are mighty, and the robots are patient.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero" aria-hidden="true"><svg viewBox="0 0 640 210" id="hero"></svg></div>
+      <div class="daily c-card" id="daily-card">
+        <div class="daily-ico" aria-hidden="true">📅</div>
+        <div class="daily-txt"><b>Daily challenge</b><span id="daily-sub">A seeded opening against the Hard AI.</span></div>
+        <button type="button" class="c-btn" id="daily-go">Play today</button>
+      </div>
+      <div class="pick-grid">
+        <section class="c-card pick"><h2>Rules</h2><div class="list" id="variants" role="radiogroup" aria-label="Rules"></div></section>
+        <section class="c-card pick"><h2>Opponent</h2><div class="list" id="opps" role="radiogroup" aria-label="Opponent"></div></section>
+        <section class="c-card pick">
+          <h2>Board</h2><div class="swatches" id="boards" role="radiogroup" aria-label="Board"></div>
+          <h2 class="mt">Pieces</h2><div class="swatches" id="sets" role="radiogroup" aria-label="Pieces"></div>
+          <label class="tog"><input type="checkbox" id="opt-dots" checked> <span>Show legal move dots</span></label>
+          <label class="tog"><input type="checkbox" id="opt-nums"> <span>Show square numbers</span></label>
+        </section>
+      </div>
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Set up the board</button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Game">
+      <div class="layout">
+        <div class="board-col">
+          <div class="board-wrap" id="board-wrap">
+            <div class="frame-grain"></div>
+            <div class="board" id="board" role="grid" aria-label="Checkers board">
+              <div class="grain" aria-hidden="true"></div>
+              <div class="pieces" id="pieces" aria-hidden="true"></div>
+              <svg class="arrows" id="arrows" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <section class="c-card side-card">
+            <div class="who" id="who-ai"><span class="ava" id="ava-ai"></span><span class="wmeta"><b id="name-ai">Medium AI</b><span class="tray" id="tray-ai"></span></span><span class="cnt" id="c-ai">12</span></div>
+            <p class="status" id="status" aria-live="polite"></p>
+            <div class="who" id="who-you"><span class="ava" id="ava-you"></span><span class="wmeta"><b id="name-you">You</b><span class="tray" id="tray-you"></span></span><span class="cnt" id="c-you">12</span></div>
+            <div class="btns">
+              <button type="button" class="c-btn c-btn--ghost" id="undo"><span aria-hidden="true">↶</span> Undo</button>
+              <button type="button" class="c-btn c-btn--ghost" id="hint"><span aria-hidden="true">💡</span> Hint</button>
+              <button type="button" class="c-btn c-btn--ghost" id="flip"><span aria-hidden="true">⇅</span> Flip</button>
+              <button type="button" class="c-btn c-btn--ghost" id="new"><span aria-hidden="true">⟳</span> New</button>
+              <button type="button" class="c-btn c-btn--ghost" id="back"><span aria-hidden="true">☰</span> Menu</button>
+            </div>
+          </section>
+          <section class="c-card">
+            <h2 class="small">Moves</h2>
+            <ol class="history" id="history"></ol>
+          </section>
+          <p class="record" id="record"></p>
+        </aside>
+      </div>
+      <p class="c-muted tips">Tap a glowing piece, then a dot, or drag it. Keys: arrows move the cursor, <span class="c-kbd">Enter</span> selects, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">F</span> flip, <span class="c-kbd">N</span> new, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  </template>
+  <template id="v-mancala">
+    <main class="c-wrap mc">
+    <h1 class="c-title">Mancala</h1>
+    <p class="c-sub">Scoop up a pit, drop one stone at a time, and fill your store. Play Kalah, West African Oware or the chain-reaction Avalanche against a minimax AI or a friend.</p>
+    <div>
+      <div class="seg" id="variants" role="group" aria-label="Rules">
+        <button type="button" data-v="kalah4">Kalah</button>
+        <button type="button" data-v="kalah3">Quick</button>
+        <button type="button" data-v="kalah6">Kalah 6</button>
+        <button type="button" data-v="oware">Oware</button>
+        <button type="button" data-v="avalanche">Avalanche</button>
+      </div>
+    </div>
+    <div>
+      <div class="seg" id="levels" role="group" aria-label="Opponent">
+        <button type="button" data-level="easy">🙂 Easy</button>
+        <button type="button" data-level="medium">🤔 Medium</button>
+        <button type="button" data-level="hard">🧠 Hard</button>
+        <button type="button" data-level="duo">👥 2 players</button>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="who"><span id="who-ai">🤖 AI: 0</span><span id="who-me">You: 0 😀</span></div>
+    <div class="board" id="board" role="group" aria-label="Mancala board">
+      <div class="stones" id="stones" aria-hidden="true"></div>
+    </div>
+    <div class="side-row">
+      <button type="button" class="c-btn c-btn--ghost" id="undo">↶ Undo <span class="c-kbd">U</span></button>
+      <button type="button" class="c-btn c-btn--ghost" id="hint">💡 Hint <span class="c-kbd">H</span></button>
+      <button type="button" class="c-btn c-btn--ghost" id="speed" aria-pressed="false">⏩ Fast</button>
+      <button type="button" class="c-btn" id="new">New game <span class="c-kbd">N</span></button>
+    </div>
+    <div class="panels">
+      <section class="c-card rules">
+        <h2 id="rules-title">How to play</h2>
+        <ol id="rules"></ol>
+      </section>
+      <section class="c-card">
+        <h2>🎨 Look</h2>
+        <div class="opt"><span>Board</span><div class="seg" id="boards" style="margin:0"><button type="button" data-k="walnut">Walnut</button><button type="button" data-k="teak">Teak</button><button type="button" data-k="ebony">Ebony</button><button type="button" data-k="jade">Jade</button></div></div>
+        <div class="opt"><span>Stones</span><div class="seg" id="skins" style="margin:0"><button type="button" data-k="gems">Gems</button><button type="button" data-k="glass">Glass</button><button type="button" data-k="pebble">Pebbles</button><button type="button" data-k="seed">Seeds</button></div></div>
+        <p class="c-muted" style="font-size:13px;margin:8px 0 0">Keys: 1 to 6 sow your pits (left to right as you see them), U undo, H hint, N new game. Hover a pit to see where the last stone lands.</p>
+      </section>
+      <section class="c-card">
+        <h2>📊 Record</h2>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="badges" id="badges"></div>
+        <div class="c-row" style="gap:8px;margin-top:12px"><button type="button" class="c-btn c-btn--ghost" id="share">📋 Share</button></div>
+      </section>
+    </div>
+  </main>
+  </template>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="cafe.js"></script>
+  <script>window.TABLE_CFG = {"name":"Game Table","key":"gt:last","pickSound":"wood","games":[{"id":"tic-tac-toe","name":"Tic Tac Toe","scripts":["logic.js","art.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='5' y='5' width='38' height='38' rx='4' fill='#fffaf0' stroke='#d8c9ae'/><path d='M18 10v28M30 10v28M10 18h28M10 30h28' stroke='#8d7f72' stroke-width='2.4' stroke-linecap='round'/><path d='M10.5 10.5l5 5M15.5 10.5l-5 5M34.5 34.5l-5-5' stroke='#e53935' stroke-width='3' stroke-linecap='round'/><circle cx='24' cy='24' r='3.6' fill='none' stroke='#1e88e5' stroke-width='2.8'/><circle cx='34.5' cy='13' r='3.4' fill='none' stroke='#1e88e5' stroke-width='2.8'/></svg>","color":"#e53935","table":"maple","short":"Tic Tac Toe"},{"id":"connect-four","name":"Connect Four","scripts":["logic.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='4' y='8' width='40' height='34' rx='5' fill='#1e5fc4'/><rect x='4' y='8' width='40' height='5' rx='2.5' fill='#3d7fe0'/><g fill='#0b2c66'><circle cx='12' cy='19' r='4'/><circle cx='24' cy='19' r='4'/><circle cx='36' cy='19' r='4'/><circle cx='36' cy='31' r='4'/></g><circle cx='12' cy='31' r='4' fill='#e53935'/><circle cx='24' cy='31' r='4' fill='#ffc93c'/><circle cx='24' cy='19' r='4' fill='#e53935'/><path d='M3 44h42' stroke='#123c86' stroke-width='3' stroke-linecap='round'/></svg>","color":"#1565c0","table":"pine","short":"Connect 4"},{"id":"dots-and-boxes","name":"Dots and Boxes","scripts":["logic.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='5' y='5' width='38' height='38' rx='3' fill='#fffdf7' stroke='#cfdbe8'/><rect x='12' y='12' width='12' height='12' fill='#ff5a36' opacity='.3'/><path d='M12 12h12v12H12zM24 12h12' stroke='#ff5a36' stroke-width='2.4' fill='none' stroke-linecap='round'/><path d='M24 24v12M12 36h12' stroke='#2f7de1' stroke-width='2.4' stroke-linecap='round'/><g fill='#33405a'><circle cx='12' cy='12' r='2.2'/><circle cx='24' cy='12' r='2.2'/><circle cx='36' cy='12' r='2.2'/><circle cx='12' cy='24' r='2.2'/><circle cx='24' cy='24' r='2.2'/><circle cx='36' cy='24' r='2.2'/><circle cx='12' cy='36' r='2.2'/><circle cx='24' cy='36' r='2.2'/><circle cx='36' cy='36' r='2.2'/></g></svg>","color":"#ff7043","table":"marble","short":"Dots"},{"id":"reversi","name":"Reversi","scripts":["logic.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='3' y='3' width='42' height='42' rx='5' fill='#6d4c41'/><rect x='7' y='7' width='34' height='34' rx='2' fill='#2e7d32'/><path d='M24 7v34M7 24h34' stroke='#1b5e20' stroke-width='1.2'/><circle cx='16' cy='16' r='6' fill='#f7f4ee'/><circle cx='32' cy='32' r='6' fill='#f7f4ee'/><circle cx='32' cy='16' r='6' fill='#1e1c1b'/><circle cx='16' cy='32' r='6' fill='#1e1c1b'/><circle cx='30' cy='14' r='1.6' fill='#fff' opacity='.4'/></svg>","color":"#2e7d32","table":"slate","short":"Reversi"},{"id":"checkers","name":"Checkers","scripts":["logic.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='3' y='3' width='42' height='42' rx='4' fill='#7a4a24'/><g fill='#f1d9b0'><rect x='7' y='7' width='8.5' height='8.5'/><rect x='24' y='7' width='8.5' height='8.5'/><rect x='15.5' y='15.5' width='8.5' height='8.5'/><rect x='32.5' y='15.5' width='8.5' height='8.5'/><rect x='7' y='24' width='8.5' height='8.5'/><rect x='24' y='24' width='8.5' height='8.5'/><rect x='15.5' y='32.5' width='8.5' height='8.5'/><rect x='32.5' y='32.5' width='8.5' height='8.5'/></g><circle cx='19.8' cy='28.2' r='5.5' fill='#c62828' stroke='#7f1414' stroke-width='1.5'/><circle cx='28.2' cy='19.8' r='5.5' fill='#222' stroke='#000' stroke-width='1.5'/><circle cx='28.2' cy='19.8' r='2.5' fill='none' stroke='#ffd54f' stroke-width='1.2'/></svg>","color":"#b71c1c","table":"walnut","short":"Checkers"},{"id":"mancala","name":"Mancala","scripts":["logic.js","game.js"],"art":"<svg viewBox='0 0 48 48'><rect x='2' y='13' width='44' height='22' rx='11' fill='#a1673f'/><rect x='2' y='13' width='44' height='22' rx='11' fill='none' stroke='#5d361f' stroke-width='1.5'/><ellipse cx='8.5' cy='24' rx='4' ry='8' fill='#4a2a14'/><ellipse cx='39.5' cy='24' rx='4' ry='8' fill='#4a2a14'/><g fill='#4a2a14'><circle cx='18' cy='19.5' r='3.4'/><circle cx='24' cy='19.5' r='3.4'/><circle cx='30' cy='19.5' r='3.4'/><circle cx='18' cy='28.5' r='3.4'/><circle cx='24' cy='28.5' r='3.4'/><circle cx='30' cy='28.5' r='3.4'/></g><circle cx='17' cy='19' r='1.3' fill='#7fd6c8'/><circle cx='19' cy='20.2' r='1.3' fill='#f48fb1'/><circle cx='24' cy='28.5' r='1.3' fill='#ffd54f'/><circle cx='30' cy='19.5' r='1.3' fill='#9fa8ff'/><circle cx='39' cy='22' r='1.4' fill='#7fd6c8'/><circle cx='40' cy='26' r='1.4' fill='#ffd54f'/></svg>","color":"#8d6e63","table":"linen","short":"Mancala"}]};</script>
+  <script src="table.js"></script>
+</body>
+</html>

@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="space-invaders" class="arc" style="--arc-hue: #7c4dff">
+<body data-game="space-invaders" data-modes class="arc" style="--arc-hue: #7c4dff">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
@@ -68,6 +69,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Invaders', style: 'pixel', tag: 'They march. They wiggle. Since 1978.',
+      pal: { a: '#7dff6a', b: '#ffffff', c: '#ff4fd8', side: '#141a3a', marq: '#1d2560', glow: '#7dff6a', btn: '#7dff6a', btnInk: '#07210a' },
+      logo: { fill: ['#ffffff', '#7dff6a', '#2fd35a'], depth: 5, shade: '#5b1fa8', gap: 0.7 },
+      wave: 'square', jingle: [[98, 150], [92, 150], [87, 150], [82, 220]],
+      seed: 7000, step: 10,
+      keyLabel: (k) => (k === 'simple' || k === 'score' ? 'Classic' : k.replace('score-', '')),
+      help: [['← →  A D', 'Slide the cannon'], ['Space', 'Fire (one shot at a time)'], ['Phone', 'Hold the side buttons, tap fire'], ['Saucer', 'Shoot the mystery ship for a bonus'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

@@ -59,7 +59,9 @@
     return out;
   }
   const S = load();
-  const save = () => Curio.store.set(SAVE, S);
+  const keepS = { mode: S.mode, diff: S.diff, cat: S.cat };
+  if (Curio.simple) Object.assign(S, { mode: 'classic', diff: 6, cat: 'random' });
+  const save = () => Curio.store.set(SAVE, Curio.simple ? { ...S, ...keepS } : S);
 
   let noiseBuf = null;
   const sfx = {
@@ -82,7 +84,7 @@
       g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
       src.connect(f).connect(g).connect(ac.destination); src.start(t, Math.random() * 0.2); src.stop(t + d + 0.02);
     },
-    hit(k) { const f = [523, 587, 659, 698, 784, 880, 988, 1046][k % 8]; this.tone(f, 0.12, 'triangle', 0.12); this.tone(f * 2, 0.08, 'sine', 0.04, 0, 0.03); },
+    hit(k) { const f = [523, 587, 659, 698, 784, 880, 988, 1046][k % 8]; this.tone(f, 0.12, 'triangle', 0.09); this.tone(f * 2, 0.08, 'sine', 0.03, 0, 0.03); window.Cafe?.sound('tile', 0.7); this.noise(0.12, 0.05, 3800, 0.03, 3); },
     pop() { this.noise(0.09, 0.3, 2600, 0, 0.7); this.tone(900, 0.06, 'square', 0.05, 200); },
     sizzle() { this.noise(0.4, 0.07, 4000, 0, 0.5, 'highpass'); this.tone(240, 0.25, 'sine', 0.05, 160); },
     splash() { this.noise(0.5, 0.25, 700, 0, 0.6); this.noise(0.3, 0.15, 2200, 0.1, 0.8); },
@@ -687,7 +689,7 @@
   $('sheet-x').addEventListener('click', closeSheet);
   $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet')) closeSheet(); });
 
-  function toMenu() { round++; clearInterval(timer); blitz = null; over = true; closeSheet(); show('menu'); buildMenu(); }
+  function toMenu() { if (Curio.simple) { closeSheet(); clearInterval(timer); startRound({ mode: 'classic' }); return; } round++; clearInterval(timer); blitz = null; over = true; closeSheet(); show('menu'); buildMenu(); }
 
   function showStats() {
     const tot = S.won + S.lost;
@@ -754,5 +756,6 @@
   });
 
   buildMenu();
+  if (Curio.simple) startRound({ mode: 'classic' });
   window.__hangman = { get word() { return word; }, guess, hint, get misses() { return misses; }, get over() { return over; }, get lives() { return lives; }, startRound, S, endBlitz };
 })();

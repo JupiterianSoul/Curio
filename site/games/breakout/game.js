@@ -37,6 +37,7 @@
   const A = Arcade({
     width: W, height: H, reset, update, draw, key, pointer, idle, achievements: ACH, tip: 'Tip for touchpads: no clicking needed to steer, just glide the cursor. Space or a tap launches.',
     defaults: { mode: 'campaign', diff: 'normal', theme: 'auto', start: '1' },
+    simple: { mode: 'campaign', diff: 'normal', theme: 'auto', start: '1' },
     statsList: [
       ['runs', 'Runs played'], ['bricks', 'Bricks broken'], ['levels', 'Levels cleared'], ['bosses', 'Bosses beaten'],
       ['powers', 'Power-ups caught'], ['combo', 'Best combo'], ['maxLevel', 'Furthest level'], ['lives', 'Balls lost']

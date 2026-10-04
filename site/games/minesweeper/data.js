@@ -6,6 +6,11 @@ window.MS_DATA = {
     expert: { name: 'Expert', rows: 16, cols: 30, mines: 99, cell: 28 }
   },
   skins: {
+    tabletop: {
+      name: 'Wooden tray', sw: ['#d6a96a', '#2f6b47'],
+      light: { cov: '#dcb47e', covAlt: '#d4aa72', hi: '#f2d6a6', lo: '#9a6c3c', open: '#2f6b47', openAlt: '#2b6442', line: '#245739', frame: '#5e3d1f', mine: '#1c1a17', flag: '#d8312a', pole: '#4a2f16', boom: '#ff6a3a', nums: ['#9fd0ff', '#b9f28a', '#ffb0a0', '#e0b8ff', '#ffd27a', '#7fe8e0', '#ffffff', '#d0d0d0'] },
+      dark: { cov: '#a87b4c', covAlt: '#a07446', hi: '#c49868', lo: '#6e4a26', open: '#1d3f2b', openAlt: '#1b3a28', line: '#163222', frame: '#3e2812', mine: '#f2e6d0', flag: '#ff5a4f', pole: '#e0c9a6', boom: '#c23a2c', nums: ['#8fc4ff', '#a6ec7a', '#ff9a8a', '#d2a6ff', '#ffc85a', '#6fe0d8', '#ffffff', '#cfcfcf'] }
+    },
     classic: {
       name: 'Classic', sw: ['#b9c7d4', '#eef1f4'],
       light: { cov: '#b9c7d4', covAlt: '#b3c2cf', hi: '#d3dde6', lo: '#8fa1b2', open: '#eef1f4', openAlt: '#e9edf1', line: '#cfd7df', frame: '#8fa1b2', mine: '#1d2733', flag: '#e0352b', pole: '#2b3440', boom: '#ff5a4f', nums: ['#1e63d6', '#1d8a3a', '#d63a2f', '#2b2c8f', '#8a2222', '#0e8b8b', '#222222', '#777777'] },

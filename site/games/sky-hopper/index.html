@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="sky-hopper" class="arc" style="--arc-hue: #5c6bc0">
+<body data-game="sky-hopper" data-modes class="arc" style="--arc-hue: #5c6bc0">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="score">0</b><span>Height</span></div>
@@ -66,6 +67,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Sky Hopper', style: 'toon', tag: 'Up, up, up. Never look down.',
+      pal: { a: '#7fe3ff', b: '#ffb3e6', c: '#b8ff6b', side: '#1b2350', marq: '#2c3a86', glow: '#7fe3ff', btn: '#7fe3ff', btnInk: '#061a2a', t1: '#ffffff', t2: '#8fe7ff', tout: '#1b2350', tdeep: '#0e1330' },
+      logo: { kind: 'float' },
+      wave: 'sine', jingle: [[330, 140, 990, 0.08], [660, 80], [990, 160]],
+      seed: 2500, step: 10,
+      keyLabel: () => 'Height',
+      help: [['← →  A D', 'Steer left and right'], ['Pointer', 'Move it over the sky, no clicking'], ['Phone', 'Hold the left or right half'], ['Springs', 'Launch you sky high'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

@@ -8,8 +8,9 @@
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cab.css">
 </head>
-<body data-game="pong" class="arc" style="--arc-hue: #3d8bfd">
+<body data-game="pong" data-modes class="arc" style="--arc-hue: #3d8bfd">
   <main class="c-wrap arc-wrap">
     <div class="arc-hud">
       <div class="c-stat"><b data-hud="p1">0</b><span data-hud="p1l">You</span></div>
@@ -28,7 +29,7 @@
           <div class="arc-opts"><div class="arc-label">Mode</div><div class="arc-seg" role="group" aria-label="Mode" data-opt="mode" data-def="cpu"><button type="button" data-val="cpu">🤖 Robot</button><button type="button" data-val="gauntlet">🏆 Gauntlet</button><button type="button" data-val="2p">👥 2 players</button></div>
 <div class="pg-ladder" id="ladder" aria-label="Gauntlet rivals"></div>
 <div id="diffwrap" style="display:grid;gap:10px;justify-items:center"><div class="arc-label">Robot skill</div><div class="arc-seg" role="group" aria-label="Robot skill" data-opt="diff" data-def="normal"><button type="button" data-val="easy">Easy</button><button type="button" data-val="normal">Normal</button><button type="button" data-val="hard">Hard</button></div></div>
-<div class="arc-label">Power-ups</div><div class="arc-seg" role="group" aria-label="Power-ups" data-opt="pw" data-def="on"><button type="button" data-val="off">Off</button><button type="button" data-val="on">🎁 On</button></div>
+<div class="arc-label">Power-ups</div><div class="arc-seg" role="group" aria-label="Power-ups" data-opt="pw" data-def="on" data-simple="off"><button type="button" data-val="off">Off</button><button type="button" data-val="on">🎁 On</button></div>
 <div class="arc-label">Court</div><div class="arc-seg" role="group" aria-label="Court" data-opt="court" data-def="classic"><button type="button" data-val="classic">Classic</button><button type="button" data-val="neon">Neon</button><button type="button" data-val="grass">Grass</button><button type="button" data-val="clay">Clay</button></div></div>
           <button class="c-btn" type="button" data-act="start">▶ Play</button>
           <p class="arc-help">Move the pointer (no clicking needed), <span class="c-kbd">W</span> <span class="c-kbd">S</span> or <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> to move · <span class="c-kbd">P</span> pause<br>Paddle edges hit sharper angles. Hit power-ups with the ball to claim them. Two players: <span class="c-kbd">W</span> <span class="c-kbd">S</span> vs <span class="c-kbd">↑</span> <span class="c-kbd">↓</span>, or a finger each.</p>
@@ -71,6 +72,18 @@
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
+  <script src="cab.js"></script>
+  <script>
+    Cab.setup({
+      title: 'Pong', style: 'pixel', tag: 'Two paddles. One ball. Since 1972.',
+      pal: { a: '#ffffff', b: '#5fa8ff', c: '#ff6a45', side: '#20242c', marq: '#2b313d', glow: '#8fc2ff', btn: '#ffffff', btnInk: '#111' },
+      logo: { fill: ['#ffffff', '#d7e7ff'], depth: 6, shade: '#ff6a45', gap: 0.4 },
+      wave: 'square', jingle: [[490, 70], [0, 60], [245, 140]],
+      seed: 9000, step: 10,
+      keyLabel: (k) => (k === 'simple' ? 'Classic vs robot' : k.replace('cpu-', 'Robot ').replace('2p-rally', 'Two player rally')),
+      help: [['Mouse', 'Just move the pointer, no clicking'], ['W S  ↑ ↓', 'Move your paddle'], ['Edges', 'Paddle edges hit sharper angles'], ['First to 7', 'Wins the match'], ['P', 'Pause']]
+    });
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

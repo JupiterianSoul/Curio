@@ -62,7 +62,9 @@
     return d;
   }
   const save = load();
-  const persist = () => Curio.store.set(SAVE_KEY, save);
+  const advKeep = { mode: save.mode, skin: save.skin, startLevel: save.startLevel };
+  if (Curio.simple) Object.assign(save, { mode: 'marathon', skin: 'gem', startLevel: 1 });
+  const persist = () => Curio.store.set(SAVE_KEY, Curio.simple ? { ...save, ...advKeep } : save);
 
   function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function mulberry(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -695,7 +697,7 @@
   $$('[data-hud]').forEach((el) => (hudEls[el.dataset.hud] ||= []).push(el));
   const setHud = (k, v) => { for (const el of hudEls[k] || []) if (el.textContent !== String(v)) el.textContent = v; };
   function bump(k) { for (const el of hudEls[k] || []) { el.classList.remove('is-bump'); void el.offsetWidth; el.classList.add('is-bump'); } }
-  function bestKey(mode = S?.mode) { return mode === 'daily' ? `daily-${today()}` : mode === 'marathon' ? `marathon` : mode; }
+  function bestKey(mode = S?.mode) { return Curio.simple ? 'simple' : mode === 'daily' ? `daily-${today()}` : mode === 'marathon' ? `marathon` : mode; }
   const lowerBetter = (m) => m === 'sprint' || m === 'dig';
   function bestLabel(mode) {
     const b = Curio.getBest(bestKey(mode));
@@ -793,6 +795,9 @@
     fresh.forEach((sk, i) => { const sp = document.createElement('span'); sp.textContent = 'New skin: ' + sk.name; sp.style.animationDelay = (0.3 + i * 0.1) + 's'; earned.append(sp); });
     if (isNew) Curio.confetti();
     show('over');
+    if (bestVal != null) window.Cab?.over(bestVal, { key: bestKey(), low: true });
+    else if (m === 'zen') window.Cab?.over(S.lines, { key: bestKey() });
+    else if (m !== 'sprint' && m !== 'dig') window.Cab?.over(S.score, { key: bestKey() });
   }
 
   function shareText() {
@@ -830,6 +835,7 @@
     attract();
     show('menu'); renderMenu();
     setHud('score', 0); setHud('best', bestLabel(menuMode));
+    window.Cab?.menu();
   }
   function attract() {
     newGame('marathon');

@@ -13,8 +13,10 @@ function Arcade(o) {
     const hud = {};
     $$('[data-hud]').forEach((el) => (hud[el.dataset.hud] ||= []).push(el));
     A.hud = (name, v) => { const s = String(v); for (const el of hud[name] || []) if (el.textContent !== s) el.textContent = s; };
+    A.daily = false;
+    A.tableKey = () => (Curio.simple ? 'simple' : A.daily ? `daily-${window.Cab ? Cab.today() : 'day'}` : A.bestKey);
     A.showBest = () => {
-        const b = Curio.getBest(A.bestKey) ?? 0;
+        const b = Curio.getBest(A.tableKey()) ?? 0;
         A.hud('best', Curio.fmt(Math.max(b, A.state === 'play' || A.state === 'paused' ? A.score : 0)));
     };
     A.setScore = (n) => { A.score = n; A.hud('score', Curio.fmt(n)); A.showBest(); };
@@ -79,7 +81,7 @@ function Arcade(o) {
     $$('.arc-seg[data-opt]').forEach((seg) => {
         const name = seg.dataset.opt;
         const btns = [...seg.querySelectorAll('[data-val]')];
-        let v = Curio.store.get(`${slug}-opt-${name}`, seg.dataset.def || btns[0]?.dataset.val);
+        let v = Curio.simple ? (seg.dataset.simple || seg.dataset.def || btns[0]?.dataset.val) : Curio.store.get(`${slug}-opt-${name}`, seg.dataset.def || btns[0]?.dataset.val);
         if (!btns.some((b) => b.dataset.val === v)) v = btns[0]?.dataset.val;
         opts[name] = v;
         const paint = () => btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.val === opts[name])));
@@ -87,7 +89,7 @@ function Arcade(o) {
         btns.forEach((b) => b.addEventListener('click', () => {
             if (b.disabled) return;
             opts[name] = b.dataset.val;
-            Curio.store.set(`${slug}-opt-${name}`, opts[name]);
+            if (!Curio.simple) Curio.store.set(`${slug}-opt-${name}`, opts[name]);
             paint();
             Curio.beep(560, 0.04, 'triangle', 0.06);
             o.option?.(name, opts[name]);
@@ -170,6 +172,7 @@ function Arcade(o) {
         A.earned = [];
         if (o.bestKey) A.bestKey = o.bestKey();
         A.state = 'play';
+        if (A.daily && window.Cab) Cab.seed(Cab.today());
         o.reset();
         A.setScore(A.score);
         show(null);
@@ -193,7 +196,7 @@ function Arcade(o) {
         acc = 0;
         if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
     };
-    A.menu = () => { releaseAll(); A.state = 'menu'; o.menu?.(); show('menu'); if (o.bestKey) A.bestKey = o.bestKey(); A.showBest(); renderMenuStats(); renderBadges(); };
+    A.menu = () => { releaseAll(); A.state = 'menu'; A.daily = false; if (A.savedOpts) { Object.assign(opts, A.savedOpts); A.savedOpts = null; A.paintOpts(); } o.menu?.(); show('menu'); if (o.bestKey) A.bestKey = o.bestKey(); A.showBest(); renderMenuStats(); renderBadges(); window.Cab?.menu(); };
     A.over = ({ title = 'Game over', emoji = '💥', msg = '', lines = [], share = '', higherIsBetter = true, value } = {}) => {
         if (A.state === 'over') return;
         releaseAll();
@@ -201,7 +204,8 @@ function Arcade(o) {
         prof.games = (prof.games || 0) + 1;
         A.save();
         const val = value ?? A.score;
-        const r = Curio.best(A.bestKey, val, higherIsBetter);
+        window.Cab?.unseed();
+        const r = Curio.best(A.tableKey(), val, higherIsBetter);
         const box = ov.over;
         const set = (n, v) => { const el = box.querySelector(`[data-o="${n}"]`); if (el) el.textContent = v; };
         set('emoji', emoji);
@@ -246,6 +250,7 @@ function Arcade(o) {
         show('over');
         A.showBest();
         renderBadges();
+        if (typeof val === 'number') window.Cab?.over(val, { key: A.tableKey(), low: !higherIsBetter });
     };
     async function share() {
         try {
@@ -259,8 +264,18 @@ function Arcade(o) {
             Curio.modal({ emoji: '📋', title: 'Copy your result', body: p, buttons: [{ label: 'Done', value: 1 }] });
         }
     }
+    const startBtn = ov.menu?.querySelector('[data-act="start"]');
+    if (startBtn && o.daily !== false && !Curio.simple) {
+        const d = document.createElement('button');
+        d.type = 'button';
+        d.className = 'c-btn c-btn--ghost arc-daily';
+        d.dataset.act = 'daily';
+        d.textContent = '📅 Daily challenge';
+        startBtn.after(d);
+    }
     $$('[data-act]').forEach((b) => b.addEventListener('click', (e) => {
         const a = b.dataset.act;
+        if (a === 'daily') { if (!A.savedOpts) A.savedOpts = { ...opts }; Object.assign(opts, o.dailyOpts?.() || {}); A.daily = true; A.start(); return; }
         if (a === 'start' || a === 'restart') {
             if (performance.now() - overAt > 450) A.start();
         }
@@ -568,7 +583,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         menuStats: () => [[' games', Curio.fmt(A.profile.games || 0)], [' blocks placed', Curio.fmt(A.stat('blocks'))], [' perfect drops', Curio.fmt(A.stat('perfects'))], [' tallest', A.stat('tallest') || '-']],
         menu: () => paintThemes()
     });
-    theme = Curio.store.get('stack-theme', 'pastel');
+    theme = Curio.simple ? 'pastel' : Curio.store.get('stack-theme', 'pastel');
     function paintThemes() {
         const box = document.getElementById('themes');
         if (!box) return;

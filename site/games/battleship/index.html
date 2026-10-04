@@ -7,6 +7,7 @@
   <meta name="description" content="Hide your fleet, then hunt the computer's ships before its probability-crunching admiral finds yours.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="cafe.css">
   <style>
     :root { --sea: #1f78c1; --sea-2: #1a6cb0; --sea-line: rgba(255, 255, 255, .14); --hull: #8a96a3; --hull-2: #5f6b78; --deck: #b8c2cc; --hit: #ff4d2e; }
     .bs { text-align: center; }
@@ -109,9 +110,23 @@
       .board { grid-template-columns: 13px 1fr; grid-template-rows: 13px auto; gap: 2px; }
       .lbl-top, .lbl-left { font-size: 9px; }
     }
+    .frame { position: relative; padding: 10px; border-radius: 14px; background: linear-gradient(180deg, #56677b, #3b4858 60%, #2e3946); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25), inset 0 -3px 0 rgba(0, 0, 0, .3), 0 6px 0 #1f2832, 0 20px 26px -8px rgba(20, 12, 4, .55); }
+    .side.active .frame { box-shadow: 0 0 0 4px var(--accent), inset 0 2px 0 rgba(255, 255, 255, .25), 0 6px 0 #1f2832, 0 20px 26px -8px rgba(20, 12, 4, .55); }
+    .enemy .frame { background: linear-gradient(180deg, #8a3b34, #6c2a24 60%, #561f1a); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .22), inset 0 -3px 0 rgba(0, 0, 0, .3), 0 6px 0 #3b1410, 0 20px 26px -8px rgba(20, 12, 4, .55); }
+    .side.enemy.active .frame { box-shadow: 0 0 0 4px var(--accent), inset 0 2px 0 rgba(255, 255, 255, .22), 0 6px 0 #3b1410, 0 20px 26px -8px rgba(20, 12, 4, .55); }
+    .cell { background: radial-gradient(circle at 50% 50%, rgba(5, 25, 50, .5) 0 10%, rgba(255, 255, 255, .18) 12%, transparent 15%); }
+    .cell.miss::after { width: 34%; height: 34%; background: radial-gradient(circle at 35% 30%, #fff 0 30%, #e6e9ee 55%, #aab3be); box-shadow: 0 3px 2px rgba(0, 0, 0, .45), 0 0 0 1px rgba(0, 0, 0, .2); }
+    .cell.miss.fresh::after { animation: peg .3s cubic-bezier(.2, 1.6, .4, 1); }
+    @keyframes peg { from { transform: translate(-50%, -120%) scale(1.4); opacity: 0; } }
+    .cell.hit::after { width: 40%; height: 40%; background: radial-gradient(circle at 35% 30%, #ff9a8a 0 25%, #e8261b 55%, #8e0e07); box-shadow: 0 3px 2px rgba(0, 0, 0, .45), 0 0 10px rgba(255, 90, 40, .8); z-index: 4; }
+    .cell.sunk::after { width: 38%; height: 38%; background: radial-gradient(circle at 35% 30%, #ff8a7a 0 20%, #b81c12 55%, #5e0904); box-shadow: 0 2px 2px rgba(0, 0, 0, .5); z-index: 4; }
+    .lbl-top, .lbl-left { color: rgba(255, 255, 255, .78); }
+    .status { color: var(--ink); }
+    .side h2 { color: var(--ink-2); }
+    html[data-mode="simple"] .controls, html[data-mode="simple"] .panels, html[data-mode="simple"] .tips, html[data-mode="simple"] .hero { display: none !important; }
   </style>
 </head>
-<body data-game="battleship">
+<body data-game="battleship" data-modes class="cafe" data-table="teak" data-simple-sub="Your fleet is already hidden. Tap enemy waters to fire, sink all five ships before the Captain sinks yours.">
   <main class="c-wrap bs">
     <svg class="hero" viewBox="0 0 180 64" aria-hidden="true">
       <rect x="0" y="40" width="180" height="24" rx="8" fill="#1f78c1"/><path d="M0 46q10-4 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0" stroke="#fff" stroke-opacity=".35" stroke-width="2" fill="none"/>
@@ -181,6 +196,7 @@
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
   <script src="logic.js"></script>
+  <script src="cafe.js"></script>
   <script>
   (() => {
     const BS = window.Battleship;
@@ -190,6 +206,7 @@
     let level = Curio.store.get('bs:level', 'smart');
     if (!['easy', 'mid', 'smart'].includes(level)) level = 'smart';
     let rule = Curio.store.get('bs:rule', 'classic') === 'salvo' ? 'salvo' : 'classic';
+    if (Curio.simple) { level = 'mid'; rule = 'classic'; }
     let volley = 0, lostShips = 0;
     const SAVE_V = 2;
     const sv = (() => { const raw = Curio.store.get('bs:v2', null); const base = { v: SAVE_V, rec: {}, ach: {}, shots: 0, hits: 0, sunk: 0 }; return raw && raw.v === SAVE_V ? { ...base, ...raw, rec: raw.rec || {}, ach: raw.ach || {} } : base; })();
@@ -288,6 +305,7 @@
       $('arena').classList.remove('battle');
       document.querySelector('.curio-modal')?.remove();
       render(); paintSalvo();
+      if (Curio.simple) { mine = BS.randomFleet().map((f) => ({ ...f })); startBattle(); window.Cafe?.sound('plastic', 0.8); }
     }
 
     function renderMine() {
@@ -551,7 +569,7 @@
       setTimeout(() => cell.classList.remove('fresh'), 650);
     }
 
-    function splash() { Curio.beep(180, 0.15, 'sine', 0.08); setTimeout(() => Curio.beep(120, 0.12, 'sine', 0.05), 60); }
+    function splash() { Curio.beep(180, 0.15, 'sine', 0.08); setTimeout(() => Curio.beep(120, 0.12, 'sine', 0.05), 60); window.Cafe?.sound('plastic', 0.6); }
     function boom() {
       const ac = !Curio.muted && Curio.audioContext();
       if (!ac) return;
@@ -561,6 +579,7 @@
       f.type = 'lowpass'; f.frequency.value = 900;
       g.gain.value = 0.35;
       src.buffer = buf; src.connect(f).connect(g).connect(ac.destination); src.start();
+      window.Cafe?.sound('plastic', 0.9);
     }
 
     async function fire(i) {
