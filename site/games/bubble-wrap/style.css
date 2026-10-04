@@ -153,3 +153,39 @@
   .bw-start__modes { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .bw-b, .bw-popword { animation: none; } }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+html[data-mode="simple"] #unrollBtn, html[data-mode="simple"] #autoBtn { display: none !important; }
+body[data-game="bubble-wrap"] {
+  --bw-kraft: color-mix(in oklab, #c4904f 34%, var(--bg));
+  --bw-tape: color-mix(in oklab, #e9c46a 70%, transparent);
+  --bw-red: #c8322a;
+  background-color: var(--bw-kraft);
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, #6b4a22 9%, transparent) 0 2px, transparent 2px 11px),
+    radial-gradient(120% 70% at 50% -10%, color-mix(in oklab, #fff 22%, transparent), transparent 60%);
+}
+.bw-head .c-title {
+  display: inline-block; position: relative; padding: 2px 18px 4px; transform: rotate(-1.4deg);
+  font-family: "Impact", "Haettenschweiler", "Arial Narrow Bold", "Oswald", var(--font); font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
+  background: var(--bw-tape); box-shadow: 0 2px 0 color-mix(in oklab, #000 10%, transparent);
+  clip-path: polygon(0 6%, 3% 0, 6% 7%, 9% 0, 100% 0, 98% 50%, 100% 100%, 4% 100%, 1% 94%, 0 100%, 2% 50%);
+}
+.bw-titles { position: relative; }
+.bw-stamp {
+  position: absolute; right: 4px; top: -4px; margin: 0; padding: 2px 9px 3px; border: 3px solid var(--bw-red); border-radius: 6px; color: var(--bw-red);
+  font: 900 18px/1 "Impact", "Arial Narrow Bold", var(--font); text-transform: uppercase; letter-spacing: .12em; transform: rotate(8deg); opacity: .75; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; mix-blend-mode: multiply;
+}
+.bw-stamp small { font: 700 9px/1.2 "Courier New", ui-monospace, monospace; letter-spacing: .08em; text-transform: lowercase; }
+:root[data-look="midnight"] .bw-stamp, :root[data-look="arcade"] .bw-stamp { mix-blend-mode: normal; color: #ff8a7a; border-color: #ff8a7a; }
+@media (prefers-color-scheme: dark) { :root:not([data-look]) .bw-stamp { mix-blend-mode: normal; color: #ff8a7a; border-color: #ff8a7a; } }
+.bw-sheet { border: 3px solid color-mix(in oklab, #8a5a24 55%, var(--line)); box-shadow: var(--shadow), 0 0 0 6px color-mix(in oklab, #c4904f 40%, var(--surface)), 0 0 0 7px color-mix(in oklab, #6b4a22 30%, transparent); margin: 6px 0; }
+.bw-foot .bw-surprise { border: 2px dashed color-mix(in oklab, #8a5a24 60%, var(--line)); }
+html[data-mode="simple"] .bw-mats { justify-content: center; flex-wrap: wrap; gap: 8px; }
+html[data-mode="simple"] .bw-mat { font-size: 15px; padding: 5px 16px 5px 5px; box-shadow: 0 3px 0 color-mix(in oklab, #6b4a22 35%, transparent); }
+html[data-mode="simple"] .bw-mat:active { transform: translateY(2px); box-shadow: none; }
+html[data-mode="simple"] .bw-foot { justify-content: center; }
+html[data-mode="simple"] .bw-foot .c-btn { padding: 12px 22px; font-size: 16px; }
+html[data-mode="simple"] .bw-sheet { height: max(300px, calc(100dvh - var(--bar-h) - 250px)); }
+@media (max-width: 640px) { .bw-stamp { display: none; } html[data-mode="simple"] .bw-mats { flex-wrap: nowrap; justify-content: flex-start; } }

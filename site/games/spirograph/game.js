@@ -115,7 +115,7 @@
   function layout() {
     const panelOpen = !$('panel').hidden && W >= 900;
     const availW = W - (panelOpen ? 300 : 0);
-    const top = W < 560 ? 70 : 20, bottom = W < 560 ? 130 : 80;
+    const top = W < 560 ? 70 : 20, bottom = (W < 560 ? 130 : 80) + (Curio.simple ? (W < 560 ? 110 : 96) : 0);
     cx = availW / 2; cy = top + (H - top - bottom) / 2;
     k = Math.max(0.5, Math.min(availW - 24, H - top - bottom) * 0.5 / WORLD);
   }
@@ -256,9 +256,9 @@
     });
     paintSlider(id);
   });
-  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => {
-    cfg.mode = b.dataset.mode;
-    document.querySelectorAll('[data-mode]').forEach((q) => q.setAttribute('aria-pressed', String(q === b)));
+  document.querySelectorAll('[data-gm]').forEach((b) => b.addEventListener('click', () => {
+    cfg.mode = b.dataset.gm;
+    document.querySelectorAll('[data-gm]').forEach((q) => q.setAttribute('aria-pressed', String(q === b)));
     settingsChanged();
   }));
   const swEl = $('swatches');
@@ -294,7 +294,7 @@
 
   function syncControls() {
     ['R', 'r', 'p', 'w'].forEach((id) => { $(id).value = cfg[keyOf[id]]; paintSlider(id); });
-    document.querySelectorAll('[data-mode]').forEach((q) => q.setAttribute('aria-pressed', String(q.dataset.mode === cfg.mode)));
+    document.querySelectorAll('[data-gm]').forEach((q) => q.setAttribute('aria-pressed', String(q.dataset.gm === cfg.mode)));
     setColor(cfg.color, false);
   }
   function randomDesign() {
@@ -518,8 +518,8 @@
     else if (e.key === 'n' || e.key === 'N') $('bLayer').click();
     else if (e.key === 'r' || e.key === 'R') randomDesign();
     else if (e.key === 'g' || e.key === 'G') $('bGears').click();
-    else if ((e.key === 'z' || e.key === 'Z') && layers.length) $('bUndo').click();
-    else if (e.key === 'c' || e.key === 'C') $('bChal').click();
+    else if ((e.key === 'z' || e.key === 'Z') && layers.length && !Curio.simple) $('bUndo').click();
+    else if ((e.key === 'c' || e.key === 'C') && !Curio.simple) $('bChal').click();
     else if (e.key === 'Enter' && chal.on) checkTarget();
   });
   cv.addEventListener('click', () => { intro.classList.add('is-faded'); setPlaying(!playing); });
@@ -536,12 +536,57 @@
   const stop = () => { cancelAnimationFrame(raf); raf = 0; };
   document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
   addEventListener('resize', resize);
-  if (innerWidth >= 900) { $('panel').hidden = false; $('bPanel').setAttribute('aria-pressed', 'true'); }
+  const SIMPLE = Curio.simple;
+  if (innerWidth >= 900 && !SIMPLE) { $('panel').hidden = false; $('bPanel').setAttribute('aria-pressed', 'true'); }
   resize();
   layers.push(makeLayer(cfg));
   setPen(cfg.pen); setPaper(paperKind); renderBadges();
   paintInfo();
   setTimeout(() => intro.classList.add('is-faded'), 9000);
   start();
+  const QUICK = ['Daisy', 'Rose', 'Star', 'Galaxy', 'Mandala', 'Sunflower', 'Snowflake', 'Hypnotic'];
+  QUICK.forEach((n) => {
+    const pr = PRESETS.find((p) => p.name === n); if (!pr) return;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sp-q'; b.title = pr.name;
+    b.append(thumb(pr)); const t = document.createElement('span'); t.textContent = pr.name; b.append(t);
+    b.addEventListener('click', () => { loadPreset(pr); if (navigator.vibrate) navigator.vibrate(8); });
+    $('quick').append(b);
+  });
+  const PAPERS = ['cream', 'velvet', 'blueprint', 'kraft'];
+  $('bPaper').addEventListener('click', () => { setPaper(PAPERS[(PAPERS.indexOf(paperKind) + 1) % PAPERS.length]); Curio.beep(660, 0.04, 'triangle', 0.05); });
+  function openGallery() {
+    const gal = Curio.store.get('spiro:gallery', []);
+    const back = document.createElement('div'); back.className = 'sp-gal';
+    back.innerHTML = '<div class="sp-gal__box" role="dialog" aria-modal="true" aria-label="Gallery"><header><h2>Your gallery</h2><button type="button" class="chip" data-a="keep">📌 Keep this one</button><button type="button" class="chip" data-a="x" aria-label="Close">✕</button></header><div class="sp-gal__grid"></div><p class="sp-gal__note">Up to 16 designs. Tap one to redraw it.</p></div>';
+    const grid = back.querySelector('.sp-gal__grid');
+    const paint = () => {
+      grid.textContent = '';
+      if (!gal.length) grid.innerHTML = '<p class="sp-gal__note">Nothing pinned yet. Draw something you love, then keep it.</p>';
+      gal.forEach((g, i) => {
+        const f = document.createElement('figure');
+        const ob = document.createElement('button'); ob.type = 'button'; ob.className = 'sp-gal__open'; ob.append(thumb(g)); ob.setAttribute('aria-label', `Redraw ${g.name}`);
+        const cap = document.createElement('figcaption'); cap.textContent = g.name;
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'sp-gal__del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Delete');
+        ob.addEventListener('click', () => { close(); loadPreset(g); });
+        del.addEventListener('click', () => { gal.splice(i, 1); Curio.store.set('spiro:gallery', gal); paint(); });
+        f.append(ob, cap, del); grid.append(f);
+      });
+    };
+    const close = () => { back.remove(); removeEventListener('keydown', onKey, true); };
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    addEventListener('keydown', onKey, true);
+    back.addEventListener('click', (e) => {
+      if (e.target === back || e.target.closest('[data-a="x"]')) close();
+      else if (e.target.closest('[data-a="keep"]')) {
+        if (!layers.length) { Curio.toast('Draw something first'); return; }
+        gal.unshift({ name: `Design ${new Date().toLocaleDateString()} #${gal.length + 1}`, layers: layers.map((L) => ({ mode: L.mode, R: L.R, r: L.r, p: L.p, color: L.color, w: L.w })) });
+        gal.length = Math.min(gal.length, 16); Curio.store.set('spiro:gallery', gal); paint();
+        [659, 880].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.07, 'triangle', 0.06), i * 70));
+      }
+    });
+    document.body.append(back); paint();
+  }
+  $('bGallery').addEventListener('click', openGallery);
+  addEventListener('keydown', (e) => { if (!SIMPLE && !e.target.closest?.('input, button') && (e.key === 'v' || e.key === 'V') && !document.querySelector('.sp-gal')) openGallery(); });
   window.__sp = { get chal() { return chal; }, cfg, checkTarget, setPaper, setPen, loadPreset: (n) => loadPreset(PRESETS.find((p) => p.name === n)), startChallenge };
 })();

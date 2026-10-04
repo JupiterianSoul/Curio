@@ -35,6 +35,22 @@
     .gi canvas { width: 64px; height: 64px; display: block; }
     .gi .del { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 900; cursor: pointer; line-height: 1; }
     .ps-empty { color: var(--ink-3); font-size: 14px; text-align: center; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    body[data-game="paper-snowflake"] { background-color: color-mix(in oklab, #9fc3ea 30%, var(--bg)); background-image: radial-gradient(circle at 20% 30%, color-mix(in oklab, #fff 70%, transparent) 0 1.5px, transparent 2.5px), radial-gradient(circle at 70% 60%, color-mix(in oklab, #fff 60%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 45% 85%, color-mix(in oklab, #fff 50%, transparent) 0 1px, transparent 2px); background-size: 90px 90px, 130px 130px, 70px 70px; }
+    .ps-logo { font-family: "Gill Sans", "Gill Sans MT", "Futura", "Trebuchet MS", var(--font); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: clamp(26px, 5vw, 42px) !important; }
+    .ps-logo span { display: inline-block; padding: 2px 10px; background: #fbfcff; color: #2b3e63; box-shadow: 2px 3px 0 rgba(30, 50, 90, .25); }
+    .ps-logo span:first-child { transform: rotate(-2deg); background: #d6ecff; }
+    .ps-logo span:last-child { transform: rotate(1.5deg); background: repeating-linear-gradient(90deg, #fbfcff 0 12px, #f2f6ff 12px 13px); clip-path: polygon(0 0, 4% 8%, 8% 0, 12% 8%, 16% 0, 20% 8%, 24% 0, 28% 8%, 32% 0, 36% 8%, 40% 0, 44% 8%, 48% 0, 52% 8%, 56% 0, 60% 8%, 64% 0, 68% 8%, 72% 0, 76% 8%, 80% 0, 84% 8%, 88% 0, 92% 8%, 96% 0, 100% 8%, 100% 100%, 0 100%); }
+    .ps-stage { border: 10px solid color-mix(in oklab, #fbfcff 85%, var(--line)); box-shadow: var(--shadow), inset 0 0 0 2px rgba(0, 0, 0, .1); }
+    .ps-goals { max-width: 720px; margin: 16px auto 0; }
+    .ps-goals h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 0 0 6px; text-align: center; }
+    .ps-goals ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .ps-goals li { font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1.5px dashed var(--line); background: var(--surface); color: var(--ink-2); }
+    .ps-goals li.on { border-style: solid; border-color: #4a8fd8; background: color-mix(in oklab, #4a8fd8 14%, var(--surface)); color: var(--ink); }
+    .ps-goals li.on::before { content: '❄ '; }
+    html[data-mode="simple"] .tools button { width: 48px; height: 44px; font-size: 21px; }
+    html[data-mode="simple"] .sw { width: 32px; height: 32px; }
+    html[data-mode="simple"] .ps-panel .c-btn { padding: 11px 18px; font-size: 16px; }
     @media (max-width: 560px) {
       .ps-stage { height: max(340px, calc(100dvh - var(--bar-h) - 330px)); }
       .tools button { width: 34px; }
@@ -43,10 +59,10 @@
     }
   </style>
 </head>
-<body data-game="paper-snowflake">
+<body data-game="paper-snowflake" data-modes>
   <main class="c-wrap">
     <div class="ps-head">
-      <h1 class="c-title">Paper Snowflake</h1>
+      <h1 class="c-title ps-logo"><span>Paper</span> <span>Snowflake</span></h1>
       <p class="c-sub">Fold, snip, unfold. Cuts that touch the folded edges make the prettiest holes.</p>
     </div>
     <div class="ps-stage" id="stage">
@@ -59,12 +75,13 @@
         <button type="button" data-t="circle" title="Circle punch (2)" aria-label="Circle punch">🔵</button>
         <button type="button" data-t="heart" title="Heart punch (3)" aria-label="Heart punch">🤍</button>
         <button type="button" data-t="star" title="Star punch (4)" aria-label="Star punch">⭐</button>
-        <button type="button" data-t="diamond" title="Diamond punch (5)" aria-label="Diamond punch">🔷</button>
-        <button type="button" data-t="tri" title="Triangle punch (6)" aria-label="Triangle punch">🔺</button>
+        <button type="button" class="adv-only" data-t="diamond" title="Diamond punch (5)" aria-label="Diamond punch">🔷</button>
+        <button type="button" class="adv-only" data-t="tri" title="Triangle punch (6)" aria-label="Triangle punch">🔺</button>
       </div>
-      <label>Punch <input type="range" id="psize" min="8" max="60" value="24" aria-label="Punch size"></label>
+      <label class="adv-only">Punch <input type="range" id="psize" min="8" max="60" value="24" aria-label="Punch size"></label>
       <div class="sws" id="papers" role="group" aria-label="Paper colour"></div>
-      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo cut">↶ Undo</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo cut">↶ Undo</button>
+      <button class="c-btn c-btn--ghost" type="button" id="surprise" title="Surprise snowflake (R)">🎲 Surprise me</button>
       <button class="c-btn c-btn--ghost" type="button" id="fresh">📄 New paper</button>
       <button class="c-btn" type="button" id="unfold" title="Unfold (U)">❄️ Unfold!</button>
     </div>
@@ -72,11 +89,17 @@
       <button class="c-btn" type="button" id="hang">🪟 Hang in window</button>
       <button class="c-btn c-btn--ghost" type="button" id="refold">✂️ Fold back &amp; keep cutting</button>
       <button class="c-btn c-btn--ghost" type="button" id="fresh2">📄 New paper</button>
-      <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+      <button class="c-btn c-btn--ghost" type="button" data-surprise>🎲 Surprise me</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
     </div>
     <div class="ps-panel" id="pWin" hidden>
       <button class="c-btn" type="button" id="another">✂️ Make another</button>
-      <button class="c-btn c-btn--ghost" type="button" id="png2">📷 Save PNG</button>
+      <button class="c-btn c-btn--ghost" type="button" data-surprise>🎲 Surprise me</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="png2">📷 Save PNG</button>
+    </div>
+    <div class="ps-goals adv-only" id="goals">
+      <h2>Winter fair requests <b id="goalN"></b></h2>
+      <ul id="goalList"></ul>
     </div>
     <div class="ps-gal">
       <h2>Your snowflakes</h2>
@@ -527,7 +550,7 @@
       if (gallery.length > 24) gallery.shift();
       Curio.store.set('paper-snowflake-gallery', gallery);
       buildHung(); paintGallery();
-      setPhase('window');
+      setPhase('window'); if (!SIMPLE) checkGoals();
       [784, 988, 1175].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'sine', 0.04), i * 110));
       Curio.toast(gallery.length === 1 ? 'Your first snowflake! ❄️' : `${gallery.length} snowflakes in the window`);
     });
@@ -573,6 +596,52 @@
         wrap.append(b, d); galEl.append(wrap);
       });
     }
+    const SIMPLE = Curio.simple;
+    function surprise() {
+      if (phase !== 'cut' && phase !== 'fold') { cuts = []; refresh(); undo = []; anim = null; }
+      const kinds = SIMPLE ? ['circle', 'heart', 'star'] : ['circle', 'heart', 'star', 'diamond', 'tri'];
+      const out = [];
+      const n = Curio.randInt(5, 11);
+      for (let i = 0; i < n; i++) {
+        const a = (-90 + Curio.rand(0, 30)) * Math.PI / 180, d = Curio.rand(0.05, 0.98) * RAD;
+        const onEdge = Math.random() < 0.5;
+        const aa = onEdge ? (Math.random() < 0.5 ? -Math.PI / 2 : -Math.PI / 3) : a;
+        out.push({ k: Curio.pick(kinds), x: +((C + Math.cos(aa) * d) / S).toFixed(4), y: +((C + Math.sin(aa) * d) / S).toFixed(4), r: +(Curio.rand(0.014, 0.05)).toFixed(4), a: +(Math.random() * 6.28).toFixed(3) });
+      }
+      undo.push(cuts.slice());
+      cuts = out; paper = Curio.randInt(0, PAPERS.length - 1); paintPapers(); refresh(); save();
+      if (phase !== 'cut') { anim = null; foldT = FOLDS.length + 1; setPhase('cut'); }
+      rustle(0.8); if (navigator.vibrate) navigator.vibrate([6, 30, 6, 30, 6]);
+      setTimeout(() => startUnfold(), 450);
+    }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    document.querySelectorAll('[data-surprise]').forEach((b) => b.addEventListener('click', surprise));
+    const GOALS = [
+      ['Cut 12 or more times in one flake', (c) => c.length >= 12],
+      ['Use every punch in one flake', (c) => ['circle', 'heart', 'star', 'diamond', 'tri'].every((k) => c.some((x) => x.k === k))],
+      ['Only hearts, at least 5', (c) => c.length >= 5 && c.every((x) => x.k === 'heart')],
+      ['Scissors only, 4 or more snips', (c) => c.length >= 4 && c.every((x) => x.p)],
+      ['A hole right in the middle', (c) => c.some((x) => x.p ? false : Math.hypot(x.x * S - C, x.y * S - C) < x.r * S + 6)],
+      ['Pink paper with stars', (c, p) => p === 2 && c.some((x) => x.k === 'star')],
+      ['Mint paper, 20 cuts', (c, p) => p === 5 && c.length >= 20],
+      ['A minimalist: exactly 2 cuts', (c) => c.length === 2],
+      ['Hang 5 snowflakes in the window', () => gallery.length >= 5],
+      ['Fill the window with 9', () => gallery.length >= 9]
+    ];
+    const goalDone = Curio.store.get('paper-snowflake-goals', {});
+    function checkGoals() {
+      let fresh = 0;
+      GOALS.forEach(([n, f], i) => { if (!goalDone[i] && f(cuts, paper)) { goalDone[i] = Date.now(); fresh++; setTimeout(() => Curio.toast(`❄️ Request done: ${n}`, 2600), 900 + fresh * 300); } });
+      if (fresh) Curio.store.set('paper-snowflake-goals', goalDone);
+      paintGoals();
+    }
+    function paintGoals() {
+      const ul = document.getElementById('goalList'); ul.textContent = '';
+      GOALS.forEach(([n], i) => { const li = document.createElement('li'); li.textContent = n; if (goalDone[i]) li.className = 'on'; ul.append(li); });
+      document.getElementById('goalN').textContent = `${Object.keys(goalDone).length}/${GOALS.length}`;
+    }
+    paintGoals();
+    addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.closest && e.target.closest('input')) && e.key.toLowerCase() === 'r') surprise(); });
     function buildHung() {
       const list = gallery.slice(-9);
       const n = list.length;
@@ -612,7 +681,7 @@
         if (foldT >= FOLDS.length + 1) { anim = null; setPhase('cut'); }
       } else if (anim === 'unfold') {
         unfoldE = Math.min(1, unfoldE + dt / 1.9);
-        if (unfoldE >= 1) { anim = null; setPhase('view'); Curio.confetti(60); save(); }
+        if (unfoldE >= 1) { anim = null; setPhase('view'); Curio.confetti(60); save(); if (!SIMPLE) checkGoals(); if (navigator.vibrate) navigator.vibrate(12); }
       } else if (anim === 'refold') {
         unfoldE = Math.max(0, unfoldE - dt / 1.1);
         if (unfoldE <= 0) { anim = null; setPhase('cut'); save(); }

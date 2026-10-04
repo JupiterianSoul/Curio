@@ -801,5 +801,31 @@
     const ch = orderChecks(st.order, densNow(), pieces());
     ul.innerHTML = ch.map(([label, ok]) => `<li class="${ok ? 'ok' : ''}">${ok ? '✅' : '⬜'} ${label}</li>`).join('');
   }
+  const SIMPLE = Curio.simple;
+  if (SIMPLE) career.mode = 'free';
+  function surprisePizza() {
+    if (st.oven) return;
+    reset();
+    st.dough = Curio.pick(Object.keys(DOUGHS));
+    const big = Curio.rand(205, 245);
+    for (let i = 0; i < N; i++) st.R[i] = big + Math.sin(i / N * TAU * 3 + Math.random()) * 3;
+    st.max = 3; go(1);
+    st.sauce = Curio.pick(['tomato', 'tomato', 'pesto', 'white', 'bbq']);
+    autoSauce();
+    setTimeout(() => {
+      go(2);
+      st.cheese = Curio.pick(Object.keys(CHEESES).filter((k) => k !== 'none'));
+      for (let i = 0; i < 160; i++) { const [x, y] = randomInside(6); sprinkle({ x, y }, 3); }
+      setTimeout(() => {
+        go(3);
+        Curio.shuffle(Object.keys(TOPS)).slice(0, Curio.randInt(2, 4)).forEach((kk) => { for (let i = 0; i < Curio.randInt(4, 8); i++) { const [x, y] = randomInside(16); st.tops.push({ t: kk, x, y, a: Math.random() * TAU, s: rnd(.9, 1.15) }); } });
+        dirty = true; stats(); [260, 330, 400].forEach((f, i) => setTimeout(() => Curio.beep(f, .06, 'sine', .06), i * 70));
+        setTimeout(() => { go(4); Curio.toast('🎲 Built! Now bake it golden.', 2000); }, 500);
+      }, 500);
+    }, 650);
+    if (navigator.vibrate) navigator.vibrate([8, 40, 8]);
+  }
+  $('surprise').addEventListener('click', surprisePizza);
+  addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.closest && e.target.closest('input,textarea')) && e.key.toLowerCase() === 'r') surprisePizza(); });
   st = fresh(); resize(); paintModes(); paintWallet(); reset(); raf = requestAnimationFrame(loop);
 })();

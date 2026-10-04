@@ -27,6 +27,29 @@
     .aq-row select { padding: 7px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 700; }
     .aq-row label { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; color: var(--ink-2); font-size: 14px; }
     .aq-row .c-btn { padding: 8px 14px; font-size: 14px; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    html[data-mode="simple"] #items .it:nth-child(n+9) { display: none; }
+    body[data-game="aquarium"] { background-color: color-mix(in oklab, #1d5a63 22%, var(--bg)); background-image: radial-gradient(circle at 20% 30%, color-mix(in oklab, #7fd6e0 22%, transparent) 0 6px, transparent 7px), radial-gradient(circle at 70% 70%, color-mix(in oklab, #7fd6e0 18%, transparent) 0 4px, transparent 5px), radial-gradient(circle at 45% 10%, color-mix(in oklab, #7fd6e0 15%, transparent) 0 3px, transparent 4px); background-size: 120px 140px, 90px 110px, 70px 80px; }
+    .aq-sign { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; padding: 8px 22px 9px; border-radius: 14px; background: #10343b; color: #7ff3ea; font-family: "Futura", "Century Gothic", "Trebuchet MS", var(--font); letter-spacing: .08em; text-transform: lowercase; text-shadow: 0 0 6px rgba(127, 243, 234, .8), 0 0 18px rgba(127, 243, 234, .45); border: 3px solid #2e6a73; box-shadow: 0 6px 0 rgba(0, 0, 0, .18); position: relative; }
+    .aq-sign small { font: 700 10px/1.4 ui-monospace, monospace; letter-spacing: .3em; text-transform: uppercase; color: #ffcf6a; text-shadow: 0 0 6px rgba(255, 207, 106, .6); margin-top: 4px; }
+    .aq-sign__fish { position: absolute; right: -14px; top: -12px; font-size: 26px; text-shadow: none; animation: aq-swim 3s ease-in-out infinite; }
+    @keyframes aq-swim { 50% { transform: translate(-6px, 3px) rotate(-6deg); } }
+    .aq-stage { border: 10px solid #6b4a2e; border-bottom-width: 22px; border-radius: 10px; box-shadow: var(--shadow), inset 0 0 0 2px rgba(255, 255, 255, .25); }
+    .aq-surprise { background: #2a9d8f; border-color: #1d6e64; color: #fff; }
+    html[data-mode="simple"] .tab { padding: 9px 15px; font-size: 15px; }
+    html[data-mode="simple"] .aq-row .c-btn { padding: 11px 18px; font-size: 16px; }
+    .aq-goals { max-width: 760px; margin: 16px auto 0; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+    .aq-goals h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+    .aq-goals ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .aq-goals li { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1.5px dashed var(--line); color: var(--ink-2); }
+    .aq-goals li.on { border-style: solid; border-color: #2a9d8f; color: var(--ink); background: color-mix(in oklab, #2a9d8f 14%, var(--surface)); }
+    .aq-goals p { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
+    .aq-pedia { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; text-align: left; max-height: 60dvh; overflow: auto; }
+    .aq-pedia__card { display: flex; gap: 8px; align-items: flex-start; background: var(--surface-2); border-radius: 12px; padding: 8px; }
+    .aq-pedia__card canvas { width: 54px; height: 32px; flex: none; }
+    .aq-pedia__card b { font-size: 14px; } .aq-pedia__card p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; }
+    .aq-pedia__card.is-locked { opacity: .55; } .aq-pedia__card.is-locked canvas { filter: brightness(0) opacity(.5); }
+    @media (prefers-reduced-motion: reduce) { .aq-sign__fish { animation: none; } }
     @media (max-width: 560px) {
       .aq-stage { height: max(330px, calc(100dvh - var(--bar-h) - 330px)); margin: 6px 6px 0; }
       .tab { padding: 5px 9px; font-size: 13px; }
@@ -36,10 +59,10 @@
     }
   </style>
 </head>
-<body data-game="aquarium">
+<body data-game="aquarium" data-modes>
   <main class="c-wrap">
     <div class="aq-head">
-      <h1 class="c-title">Aquarium</h1>
+      <h1 class="c-title aq-sign"><span class="aq-sign__fish" aria-hidden="true">🐠</span>Aquarium<small>tropical fish &amp; supplies</small></h1>
       <p class="c-sub">Pick a fish, plant or ornament and click the tank to add it. Then sprinkle some food and watch the feeding frenzy.</p>
     </div>
     <div class="aq-stage" id="stage">
@@ -56,11 +79,15 @@
     </div>
     <div class="aq-items" id="items"></div>
     <div class="aq-row">
-      <label>Light <select id="light" aria-label="Lighting"></select></label>
-      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+      <button class="c-btn aq-surprise" type="button" id="surprise" title="Surprise tank (R)">🎲 Surprise tank</button>
+      <button class="c-btn c-btn--ghost simple-only" type="button" id="lightBtn" title="Change the light (L)">💡 Light</button>
+      <label class="adv-only">Light <select id="light" aria-label="Lighting"></select></label>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo">↶ Undo</button>
       <button class="c-btn c-btn--ghost" type="button" id="empty">🫧 Empty tank</button>
-      <button class="c-btn" type="button" id="png">📷 Save PNG</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="pedia" title="Fishpedia (P)">📖 Fishpedia</button>
     </div>
+    <section class="aq-goals adv-only" aria-label="Shop goals"><h2>Shop goals <b id="goalN"></b></h2><ul id="goals"></ul><p id="aqStat"></p></section>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
@@ -883,6 +910,94 @@
       });
       for (const p of plants) p.h = p.h / 380 * sandTop * 0.9;
     }
+    const SIMPLE = Curio.simple;
+    const FACTS = {
+      clown: 'Every clownfish hatches male. The biggest fish in a group can turn female and becomes the boss. A slimy coat lets them hide in stinging anemones.',
+      neon: 'From dark blackwater streams in the Amazon basin. The blue stripe is iridescent and dims at night while they rest.',
+      angel: 'Not a saltwater angel at all: a freshwater cichlid from South America. Pairs clean a leaf and guard their eggs on it together.',
+      tang: 'Also called a surgeonfish because of a sharp, scalpel-like spine on each side of the tail.',
+      gold: 'Bred from wild carp in China over a thousand years ago. Fancy varieties came later, many in Japan.',
+      puffer: 'Puffs up by gulping water fast. Many pufferfish carry tetrodotoxin, one of nature’s strongest poisons.',
+      betta: 'Breathes air from the surface with a labyrinth organ. Males blow bubble nests to hold their eggs.',
+      seahorse: 'The father carries the eggs in a pouch and gives birth to the babies. Seahorses swim upright and steer with a tiny back fin.',
+      jelly: 'No brain, no heart, no bones, and around 95 percent water. They drift with currents and pulse to steer.',
+      pleco: 'Catfish whiskers are called barbels and are covered in taste buds, so they taste the water as they search the bottom.',
+      guppy: 'Livebearers: guppies give birth to swimming babies instead of laying eggs.',
+      danio: 'Zebrafish can regrow damaged heart tissue and fins, which is why scientists study them so much.',
+      shark: 'Shark skeletons are cartilage, not bone, and many sharks grow new rows of teeth all their lives.'
+    };
+    const seen = Curio.store.get('aquarium-seen', {});
+    const stats = Curio.store.get('aquarium-stats', { flakes: 0, taps: 0, max: 0 });
+    const TANKS = [
+      { name: 'Coral reef', l: 'tropic', f: [['clown', 3], ['tang', 2], ['puffer', 1], ['seahorse', 1]], p: ['coral', 'anemone', 'coral', 'grass'], d: ['rock', 'shell'] },
+      { name: 'Amazon stream', l: 'day', f: [['neon', 3], ['angel', 2], ['pleco', 1], ['guppy', 1]], p: ['weed', 'kelp', 'grass', 'weed', 'grass'], d: ['rock'] },
+      { name: 'Moon jellies', l: 'night', f: [['jelly', 5], ['danio', 1]], p: ['kelp', 'kelp'], d: ['bubbler', 'rock'] },
+      { name: 'Pirate wreck', l: 'deep', f: [['shark', 2], ['tang', 1], ['puffer', 1], ['pleco', 1]], p: ['kelp', 'weed', 'anemone'], d: ['chest', 'castle', 'shell'] },
+      { name: 'Goldfish pond', l: 'sunset', f: [['gold', 5], ['betta', 1]], p: ['grass', 'weed', 'grass', 'kelp'], d: ['castle', 'bubbler'] }
+    ];
+    function surprise() {
+      snapshot();
+      const tk = Curio.pick(TANKS);
+      fish = []; plants = []; decor = []; flakes = [];
+      light = tk.l; lightSel.value = light; bakeBg();
+      tk.p.forEach((type, i) => plants.push({ type, x: W * (0.08 + i / Math.max(1, tk.p.length - 1) * 0.84) + R(-20, 20), h: R(0.5, 0.8) * sandTop * (type === 'kelp' ? 1.1 : type === 'grass' ? 0.6 : 0.75), v: Curio.randInt(0, 3), front: Math.random() < 0.3, ph: R(0, 6), grow: 0 }));
+      tk.d.forEach((type) => decor.push({ type, x: R(W * 0.15, W * 0.85), s: R(0.85, 1.15) * Math.min(1.2, Math.max(0.7, W / 900)), v: Curio.randInt(0, 2), grow: 0 }));
+      let k = 0;
+      for (const [id, n] of tk.f) {
+        const sp = SP[id]; const cnt = sp.school ? n * 2 : n;
+        for (let i = 0; i < cnt; i++) setTimeout(() => { const x = R(W * 0.1, W * 0.9), y = Hc * 0.12; const f = newFish(id, x, y); f.ty = zoneY(sp, Math.random()); fish.push(f); seen[id] = 1; for (let j = 0; j < 4; j++) bubbles.push({ x, y, r: R(1.5, 3.5), vy: R(40, 90), ph: R(0, 6) }); bubbleSound(500 + Math.random() * 500); updateCount(); }, 200 + (k++) * 110);
+      }
+      setTimeout(() => { updateCount(); save(); Curio.store.set('aquarium-seen', seen); if (!SIMPLE) paintGoals(); }, 400 + k * 110);
+      Curio.toast(`🎲 ${tk.name}`, 1600);
+      if (navigator.vibrate) navigator.vibrate([6, 40, 6]);
+    }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    const LORDER = Object.keys(LIGHTS);
+    document.getElementById('lightBtn').addEventListener('click', () => { light = LORDER[(LORDER.indexOf(light) + 1) % LORDER.length]; lightSel.value = light; bakeBg(); save(); tone(440, 0.3, 'sine', 0.05, 1.5); Curio.toast(LIGHTS[light].name, 1000); });
+    const GOALS = [
+      ['Stock 5 different species', () => new Set(fish.map((f) => f.sp)).size >= 5],
+      ['A school of 15 neon tetras', () => fish.filter((f) => f.sp === 'neon').length >= 15],
+      ['Meet all 13 species', () => SPECIES.every((x) => seen[x.id])],
+      ['Sprinkle 300 flakes of food', () => stats.flakes >= 300],
+      ['Startle the fish 25 times', () => stats.taps >= 25],
+      ['A full house of 50 creatures', () => fish.length >= 50],
+      ['A glowing night tank with 3 jellies', () => light === 'night' && fish.filter((f) => f.sp === 'jelly').length >= 3],
+      ['Treasure, castle and a bubbler together', () => ['chest', 'castle', 'bubbler'].every((d) => decor.some((x) => x.type === d))],
+      ['A planted tank with 10 plants', () => plants.length >= 10],
+      ['Two sharks on patrol', () => fish.filter((f) => f.sp === 'shark').length >= 2]
+    ];
+    const goalDone = Curio.store.get('aquarium-goals', {});
+    function paintGoals() {
+      let fresh = 0;
+      GOALS.forEach(([n, f], i) => { if (!goalDone[i] && f()) { goalDone[i] = Date.now(); fresh++; Curio.toast(`🏅 Goal: ${n}`, 2400); } });
+      if (fresh) { Curio.store.set('aquarium-goals', goalDone); [660, 880, 1046].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'sine', 0.05), i * 90)); if (Object.keys(goalDone).length === GOALS.length) Curio.confetti(); }
+      const ul = document.getElementById('goals'); ul.textContent = '';
+      GOALS.forEach(([n], i) => { const li = document.createElement('li'); li.textContent = n; if (goalDone[i]) li.className = 'on'; ul.append(li); });
+      document.getElementById('goalN').textContent = `${Object.keys(goalDone).length}/${GOALS.length}`;
+      stats.max = Math.max(stats.max, fish.length);
+      document.getElementById('aqStat').textContent = `${Object.keys(seen).length}/${SPECIES.length} species met · ${stats.flakes} flakes fed · biggest tank ${stats.max} · ${stats.taps} glass taps`;
+      Curio.store.set('aquarium-stats', stats);
+    }
+    cv.addEventListener('pointerdown', () => { if (tab === 'fish') { seen[sel.fish] = 1; Curio.store.set('aquarium-seen', seen); } if (tab === 'feed') stats.flakes += 9; if (tab === 'tap') { stats.taps++; if (navigator.vibrate) navigator.vibrate(15); } }, true);
+    function openPedia() {
+      const box = document.createElement('div'); box.className = 'aq-pedia';
+      for (const sp of SPECIES) {
+        const card = document.createElement('div'); card.className = 'aq-pedia__card' + (seen[sp.id] ? '' : ' is-locked');
+        card.append(iconFor('fish', sp.id));
+        const t = document.createElement('div'); const b = document.createElement('b'); b.textContent = seen[sp.id] ? sp.name : '???'; const pp = document.createElement('p'); pp.textContent = seen[sp.id] ? FACTS[sp.id] : 'Add this one to your tank to read its card.';
+        t.append(b, pp); card.append(t); box.append(card);
+      }
+      Curio.modal({ emoji: '📖', title: `Fishpedia ${Object.keys(seen).length}/${SPECIES.length}`, body: box, wide: true, buttons: [{ label: 'Back to the tank', value: 1 }] });
+    }
+    document.getElementById('pedia').addEventListener('click', openPedia);
+    addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea')) || document.querySelector('.curio-modal')) return;
+      const k = e.key.toLowerCase();
+      if (k === 'r') surprise();
+      else if (k === 'l' && SIMPLE) document.getElementById('lightBtn').click();
+      else if (k === 'p' && !SIMPLE) openPedia();
+    });
+    if (!SIMPLE) { paintGoals(); setInterval(() => { if (!document.hidden) paintGoals(); }, 2000); }
     lightSel.value = light;
     paintTabs(); updateCount(); bakeBg();
     raf = requestAnimationFrame(frame);

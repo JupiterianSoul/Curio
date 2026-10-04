@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="fireworks">
+<body data-game="fireworks" data-modes>
   <main class="c-wrap fw-main" id="stage">
     <canvas id="sky" role="img" aria-label="Night sky over a scene with water. Click or tap anywhere in the sky to launch a firework there."></canvas>
     <div class="fw-intro" id="intro"><p>Tap the sky. Hold to keep them coming.</p></div>
@@ -17,9 +17,9 @@
       <div class="fw-mode" id="modeLbl">Free play</div>
       <div class="fw-topr">
         <div class="fw-count"><b id="count">0</b> launched</div>
-        <button type="button" id="helpBtn" aria-label="How to play" title="How to play">?</button>
-        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
-        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
+        <button type="button" class="adv-only" id="helpBtn" aria-label="How to play" title="How to play">?</button>
+        <button type="button" class="adv-only" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" class="adv-only" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
       </div>
     </div>
 
@@ -32,10 +32,12 @@
 
     <div class="fw-dock" role="toolbar" aria-label="Firework controls">
       <div class="fw-row fw-row--pick">
-        <button type="button" class="fw-pill" id="kindBtn" title="Shell type (K)"><i>🎲</i><span>Mix</span></button>
-        <button type="button" class="fw-pill" id="schemeBtn" title="Colors (C)"><i class="fw-sw"></i><span>Mix</span></button>
+        <button type="button" class="fw-pill simple-only fw-big" id="surprise" title="Surprise me (R)"><i>🎲</i><span>Surprise me</span></button>
+        <button type="button" class="fw-pill simple-only fw-big fw-fin" id="finale" title="Grand finale (F)"><i>🎇</i><span>Finale!</span></button>
+        <button type="button" class="fw-pill adv-only" id="kindBtn" title="Shell type (K)"><i>🎲</i><span>Mix</span></button>
+        <button type="button" class="fw-pill adv-only" id="schemeBtn" title="Colors (C)"><i class="fw-sw"></i><span>Mix</span></button>
         <button type="button" class="fw-pill fw-free" id="sceneBtn" title="Scenery (S)"><i>🌃</i><span>City harbor</span></button>
-        <button type="button" class="fw-pill fw-free" id="writeBtn" title="Write in the sky (W)"><i>✍️</i><span>Write</span></button>
+        <button type="button" class="fw-pill fw-free adv-only" id="writeBtn" title="Write in the sky (W)"><i>✍️</i><span>Write</span></button>
         <button type="button" class="fw-pill fw-free" id="autoBtn" aria-pressed="false" title="Auto show (A)"><i>✨</i><span>Auto show</span></button>
         <div class="fw-ammo fw-crowdonly" id="cAmmo" aria-label="Loaded mortars"></div>
       </div>

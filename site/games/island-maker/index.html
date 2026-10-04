@@ -25,6 +25,32 @@
     .im-row2 input[type=range] { width: 120px; accent-color: var(--accent); }
     .im-row2 .c-btn { padding: 8px 14px; font-size: 14px; }
     .im-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    body[data-game="island-maker"] { background-color: color-mix(in oklab, #e8d6a8 40%, var(--bg)); background-image: radial-gradient(130% 90% at 50% 40%, transparent 55%, color-mix(in oklab, #8a5a2a 18%, transparent)), repeating-linear-gradient(0deg, color-mix(in oklab, #7a5a30 6%, transparent) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, color-mix(in oklab, #7a5a30 6%, transparent) 0 1px, transparent 1px 48px); }
+    .im-logo { font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif; font-variant: small-caps; font-weight: 700; letter-spacing: .05em; color: #5a3a18; display: inline-flex; align-items: center; gap: 10px; }
+    .im-rose { width: 38px; height: 38px; color: #a8322d; animation: im-turn 30s linear infinite; }
+    @keyframes im-turn { to { transform: rotate(360deg); } }
+    :root[data-look="midnight"] .im-logo, :root[data-look="arcade"] .im-logo { color: #f0d9a8; }
+    @media (prefers-color-scheme: dark) { :root:not([data-look]) .im-logo { color: #f0d9a8; } }
+    .im-name { margin: 0 0 2px; font: italic 600 16px/1.3 "Palatino Linotype", Palatino, Georgia, serif; color: #a8322d; }
+    .im-name::before { content: '~ '; } .im-name::after { content: ' ~'; }
+    .im-stage { border: 8px solid #f4e7c8; outline: 2px solid #8a5a2a; box-shadow: var(--shadow), 0 0 0 10px color-mix(in oklab, #8a5a2a 20%, transparent); }
+    .im-big { font-size: 16px; padding: 11px 20px !important; background: #2f7fb5; border-color: #1f5a85; color: #fff; }
+    html[data-mode="simple"] .tool { padding: 9px 13px; font-size: 15px; }
+    html[data-mode="simple"] .tool span { font-size: 21px; }
+    .im-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .im-card { background: color-mix(in oklab, #f4e7c8 60%, var(--surface)); color: var(--ink); border: 1.5px solid color-mix(in oklab, #8a5a2a 40%, var(--line)); border-radius: 6px; padding: 12px 14px; }
+    .im-card h2 { margin: 0 0 8px; font: 700 15px/1.2 "Palatino Linotype", Palatino, Georgia, serif; font-variant: small-caps; letter-spacing: .06em; }
+    .im-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; }
+    .im-card li::before { content: '◯ '; opacity: .6; } .im-card li.on { color: var(--good); } .im-card li.on::before { content: '✔ '; opacity: 1; }
+    .im-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .im-slot__img { aspect-ratio: 3 / 2; border-radius: 4px; background: #9fd3e6 center / cover; display: grid; place-items: center; font: italic 12px Georgia, serif; color: rgba(40, 60, 80, .7); border: 1px solid color-mix(in oklab, #8a5a2a 40%, transparent); }
+    .im-slot__btns { display: flex; gap: 3px; align-items: center; margin-top: 4px; }
+    .im-slot__btns small { flex: 1; font: italic 12px Georgia, serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .im-slot__btns .c-btn { padding: 3px 7px; font-size: 13px; }
+    .im-stat { font-size: 13px; color: var(--ink-3); margin: 8px 0 0; }
+    @media (prefers-reduced-motion: reduce) { .im-rose { animation: none; } }
+    @media (max-width: 720px) { .im-extra { grid-template-columns: 1fr; } }
     @media (max-width: 560px) {
       .im-stage { min-width: 0; width: 100%; }
       .tool { padding: 5px 7px; font-size: 12px; }
@@ -35,10 +61,11 @@
     }
   </style>
 </head>
-<body data-game="island-maker">
+<body data-game="island-maker" data-modes>
   <main class="c-wrap">
     <div class="im-head">
-      <h1 class="c-title">Island Maker</h1>
+      <h1 class="c-title im-logo"><svg class="im-rose" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 2l4 18-4 18-4-18z" fill="currentColor"/><path d="M2 20l18-4 18 4-18 4z" fill="currentColor" opacity=".55"/><circle cx="20" cy="20" r="2.5" fill="#f4e7c8"/></svg>Island Maker</h1>
+      <p class="im-name" id="isleName" aria-live="polite"></p>
       <p class="c-sub">Push up mountains, paint beaches and forests, then plonk down a village and set some boats sailing.</p>
     </div>
     <div class="im-stage" id="stage">
@@ -46,15 +73,21 @@
     </div>
     <div class="im-tools" id="tools" role="toolbar" aria-label="Brushes"></div>
     <div class="im-row2">
-      <label>Brush <input type="range" id="size" min="3" max="40" value="14" aria-label="Brush size"></label>
-      <label>Sea level <input type="range" id="water" min="-35" max="35" value="0" aria-label="Sea level"></label>
+      <button class="c-btn im-big simple-only" type="button" id="surprise" title="Surprise island (G)">🎲 Surprise island</button>
+      <label class="adv-only">Brush <input type="range" id="size" min="3" max="40" value="14" aria-label="Brush size"></label>
+      <label class="adv-only">Sea level <input type="range" id="water" min="-35" max="35" value="0" aria-label="Sea level"></label>
       <div class="im-btns">
-        <button class="c-btn" type="button" id="gen">🎲 New island</button>
-        <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
-        <button class="c-btn c-btn--ghost" type="button" id="flood">🌊 Flood</button>
-        <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+        <button class="c-btn adv-only" type="button" id="gen">🎲 New island</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="flood">🌊 Flood</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="rename">✒️ Rename</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
       </div>
     </div>
+    <section class="im-extra adv-only" aria-label="Explorer's log and atlas">
+      <div class="im-card"><h2>Explorer's log <b id="logN"></b></h2><ul id="log"></ul></div>
+      <div class="im-card"><h2>Atlas</h2><div class="im-slots" id="slots"></div><p class="im-stat" id="istat"></p></div>
+    </section>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
@@ -452,7 +485,7 @@
     for (const tl of TOOLS) {
       if (!tl) { const s = document.createElement('span'); s.className = 'im-sep'; toolsEl.append(s); continue; }
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'tool'; b.innerHTML = `<span aria-hidden="true">${tl.icon}</span>${tl.label}`; b.title = `${tl.label} (${KEYS[tl.id]})`;
+      b.type = 'button'; b.className = 'tool' + (['smooth', 'rock', 'snow', 'lighthouse', 'erase'].includes(tl.id) ? ' adv-only' : ''); b.innerHTML = `<span aria-hidden="true">${tl.icon}</span>${tl.label}`; b.title = `${tl.label} (${KEYS[tl.id]})`;
       b.addEventListener('click', () => pickTool(tl.id));
       toolsEl.append(b); btns[tl.id] = b;
     }
@@ -492,7 +525,7 @@
       else if (e.key === ']') { size = Math.min(40, size + 2); sizeIn.value = size; }
       else if (!e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.closest && e.target.closest('input,select,textarea'))) {
         const id = Object.keys(KEYS).find((q) => KEYS[q] === e.key.toUpperCase());
-        if (id) pickTool(id);
+        if (id && !(Curio.simple && ['smooth', 'rock', 'snow', 'lighthouse', 'erase'].includes(id))) pickTool(id);
       }
     });
 
@@ -587,6 +620,80 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
     addEventListener('resize', resize);
 
+    const SIMPLE = Curio.simple;
+    if (SIMPLE && ['smooth', 'rock', 'snow', 'lighthouse', 'erase'].includes(tool)) tool = 'raise';
+    const N1 = ['Little', 'Old', 'Sunny', 'Misty', 'Lost', 'Saint', 'Great', 'Whispering', 'Turtle', 'Pelican', 'Coral', 'Driftwood', 'Lantern', 'Seagull', 'Barnacle'];
+    const N2 = ['Cove', 'Isle', 'Key', 'Atoll', 'Haven', 'Rock', 'Reach', 'Island', 'Holm', 'Point', 'Sands', 'Skerry'];
+    let isleName = Curio.store.get('island-maker:name', '') || `${Curio.pick(N1)} ${Curio.pick(N2)}`;
+    const paintName = () => { document.getElementById('isleName').textContent = isleName; Curio.store.set('island-maker:name', isleName); };
+    paintName();
+    function surprise() { isleName = `${Curio.pick(N1)} ${Curio.pick(N2)}`; paintName(); generate(); if (navigator.vibrate) navigator.vibrate([8, 50, 8]); }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    document.getElementById('gen').addEventListener('click', () => { isleName = `${Curio.pick(N1)} ${Curio.pick(N2)}`; paintName(); });
+    document.getElementById('rename').addEventListener('click', () => { isleName = `${Curio.pick(N1)} ${Curio.pick(N2)}`; paintName(); tone(880, 0.1); });
+    function measure() {
+      let land = 0, peak = -1, snow = 0, forest = 0, sand = 0;
+      for (let i = 0; i < NC; i += 3) { const e = hgt[i] - wl; if (e > 0) { land++; if (hgt[i] > peak) peak = hgt[i]; if (cover[i] === COVER.snow) snow++; if (cover[i] === COVER.forest) forest++; if (cover[i] === COVER.sand) sand++; } }
+      const cnt = (t) => objs.filter((o) => o.type === t).length;
+      const seen = new Uint8Array(NC); let isles = 0;
+      for (let y = 2; y < GH - 2; y += 4) for (let x = 2; x < GW - 2; x += 4) {
+        const i = y * GW + x; if (seen[i] || hgt[i] <= wl) continue;
+        let size = 0; const st = [[x, y]]; seen[i] = 1;
+        while (st.length) { const [cx, cy] = st.pop(); size++; for (const [dx, dy] of [[4, 0], [-4, 0], [0, 4], [0, -4]]) { const nx = cx + dx, ny = cy + dy; if (nx < 0 || ny < 0 || nx >= GW || ny >= GH) continue; const k = ny * GW + nx; if (!seen[k] && hgt[k] > wl) { seen[k] = 1; st.push([nx, ny]); } } }
+        if (size > 6) isles++;
+      }
+      const tot = NC / 3;
+      return { land: land / tot, peak: peak - wl, snow, forest: forest / Math.max(1, land), sand, villages: cnt('village'), lights: cnt('lighthouse'), boats: cnt('boat'), isles };
+    }
+    const LOG = [
+      ['Raise a mountain tall enough for snow', (m) => m.peak > 0.7],
+      ['Paint snow on a peak', (m) => m.snow > 20],
+      ['Found three villages', (m) => m.villages >= 3],
+      ['Light the coast with two lighthouses', (m) => m.lights >= 2],
+      ['A fleet of five boats', (m) => m.boats >= 5],
+      ['An archipelago of four islands', (m) => m.isles >= 4],
+      ['A tiny atoll: less than 8% land', (m) => m.land > 0.005 && m.land < 0.08],
+      ['A continent: over 55% land', (m) => m.land > 0.55],
+      ['Half the island under forest', (m) => m.forest > 0.5],
+      ['Golden beaches everywhere', (m) => m.sand > 1200]
+    ];
+    const logDone = Curio.store.get('island-maker:log', {});
+    function checkLog() {
+      const m = measure(); let fresh = 0;
+      LOG.forEach(([n, f], i) => { if (!logDone[i] && f(m)) { logDone[i] = Date.now(); fresh++; Curio.toast(`🧭 Log: ${n}`, 2400); } });
+      if (fresh) { Curio.store.set('island-maker:log', logDone); [587, 740, 880].forEach((f, i) => setTimeout(() => tone(f, 0.25, 'sine', 0.05), i * 100)); if (Object.keys(logDone).length === LOG.length) Curio.confetti(); }
+      const ul = document.getElementById('log'); ul.textContent = '';
+      LOG.forEach(([n], i) => { const li = document.createElement('li'); li.textContent = n; if (logDone[i]) li.className = 'on'; ul.append(li); });
+      document.getElementById('logN').textContent = `${Object.keys(logDone).length}/${LOG.length}`;
+      document.getElementById('istat').textContent = `${isleName}: ${Math.round(m.land * 100)}% land · ${m.isles} island${m.isles === 1 ? '' : 's'} · ${m.villages} villages · ${m.boats} boats`;
+    }
+    function pack() { const q = new Uint8Array(NC); for (let i = 0; i < NC; i++) q[i] = Math.max(0, Math.min(255, Math.round((hgt[i] + 1) / 2.2 * 255))); return { v: 1, h: b64(q), c: b64(cover), o: objs.map(cleanObj), wl }; }
+    function unpack(d) { const q = unb64(d.h), c = unb64(d.c); if (q.length !== NC || c.length !== NC) return; snapshot(); for (let i = 0; i < NC; i++) hgt[i] = q[i] / 255 * 2.2 - 1; cover = c; objs = d.o || []; wl = +d.wl || 0; waterIn.value = Math.round(wl * 100); fullRefresh(); }
+    const slotsEl = document.getElementById('slots');
+    function paintSlots() {
+      let slots = Curio.store.get('island-maker:atlas', [null, null, null]); if (!Array.isArray(slots)) slots = [null, null, null];
+      slotsEl.textContent = '';
+      slots.forEach((sl, i) => {
+        const d = document.createElement('div'); d.className = 'im-slot';
+        const img = document.createElement('div'); img.className = 'im-slot__img'; if (sl) img.style.backgroundImage = `url(${sl.img})`; img.textContent = sl ? '' : 'uncharted';
+        const cap = document.createElement('small'); cap.textContent = sl ? sl.name : `Page ${i + 1}`;
+        const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'c-btn c-btn--ghost'; sv.textContent = '💾';
+        sv.setAttribute('aria-label', `Save to page ${i + 1}`);
+        const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'c-btn c-btn--ghost'; ld.textContent = '📂'; ld.disabled = !sl; ld.setAttribute('aria-label', `Open page ${i + 1}`);
+        sv.addEventListener('click', () => {
+          const pp = pointer; pointer = null; render(); pointer = pp;
+          const c = document.createElement('canvas'); c.width = 180; c.height = 120; c.getContext('2d').drawImage(cv, 0, 0, 180, 120);
+          slots[i] = { ...pack(), img: c.toDataURL('image/jpeg', 0.7), name: isleName };
+          try { Curio.store.set('island-maker:atlas', slots); Curio.toast(`📖 ${isleName} added to the atlas`); } catch (e) { Curio.toast('The atlas is full'); }
+          paintSlots(); tone(784, 0.2);
+        });
+        ld.addEventListener('click', () => { if (!sl) return; unpack(sl); isleName = sl.name; paintName(); tone(587, 0.2); checkLog(); });
+        const row = document.createElement('div'); row.className = 'im-slot__btns'; row.append(cap, sv, ld);
+        d.append(img, row); slotsEl.append(d);
+      });
+    }
+    if (!SIMPLE) { paintSlots(); setTimeout(checkLog, 300); setInterval(() => { if (!document.hidden && !painting && !morph) checkLog(); }, 2000); }
+    addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !(e.target.closest && e.target.closest('input')) && e.key.toLowerCase() === 'g') surprise(); });
     resize();
     const had = load();
     sizeIn.value = size; waterIn.value = Math.round(wl * 100); paintTools();

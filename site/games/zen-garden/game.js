@@ -415,7 +415,7 @@
   }
   const DRAW = { stone: (o) => drawStone(o), plant: (o) => drawPlant(o), bonsai: (o) => drawBonsai(o), pond: (o) => drawPond(o), lantern: (o) => drawLantern(o), moss: (o) => drawMoss(o), maple: (o) => drawMaple(o) };
   const TIMES = ['day', 'dusk', 'night'];
-  let timeOfDay = Curio.store.get('zen:time', 'day'), night = false;
+  let timeOfDay = Curio.store.get('zen:time', 'dusk'), night = false;
   if (!TIMES.includes(timeOfDay)) timeOfDay = 'day';
   const WEATHER = [['none', '☁️', 'Calm'], ['petals', '🌸', 'Petals'], ['leaves', '🍂', 'Leaves'], ['snow', '❄️', 'Snow'], ['rain', '🌧️', 'Rain']];
   let weather = Curio.store.get('zen:weather', 'petals'), season = 'spring';
@@ -625,7 +625,7 @@
     objects = []; petals = []; flatAnim = 40; Curio.store.set('zen:garden', null);
   });
   const sb = $('bSound');
-  const paintSound = () => { sb.setAttribute('aria-pressed', String(audio.enabled)); sb.textContent = audio.enabled ? '🎐 Ambience' : '🎐 Silence'; };
+  const paintSound = () => { sb.setAttribute('aria-pressed', String(audio.enabled)); sb.innerHTML = `🎐<span class="lbl"> ${audio.enabled ? 'Ambience' : 'Silence'}</span>`; };
   sb.addEventListener('click', () => { audio.enabled = !audio.enabled; audio.start(); paintSound(); if (audio.enabled && Curio.muted) Curio.toast('Sound is muted in the top bar 🔇'); });
   paintSound();
 
@@ -901,5 +901,104 @@
   resize();
   start();
   if (!Curio.store.get('zen:padtip', false)) { Curio.store.set('zen:padtip', true); setTimeout(() => Curio.toast('Tip: on a laptop, turn on Touchpad mode in the top bar, or rake with the arrow keys', 4200), 2500); }
+  const SIMPLE = Curio.simple;
+  function surprise() {
+    audio.start();
+    if (Math.random() < 0.35) { const id = Curio.pick(Object.keys(GARDENS)); loadGarden(id); Curio.toast(GARDENS[id].name, 1800); }
+    else {
+      objects = []; petals = [];
+      applyPattern(Curio.pick(['lines', 'diagonal', 'waves', 'circles', 'spiral', 'seigaiha']), true);
+      const n = Curio.randInt(2, 4);
+      for (let i = 0; i < n; i++) objects.push(makeObject('stone', W * (0.18 + Math.random() * 0.64), H * (0.22 + Math.random() * 0.5)));
+      const extra = Curio.shuffle(['plant', 'maple', 'lantern', 'moss', 'bonsai']).slice(0, Curio.randInt(1, 3));
+      for (const t of extra) objects.push(makeObject(t, W * (0.12 + Math.random() * 0.76), H * (0.18 + Math.random() * 0.55)));
+      objects.sort((a, b) => a.y - b.y);
+      for (const o of objects) settle(o, true);
+      audio.scrape(30); saveGarden();
+    }
+    setWeather(Curio.pick(WEATHER.slice(1))[0], true);
+    if (Math.random() < 0.5) setTime(Curio.pick(TIMES));
+    intro.classList.add('is-faded');
+    if (navigator.vibrate) navigator.vibrate([5, 50, 5]);
+    paintReq();
+  }
+  $('surprise').addEventListener('click', surprise);
+  const REQS = [
+    ['Three stones, one quiet group', () => objects.filter((o) => o.type === 'stone').length >= 3],
+    ['Rake ripples or a spiral', () => pattern === 'circles' || pattern === 'spiral'],
+    ['A lantern glowing at night', () => timeOfDay === 'night' && objects.some((o) => o.type === 'lantern')],
+    ['Koi pond with a maple nearby', () => objects.some((o) => o.type === 'pond') && objects.some((o) => o.type === 'maple')],
+    ['Autumn leaves falling', () => weather === 'leaves'],
+    ['A bonsai on moss', () => objects.some((o) => o.type === 'bonsai') && objects.some((o) => o.type === 'moss')],
+    ['First snow at dusk', () => weather === 'snow' && timeOfDay === 'dusk'],
+    ['Seigaiha waves around two stones', () => pattern === 'seigaiha' && objects.filter((o) => o.type === 'stone').length >= 2],
+    ['Fifteen stones, like Ryoan-ji', () => objects.filter((o) => o.type === 'stone').length >= 15],
+    ['Ten things in one garden', () => objects.length >= 10],
+    ['Ichimatsu checks in the rain', () => pattern === 'checks' && weather === 'rain'],
+    ['An empty garden of smooth sand', () => pattern === 'flat' && objects.length === 0]
+  ];
+  const reqDone = Curio.store.get('zen:reqs', {});
+  function paintReq() {
+    let fresh = 0;
+    REQS.forEach(([name, ok], i) => { try { if (!reqDone[i] && ok()) { reqDone[i] = Date.now(); fresh++; Curio.toast(`📜 Request fulfilled: ${name}`, 2600); } } catch (e) { } });
+    if (fresh) { Curio.store.set('zen:reqs', reqDone); audio.tok(880, 0.15); if (Object.keys(reqDone).length === REQS.length) Curio.confetti(); }
+    $('reqN').textContent = `${Object.keys(reqDone).length}/${REQS.length}`;
+  }
+  setInterval(() => { if (!document.hidden && !SIMPLE) paintReq(); }, 1500);
+  $('bReq').addEventListener('click', () => {
+    paintReq();
+    const ul = document.createElement('ul'); ul.className = 'zg-reqs';
+    REQS.forEach(([n], i) => { const li = document.createElement('li'); li.textContent = `${reqDone[i] ? '✅' : '⬜'} ${n}`; if (reqDone[i]) li.className = 'on'; ul.append(li); });
+    Curio.modal({ emoji: '📜', title: "The monk's requests", body: ul, buttons: [{ label: 'Back to raking', value: 1 }] });
+  });
+  function snapshot(w) { const c = document.createElement('canvas'); const k = w / W; c.width = w; c.height = Math.round(H * k); c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height); return c; }
+  function exportPng() {
+    const a = document.createElement('a'); a.download = `zen-garden-${Date.now()}.png`; a.href = cv.toDataURL('image/png'); a.click();
+    Curio.toast('📷 Saved a picture of your garden'); audio.tok(700, 0.1);
+  }
+  $('bPng').addEventListener('click', exportPng);
+  function openGallery() {
+    const gal = Curio.store.get('zen:gallery', []);
+    const back = document.createElement('div'); back.className = 'zg-gal';
+    back.innerHTML = '<div class="zg-gal__box" role="dialog" aria-modal="true" aria-label="Saved gardens"><header><h2>Saved gardens</h2><button type="button" class="chip" data-a="save">💾 Keep this garden</button><button type="button" class="chip" data-a="x" aria-label="Close">✕</button></header><div class="zg-gal__grid"></div><p class="zg-gal__note">Up to 12 gardens. Tap one to walk back into it.</p></div>';
+    const grid = back.querySelector('.zg-gal__grid');
+    const paint = () => {
+      grid.textContent = '';
+      if (!gal.length) grid.innerHTML = '<p class="zg-gal__note">Nothing kept yet.</p>';
+      gal.forEach((g, i) => {
+        const f = document.createElement('figure');
+        f.innerHTML = '<button type="button" class="zg-gal__open"><img alt=""></button><figcaption></figcaption><button type="button" class="zg-gal__del" aria-label="Delete">✕</button>';
+        f.querySelector('img').src = g.img; f.querySelector('img').alt = `Garden kept ${new Date(g.t).toLocaleDateString()}`;
+        f.querySelector('figcaption').textContent = `${PATTERNS[g.data.pattern] || ''} · ${g.data.objs.length} things`;
+        f.querySelector('.zg-gal__open').addEventListener('click', () => { Curio.store.set('zen:garden', g.data); restoreGarden(); objects.sort((a, b) => a.y - b.y); close(); paintReq(); audio.tok(600, 0.1); });
+        f.querySelector('.zg-gal__del').addEventListener('click', () => { gal.splice(i, 1); Curio.store.set('zen:gallery', gal); paint(); });
+        grid.append(f);
+      });
+    };
+    const close = () => { back.remove(); removeEventListener('keydown', onKey, true); };
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    addEventListener('keydown', onKey, true);
+    back.addEventListener('click', (e) => {
+      if (e.target === back || e.target.closest('[data-a="x"]')) close();
+      else if (e.target.closest('[data-a="save"]')) {
+        saveGarden(); const data = Curio.store.get('zen:garden', null);
+        if (!data) return;
+        gal.unshift({ t: Date.now(), img: snapshot(240).toDataURL('image/jpeg', 0.7), data }); gal.length = Math.min(gal.length, 12);
+        Curio.store.set('zen:gallery', gal); paint(); audio.tok(880, 0.12); Curio.toast('💾 Kept in the gallery');
+      }
+    });
+    document.body.append(back); paint(); back.querySelector('[data-a="save"]').focus();
+  }
+  $('bGallery').addEventListener('click', openGallery);
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('input, button') || e.ctrlKey || e.metaKey || document.querySelector('.curio-modal, .zg-gal')) return;
+    const k = e.key.toLowerCase();
+    if (k === 'r' && SIMPLE) surprise();
+    else if (SIMPLE) return;
+    else if (k === 'q') $('bReq').click();
+    else if (k === 'v') openGallery();
+    else if (k === 'e') exportPng();
+  });
+  paintReq();
   window.__zen = { loadGarden, applyPattern, setWeather, setTime, place, get objects() { return objects; }, setTool: (t) => setTool(t) };
 })();

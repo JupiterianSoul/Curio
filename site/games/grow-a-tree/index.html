@@ -28,6 +28,26 @@
     .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
     .gt-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
     .gt-btns .c-btn { padding: 8px 14px; font-size: 14px; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    body[data-game="grow-a-tree"] { background-color: color-mix(in oklab, #dfe9c8 40%, var(--bg)); background-image: radial-gradient(ellipse 9px 4px at 30% 40%, color-mix(in oklab, #5a8a3a 14%, transparent) 70%, transparent 72%), radial-gradient(ellipse 4px 9px at 75% 70%, color-mix(in oklab, #5a8a3a 12%, transparent) 70%, transparent 72%); background-size: 110px 90px, 140px 120px; }
+    .gt-logo { font-family: "Hoefler Text", "Baskerville", "Garamond", Georgia, serif; font-style: italic; font-weight: 700; color: #3d6b2a; letter-spacing: .01em; }
+    .gt-leaf { font-style: normal; color: #7aa84a; display: inline-block; transform: rotate(-20deg); }
+    .gt-latin { margin: 0; font: italic 13px/1.4 "Hoefler Text", Georgia, serif; color: color-mix(in oklab, #3d6b2a 70%, var(--ink-2)); letter-spacing: .04em; }
+    :root[data-look="midnight"] .gt-logo, :root[data-look="arcade"] .gt-logo { color: #a8d88a; }
+    @media (prefers-color-scheme: dark) { :root:not([data-look]) .gt-logo { color: #a8d88a; } }
+    .gt-stage { border: 12px solid #fbf7ec; outline: 1px solid color-mix(in oklab, #3d6b2a 40%, transparent); box-shadow: var(--shadow), 0 0 0 13px color-mix(in oklab, #3d6b2a 25%, transparent); border-radius: 4px; }
+    .gt-surprise { background: #5a9a3a; border-color: #3d6b2a; color: #fff; }
+    .gt-types { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .gt-type { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 11px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: Georgia, serif; }
+    .gt-type:hover { border-color: #5a9a3a; }
+    html[data-mode="simple"] .seg button { padding: 9px 13px; font-size: 15px; }
+    html[data-mode="simple"] .sw { width: 34px; height: 34px; }
+    html[data-mode="simple"] .gt-btns .c-btn { padding: 11px 18px; font-size: 16px; }
+    .gt-notes { max-width: 760px; margin: 16px auto 0; background: #fbf7ec; color: #2e3a22; border: 1px solid #d8cfb4; border-radius: 4px; padding: 12px 16px; box-shadow: 3px 4px 0 rgba(60, 70, 30, .12); background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(90, 120, 160, .18) 25px 26px); }
+    .gt-notes h2 { margin: 0 0 6px; font: italic 700 18px Georgia, serif; }
+    .gt-notes ul { margin: 0; padding: 0 0 0 4px; list-style: none; columns: 2 240px; font: 15px/26px Georgia, serif; }
+    .gt-notes li::before { content: '○ '; } .gt-notes li.on { color: #3d6b2a; } .gt-notes li.on::before { content: '❦ '; }
+    .gt-notes p { margin: 6px 0 0; font: italic 13px Georgia, serif; color: #6a6450; }
     @media (max-width: 560px) {
       .gt-stage { height: max(330px, calc(100dvh - var(--bar-h) - 360px)); }
       .gt-tools { gap: 8px 12px; }
@@ -37,10 +57,11 @@
     }
   </style>
 </head>
-<body data-game="grow-a-tree">
+<body data-game="grow-a-tree" data-modes>
   <main class="c-wrap">
     <div class="gt-head">
-      <h1 class="c-title">Grow a Tree</h1>
+      <h1 class="c-title gt-logo"><span class="gt-leaf" aria-hidden="true">❦</span> Grow a Tree</h1>
+      <p class="gt-latin" aria-hidden="true">Arbor zoblensis · a pocket arboretum</p>
       <p class="c-sub">Tap the hill to plant a seed. Every tree branches its own way. Snip, shape and let the seasons roll.</p>
     </div>
     <div class="gt-stage" id="stage">
@@ -55,16 +76,19 @@
         <button type="button" data-s="spring">🌸 Spring</button><button type="button" data-s="summer">☀️ Summer</button><button type="button" data-s="autumn">🍂 Autumn</button><button type="button" data-s="winter">❄️ Winter</button>
       </div>
       <div class="sws" id="leaves" role="group" aria-label="Leaf colour"></div>
-      <label>Angle <input type="range" id="spread" min="10" max="60" value="28" aria-label="Branch angle"></label>
-      <label>Density <input type="range" id="density" min="1" max="3" value="2" step="1" aria-label="Branch density"></label>
-      <label>Wind <input type="range" id="wind" min="0" max="100" value="30" aria-label="Wind"></label>
+      <div class="gt-types adv-only" id="types" role="group" aria-label="Tree type"></div>
+      <label class="adv-only">Angle <input type="range" id="spread" min="10" max="60" value="28" aria-label="Branch angle"></label>
+      <label class="adv-only">Density <input type="range" id="density" min="1" max="3" value="2" step="1" aria-label="Branch density"></label>
+      <label class="adv-only">Wind <input type="range" id="wind" min="0" max="100" value="30" aria-label="Wind"></label>
       <div class="gt-btns">
+        <button class="c-btn gt-surprise" type="button" id="surprise" title="Surprise grove (R)">🎲 Surprise grove</button>
         <button class="c-btn c-btn--ghost" type="button" id="grow" title="Grow faster (G)">⏩ Grow</button>
-        <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo">↶ Undo</button>
         <button class="c-btn c-btn--ghost" type="button" id="clear">🧺 Clear hill</button>
-        <button class="c-btn" type="button" id="png">📷 Save PNG</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
       </div>
     </div>
+    <section class="gt-notes adv-only" aria-label="Arborist's notebook"><h2>Arborist's notebook <b id="noteN"></b></h2><ul id="notes"></ul><p id="gtStat"></p></section>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
@@ -528,6 +552,62 @@
       trees = [mkTree({ seed: 12345, x: 0.5, age: 0.18, scale: 1.15 }), mkTree({ seed: 777, x: 0.22, age: 0.05, scale: 0.85 })];
     }
     spreadIn.value = spread; densIn.value = density; windIn.value = wind;
+    const SIMPLE = Curio.simple;
+    const TYPES = [
+      { name: 'Oak', icon: '🌳', spread: 30, density: 3, leaf: 0 },
+      { name: 'Birch', icon: '🌿', spread: 16, density: 2, leaf: 1 },
+      { name: 'Cherry', icon: '🌸', spread: 42, density: 2, leaf: 3 },
+      { name: 'Cypress', icon: '🌲', spread: 11, density: 3, leaf: 2 },
+      { name: 'Ginkgo', icon: '🍂', spread: 36, density: 1, leaf: 5 },
+      { name: 'Jacaranda', icon: '💜', spread: 50, density: 3, leaf: 4 }
+    ];
+    const typesEl = document.getElementById('types');
+    function applyType(ty) { spread = ty.spread; density = ty.density; leafI = ty.leaf; spreadIn.value = spread; densIn.value = density; paintLeaves(); trees.forEach(build); save(); tone(SCALE[ty.density + 2], 0.2); book.types[ty.name] = 1; saveBook(); }
+    TYPES.forEach((ty) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'gt-type'; b.textContent = `${ty.icon} ${ty.name}`; b.addEventListener('click', () => applyType(ty)); typesEl.append(b); });
+    const book = Object.assign({ prunes: 0, planted: 0, seasons: {}, types: {}, grown: 0 }, Curio.store.get('grow-a-tree-book', {}));
+    const saveBook = () => Curio.store.set('grow-a-tree-book', book);
+    function surprise() {
+      snapshot();
+      const ty = Curio.pick(TYPES);
+      spread = ty.spread; density = ty.density; leafI = ty.leaf; spreadIn.value = spread; densIn.value = density; paintLeaves();
+      const n = Curio.randInt(3, 5);
+      trees = Array.from({ length: n }, (_, i) => mkTree({ seed: (Math.random() * 2 ** 31) | 0, x: 0.12 + (i + Math.random() * 0.5) / n * 0.78, age: Math.random() * 0.2, scale: 0.7 + Math.random() * 0.55 }));
+      const ks = Object.keys(SEASON); season = Curio.pick(ks); paintSeasons();
+      speed = 6; growB.textContent = '⏸ Normal speed';
+      save(); noise(0.3, 700, 0.08, 'lowpass'); [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.4, 'sine', 0.04), i * 80));
+      if (navigator.vibrate) navigator.vibrate([6, 40, 6]);
+      Curio.toast(`🎲 A ${season} grove of ${ty.name.toLowerCase()} trees`, 1800);
+    }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    const NOTES = [
+      ['Plant 10 seeds', () => book.planted >= 10],
+      ['Fill the hill with 8 trees', () => trees.length >= 8],
+      ['Watch all four seasons', () => Object.keys(book.seasons).length >= 4],
+      ['Snip 40 branches', () => book.prunes >= 40],
+      ['Grow 5 trees to full size', () => book.grown >= 5],
+      ['Try every tree type', () => TYPES.every((ty) => book.types[ty.name])],
+      ['Cherry blossoms in spring', () => leafI === 3 && season === 'spring' && trees.some((tr) => tr.age >= 1)],
+      ['A golden ginkgo in autumn', () => leafI === 5 && season === 'autumn' && trees.some((tr) => tr.age >= 1)],
+      ['A stormy day: wind at full', () => wind >= 95 && trees.length > 0],
+      ['A lone giant: one huge tree', () => trees.length === 1 && trees[0].age >= 1 && trees[0].scale >= 1.1]
+    ];
+    const noteDone = Curio.store.get('grow-a-tree-notes', {});
+    function checkNotes() {
+      book.seasons[season] = 1; saveBook();
+      let fresh = 0;
+      NOTES.forEach(([n, f], i) => { if (!noteDone[i] && f()) { noteDone[i] = Date.now(); fresh++; Curio.toast(`🌿 Notebook: ${n}`, 2400); } });
+      if (fresh) { Curio.store.set('grow-a-tree-notes', noteDone); [659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.4, 'sine', 0.04), i * 100)); if (Object.keys(noteDone).length === NOTES.length) Curio.confetti(); }
+      const ul = document.getElementById('notes'); ul.textContent = '';
+      NOTES.forEach(([n], i) => { const li = document.createElement('li'); li.textContent = n; if (noteDone[i]) li.className = 'on'; ul.append(li); });
+      document.getElementById('noteN').textContent = `${Object.keys(noteDone).length}/${NOTES.length}`;
+      document.getElementById('gtStat').textContent = `${book.planted} planted · ${book.grown} grown · ${book.prunes} snips · ${Object.keys(book.seasons).length}/4 seasons seen`;
+    }
+    cv.addEventListener('pointerdown', () => { if (mode === 'prune') { book.prunes++; saveBook(); } else { book.planted++; saveBook(); } }, true);
+    let grownSeen = new Set();
+    setInterval(() => { if (document.hidden) return; for (const tr of trees) if (tr.age >= 1 && !grownSeen.has(tr)) { grownSeen.add(tr); book.grown++; if (navigator.vibrate) navigator.vibrate(8); } saveBook(); if (!SIMPLE) checkNotes(); }, 1500);
+    trees.forEach((tr) => { if (tr.age >= 1) grownSeen.add(tr); });
+    addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !(e.target.closest && e.target.closest('input')) && e.key.toLowerCase() === 'r') surprise(); });
+    if (!SIMPLE) checkNotes();
     paintSeasons(); paintLeaves();
     raf = requestAnimationFrame(frame);
   })();

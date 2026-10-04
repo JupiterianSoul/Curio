@@ -9,6 +9,7 @@
   const KINDS = D.SHELLS.map((s) => s.id).filter((k) => k !== 'text');
   const PALETTE = [0, 12, 28, 45, 55, 120, 160, 190, 210, 265, 290, 320, 340];
 
+  const SIMPLE = Curio.simple;
   const KEY = 'fireworks:v2';
   function loadSave() {
     const base = { v: 2, launched: 0, kinds: {}, scenes: {}, shows: [], crowdBest: 0, daily: {}, ach: {}, settings: { kind: 'mix', scheme: 'mix', scene: 'harbor', text: 'WOW' } };
@@ -908,12 +909,27 @@
   $('goCrowd').addEventListener('click', () => { hideStart(); setMode('crowd'); });
   $('goDaily').addEventListener('click', () => { hideStart(); setMode('crowd', { daily: true }); });
   $('goHelp').addEventListener('click', openHelp);
+  function finale() {
+    const n = 14;
+    for (let i = 0; i < n; i++) setTimeout(() => launch(R(W * 0.08, W * 0.92), R(H * 0.08, H * 0.42), { kind: Curio.pick(KINDS.filter((x) => x !== 'fish')) }), i * 110 + (i > 9 ? 260 : 0));
+    if (navigator.vibrate) navigator.vibrate([12, 60, 12, 60, 30]);
+  }
+  function surprise() {
+    const sc = Curio.pick(D.SCENES.filter((s) => s.id !== sceneId));
+    setScene(sc.id);
+    save.settings.scheme = Curio.pick(D.SCHEMES).id; save.settings.kind = 'mix'; persist(); paintPickers();
+    for (let i = 0; i < 5; i++) setTimeout(() => launch(R(W * 0.15, W * 0.85), R(H * 0.12, H * 0.4)), 200 + i * 160);
+    Curio.toast(`${sc.icon} ${sc.name}, ${SCHEME[save.settings.scheme].name}`, 1800);
+  }
+  $('surprise').addEventListener('click', surprise);
+  $('finale').addEventListener('click', finale);
   startEl.querySelectorAll('[data-scene]').forEach((b) => b.addEventListener('click', () => { setScene(b.dataset.scene); startEl.querySelectorAll('[data-scene]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
 
   addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && mode === 'design') { e.preventDefault(); undo(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape' && SIMPLE) { if (!drawer.hidden) closeDrawer(); return; }
     if (e.key === 'Escape') { if (!drawer.hidden) closeDrawer(); else if (!resEl.hidden) { hideResult(); showStart(); } else if (startEl.hidden) showStart(); else { hideStart(); setMode(mode); } return; }
     if (!startEl.hidden || !drawer.hidden || !resEl.hidden) return;
     const k = e.key.toLowerCase();
@@ -924,6 +940,9 @@
       if (mode === 'crowd') crowdFire(p); else if (mode === 'design') designTap(p); else launch(...p);
     }
     else if (k === 'a' && mode === 'free') setAuto(!auto);
+    else if (k === 'f' && mode === 'free') finale();
+    else if (k === 'r' && SIMPLE) surprise();
+    else if (SIMPLE && (k === 'k' || k === 'c' || k === 'w')) return;
     else if (k === 'k') openKinds(); else if (k === 'c') openSchemes(); else if (k === 's') openScenes(); else if (k === 'w') openWrite();
     else if (k === 'p' && mode === 'design') setPlaying(!playing);
     else if (k === 'r' && mode === 'design') $('recBtn').click();
@@ -961,6 +980,6 @@
   resize();
   paintPickers();
   document.body.dataset.fwmode = 'free';
-  showStart();
+  if (SIMPLE) setMode('free'); else showStart();
   start();
 })();

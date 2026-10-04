@@ -9,14 +9,14 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="lava-lamp">
+<body data-game="lava-lamp" data-modes>
   <main class="c-wrap ll">
     <div class="ll-head">
       <div>
-        <h1 class="c-title">Lava Lamp</h1>
+        <h1 class="c-title"><span>Lava</span> <span>Lamp</span></h1>
         <p class="c-sub">Warm wax rises, cools off, sinks, repeats. Tap the glass to give a blob a little heat, tap the base to switch it.</p>
       </div>
-      <div class="ll-icons">
+      <div class="ll-icons adv-only">
         <button type="button" id="libBtn" title="Lamp library (L)">📚 <span>Library</span></button>
         <button type="button" id="shareBtn" aria-label="Copy a link to this setup" title="Copy a link to this setup">🔗</button>
         <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
@@ -31,17 +31,19 @@
       </div>
     </div>
     <div class="ll-bar">
-      <div class="ll-tabs" role="tablist" aria-label="Settings">
+      <div class="ll-tabs adv-only" role="tablist" aria-label="Settings">
         <button type="button" role="tab" data-tab="lamp" aria-label="Lamp">💡 <span>Lamp</span></button>
         <button type="button" role="tab" data-tab="room" aria-label="Room">🏠 <span>Room</span></button>
         <button type="button" role="tab" data-tab="sound" aria-label="Sound">🎧 <span>Sound</span></button>
         <button type="button" role="tab" data-tab="breathe" aria-label="Breathe">🌬️ <span>Breathe</span></button>
       </div>
-      <label class="ll-speed">Speed <input type="range" id="speed" min="0" max="100" value="40" aria-label="Speed"></label>
-      <button class="c-btn c-btn--ghost" type="button" id="breathBtn" aria-pressed="false">🌬️ Start breathing</button>
+      <label class="ll-speed adv-only">Speed <input type="range" id="speed" min="0" max="100" value="40" aria-label="Speed"></label>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="breathBtn" aria-pressed="false">🌬️ Start breathing</button>
+      <div class="ll-quick simple-only" id="quick" role="group" aria-label="Lamp presets"></div>
+      <button class="c-btn c-btn--ghost simple-only" type="button" id="surprise" title="Surprise me (R)">🎲 Surprise me</button>
       <button class="c-btn" type="button" id="ambient" title="Ambient mode (F)">🌙 Ambient</button>
     </div>
-    <div class="ll-panel c-card" id="panel"></div>
+    <div class="ll-panel c-card adv-only" id="panel"></div>
   </main>
   <button type="button" class="ll-exit" id="exit">Exit ambient (Esc)</button>
 

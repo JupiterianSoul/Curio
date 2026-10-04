@@ -38,6 +38,22 @@
     .pt-shelf button:hover { transform: translateY(-4px); }
     .pt-shelf img { height: 86px; display: block; }
     .pt-empty { color: var(--ink-3); font-size: 14px; margin: auto; padding-bottom: 20px; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    html[data-mode="simple"] #glazes .sw:nth-child(n+9) { display: none; }
+    body[data-game="pottery"] { background-color: color-mix(in oklab, #e7d3bd 45%, var(--bg)); background-image: radial-gradient(120% 60% at 50% 0, color-mix(in oklab, #fff 25%, transparent), transparent 70%), repeating-linear-gradient(0deg, color-mix(in oklab, #8a5a3a 6%, transparent) 0 1px, transparent 1px 34px); }
+    .pt-logo { font-family: "Didot", "Bodoni MT", "Playfair Display", Georgia, "Times New Roman", serif; font-weight: 700; letter-spacing: .04em; color: #a4512f; display: inline-flex; flex-direction: column; align-items: center; line-height: 1; }
+    .pt-logo small { font: 700 11px/1.4 ui-monospace, "Courier New", monospace; letter-spacing: .35em; text-transform: uppercase; color: color-mix(in oklab, #a4512f 70%, var(--ink)); margin-top: 4px; }
+    :root[data-look="midnight"] .pt-logo, :root[data-look="arcade"] .pt-logo { color: #f0a27a; }
+    @media (prefers-color-scheme: dark) { :root:not([data-look]) .pt-logo { color: #f0a27a; } }
+    .step { border-radius: 40% 40% 46% 46% / 50% 50% 50% 50%; font-family: Georgia, serif; }
+    .step[aria-current="step"] { background: #a4512f; border-color: #7a3a1f; color: #fff6ec; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
+    .pt-stage { border: 3px solid color-mix(in oklab, #a4512f 45%, var(--line)); }
+    .pt-order { max-width: 640px; margin: 0 auto 10px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: center; padding: 7px 12px; border-radius: 10px; background: var(--surface); border: 1.5px solid color-mix(in oklab, #a4512f 40%, var(--line)); font-size: 14px; font-weight: 600; }
+    .pt-order__tag { font: 800 11px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; background: #a4512f; color: #fff6ec; padding: 4px 8px; border-radius: 4px; }
+    .pt-order small { color: var(--ink-3); font-size: 12px; }
+    html[data-mode="simple"] .chip { padding: 9px 15px; font-size: 15px; }
+    html[data-mode="simple"] .sw { width: 34px; height: 34px; }
+    html[data-mode="simple"] .pt-bar .c-btn, html[data-mode="simple"] .pt-panel .c-btn { padding: 11px 20px; font-size: 16px; }
     @media (max-width: 560px) {
       .pt-stage { height: max(320px, calc(100dvh - var(--bar-h) - 380px)); }
       .step { padding: 5px 10px; font-size: 13px; }
@@ -46,12 +62,13 @@
     }
   </style>
 </head>
-<body data-game="pottery">
+<body data-game="pottery" data-modes>
   <main class="c-wrap">
     <div class="pt-head">
-      <h1 class="c-title">Pottery Wheel</h1>
+      <h1 class="c-title pt-logo">Pottery Wheel<small aria-hidden="true">studio &amp; kiln</small></h1>
       <p class="c-sub">Squish a lump of clay into something lovely. Glaze it while it spins, fire it, then show it off on the shelf.</p>
     </div>
+    <div class="pt-order adv-only" id="order" aria-live="polite"><span class="pt-order__tag">Order</span><span id="ordTxt"></span><button type="button" class="chip" id="ordNext">Another</button><small id="ordStat"></small></div>
     <div class="pt-steps" role="group" aria-label="Steps">
       <button class="step" type="button" data-p="shape" title="Shape (1)">1 · Shape</button>
       <button class="step" type="button" data-p="glaze" title="Glaze (2)">2 · Glaze</button>
@@ -68,27 +85,32 @@
       <button class="chip" type="button" data-preset="vase">Vase</button>
       <button class="chip" type="button" data-preset="mug">Cup</button>
       <button class="chip" type="button" data-preset="jar">Jar</button>
+      <button class="chip adv-only" type="button" data-preset="plate">Plate</button>
+      <button class="chip adv-only" type="button" data-preset="bottle">Bottle</button>
+      <button class="chip adv-only" type="button" data-preset="pitcher">Pitcher</button>
+      <button class="chip adv-only" type="button" data-preset="moon">Moon jar</button>
       <span class="c-muted" style="font-weight:700;font-size:14px">Clay:</span>
-      <div class="sws" id="clays" role="group" aria-label="Clay"></div>
+      <div class="sws adv-only" id="clays" role="group" aria-label="Clay"></div>
     </div>
     <div class="pt-panel" id="pGlaze" hidden>
       <div class="sws" id="glazes" role="group" aria-label="Glaze colour"></div>
-      <label>Brush <input type="range" id="brush" min="3" max="40" value="12" aria-label="Brush size"></label>
+      <label class="adv-only">Brush <input type="range" id="brush" min="3" max="40" value="12" aria-label="Brush size"></label>
       <button class="chip" type="button" data-pat="dip">Dip</button>
-      <button class="chip" type="button" data-pat="rim">Rim</button>
+      <button class="chip adv-only" type="button" data-pat="rim">Rim</button>
       <button class="chip" type="button" data-pat="stripes">Stripes</button>
-      <button class="chip" type="button" data-pat="waves">Waves</button>
+      <button class="chip adv-only" type="button" data-pat="waves">Waves</button>
       <button class="chip" type="button" data-pat="dots">Dots</button>
-      <button class="chip" type="button" data-pat="speckle">Speckle</button>
-      <button class="chip" type="button" data-pat="clear">Wipe</button>
+      <button class="chip adv-only" type="button" data-pat="speckle">Speckle</button>
+      <button class="chip adv-only" type="button" data-pat="clear">Wipe</button>
     </div>
     <div class="pt-panel" id="pFire" hidden>
       <button class="c-btn" type="button" id="fire">🔥 Fire in the kiln</button>
     </div>
     <div class="pt-bar">
-      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+      <button class="c-btn simple-only" type="button" id="surprise" title="Surprise pot (R)">🎲 Surprise pot</button>
       <button class="c-btn c-btn--ghost" type="button" id="new">🟤 New clay</button>
-      <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+      <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
     </div>
     <div class="pt-shelfwrap">
       <h2>Your shelf</h2>
@@ -107,13 +129,20 @@
       { id: 'stone', name: 'Stoneware', wet: [134, 122, 110], fired: [208, 198, 182] },
       { id: 'porc', name: 'Porcelain', wet: [212, 206, 196], fired: [247, 245, 240] }
     ];
-    const GLAZES = ['#1f6fb2', '#2bb3a3', '#5aa35a', '#f2c230', '#f08a24', '#d8402f', '#c2457a', '#7d5ac6', '#f6f3ea', '#2d2a2e', '#86c5e8', '#e9a6b8'];
+    const GLAZES = ['#1f6fb2', '#2bb3a3', '#5aa35a', '#f2c230', '#f08a24', '#d8402f', '#c2457a', '#7d5ac6', '#f6f3ea', '#2d2a2e', '#86c5e8', '#e9a6b8', '#9fc5a8', '#5a2e1a', '#a8322d', '#c9bb94'];
+    const GNAMES = ['cobalt', 'turquoise', 'leaf green', 'sunflower', 'tangerine', 'tomato red', 'raspberry', 'violet', 'cream', 'charcoal', 'sky blue', 'blush pink', 'celadon', 'tenmoku brown', 'copper red', 'ash'];
+    const SIMPLE = Curio.simple;
+    let job = { preset: null, glazes: {}, pats: {} };
     const PRESETS = {
       lump: { H: 0.62, f: (q) => 0.62 + 0.06 * Math.sin(q * Math.PI) - 0.18 * q ** 4 },
       bowl: { H: 0.5, f: (q) => 0.32 + 0.62 * Math.sin(q * Math.PI / 2) ** 0.8 },
       vase: { H: 1.3, f: (q) => 0.17 + 0.38 * Math.sin(Math.PI * Math.min(1, q / 0.78)) ** 1.6 + (q > 0.78 ? (q - 0.78) * 1.3 : 0) + 0.1 * (1 - q) },
       mug: { H: 0.82, f: (q) => 0.46 + 0.02 * q },
-      jar: { H: 0.95, f: (q) => 0.4 + 0.28 * Math.sin(Math.min(1, q * 1.15) * Math.PI) - (q > 0.87 ? 0.0 : 0) + (q > 0.9 ? 0.05 : 0) }
+      jar: { H: 0.95, f: (q) => 0.4 + 0.28 * Math.sin(Math.min(1, q * 1.15) * Math.PI) - (q > 0.87 ? 0.0 : 0) + (q > 0.9 ? 0.05 : 0) },
+      plate: { H: 0.2, f: (q) => 0.55 + 0.45 * q ** 0.6 },
+      bottle: { H: 1.45, f: (q) => q < 0.55 ? 0.42 + 0.06 * Math.sin(q / 0.55 * Math.PI) : q < 0.75 ? 0.42 - (q - 0.55) * 1.35 : 0.15 + (q > 0.93 ? 0.05 : 0) },
+      pitcher: { H: 1.05, f: (q) => 0.34 + 0.22 * Math.sin(Math.min(1, q * 1.3) * Math.PI * 0.9) + (q > 0.82 ? (q - 0.82) * 1.2 : 0) },
+      moon: { H: 1.0, f: (q) => 0.2 + 0.58 * Math.sin(Math.min(1, q * 1.08) * Math.PI) ** 0.7 }
     };
     let W = 0, Hc = 0, dpr = 1, RS = 1, U = 100, cx = 0, baseY = 0, t = 0, spin = 0, spinV = 0.9;
     let prof = new Float32Array(NP), H = 0.62, V0 = 1;
@@ -400,6 +429,7 @@
       if (fired) return;
       snapshot();
       const c = GLAZES[glaze];
+      if (name !== 'clear') { job.glazes[glaze] = 1; job.pats[name] = 1; } else { job.glazes = {}; job.pats = {}; }
       tctx.fillStyle = c;
       if (name === 'clear') tctx.clearRect(0, 0, TW, TH);
       else if (name === 'dip') {
@@ -475,7 +505,7 @@
     steps.forEach((b) => b.addEventListener('click', () => { if (!firing && !b.disabled) setPhase(b.dataset.p); }));
     document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => {
       if (fired || firing) return;
-      snapshot(); setPreset(b.dataset.preset); noise(0.5, 400, 0.12, 'lowpass', 1.5); tone(330, 0.4, 'sine', 0.04, 1.5);
+      snapshot(); setPreset(b.dataset.preset); job.preset = b.dataset.preset; if (navigator.vibrate) navigator.vibrate(8); noise(0.5, 400, 0.12, 'lowpass', 1.5); tone(330, 0.4, 'sine', 0.04, 1.5);
     }));
     const claysEl = document.getElementById('clays');
     CLAYS.forEach((c, i) => {
@@ -507,7 +537,7 @@
       if (firing) return;
       snapshot();
       fired = false; tctx.clearRect(0, 0, TW, TH); texData = tctx.getImageData(0, 0, TW, TH).data;
-      setPreset('lump'); setPhase('shape');
+      setPreset('lump'); setPhase('shape'); job = { preset: null, glazes: {}, pats: {} };
       noise(0.3, 200, 0.2, 'lowpass', 1); tone(120, 0.3, 'sine', 0.12, 0.6);
     });
     document.getElementById('png').addEventListener('click', () => {
@@ -572,7 +602,7 @@
         snapshot();
       } else if (phase === 'glaze') {
         if (!texAt(p[0], p[1])) return;
-        snapshot(); dragMode = 'paint'; lastTex = null;
+        snapshot(); dragMode = 'paint'; lastTex = null; job.glazes[glaze] = 1; job.pats.brush = 1;
       }
     }
     Curio.drag(cv, {
@@ -624,7 +654,8 @@
         if (pt < 3.1 && firing.t >= 3.1) { fired = true; setPhase('fire', true); hint.textContent = ''; }
         if (pt < 3.5 && firing.t >= 3.5) { tone(1318, 1.2, 'sine', 0.06); setTimeout(() => tone(1760, 1.4, 'sine', 0.04), 120); }
         if (firing.t > 3.9) {
-          firing = null; render(); toShelf(); Curio.confetti(70);
+          firing = null; render(); toShelf(); Curio.confetti(70); checkOrder();
+          if (navigator.vibrate) navigator.vibrate([10, 60, 10, 60, 40]);
           Curio.toast(Curio.pick(['Gorgeous! Straight to the shelf.', 'A masterpiece. The kiln gods approve.', 'Shiny! Your shelf thanks you.', 'Museum quality, honestly.']));
           setPhase('fire', true); save();
         }
@@ -635,6 +666,45 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
     addEventListener('resize', resize);
 
+    const PNAME = { lump: 'lump', bowl: 'bowl', vase: 'vase', mug: 'cup', jar: 'jar', plate: 'plate', bottle: 'bottle', pitcher: 'pitcher', moon: 'moon jar' };
+    const PATN = { dip: 'dipped', stripes: 'striped', dots: 'dotty', waves: 'wavy', rim: 'rimmed', speckle: 'speckled', brush: 'hand painted' };
+    const WHO = ['The corner cafe', 'A florist', 'Your aunt', 'A ramen shop', 'A wedding couple', 'The town museum', 'A tea master', 'A bakery', 'A plant shop', 'The mayor'];
+    const ost = Curio.store.get('pottery-orders', { done: 0, fired: 0, o: null });
+    function newOrder() {
+      const shapes = Object.keys(PNAME).filter((k) => k !== 'lump');
+      ost.o = { who: Curio.pick(WHO), shape: Curio.pick(shapes), glaze: Curio.randInt(0, GLAZES.length - 1), pat: Curio.pick(Object.keys(PATN)) };
+      Curio.store.set('pottery-orders', ost); paintOrder();
+    }
+    function paintOrder() {
+      if (!ost.o) return;
+      const o = ost.o;
+      document.getElementById('ordTxt').textContent = `${o.who} wants a ${PATN[o.pat]} ${GNAMES[o.glaze]} ${PNAME[o.shape]}.`;
+      document.getElementById('ordStat').textContent = `${ost.done} orders · ${ost.fired} pots fired`;
+    }
+    function checkOrder() {
+      ost.fired++;
+      if (!SIMPLE && ost.o && job.preset === ost.o.shape && job.glazes[ost.o.glaze] && job.pats[ost.o.pat]) {
+        ost.done++; setTimeout(() => { Curio.toast(`📦 Order delivered to ${ost.o.who.toLowerCase()}!`, 3000); Curio.confetti(); newOrder(); }, 1200);
+      }
+      Curio.store.set('pottery-orders', ost); paintOrder();
+    }
+    document.getElementById('ordNext').addEventListener('click', newOrder);
+    if (!ost.o) newOrder(); else paintOrder();
+    function surprise() {
+      if (firing) return;
+      snapshot();
+      fired = false; tctx.clearRect(0, 0, TW, TH);
+      const pr = Curio.pick(['bowl', 'vase', 'mug', 'jar']);
+      setPreset(pr); job = { preset: pr, glazes: {}, pats: {} };
+      clay = Curio.randInt(0, CLAYS.length - 1); paintClays();
+      const pats = Curio.shuffle(['dip', 'stripes', 'dots', 'waves', 'rim']).slice(0, Curio.randInt(1, 2));
+      for (const pt of pats) { glaze = Curio.randInt(0, 7); paintGlazes(); pattern(pt); }
+      setPhase('fire');
+      Curio.toast('🎲 Fresh off the wheel. Fire it when you like!', 2000);
+      if (navigator.vibrate) navigator.vibrate([8, 30, 8]);
+    }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !(e.target.closest && e.target.closest('input')) && e.key.toLowerCase() === 'r') surprise(); });
     resize(); load();
     brushIn.value = brush; paintClays(); paintGlazes(); paintShelf(); setPhase(phase, true);
     raf = requestAnimationFrame(frame);

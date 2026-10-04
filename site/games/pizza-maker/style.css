@@ -89,3 +89,17 @@
   .pz-tk-head b { font-size: 17px; }
 }
 
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+body[data-game="pizza-maker"] { background-color: color-mix(in oklab, #f3d9b0 35%, var(--bg)); background-image: repeating-linear-gradient(90deg, color-mix(in oklab, #8b5a2b 7%, transparent) 0 2px, transparent 2px 90px), linear-gradient(180deg, transparent 0 70%, color-mix(in oklab, #8b5a2b 10%, transparent)); }
+.pz-sign { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.pz-board-sign { display: inline-flex; flex-direction: column; align-items: center; padding: 8px 22px 10px; background: #23362b; color: #f4f1e6; border: 6px solid #8b5a2b; border-radius: 8px; box-shadow: 0 6px 0 rgba(60, 30, 10, .25), inset 0 0 30px rgba(0, 0, 0, .35); transform: rotate(-1deg); }
+.pz-board-sign .c-title { margin: 0; color: #f4f1e6; font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 44px); letter-spacing: .01em; text-shadow: 0 0 1px rgba(255, 255, 255, .6); }
+.pz-board-sign small { font: 700 11px/1.3 ui-monospace, "Courier New", monospace; letter-spacing: .25em; text-transform: uppercase; color: #ffd27a; }
+.pz-cloth { height: 14px; margin: 4px 0 10px; border-radius: 4px; background: conic-gradient(#d23a2a 25%, #fff6ea 0 50%, #d23a2a 0 75%, #fff6ea 0) 0 0 / 14px 14px; opacity: .9; box-shadow: 0 2px 0 rgba(0, 0, 0, .1); }
+.pz-surprise { background: #d23a2a; border-color: #8f1f14; color: #fff; font-size: 16px; padding: 11px 18px; }
+.pz-surprise:active { transform: scale(.96); }
+.pz-board { border: 6px solid #8b5a2b; }
+html[data-mode="simple"] .pz-step { min-width: 70px; padding: 8px; }
+html[data-mode="simple"] .pz-panel .c-btn { font-size: 16px; padding: 10px 16px; }
+@media (max-width: 640px) { .pz-sign { justify-content: center; } }

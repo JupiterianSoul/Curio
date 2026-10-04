@@ -103,8 +103,9 @@
     if (sound) blip();
   }
 
+  const SIMPLE_CATS = ['face', 'hair', 'mood', 'hat', 'outfit', 'bg'];
   CATS.forEach((c) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-cat'; b.setAttribute('role', 'tab'); b.dataset.k = c.k;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'fm-cat' + (SIMPLE_CATS.includes(c.k) ? '' : ' adv-only'); b.setAttribute('role', 'tab'); b.dataset.k = c.k;
     b.innerHTML = `<i aria-hidden="true">${c.icon}</i>${c.label}`;
     b.addEventListener('click', () => { cat = c.k; renderCats(); renderOpts(); Curio.beep(700, .03, 'sine', .04); });
     $('cats').append(b);
@@ -209,6 +210,8 @@
     if (cc) { Curio.toast('No randomizing in Copycat, that would be cheating 😉'); return; }
     push(); state = randomState(state); paint(true); renderOpts();
     Curio.beep(380, .05, 'square', .05); setTimeout(() => Curio.beep(760, .07, 'square', .05), 60);
+    if (navigator.vibrate) navigator.vibrate([6, 30, 10]);
+    const fl = $('preview'); fl.classList.remove('fm-flash'); void fl.offsetWidth; fl.classList.add('fm-flash');
     stats.rand++; saveStats();
     if (stats.rand >= 50) badge('dice50');
     if (locks.length >= 3) badge('locks');
@@ -446,12 +449,14 @@
       .map(([v, l]) => `<div class="c-stat"><b>${v}</b><span>${l}</span></div>`).join('');
   }
 
-  const order = CATS.map((c) => c.k);
+  const order = CATS.map((c) => c.k).filter((k) => !Curio.simple || SIMPLE_CATS.includes(k));
+  if (Curio.simple && !SIMPLE_CATS.includes(cat)) { cat = 'face'; }
   addEventListener('keydown', (e) => {
     if (e.target.matches('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey) return;
     if (document.querySelector('.curio-modal')) return;
     const k = e.key.toLowerCase();
     if (k === 'r') randomize();
+    else if (Curio.simple && 'zysl'.includes(k)) return;
     else if (k === 'z') undo();
     else if (k === 'y') redo();
     else if (k === 's') keep();

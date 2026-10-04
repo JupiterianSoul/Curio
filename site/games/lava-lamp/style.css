@@ -124,3 +124,30 @@ body.ambient.hide-cursor .ll-exit { opacity: 0; pointer-events: none; }
   .ll-panel { padding: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .ll-b1, .ll-b2, .ll-b3 { animation: none; } }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+body[data-game="lava-lamp"] {
+  --ll-den: color-mix(in oklab, #d2691e 26%, var(--bg));
+  background-color: var(--ll-den);
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, #7a3410 10%, transparent) 0 22px, transparent 22px 30px, color-mix(in oklab, #e8a33a 12%, transparent) 30px 38px, transparent 38px 64px),
+    radial-gradient(90% 60% at 50% 0%, color-mix(in oklab, #ffb347 22%, transparent), transparent 70%);
+}
+.ll-head .c-title { font-family: "Cooper Black", "Cooper Std", "Bookman Old Style", "Bookman", Georgia, serif; font-weight: 900; letter-spacing: -.01em; color: #e2531a; text-shadow: 2px 2px 0 color-mix(in oklab, #ffcf3a 80%, transparent), 4px 4px 0 color-mix(in oklab, #7a2a10 45%, transparent); }
+.ll-head .c-title span { display: inline-block; animation: ll-float 6s ease-in-out infinite; }
+.ll-head .c-title span + span { animation-delay: -3s; color: #b8327a; }
+@keyframes ll-float { 50% { transform: translateY(-3px) rotate(-1.5deg); } }
+.ll-stage { border: 4px solid color-mix(in oklab, #7a3410 50%, var(--line)); box-shadow: var(--shadow), inset 0 0 60px color-mix(in oklab, #ff7a20 20%, transparent); border-radius: 30px 30px 22px 22px; }
+.ll-quick { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: thin; flex: 1 1 100%; justify-content: center; }
+.ll-q { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 20px; padding: 6px 8px 7px; cursor: pointer; font-weight: 800; font-size: 12px; width: 92px; transition: transform .15s cubic-bezier(.2, 1.6, .4, 1), border-color .15s ease; }
+.ll-q i { width: 30px; height: 46px; border-radius: 40% 40% 30% 30% / 20% 20% 14% 14%; clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2); }
+.ll-q span { text-align: center; line-height: 1.15; }
+.ll-q:hover { transform: translateY(-3px) rotate(-2deg); }
+.ll-q:active { transform: scale(.95); }
+.ll-q[aria-pressed="true"] { border-color: #e2531a; box-shadow: 0 0 0 3px color-mix(in oklab, #e2531a 30%, transparent); }
+.ll-q:focus-visible, #surprise:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+html[data-mode="simple"] .ll-bar { justify-content: center; }
+html[data-mode="simple"] .ll-bar .c-btn { padding: 11px 20px; font-size: 16px; }
+html[data-mode="simple"] .ll-stage { height: max(360px, calc(100dvh - var(--bar-h) - 290px)); }
+@media (max-width: 640px) { .ll-quick { justify-content: flex-start; } }
+@media (prefers-reduced-motion: reduce) { .ll-head .c-title span { animation: none; } }

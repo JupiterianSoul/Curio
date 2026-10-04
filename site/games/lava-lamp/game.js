@@ -810,6 +810,7 @@
     if (e.target.closest && e.target.closest('input, select, textarea')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'Escape') { if (!drawer.hidden) closeDrawer(); else if (document.body.classList.contains('ambient')) setAmbient(false); else if (!startEl.hidden) hideStart(); return; }
+    if (Curio.simple && (e.key.toLowerCase() === 'l' || e.key.toLowerCase() === 'b')) return;
     if (!startEl.hidden || !drawer.hidden) return;
     const k = e.key.toLowerCase();
     if (k === 'f') setAmbient(!document.body.classList.contains('ambient'));
@@ -848,6 +849,33 @@
   resize();
   for (const L of lamps) for (let i = 0; i < 200; i++) physics(L, 1);
   paintControls();
-  showStart();
+  const SIMPLE = Curio.simple;
+  const QUICK = ['Classic 1965', 'Midnight study', 'Rainy Sunday', 'Space oddity', 'Mermaid lagoon', 'Bubblegum pop', 'Gold rush'];
+  function paintQuick() {
+    const box = $('quick'); box.textContent = '';
+    for (const name of QUICK) {
+      const p = D.PRESETS.find((x) => x.name === name); if (!p) continue;
+      const th = D.THEMES[p.lamps[0][1]] || {};
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'll-q';
+      b.title = `${p.name}: ${p.blurb}`; b.setAttribute('aria-label', p.name);
+      const sw = document.createElement('i'); const w = th.wax ? `rgb(${th.wax[0].join(',')})` : '#ff7ad9', lq = th.liquid || ['#111', '#333', '#555'];
+      sw.style.background = `radial-gradient(circle at 42% 64%, ${w} 0 26%, transparent 28%), radial-gradient(circle at 62% 34%, ${w} 0 16%, transparent 18%), linear-gradient(180deg, ${lq[0]}, ${lq[2]})`;
+      const t = document.createElement('span'); t.textContent = p.name;
+      b.append(sw, t);
+      b.addEventListener('click', () => { applyPreset(p); if (navigator.vibrate) navigator.vibrate(8); box.querySelectorAll('.ll-q').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); });
+      box.append(b);
+    }
+  }
+  function surprise() {
+    const themes = Object.keys(D.THEMES), shapes = Object.keys(D.SHAPES), fins = Object.keys(D.FINISHES);
+    const n = Math.random() < 0.7 ? 1 : Curio.randInt(2, 3);
+    const room = Curio.pick(D.ROOMS).id;
+    applyPreset({ name: 'Surprise', blurb: `${n} lamp${n > 1 ? 's' : ''} in the ${D.ROOMS.find((r) => r.id === room).name.toLowerCase()}`, room, lamps: Array.from({ length: n }, () => [Curio.pick(shapes), Curio.pick(themes), Curio.pick(fins)]) });
+    $('quick').querySelectorAll('.ll-q').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    if (navigator.vibrate) navigator.vibrate([6, 40, 6]);
+  }
+  $('surprise').addEventListener('click', surprise);
+  addEventListener('keydown', (e) => { if (SIMPLE && e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey && !(e.target.closest && e.target.closest('input'))) surprise(); });
+  if (SIMPLE) { paintQuick(); startEl.hidden = true; } else showStart();
   start();
 })();

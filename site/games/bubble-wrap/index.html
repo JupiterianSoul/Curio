@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="bubble-wrap">
+<body data-game="bubble-wrap" data-modes>
   <main class="c-wrap bw">
     <header class="bw-head">
       <div class="bw-titles">
         <h1 class="c-title">Bubble Wrap</h1>
+        <p class="bw-stamp" aria-hidden="true">Fragile<small>handle with glee</small></p>
         <p class="c-sub" id="modeNote">Free, infinite, and nobody will tell you to stop.</p>
       </div>
       <div class="bw-stats" aria-live="polite">
@@ -22,7 +23,7 @@
         <div class="c-stat"><b id="sThird">0</b><span id="sThirdL">Best combo</span></div>
       </div>
     </header>
-    <div class="bw-controls">
+    <div class="bw-controls adv-only">
       <div class="bw-modes" id="modes" role="group" aria-label="Mode"></div>
       <div class="bw-icons">
         <button type="button" id="statsBtn" aria-label="Stats and trophies" title="Stats and trophies (S)">🏆</button>
@@ -39,6 +40,7 @@
       <div class="bw-bar" aria-hidden="true"><i id="prog"></i></div>
       <button type="button" class="c-btn c-btn--ghost" id="unrollBtn" title="Unroll more (U)">⬇ Unroll</button>
       <button type="button" class="bw-toggle" id="autoBtn" aria-pressed="true" title="Unroll automatically when the view is popped">Auto</button>
+      <button type="button" class="c-btn c-btn--ghost simple-only bw-surprise" id="surprise" title="Surprise me (R)">🎲 Surprise me</button>
       <button type="button" class="c-btn" id="newSheet" title="New sheet (N)">✨ New sheet</button>
     </div>
   </main>

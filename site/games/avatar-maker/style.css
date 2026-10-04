@@ -100,3 +100,17 @@
 @media (prefers-reduced-motion: reduce) {
   .fm-preview.alive * { animation: none !important; }
 }
+
+html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+body[data-game="avatar-maker"] { background-color: color-mix(in oklab, #f2e2c8 35%, var(--bg)); background-image: repeating-linear-gradient(90deg, #8f1d2c 0 18px, #b52a3c 18px 30px, #7a1626 30px 40px); background-size: 100% 46px; background-repeat: repeat-x; background-position: 0 var(--bar-h); }
+body[data-game="avatar-maker"] main.c-wrap { padding-top: 58px; }
+.fm-marquee { display: inline-block; padding: 6px 18px 8px; border-radius: 12px; background: #2a1a30; color: #ffe9a8; font-family: "Rockwell", "Arial Black", "Impact", var(--font); font-weight: 900; letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 0 8px rgba(255, 200, 90, .7); box-shadow: 0 0 0 4px #c9962f, 0 6px 0 4px rgba(0, 0, 0, .2); background-image: radial-gradient(circle, #ffe49a 0 2.5px, transparent 3.5px); background-size: 16px 100%; background-position: 4px -14px; background-repeat: repeat-x; position: relative; }
+.fm-marquee::after { content: ''; position: absolute; left: 4px; right: 4px; bottom: 3px; height: 6px; background: radial-gradient(circle, #ffe49a 0 2.5px, transparent 3.5px) 0 0 / 16px 6px repeat-x; animation: fm-bulbs 1.2s steps(2) infinite; }
+@keyframes fm-bulbs { 50% { opacity: .35; } }
+.fm-preview { border: 10px solid #fffdf7; border-bottom-width: 34px; border-radius: 4px; box-shadow: 0 14px 30px -10px rgba(40, 20, 10, .45); transform: rotate(-1deg); }
+.fm-preview.fm-flash::before { content: ''; position: absolute; inset: 0; background: #fff; z-index: 5; animation: fm-flash .45s ease-out forwards; pointer-events: none; }
+@keyframes fm-flash { from { opacity: .9; } to { opacity: 0; } }
+.fm-rand { background: #b52a3c; border-color: #7a1626; color: #fff; }
+html[data-mode="simple"] .fm-rand { font-size: 18px; padding: 13px 26px; flex: 1; }
+html[data-mode="simple"] .fm-cat { font-size: 15px; padding: 10px 14px; }
+@media (prefers-reduced-motion: reduce) { .fm-marquee::after, .fm-preview.fm-flash::before { animation: none; } }

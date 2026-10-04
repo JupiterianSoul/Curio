@@ -23,6 +23,7 @@
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   function strSeed(str) { let h = 2166136261; for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
   function rng(seed) { let s = (seed >>> 0) || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+  const SIMPLE = Curio.simple;
   const unlocked = (m) => !MATS[m].unlock || save.total >= MATS[m].unlock;
 
   const cv = $('sheet'), g = cv.getContext('2d');
@@ -744,7 +745,7 @@
   });
 
   function autoUnroll() {
-    if (finite || mode !== 'relax' || !save.settings.auto) return;
+    if (finite || mode !== 'relax' || (!save.settings.auto && !SIMPLE)) return;
     if (Math.abs(targetScroll - scrollY) > 4) return;
     const vis = visibleCells().filter((c) => { const y = sy(c); return y > 0 && y < H - 30; });
     if (!vis.length) return;
@@ -839,7 +840,7 @@
   }
   function setMode(id, opts = {}) {
     if (id === 'art' && !opts.pic) { openArt(); return; }
-    mode = id; if (id !== 'art') { save.settings.mode = id; persist(); }
+    mode = id; if (id !== 'art' && !SIMPLE) { save.settings.mode = id; persist(); }
     mat = id === 'art' ? 'classic' : (unlocked(save.settings.mat) ? save.settings.mat : 'classic');
     running = false; done = false; score = 0;
     paintModes(); paintMats();
@@ -976,6 +977,16 @@
   }));
 
   $('newSheet').addEventListener('click', () => { if (mode === 'art') openArt(); else if (mode === 'rush') { running = false; done = false; newSheet(); paintHud(); } else newSheet(); });
+  function surprise() {
+    const pool = D.MATERIALS.filter((m) => unlocked(m.id) && m.id !== mat);
+    const m = Curio.pick(pool.length ? pool : D.MATERIALS.filter((x) => unlocked(x.id)));
+    if (mode !== 'relax') setMode('relax');
+    setMat(m.id);
+    rustle();
+    if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
+    Curio.toast(`${m.icon} ${m.name}: ${m.blurb}`, 1800);
+  }
+  $('surprise').addEventListener('click', surprise);
   $('unrollBtn').addEventListener('click', unroll);
   $('autoBtn').addEventListener('click', () => { save.settings.auto = !save.settings.auto; persist(); paintAuto(); });
   function paintAuto() { $('autoBtn').setAttribute('aria-pressed', String(save.settings.auto)); }
@@ -986,12 +997,14 @@
   addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, textarea')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape' && SIMPLE) { if (!sheetEl.hidden) closeDrawer(); else if (!resEl.hidden) hideResult(); return; }
     if (e.key === 'Escape') { if (!sheetEl.hidden) closeDrawer(); else if (!resEl.hidden) hideResult(); else if (startEl.hidden) showStart(); else hideStart(); return; }
     if (!startEl.hidden || !sheetEl.hidden || !resEl.hidden) return;
     const k = e.key.toLowerCase();
     if (k === 'u') unroll();
     else if (k === 'n') $('newSheet').click();
-    else if (k === 's') openStats();
+    else if (k === 'r') surprise();
+    else if (k === 's' && !SIMPLE) openStats();
     else if (/^[1-7]$/.test(k)) { const m = D.MATERIALS[+k - 1]; if (m && mode !== 'art') setMat(m.id); }
     else if (e.key === 'ArrowDown' || e.key === 'PageDown') { if (!finite) { e.preventDefault(); unroll(); } }
   });
@@ -1019,7 +1032,7 @@
   resize();
   layout = matLayout();
   paintModes(); paintMats(); paintAuto();
-  setMode(mode === 'art' ? 'relax' : mode);
-  showStart();
+  if (SIMPLE) { setMode('relax'); hideStart(); }
+  else { setMode(mode === 'art' ? 'relax' : mode); showStart(); }
   start();
 })();

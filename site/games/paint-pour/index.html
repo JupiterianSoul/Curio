@@ -36,18 +36,62 @@
     .pad .u { grid-column: 2; } .pad .l { grid-column: 1; grid-row: 2; } .pad .d { grid-column: 2; grid-row: 2; } .pad .r { grid-column: 3; grid-row: 2; }
     .pp-tools .c-btn { padding: 8px 15px; font-size: 14px; }
     .lbl { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    body[data-game="paint-pour"] { background-color: color-mix(in oklab, #e9e2d4 40%, var(--bg)); background-image: radial-gradient(circle at 8% 18%, color-mix(in oklab, #ef476f 30%, transparent) 0 7px, transparent 8px), radial-gradient(circle at 92% 30%, color-mix(in oklab, #20c4cb 30%, transparent) 0 11px, transparent 12px), radial-gradient(circle at 85% 82%, color-mix(in oklab, #ffd166 40%, transparent) 0 6px, transparent 7px), radial-gradient(circle at 12% 74%, color-mix(in oklab, #7a4fe0 25%, transparent) 0 9px, transparent 10px), radial-gradient(circle at 50% 96%, color-mix(in oklab, #ff9f1c 25%, transparent) 0 5px, transparent 6px); background-size: 420px 380px; }
+    .pp-brush { font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", "Snell Roundhand", cursive; font-weight: 700; font-size: clamp(36px, 6vw, 54px) !important; letter-spacing: .01em; color: #9b1d64; position: relative; display: inline-block; padding: 0 10px; }
+    .pp-drips { position: absolute; left: 12%; right: 12%; bottom: -10px; height: 16px; background: radial-gradient(circle at 10% 0, #ef476f 0 5px, transparent 6px), radial-gradient(ellipse at 10% 40%, #ef476f 0 3px, transparent 4px), radial-gradient(circle at 46% 0, #ff9f1c 0 6px, transparent 7px), radial-gradient(ellipse at 46% 60%, #ff9f1c 0 3px, transparent 4px), radial-gradient(circle at 80% 0, #20c4cb 0 5px, transparent 6px), radial-gradient(ellipse at 80% 50%, #20c4cb 0 2.5px, transparent 3.5px); animation: pp-drip 3.5s ease-in-out infinite; transform-origin: top; }
+    @keyframes pp-drip { 50% { transform: scaleY(1.35); } }
+    :root[data-look="midnight"] .pp-brush, :root[data-look="arcade"] .pp-brush { color: #ff7ad9; }
+    @media (prefers-color-scheme: dark) { :root:not([data-look]) .pp-brush { color: #ff7ad9; } }
+    .pp-tilt { border: 10px solid #fdfbf6; outline: 2px solid color-mix(in oklab, #6b4a22 30%, transparent); }
+    .pp-stage::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 46%; height: 14px; transform: translateX(-50%); background: linear-gradient(180deg, #8a5a2a, #5e3c1a); border-radius: 0 0 8px 8px; z-index: -1; }
+    .pp-surprise { background: linear-gradient(90deg, #ef476f, #ff9f1c, #ffd166); color: #2b1145; border: 0; }
+    html[data-mode="simple"] .pp-tools { gap: 12px; }
+    html[data-mode="simple"] #palettes .chip { padding: 9px 15px; font-size: 15px; }
+    html[data-mode="simple"] #palettes .chip i b { width: 12px; height: 18px; }
+    html[data-mode="simple"] #palettes .chip i { height: 18px; }
+    html[data-mode="simple"] .pp-tools .c-btn { padding: 11px 20px; font-size: 16px; }
+    html[data-mode="simple"] .pp-stage { height: max(330px, calc(100dvh - var(--bar-h) - 270px)); }
+    .pp-order { max-width: 760px; margin: 0 auto 10px; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 8px 12px; border-radius: 4px; background: #fffdf3; color: #2b2118; border: 1px solid #e3d6b8; box-shadow: 3px 4px 0 rgba(60, 40, 10, .15); transform: rotate(-.5deg); font-size: 14px; }
+    .pp-order__tag { grid-row: span 3; font: 800 11px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; background: #ef476f; color: #fff; padding: 6px 8px; border-radius: 4px; text-align: center; }
+    .pp-order__tag b { display: block; font-size: 18px; }
+    .pp-order p { margin: 0; font-weight: 700; }
+    .pp-order ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
+    .pp-order li::before { content: '○ '; }
+    .pp-order li.ok { color: #1d8a52; } .pp-order li.ok::before { content: '● '; }
+    .pp-order__btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .pp-order__btns .c-btn { padding: 5px 12px; font-size: 13px; }
+    .pp-order__stat { font-size: 12px; color: #7a6040; margin-left: auto; }
+    .pp-gal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 16px; background: rgba(20, 14, 8, .55); }
+    .pp-gal__box { width: min(760px, 100%); max-height: 82dvh; overflow: auto; background: #f4efe4; color: #2b2118; border-radius: 6px; padding: 14px 16px; }
+    .pp-gal__box header { display: flex; align-items: center; justify-content: space-between; }
+    .pp-gal__box h2 { margin: 0; font-family: "Brush Script MT", "Segoe Script", cursive; font-size: 32px; }
+    .pp-gal__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-top: 10px; }
+    .pp-gal__grid figure { margin: 0; position: relative; padding: 8px; background: #fff; box-shadow: 0 0 0 6px #3a2a1a, 0 8px 18px rgba(0, 0, 0, .3); }
+    .pp-gal__grid img { width: 100%; display: block; }
+    .pp-gal__grid figcaption { font-size: 11px; text-align: center; margin-top: 4px; }
+    .pp-gal__dl, .pp-gal__del { position: absolute; top: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .6); color: #fff; cursor: pointer; display: grid; place-items: center; text-decoration: none; font-size: 13px; }
+    .pp-gal__dl { left: 4px; } .pp-gal__del { right: 4px; }
+    @media (prefers-reduced-motion: reduce) { .pp-drips { animation: none; } }
     @media (max-width: 560px) {
+      .pp-order { grid-template-columns: 1fr; } .pp-order__tag { grid-row: auto; display: flex; gap: 6px; justify-content: center; align-items: center; } .pp-order__tag b { display: inline; font-size: 13px; }
       .pp-head .c-sub { font-size: 13px; }
       .pp-stage { height: max(300px, calc(100dvh - var(--bar-h) - 330px)); }
       .cup { width: 28px; height: 28px; }
     }
   </style>
 </head>
-<body data-game="paint-pour">
+<body data-game="paint-pour" data-modes>
   <main class="c-wrap">
     <div class="pp-head">
-      <h1 class="c-title">Paint Pour</h1>
+      <h1 class="c-title pp-brush">Paint Pour<span class="pp-drips" aria-hidden="true"></span></h1>
       <p class="c-sub">Hold to pour, drag to swirl, tilt to let it run. No smock required.</p>
+    </div>
+    <div class="pp-order adv-only" id="order" aria-live="polite">
+      <div class="pp-order__tag">Commission <b id="ordN">#1</b></div>
+      <p id="ordText"></p>
+      <ul id="ordReq"></ul>
+      <div class="pp-order__btns"><button type="button" class="c-btn" id="deliver">📦 Deliver</button><button type="button" class="c-btn c-btn--ghost" id="skipOrd">Another client</button><span class="pp-order__stat" id="ordStat"></span></div>
     </div>
     <div class="pp-stage" id="stage">
       <div class="pp-tilt" id="tilt">
@@ -61,9 +105,9 @@
           <button type="button" data-tool="pour" aria-pressed="true" title="Pour (P)">🫗 Pour</button>
           <button type="button" data-tool="swirl" aria-pressed="false" title="Swirl (S)">🌀 Swirl</button>
         </div>
-        <div class="pp-group" id="cups" role="group" aria-label="Paint cup"></div>
+        <div class="pp-group adv-only" id="cups" role="group" aria-label="Paint cup"></div>
       </div>
-      <div class="pp-group">
+      <div class="pp-group adv-only">
         <span class="lbl">Tilt</span>
         <div class="pad" id="pad" aria-label="Tilt the canvas">
           <button type="button" class="u" data-tx="0" data-ty="1" aria-label="Tilt up">▲</button>
@@ -75,9 +119,11 @@
       </div>
       <div class="pp-group" id="palettes" role="group" aria-label="Palettes"></div>
       <div class="pp-group">
-        <button type="button" class="c-btn c-btn--ghost" id="auto">✨ Surprise pour</button>
-        <button type="button" class="c-btn c-btn--ghost" id="clear">🧽 Clean</button>
-        <button type="button" class="c-btn" id="save">💾 Save PNG</button>
+        <button type="button" class="c-btn pp-surprise" id="auto" title="Surprise pour (R)">✨ Surprise pour</button>
+        <button type="button" class="c-btn c-btn--ghost" id="clear" title="Clean (X)">🧽 Clean</button>
+        <button type="button" class="c-btn c-btn--ghost adv-only" id="save">💾 Save PNG</button>
+        <button type="button" class="c-btn c-btn--ghost adv-only" id="keep" title="Keep in the gallery (K)">🖼️ Keep</button>
+        <button type="button" class="c-btn c-btn--ghost adv-only" id="galBtn" title="Gallery (G)">🗂️ Gallery</button>
       </div>
     </div>
   </main>
@@ -97,7 +143,7 @@
 
     let paletteKey = Curio.store.get('paint-pour:palette', 'sunset');
     if (!PALETTES[paletteKey]) paletteKey = 'sunset';
-    let cup = -1, tool = 'pour', cellsOn = false;
+    let cup = -1, tool = 'pour', cellsOn = false, job = null;
     const stage = document.getElementById('stage');
     const tiltEl = document.getElementById('tilt');
     let canvas = document.getElementById('paint');
@@ -288,7 +334,7 @@ void main () {
           u = use('divergence'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform4fv(u.sources, srcArr); gl.uniform1f(u.aspectRatio, aspect); blit(div);
           u = use('clear'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uTex, pres.read.attach(0)); gl.uniform1f(u.value, 0.8); blit(pres.write); pres.swap();
           u = use('pressure'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uDivergence, div.attach(0));
-          for (let i = 0; i < 36; i++) { gl.uniform1i(u.uPressure, pres.read.attach(1)); blit(pres.write); pres.swap(); }
+          for (let i = 0; i < pIters; i++) { gl.uniform1i(u.uPressure, pres.read.attach(1)); blit(pres.write); pres.swap(); }
           u = use('gradient'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uPressure, pres.read.attach(0)); gl.uniform1i(u.uVelocity, vel.read.attach(1)); blit(vel.write); vel.swap();
           u = use('advect'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uSource, vel.read.attach(0)); gl.uniform1f(u.dt, dt); gl.uniform1f(u.dissipation, 2.2); gl.uniform2f(u.drift, 0, 0); gl.uniform1f(u.edgeZero, 0); blit(vel.write); vel.swap();
           gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uSource, dye.read.attach(1)); gl.uniform1f(u.dissipation, 0); gl.uniform2f(u.drift, tilt[0] * 0.07, tilt[1] * 0.07); gl.uniform1f(u.edgeZero, 1); blit(dye.write); dye.swap();
@@ -527,14 +573,15 @@ void main () {
     let autoClock = 0;
 
     let raf = 0, last = 0, time = 0, frames = 0, slowT = 1 / 60, quality = 1;
+    let pIters = 36;
     function frame(now) {
       raf = requestAnimationFrame(frame);
       frames++;
       const raw = (now - (last || now)) / 1000;
       const dt = Math.min(1 / 30, Math.max(1 / 240, raw || 1 / 60)); last = now;
-      if (raw > 0 && raw < 0.5 && sim.kind === 'gl' && quality > 0.4) {
+      if (raw > 0 && raw < 0.5 && sim.kind === 'gl' && quality > 0.25) {
         slowT = slowT * 0.97 + raw * 0.03;
-        if (frames > 90 && slowT > 0.04) { quality = Math.max(0.4, quality * 0.7); slowT = 1 / 60; frames = 0; sim.size(canvas.width, canvas.height, quality); }
+        if (frames > 60 && slowT > 0.034) { quality = Math.max(0.25, quality * 0.7); pIters = quality < 0.6 ? 16 : 26; slowT = 1 / 60; frames = 0; sim.size(canvas.width, canvas.height, quality); }
       }
       time += dt;
       sources.length = 0;
@@ -598,6 +645,7 @@ void main () {
       sim.step(dt, sources, tl);
       sim.render(hex(pal().base), time);
       updateSound(dt, pouring, swirlSpeed, now);
+      if (job) { if (pouring) job.pour += dt; if (swirlSpeed > 0.05) job.swirl += dt; }
     }
     const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
     const stop = () => { cancelAnimationFrame(raf); raf = 0; for (const k of tiltKeys) tiltKeys.delete(k); if (SND.ready) { const t = SND.ac.currentTime; SND.pour.g.gain.setTargetAtTime(0, t, 0.02); SND.swirl.g.gain.setTargetAtTime(0, t, 0.02); } };
@@ -687,6 +735,7 @@ void main () {
     }
     function setPalette(k) {
       paletteKey = k; Curio.store.set('paint-pour:palette', k);
+      if (job) job.pal[k] = 1;
       palEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pal === k)));
       tiltEl.style.background = pal().base;
       buildCups();
@@ -695,6 +744,7 @@ void main () {
       cellsOn = !cellsOn;
       const b = document.getElementById('cells');
       b.setAttribute('aria-pressed', String(cellsOn));
+      if (cellsOn && job) job.cells = true;
       if (cellsOn) {
         Curio.toast('Silicone added. Pour or swirl to grow cells');
         cellBloom(16);
@@ -704,6 +754,8 @@ void main () {
     document.getElementById('auto').addEventListener('click', surprise);
     document.getElementById('clear').addEventListener('click', () => {
       sim.clear(); autoQueue = []; cells.length = 0; spots.length = 0;
+      if (job) resetJob();
+      if (navigator.vibrate) navigator.vibrate(10);
       tiltEl.animate([{ filter: 'brightness(1.4)' }, { filter: 'none' }], { duration: 350 });
       Curio.beep(700, 0.06, 'sine', 0.05);
     });
@@ -722,6 +774,89 @@ void main () {
     resize();
     surprise();
     start();
+    const SIMPLE = Curio.simple;
+    job = { pal: {}, cells: false, tilt: 0, swirl: 0, pour: 0 };
+    const resetJob = () => { job.pal = { [paletteKey]: 1 }; job.cells = cellsOn; job.tilt = 0; job.swirl = 0; job.pour = 0; };
+    resetJob();
+    const ORDERS = [
+      { who: 'A seaside cafe', want: 'something calm for above the counter', req: [['pal', 'ocean'], ['cells'], ['tilt', 2]] },
+      { who: 'A planetarium gift shop', want: 'a nebula, please, very sparkly', req: [['pal', 'galaxy'], ['swirl', 2], ['cells']] },
+      { who: 'A bakery', want: 'sweet and loud for the window', req: [['pal', 'candy'], ['pour', 8]] },
+      { who: 'A hotel lobby', want: 'black and gold, quietly expensive', req: [['pal', 'gold'], ['tilt', 3], ['swirl', 1]] },
+      { who: 'A pottery studio', want: 'warm earth tones, nothing shiny', req: [['pal', 'earth'], ['pour', 6], ['tilt', 1]] },
+      { who: 'A jazz bar', want: 'a sunset that melts a little', req: [['pal', 'sunset'], ['tilt', 4]] },
+      { who: 'A dentist', want: 'two palettes, so patients have something to look at', req: [['pals', 2], ['cells'], ['swirl', 1]] },
+      { who: 'A yoga room', want: 'cells, cells and more cells', req: [['cells'], ['pour', 10], ['swirl', 2]] },
+      { who: 'A record label', want: 'three palettes in one wild cover', req: [['pals', 3], ['tilt', 2]] },
+      { who: 'A library', want: 'a slow ocean, poured carefully', req: [['pal', 'ocean'], ['pour', 12]] }
+    ];
+    const ost = Curio.store.get('paint-pour:orders', { i: Curio.randInt(0, ORDERS.length - 1), done: 0, stars: 0, saved: 0 });
+    const reqText = ([k, v]) => k === 'pal' ? `${PALETTES[v].name} palette` : k === 'pals' ? `${v} palettes mixed` : k === 'cells' ? 'Cells turned on' : k === 'tilt' ? `Tilted for ${v}s` : k === 'swirl' ? `Swirled for ${v}s` : `Poured for ${v}s`;
+    const reqOk = ([k, v]) => k === 'pal' ? !!job.pal[v] : k === 'pals' ? Object.keys(job.pal).length >= v : k === 'cells' ? job.cells : job[k] >= v;
+    function paintOrder() {
+      const o = ORDERS[ost.i % ORDERS.length];
+      document.getElementById('ordN').textContent = `#${ost.done + 1}`;
+      document.getElementById('ordText').textContent = `${o.who} wants ${o.want}.`;
+      const ul = document.getElementById('ordReq'); ul.textContent = '';
+      for (const r of o.req) { const li = document.createElement('li'); li.textContent = reqText(r); if (reqOk(r)) li.className = 'ok'; ul.append(li); }
+      document.getElementById('ordStat').textContent = `${ost.done} delivered · ${'★'.repeat(Math.min(5, ost.stars))}${ost.stars > 5 ? ` +${ost.stars - 5}` : ''}`;
+    }
+    setInterval(() => { if (!SIMPLE && !document.hidden) { if (tilt[0] || tilt[1]) job.tilt += 0.25; paintOrder(); } }, 250);
+    document.getElementById('deliver').addEventListener('click', () => {
+      const o = ORDERS[ost.i % ORDERS.length];
+      const miss = o.req.filter((r) => !reqOk(r));
+      if (miss.length) { Curio.toast(`Not yet: ${miss.map(reqText).join(', ')}`); Curio.beep(220, 0.12, 'triangle', 0.05); if (navigator.vibrate) navigator.vibrate([20, 40, 20]); return; }
+      ost.done++; ost.stars += 1 + (Object.keys(job.pal).length > 1 ? 1 : 0); ost.i = (ost.i + Curio.randInt(1, ORDERS.length - 1)) % ORDERS.length;
+      Curio.store.set('paint-pour:orders', ost);
+      keep(true);
+      Curio.confetti(); [523, 659, 784].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.12, 'triangle', 0.06), i * 90));
+      Curio.toast(`📦 ${o.who} loves it. Fresh canvas on the easel.`);
+      sim.clear(); autoQueue = []; cells.length = 0; spots.length = 0; resetJob(); paintOrder();
+    });
+    document.getElementById('skipOrd').addEventListener('click', () => { ost.i = (ost.i + 1) % ORDERS.length; Curio.store.set('paint-pour:orders', ost); paintOrder(); });
+    function snap(w) { sim.render(hex(pal().base), time); const c = document.createElement('canvas'); c.width = w; c.height = Math.round(w * H / W); c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height); return c; }
+    function keep(quiet) {
+      const gal = Curio.store.get('paint-pour:gallery', []);
+      gal.unshift({ t: Date.now(), pal: paletteKey, img: snap(220).toDataURL('image/jpeg', 0.75) }); gal.length = Math.min(gal.length, 12);
+      Curio.store.set('paint-pour:gallery', gal);
+      ost.saved++; Curio.store.set('paint-pour:orders', ost);
+      if (!quiet) { Curio.toast('🖼️ Hung on the gallery wall'); Curio.beep(880, 0.08, 'triangle', 0.05); }
+    }
+    document.getElementById('keep').addEventListener('click', () => keep(false));
+    function openGallery() {
+      const gal = Curio.store.get('paint-pour:gallery', []);
+      const back = document.createElement('div'); back.className = 'pp-gal';
+      back.innerHTML = '<div class="pp-gal__box" role="dialog" aria-modal="true" aria-label="Gallery"><header><h2>Gallery wall</h2><button type="button" class="c-btn c-btn--ghost" data-a="x" aria-label="Close">✕</button></header><div class="pp-gal__grid"></div></div>';
+      const grid = back.querySelector('.pp-gal__grid');
+      const paint = () => {
+        grid.textContent = '';
+        if (!gal.length) { grid.innerHTML = '<p class="c-muted">Empty walls. Press 🖼️ Keep or deliver a commission.</p>'; return; }
+        gal.forEach((g, i) => {
+          const f = document.createElement('figure');
+          const img = document.createElement('img'); img.src = g.img; img.alt = `${PALETTES[g.pal] ? PALETTES[g.pal].name : ''} pour`;
+          const cap = document.createElement('figcaption'); cap.textContent = new Date(g.t).toLocaleDateString();
+          const dl = document.createElement('a'); dl.href = g.img; dl.download = `paint-pour-${g.t}.jpg`; dl.textContent = '⬇'; dl.className = 'pp-gal__dl'; dl.setAttribute('aria-label', 'Download');
+          const del = document.createElement('button'); del.type = 'button'; del.className = 'pp-gal__del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Delete');
+          del.addEventListener('click', () => { gal.splice(i, 1); Curio.store.set('paint-pour:gallery', gal); paint(); });
+          f.append(img, cap, dl, del); grid.append(f);
+        });
+      };
+      const close = () => { back.remove(); removeEventListener('keydown', onKey, true); };
+      const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+      addEventListener('keydown', onKey, true);
+      back.addEventListener('click', (e) => { if (e.target === back || e.target.closest('[data-a="x"]')) close(); });
+      document.body.append(back); paint();
+    }
+    document.getElementById('galBtn').addEventListener('click', openGallery);
+    addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea,button'))) return;
+      const k = e.key.toLowerCase();
+      if (k === 'r') surprise();
+      else if (k === 'x') document.getElementById('clear').click();
+      else if (!SIMPLE && k === 'k') keep(false);
+      else if (!SIMPLE && k === 'g' && !document.querySelector('.pp-gal')) openGallery();
+    });
+    paintOrder();
     window.__pp = { frames: () => frames, sim, toggleCells, surprise, setTool: (t) => document.querySelector(`[data-tool="${t}"]`).click() };
   })();
   </script>

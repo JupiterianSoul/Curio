@@ -9,14 +9,14 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="avatar-maker">
+<body data-game="avatar-maker" data-modes>
   <main class="c-wrap">
     <div class="fm-hero">
       <div>
-        <h1 class="c-title">Face Maker</h1>
+        <h1 class="c-title fm-marquee">Face Maker</h1>
         <p class="c-sub">Every face starts as a blob. Give yours a haircut, a mood, a pose and some questionable eyebrows.</p>
       </div>
-      <div class="fm-modes" role="group" aria-label="Mode">
+      <div class="fm-modes adv-only" role="group" aria-label="Mode">
         <button type="button" id="mCreate" aria-pressed="true">🎨 Create</button>
         <button type="button" id="mCopy" aria-pressed="false">🪞 Copycat</button>
       </div>
@@ -38,12 +38,12 @@
         <div class="fm-preview alive" id="preview"></div>
         <div class="fm-namebox"><input id="name" maxlength="28" aria-label="Character name" spellcheck="false"></div>
         <div class="fm-btns">
-          <button class="c-btn" id="rand" type="button">🎲 Randomize</button>
-          <button class="c-btn c-btn--ghost" id="undo" type="button" disabled>↶ Undo</button>
-          <button class="c-btn c-btn--ghost" id="redo" type="button" disabled>↷ Redo</button>
-          <button class="c-btn c-btn--ghost" id="keep" type="button">💾 Save</button>
+          <button class="c-btn fm-rand" id="rand" type="button"><span class="adv-only">🎲 Randomize</span><span class="simple-only">🎲 Surprise me</span></button>
+          <button class="c-btn c-btn--ghost adv-only" id="undo" type="button" disabled>↶ Undo</button>
+          <button class="c-btn c-btn--ghost adv-only" id="redo" type="button" disabled>↷ Redo</button>
+          <button class="c-btn c-btn--ghost adv-only" id="keep" type="button">💾 Save</button>
         </div>
-        <div class="fm-btns">
+        <div class="fm-btns adv-only">
           <button class="c-btn c-btn--ghost" id="png" type="button">⬇️ PNG</button>
           <button class="c-btn c-btn--ghost" id="svg" type="button">⬇️ SVG</button>
           <button class="c-btn c-btn--ghost" id="code" type="button">🔗 Code</button>
@@ -56,14 +56,14 @@
           <h2 id="catTitle">Face</h2>
           <div class="fm-btns">
             <button class="c-btn c-btn--ghost" id="shuffleCat" type="button">🔀 This part</button>
-            <button class="c-btn c-btn--ghost" id="lock" type="button" aria-pressed="false">🔓 Lock</button>
+            <button class="c-btn c-btn--ghost adv-only" id="lock" type="button" aria-pressed="false">🔓 Lock</button>
           </div>
         </div>
         <div class="fm-opts" id="opts"></div>
         <div class="fm-sw" id="sw"></div>
       </section>
     </div>
-    <section class="c-card fm-card" aria-label="Saved characters">
+    <section class="c-card fm-card adv-only" aria-label="Saved characters">
       <div class="fm-tools" style="margin-top:0">
         <div>
           <h2>Your crew</h2>
@@ -73,12 +73,12 @@
       </div>
       <div class="fm-grid" id="gallery"></div>
     </section>
-    <section class="c-card fm-card" aria-label="Badges and stats">
+    <section class="c-card fm-card adv-only" aria-label="Badges and stats">
       <h2>Sticker book</h2>
       <div class="fm-stats" id="stats"></div>
       <div class="fm-badges" id="badges"></div>
     </section>
-    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">R</span> randomize · <span class="c-kbd">Z</span> undo · <span class="c-kbd">Y</span> redo · <span class="c-kbd">S</span> save · <span class="c-kbd">←</span><span class="c-kbd">→</span> categories · <span class="c-kbd">↑</span><span class="c-kbd">↓</span> cycle options · <span class="c-kbd">L</span> lock</p>
+    <p class="c-muted adv-only" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">R</span> randomize · <span class="c-kbd">Z</span> undo · <span class="c-kbd">Y</span> redo · <span class="c-kbd">S</span> save · <span class="c-kbd">←</span><span class="c-kbd">→</span> categories · <span class="c-kbd">↑</span><span class="c-kbd">↓</span> cycle options · <span class="c-kbd">L</span> lock</p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

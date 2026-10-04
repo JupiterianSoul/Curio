@@ -27,6 +27,29 @@
     #cv.rm { cursor: not-allowed; }
     .tt-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
     .tt-btns .c-btn { padding: 8px 14px; font-size: 14px; }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    html[data-mode="simple"] .tt-pal .sw:nth-child(n+8) { display: none; }
+    body[data-game="tiny-town"] { background-color: color-mix(in oklab, #8ccbd6 28%, var(--bg)); background-image: radial-gradient(ellipse 60px 8px at 50% 100%, color-mix(in oklab, #fff 50%, transparent) 40%, transparent 70%); background-size: 160px 40px; }
+    .tt-logo { display: inline-flex; gap: 8px; font-family: "Avenir Next Condensed", "Arial Narrow", "Futura", var(--font); font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+    .tt-logo span { padding: 2px 12px 4px; border-radius: 6px 6px 2px 2px; color: #fff; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .15); position: relative; }
+    .tt-logo span:first-child { background: #e9776b; } .tt-logo span:last-child { background: #6fbfb3; }
+    .tt-logo span::before { content: ''; position: absolute; left: -4px; right: -4px; top: -10px; height: 12px; background: #8a4b3a; clip-path: polygon(8% 100%, 50% 0, 92% 100%); }
+    .tt-stage { border: 3px solid color-mix(in oklab, #3d8ea0 50%, var(--line)); }
+    .tt-surprise { background: #f6d47a; color: #4a3200; border-color: #c49a2a; }
+    html[data-mode="simple"] .sw { width: 38px; height: 38px; border-radius: 11px; }
+    html[data-mode="simple"] .tt-btns .c-btn { padding: 11px 18px; font-size: 16px; }
+    .tt-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .tt-card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+    .tt-card h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+    .tt-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; }
+    .tt-card li::before { content: '▢ '; color: var(--ink-3); }
+    .tt-card li.on { color: var(--good); } .tt-card li.on::before { content: '✔ '; color: var(--good); }
+    .tt-slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .tt-slot__img { aspect-ratio: 16 / 10; border-radius: 10px; background: #8ccbd6 center / cover; display: grid; place-items: center; color: rgba(255, 255, 255, .8); font-size: 12px; font-weight: 800; }
+    .tt-slot__btns { display: flex; gap: 4px; margin-top: 4px; }
+    .tt-slot__btns .c-btn { padding: 4px 8px; font-size: 12px; flex: 1; }
+    .tt-stat { font-size: 13px; color: var(--ink-3); margin: 8px 0 0; }
+    @media (max-width: 720px) { .tt-extra { grid-template-columns: 1fr; } }
     @media (max-width: 520px) {
       .tt-stage { height: max(340px, calc(100dvh - var(--bar-h) - 300px)); }
       .sw { width: 28px; height: 28px; }
@@ -34,15 +57,15 @@
     }
   </style>
 </head>
-<body data-game="tiny-town">
+<body data-game="tiny-town" data-modes>
   <main class="c-wrap">
     <div class="tt-head">
-      <h1 class="c-title">Tiny Town</h1>
+      <h1 class="c-title tt-logo"><span>Tiny</span><span>Town</span></h1>
       <p class="c-sub">Tap the sea to build. Stack up, and the houses sort out their own roofs, doors, arches and gardens.</p>
     </div>
     <div class="tt-stage" id="stage">
       <canvas id="cv" role="img" aria-label="An isometric seaside town made of coloured blocks. Click the water or a block to build. Switch to Remove, right-click or long-press to remove. Pinch to zoom."></canvas>
-      <div class="tt-tip" id="tip">Click to build · Remove tool (X), right-click or long-press to remove · pinch to zoom</div>
+      <div class="tt-tip" id="tip">Click to build · Remove tool (X) to remove · pinch or Ctrl+scroll to zoom</div>
     </div>
     <div class="tt-tools">
       <div class="tt-mode" role="group" aria-label="Tool">
@@ -51,14 +74,19 @@
       </div>
       <div class="tt-pal" id="pal" role="toolbar" aria-label="Block colour"></div>
       <div class="tt-btns">
-        <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+        <button class="c-btn tt-surprise" type="button" id="surprise" title="Surprise town (G)">🎲 Surprise town</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="undo" aria-label="Undo">↶ Undo</button>
         <button class="c-btn c-btn--ghost" type="button" id="rotL" aria-label="Rotate view left">⟲</button>
         <button class="c-btn c-btn--ghost" type="button" id="rotR" aria-label="Rotate view right">⟳</button>
         <button class="c-btn c-btn--ghost" type="button" id="night">🌙 Night</button>
         <button class="c-btn c-btn--ghost" type="button" id="clear">🌊 Clear</button>
-        <button class="c-btn" type="button" id="png">📷 Save PNG</button>
+        <button class="c-btn c-btn--ghost adv-only" type="button" id="png">📷 Save PNG</button>
       </div>
     </div>
+    <section class="tt-extra adv-only" aria-label="Town planning">
+      <div class="tt-card"><h2>Town charter <b id="goalN"></b></h2><ul id="goals"></ul></div>
+      <div class="tt-card"><h2>Saved towns</h2><div class="tt-slots" id="slots"></div><p class="tt-stat" id="tstat"></p></div>
+    </section>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
@@ -723,6 +751,90 @@
       else if (k === '0') { zoom = 1; place2(); }
     });
 
+    const SIMPLE = Curio.simple;
+    let building = 0;
+    function surprise() {
+      if (building) return;
+      snapshot(); grid = new Uint8Array(N * N * H); changed();
+      const cols = Curio.shuffle(Array.from({ length: PAL.length }, (_, i) => i + 1)).slice(0, Curio.randInt(2, 4));
+      const plan = [];
+      const centers = Array.from({ length: Curio.randInt(1, 3) }, () => [Curio.randInt(3, N - 4), Curio.randInt(3, N - 4), Curio.rand(2.2, 4.2), cols[Curio.randInt(0, cols.length - 1)]]);
+      const tall = new Map();
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        let best = 0, bc = cols[0];
+        for (const [cx, cy, r, c] of centers) { const d = Math.hypot(x - cx, y - cy) + Math.random() * 0.9; const v = r - d; if (v > best) { best = v; bc = c; } }
+        if (best <= 0) continue;
+        let h = Math.max(1, Math.min(H - 1, Math.round(best * Curio.rand(0.5, 1.3))));
+        if (Math.random() < 0.06) h = Math.min(H - 1, h + Curio.randInt(2, 4));
+        const c = Math.random() < 0.7 ? bc : Curio.pick(cols);
+        tall.set(`${x},${y}`, h);
+        for (let z = 0; z < h; z++) plan.push([x, y, z, c]);
+      }
+      plan.sort((a, b) => a[2] - b[2] || Math.random() - 0.5);
+      building = 1;
+      let i = 0;
+      const step = () => {
+        for (let k = 0; k < 4 && i < plan.length; k++, i++) { const [x, y, z, c] = plan[i]; put(x, y, z, c); drops.set((z * N + y) * N + x, t); if (k === 0) tone(SCALE[(z + c) % SCALE.length], 0.12, 'triangle', 0.05); }
+        shadowDirty = true;
+        if (i < plan.length) setTimeout(step, 28); else { building = 0; changed(); if (navigator.vibrate) navigator.vibrate([8, 40, 8]); if (!SIMPLE) checkGoals(); }
+      };
+      step(); hideTip();
+      if (Math.random() < 0.3 && !nightTarget) toggleNight();
+    }
+    document.getElementById('surprise').addEventListener('click', surprise);
+    const GOALS = [
+      ['Lay 30 blocks', (n) => n.count >= 30],
+      ['Build a tower 8 blocks tall', (n) => n.top >= 8],
+      ['Use 6 different colours', (n) => n.colours >= 6],
+      ['Make an arch: a block with sea under it', (n) => n.arch],
+      ['Three separate islands', (n) => n.islands >= 3],
+      ['A big town of 150 blocks', (n) => n.count >= 150],
+      ['Touch every edge of the map', (n) => n.edges >= 4],
+      ['Light it up at night with 80 blocks', (n) => nightTarget && n.count >= 80],
+      ['A one colour village of 40', (n) => n.colours === 1 && n.count >= 40],
+      ['Reach the sky limit', (n) => n.top >= H]
+    ];
+    const goalDone = Curio.store.get('tiny-town-goals', {});
+    function measure() {
+      let count = 0, top = 0, arch = false; const cset = new Set(), foot = new Set(); let edges = 0;
+      for (let z = 0; z < H; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const v = at(x, y, z); if (!v) continue; count++; cset.add(v); top = Math.max(top, z + 1); foot.add(y * N + x); if (z > 0 && !at(x, y, z - 1)) arch = true; }
+      const seen = new Set(); let islands = 0;
+      for (const f of foot) { if (seen.has(f)) continue; islands++; const st = [f]; seen.add(f); while (st.length) { const c = st.pop(); const x = c % N, y = (c / N) | 0; for (const [dx, dy] of DIRS) { const nx = x + dx, ny = y + dy, k = ny * N + nx; if (nx >= 0 && ny >= 0 && nx < N && ny < N && foot.has(k) && !seen.has(k)) { seen.add(k); st.push(k); } } } }
+      const fx = [...foot].map((f) => f % N), fy = [...foot].map((f) => (f / N) | 0);
+      if (fx.includes(0)) edges++; if (fx.includes(N - 1)) edges++; if (fy.includes(0)) edges++; if (fy.includes(N - 1)) edges++;
+      return { count, top, arch, colours: cset.size, islands, edges };
+    }
+    function checkGoals() {
+      const m = measure(); let fresh = 0;
+      GOALS.forEach(([name, f], i) => { if (!goalDone[i] && f(m)) { goalDone[i] = Date.now(); fresh++; Curio.toast(`🏛️ Charter: ${name}`, 2400); } });
+      if (fresh) { Curio.store.set('tiny-town-goals', goalDone); [659, 784, 988].forEach((f, i) => setTimeout(() => tone(f, 0.2, 'sine', 0.05), i * 90)); if (Object.keys(goalDone).length === GOALS.length) Curio.confetti(); }
+      const ul = document.getElementById('goals'); ul.textContent = '';
+      GOALS.forEach(([name], i) => { const li = document.createElement('li'); li.textContent = name; if (goalDone[i]) li.className = 'on'; ul.append(li); });
+      document.getElementById('goalN').textContent = `${Object.keys(goalDone).length}/${GOALS.length}`;
+      document.getElementById('tstat').textContent = `${m.count} blocks · ${m.colours} colours · tallest ${m.top} · ${m.islands} island${m.islands === 1 ? '' : 's'}`;
+    }
+    const slotsEl = document.getElementById('slots');
+    function paintSlots() {
+      const slots = Curio.store.get('tiny-town-slots', [null, null, null, null]);
+      slotsEl.textContent = '';
+      slots.forEach((sl, i) => {
+        const d = document.createElement('div'); d.className = 'tt-slot';
+        const img = document.createElement('div'); img.className = 'tt-slot__img'; if (sl) img.style.backgroundImage = `url(${sl.img})`; else img.textContent = 'empty';
+        const sv = document.createElement('button'); sv.type = 'button'; sv.className = 'c-btn c-btn--ghost'; sv.textContent = '💾 Save';
+        const ld = document.createElement('button'); ld.type = 'button'; ld.className = 'c-btn c-btn--ghost'; ld.textContent = '📂 Load'; ld.disabled = !sl;
+        sv.addEventListener('click', () => {
+          const h = hover; hover = null; render(); hover = h;
+          const c = document.createElement('canvas'); c.width = 160; c.height = Math.round(160 * Hc / W); c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height);
+          let str = ''; for (let k = 0; k < grid.length; k++) str += grid[k].toString(36);
+          slots[i] = { g: str, img: c.toDataURL('image/jpeg', 0.7) }; Curio.store.set('tiny-town-slots', slots); paintSlots(); tone(880, 0.2, 'sine', 0.05); Curio.toast(`Saved to slot ${i + 1}`);
+        });
+        ld.addEventListener('click', () => { if (!sl) return; snapshot(); for (let k = 0; k < grid.length; k++) grid[k] = parseInt(sl.g[k], 36) || 0; changed(); tone(660, 0.2, 'sine', 0.05); checkGoals(); });
+        const row = document.createElement('div'); row.className = 'tt-slot__btns'; row.append(sv, ld);
+        d.append(img, row); slotsEl.append(d);
+      });
+    }
+    if (!SIMPLE) { paintSlots(); checkGoals(); setInterval(() => { if (!document.hidden && !building) checkGoals(); }, 1500); }
+    addEventListener('keydown', (e) => { if (!e.ctrlKey && !e.metaKey && !(e.target.closest && e.target.closest('input')) && e.key.toLowerCase() === 'g') surprise(); });
     let last = performance.now(), raf = 0;
     function frame(now) {
       raf = 0;

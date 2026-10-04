@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="spirograph">
+<body data-game="spirograph" data-modes>
   <main class="c-wrap sp-main">
     <canvas id="cv" role="img" aria-label="A spirograph: a toothed gear rolls around a ring while a pen in one of its holes draws looping patterns."></canvas>
     <div class="sp-intro" id="intro">
-      <h1>Spirograph</h1>
-      <p>A gear rolls around a ring, a pen pokes through one of its holes, and loops appear. Change the gears, add layers, or let chance design one.</p>
+      <h1><span class="sp-cog" aria-hidden="true">⚙</span>Spirograph</h1>
+      <p class="adv-only">A gear rolls around a ring, a pen pokes through one of its holes, and loops appear. Change the gears, add layers, or let chance design one.</p>
+      <p class="simple-only">Pick a design below and watch the gears draw it. Or roll the dice.</p>
     </div>
     <div class="chal hidden" id="chal" aria-live="polite">
       <div class="chal-top"><b id="chalTitle">Target 1 of 5</b><span id="chalScore">0 pts</span></div>
@@ -30,8 +31,8 @@
       <div class="presets" id="presets"></div>
       <h2>Gears</h2>
       <div class="seg" role="group" aria-label="Gear position">
-        <button type="button" data-mode="in" aria-pressed="true">Inside ring</button>
-        <button type="button" data-mode="out" aria-pressed="false">Outside ring</button>
+        <button type="button" data-gm="in" aria-pressed="true">Inside ring</button>
+        <button type="button" data-gm="out" aria-pressed="false">Outside ring</button>
       </div>
       <label class="sl">Ring teeth <output id="oR"></output><input type="range" id="R" min="40" max="150" step="1" value="105"></label>
       <label class="sl">Gear teeth <output id="or"></output><input type="range" id="r" min="8" max="120" step="1" value="63"></label>
@@ -59,16 +60,19 @@
       <div class="badges" id="badges"></div>
       <p class="layers">Keys: Space pause, N new layer, R random, G gears, Z undo, C challenge.</p>
     </div>
+    <div class="sp-quick simple-only" id="quick" role="group" aria-label="Pick a design"></div>
     <div class="dock" role="toolbar" aria-label="Spirograph controls">
       <button type="button" class="chip" id="bPlay" aria-pressed="false">⏸ Pause</button>
-      <button type="button" class="chip" id="bLayer">➕ New layer</button>
-      <button type="button" class="chip" id="bRandom">🎲 Random</button>
-      <button type="button" class="chip" id="bChal">🎯 Challenge</button>
-      <button type="button" class="chip" id="bUndo">↩ Undo</button>
+      <button type="button" class="chip adv-only" id="bLayer">➕ New layer</button>
+      <button type="button" class="chip" id="bRandom"><span class="adv-only">🎲 Random</span><span class="simple-only">🎲 Surprise me</span></button>
+      <button type="button" class="chip adv-only" id="bGallery">🖼️ Gallery</button>
+      <button type="button" class="chip simple-only" id="bPaper">📄 Paper</button>
+      <button type="button" class="chip adv-only" id="bChal">🎯 Challenge</button>
+      <button type="button" class="chip adv-only" id="bUndo">↩ Undo</button>
       <button type="button" class="chip" id="bClear">🧹 Clear</button>
-      <button type="button" class="chip" id="bGears" aria-pressed="true">⚙️ Gears</button>
-      <button type="button" class="chip" id="bSave">💾 Save</button>
-      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">🎛️ Controls</button>
+      <button type="button" class="chip adv-only" id="bGears" aria-pressed="true">⚙️ Gears</button>
+      <button type="button" class="chip adv-only" id="bSave">💾 Save</button>
+      <button type="button" class="chip adv-only" id="bPanel" aria-pressed="false" aria-controls="panel">🎛️ Controls</button>
     </div>
   </main>
   <script src="../../games.js"></script>

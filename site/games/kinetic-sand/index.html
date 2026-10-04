@@ -26,16 +26,39 @@
     .ks-tools .c-btn { padding: 8px 16px; font-size: 15px; }
     .c-btn.pulse { animation: pulse 1s ease-in-out infinite; }
     @keyframes pulse { 50% { transform: scale(1.08); } }
+    html[data-mode="simple"] .adv-only, html[data-mode="advanced"] .simple-only { display: none !important; }
+    body[data-game="kinetic-sand"] { background-color: color-mix(in oklab, #f4c7a1 30%, var(--bg)); background-image: radial-gradient(color-mix(in oklab, #a0522d 14%, transparent) 1px, transparent 1.5px), radial-gradient(color-mix(in oklab, #fff 30%, transparent) 1px, transparent 1.5px); background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 4px; }
+    .ks-logo { font-family: "Trebuchet MS", "Futura", "Century Gothic", var(--font); font-weight: 900; letter-spacing: .02em; text-transform: lowercase; font-size: clamp(34px, 6vw, 52px) !important; }
+    .ks-logo span:first-child { background: repeating-linear-gradient(180deg, #f4a6c1 0 8px, #c9a7eb 8px 16px, #9fe3c7 16px 24px, #8ecdf2 24px 32px, #f7e08a 32px 40px); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.5px color-mix(in oklab, var(--ink) 60%, transparent); }
+    .ks-logo span:last-child { color: #c06b3a; }
+    .ks-stage { border: 3px solid color-mix(in oklab, #c06b3a 40%, var(--line)); border-radius: 26px; }
+    .ks-sets { gap: 6px; }
+    .ks-set { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 11px 4px 4px; cursor: pointer; font-weight: 800; font-size: 13px; transition: transform .15s cubic-bezier(.2, 1.6, .4, 1); }
+    .ks-set i { width: 24px; height: 24px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15); }
+    .ks-set:hover { transform: translateY(-2px); }
+    .ks-set[aria-pressed="true"] { border-color: #c06b3a; background: color-mix(in oklab, #c06b3a 12%, var(--surface)); }
+    .ks-set:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .ks-design { font-size: 13px; font-weight: 800; color: var(--ink-2); gap: 12px; }
+    .ks-design label { display: inline-flex; align-items: center; gap: 6px; }
+    .ks-design input { accent-color: #c06b3a; width: 100px; }
+    .ks-design select { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 4px 6px; font-weight: 700; }
+    .ks-stats { font-variant-numeric: tabular-nums; color: var(--ink-3); }
+    html[data-mode="simple"] .ks-set { padding: 6px 14px 6px 6px; font-size: 14px; }
+    html[data-mode="simple"] .ks-set i { width: 30px; height: 30px; }
+    html[data-mode="simple"] .ks-tools .c-btn { padding: 11px 20px; font-size: 16px; }
+    html[data-mode="simple"] .ks-stage { height: max(330px, calc(100dvh - var(--bar-h) - 280px)); }
     @media (max-width: 560px) {
+      .ks-sets { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; max-width: 100%; padding-bottom: 4px; }
+      .ks-set { flex: none; }
       .ks-head .c-sub { font-size: 13px; }
       .ks-stage { height: max(330px, calc(100dvh - var(--bar-h) - 300px)); }
     }
   </style>
 </head>
-<body data-game="kinetic-sand">
+<body data-game="kinetic-sand" data-modes>
   <main class="c-wrap">
     <div class="ks-head">
-      <h1 class="c-title">Kinetic Sand</h1>
+      <h1 class="c-title ks-logo"><span>Kinetic</span> <span>Sand</span></h1>
       <p class="c-sub">Press the knife into the block and drag down. Every slice shows what is hiding inside.</p>
     </div>
     <div class="ks-stage" id="stage">
@@ -43,14 +66,22 @@
       <div class="ks-count" id="count">0 slices</div>
     </div>
     <div class="ks-tools">
-      <div class="seg" role="group" aria-label="Tool">
+      <div class="seg adv-only" role="group" aria-label="Tool">
         <button type="button" data-tool="knife" aria-pressed="true" title="Knife (K)">🔪 Knife</button>
         <button type="button" data-tool="mould" aria-pressed="false" title="Mould (M, or 1 to 5 for a shape)">⭐ Mould</button>
       </div>
-      <div class="ks-group" id="moulds" role="group" aria-label="Mould shape"></div>
+      <div class="ks-group adv-only" id="moulds" role="group" aria-label="Mould shape"></div>
+      <div class="ks-group ks-sets" id="sets" role="group" aria-label="Sand set"></div>
+      <div class="ks-group adv-only ks-design">
+        <label>Layers <input type="range" id="layers" min="3" max="9" value="5" aria-label="Number of layers"><output id="layersO">5</output></label>
+        <label>Cores <select id="cores" aria-label="Hidden cores"><option value="r">Random</option><option value="0">None</option><option value="1">One</option><option value="2">Two</option><option value="3">Three</option></select></label>
+        <span class="ks-stats" id="stats"></span>
+      </div>
       <div class="ks-group">
         <button type="button" class="c-btn c-btn--ghost" id="auto" title="Auto slice (Space or S)">✂️ Auto slice</button>
         <button type="button" class="c-btn" id="reset" title="New block (N)">🧱 New block</button>
+        <button type="button" class="c-btn c-btn--ghost simple-only" id="surprise" title="Surprise block (R)">🎁 Surprise block</button>
+        <button type="button" class="c-btn c-btn--ghost adv-only" id="png" title="Photo (E)">📷 Photo</button>
       </div>
     </div>
   </main>
@@ -83,9 +114,21 @@
     const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
     const hash = (x, y) => { let h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; };
 
+    const SETS = {
+      mix: { name: 'Mix', c: SANDS },
+      pastel: { name: 'Pastel', c: ['#f4a6c1', '#c9a7eb', '#9fe3c7', '#8ecdf2', '#f7e08a', '#ffd6e8', '#d9f2ff', '#fff3c4'] },
+      beach: { name: 'Beach', c: ['#e8cfa6', '#f7e08a', '#5fc9c2', '#8ecdf2', '#ffffff', '#f8b98d', '#c9a27a', '#2f9fb3'] },
+      candy: { name: 'Candy', c: ['#ff9fd2', '#ff6f91', '#ffc75f', '#7ed957', '#b388ff', '#4fc3f7', '#ffffff', '#f28b82'] },
+      forest: { name: 'Forest', c: ['#b6e388', '#6aa84f', '#38761d', '#c9a27a', '#8b6b4a', '#e8cfa6', '#f7e08a', '#4f7942'] },
+      night: { name: 'Night sky', c: ['#1f2a5a', '#3d2b86', '#9b7fd9', '#7fb3f5', '#ffffff', '#ffd966', '#2a1f4a', '#5fc9c2'] },
+      sunset: { name: 'Sunset', c: ['#ff6f3c', '#ff9a5a', '#ffc75f', '#f28b82', '#c74b7a', '#6a2c70', '#ffe3a3', '#ff4f6d'] }
+    };
+    let sandSet = Curio.store.get('kinetic-sand:set', 'mix'); if (!SETS[sandSet]) sandSet = 'mix';
+    let layerN = Curio.store.get('kinetic-sand:layers', 0), coreN = 'r', coresFound = Curio.store.get('kinetic-sand:cores', 0), blocksDone = Curio.store.get('kinetic-sand:blocks', 0);
     function makeBlock() {
-      const pal = Curio.shuffle(SANDS);
-      const n = Curio.randInt(4, 7);
+      const pal = Curio.shuffle(SETS[sandSet].c.slice());
+      while (pal.length < 14) pal.push(...Curio.shuffle(SETS[sandSet].c.slice()));
+      const n = Curio.simple || !layerN ? Curio.randInt(4, 7) : layerN;
       const layers = [];
       let sum = 0;
       for (let i = 0; i < n; i++) {
@@ -95,7 +138,7 @@
       let acc = 0;
       layers.forEach((l) => { acc += l.h / sum; l.top = acc; });
       const balls = [];
-      const nb = Curio.randInt(0, 2);
+      const nb = Curio.simple || coreN === 'r' ? Curio.randInt(Curio.simple ? 1 : 0, 2) : +coreN;
       for (let i = 0; i < nb; i++) {
         const rings = [];
         const nr = Curio.randInt(2, 4);
@@ -378,10 +421,12 @@
       frontTex = back; zf = z1;
       slices++; total++; Curio.store.set('kinetic-sand:total', total);
       countEl.textContent = `${slices} slice${slices === 1 ? '' : 's'} · ${total} all time`;
+      for (const b of block.balls) if (!b.found && Math.abs(z1 - b.z * bd) < b.r * bh * 0.6) { b.found = true; coresFound++; Curio.store.set('kinetic-sand:cores', coresFound); setTimeout(() => { Curio.toast(Curio.pick(['💎 A hidden core!', '🎯 Surprise core found!', '🌈 Ooh, a rainbow core!', '🪐 Something round was hiding in there!'])); [660, 880, 1175].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.09, 'triangle', 0.05), i * 70)); if (navigator.vibrate) navigator.vibrate([8, 40, 16]); paintStats(); }, 350); }
+      if (navigator.vibrate) navigator.vibrate(6);
       knife = null; cutHiss(0);
       grainSound(14, 0.2, 2500, 6000, 0.05);
       if (bd - zf < bd * 0.04) {
-        resetBtn.classList.add('pulse');
+        resetBtn.classList.add('pulse'); blocksDone++; Curio.store.set('kinetic-sand:blocks', blocksDone); paintStats();
         setTimeout(() => Curio.toast('Every last grain sliced. Fresh block?'), 900);
       }
     }
@@ -608,12 +653,38 @@
       if (e.key === ' ' || e.key === 's' || e.key === 'S') { e.preventDefault(); autoSlice(); }
       else if (e.key === 'n' || e.key === 'N') newBlock();
       else if (e.ctrlKey || e.metaKey || e.altKey) return;
+      else if (Curio.simple) return;
       else if (e.key === 'k' || e.key === 'K') document.querySelector('[data-tool="knife"]').click();
       else if (e.key === 'm' || e.key === 'M') document.querySelector('[data-tool="mould"]').click();
       else if (/^[1-5]$/.test(e.key)) mouldsEl.querySelectorAll('.mould')[+e.key - 1].click();
     });
     addEventListener('resize', () => { const z = zf / bd; const ch = layout(); if (ch) { zf = z * bd; lying.length = 0; falling.length = 0; grains.length = 0; buildTextures(); } });
 
+    const SIMPLE = Curio.simple;
+    const setsEl = document.getElementById('sets');
+    for (const k in SETS) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ks-set'; b.dataset.set = k; b.title = SETS[k].name;
+      const sw = document.createElement('i'); sw.style.background = `linear-gradient(180deg, ${SETS[k].c.slice(0, 5).map((c, i) => `${c} ${i * 20}% ${(i + 1) * 20}%`).join(',')})`;
+      const t = document.createElement('span'); t.textContent = SETS[k].name;
+      b.append(sw, t);
+      b.addEventListener('click', () => { sandSet = k; Curio.store.set('kinetic-sand:set', k); paintSets(); newBlock(); });
+      setsEl.append(b);
+    }
+    function paintSets() { setsEl.querySelectorAll('.ks-set').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.set === sandSet))); }
+    function paintStats() { document.getElementById('stats').textContent = `${total} slices · ${blocksDone} blocks · ${coresFound} cores`; }
+    const lay = document.getElementById('layers'), layO = document.getElementById('layersO');
+    if (layerN) { lay.value = layerN; layO.textContent = layerN; }
+    lay.addEventListener('input', () => { layerN = +lay.value; layO.textContent = layerN; Curio.store.set('kinetic-sand:layers', layerN); });
+    lay.addEventListener('change', newBlock);
+    document.getElementById('cores').addEventListener('change', (e) => { coreN = e.target.value; newBlock(); });
+    document.getElementById('surprise').addEventListener('click', () => { sandSet = Curio.pick(Object.keys(SETS)); paintSets(); newBlock(); Curio.toast(`🎁 ${SETS[sandSet].name} block. Slice to find what is inside!`, 1800); });
+    document.getElementById('png').addEventListener('click', () => { const a = document.createElement('a'); a.download = `kinetic-sand-${Date.now()}.png`; a.href = canvas.toDataURL('image/png'); a.click(); Curio.toast('📷 Saved'); });
+    addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,button'))) return;
+      if (e.key === 'r' || e.key === 'R') document.getElementById('surprise').click();
+      else if ((e.key === 'e' || e.key === 'E') && !SIMPLE) document.getElementById('png').click();
+    });
+    paintSets(); paintStats();
     layout();
     block = makeBlock();
     buildTextures();
