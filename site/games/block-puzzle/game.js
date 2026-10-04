@@ -361,7 +361,7 @@
     const body = save.mode === 'gems' ? `${gems.size} gem${gems.size === 1 ? '' : 's'} left on level ${save.level + 1}. Plan ahead and keep the gem rows open.` : `${why === 'time' ? 'Two minutes are up.' : Curio.pick(lines)} You scored ${Curio.fmt(score)} and cleared ${cleared} line${cleared === 1 ? '' : 's'}. ${isNew ? '' : `Best: ${Curio.fmt(bestVal())}.`}`;
     const v = await Curio.modal({ emoji: why === 'time' ? '⏱️' : isNew && score > 0 ? '🏆' : '🧱', title, body, buttons: [{ label: save.mode === 'gems' ? 'Retry' : 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Look at the board', value: 'look' }] });
     cells.forEach((el) => { el.style.transition = ''; el.style.filter = ''; });
-    if (v === 'share') { try { await navigator.clipboard.writeText(`🧱 Curio Block Fit ${save.mode === 'daily' ? `daily ${todayKey()}` : save.mode}: ${Curio.fmt(score)} points, ${cleared} lines.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+    if (v === 'share') { try { await navigator.clipboard.writeText(`🧱 Zoble Block Fit ${save.mode === 'daily' ? `daily ${todayKey()}` : save.mode}: ${Curio.fmt(score)} points, ${cleared} lines.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
     if (v === 'again') newGame();
   }
 

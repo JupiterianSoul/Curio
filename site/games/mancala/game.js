@@ -508,7 +508,7 @@
 
   async function share(score) {
     const r = rec();
-    const txt = `🪨 Curio Mancala (${R().name}, ${duo() ? '2 players' : `${level} AI`})${score ? `: ${score}` : ''}. Record ${r.w}-${r.l}-${r.d}, ${totals.wins} wins total, ${badges.length}/${BADGES.length} badges.`;
+    const txt = `🪨 Zoble Mancala (${R().name}, ${duo() ? '2 players' : `${level} AI`})${score ? `: ${score}` : ''}. Record ${r.w}-${r.l}-${r.d}, ${totals.wins} wins total, ${badges.length}/${BADGES.length} badges.`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Copied to clipboard!'); } catch (e) { Curio.toast(txt, 4000); }
   }
 

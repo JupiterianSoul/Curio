@@ -590,7 +590,7 @@
   $('practice').addEventListener('click', () => { P.mode = 'weak'; changed(); box.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
   $('share').addEventListener('click', async () => {
     if (!lastResult) return;
-    const t = `⌨️ Typing Test (${lastResult.label}${lastResult.daily ? ', daily ' + today() : ''}): ${lastResult.wpm} WPM at ${lastResult.accuracy}% accuracy. Rank: ${lastResult.rank}. Curio`;
+    const t = `⌨️ Typing Test (${lastResult.label}${lastResult.daily ? ', daily ' + today() : ''}): ${lastResult.wpm} WPM at ${lastResult.accuracy}% accuracy. Rank: ${lastResult.rank}. Zoble`;
     try { await navigator.clipboard.writeText(t); Curio.toast('Copied to clipboard'); } catch { Curio.toast(t, 4000); }
   });
   $('heatView').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; heat.view = b.dataset.v; paintHeatToggles(); drawHeat(); });
@@ -661,9 +661,9 @@
         <ul>
           <li><b>Time</b>: type as much as you can in 15, 30, 60 or 120 seconds.</li>
           <li><b>Words</b>: race to finish 10, 25, 50 or 100 words.</li>
-          <li><b>Quotes</b>: famous lines from books, speeches and scientists, plus a few Curio facts.</li>
+          <li><b>Quotes</b>: famous lines from books, speeches and scientists, plus a few Zoble facts.</li>
           <li><b>Code</b>: real snippets of JavaScript, Python, CSS and HTML. Press Enter at the end of a line; the indent on the next line is filled in for you.</li>
-          <li><b>Weak keys</b>: Curio looks at your key heatmap and builds a practice run full of the letters you miss or hesitate on most.</li>
+          <li><b>Weak keys</b>: Zoble looks at your key heatmap and builds a practice run full of the letters you miss or hesitate on most.</li>
         </ul>
         <p><b>Daily</b> gives everyone the same text today. <b>Strict</b> blocks wrong keys, so you must fix each slip before moving on. <b>Punctuation</b> and <b>Numbers</b> mix capitals, commas, quotes and digits into word tests.</p>
         <p>Tips: rest your fingers on the home row (the bumps on F and J help you find it without looking), keep your eyes on the screen, and aim for a smooth rhythm rather than bursts. Accuracy first: speed follows.</p>

@@ -741,7 +741,7 @@
     Curio.confetti(outside ? 60 : 140);
     c.querySelector('#endAgain').addEventListener('click', backInside);
     c.querySelector('#endStay').addEventListener('click', () => { c.hidden = true; $('#endLines').innerHTML = ''; $('#endBack').hidden = false; });
-    c.querySelector('#endShare').addEventListener('click', () => shareText(`${outside ? '🌳 I went outside' : '🤯 I reached maximum stimulation'} in Stimulation Clicker after ${fmtTime(st.elapsed)}, ${fmt(st.clicks)} clicks and ${st.owned} distractions. Curio`));
+    c.querySelector('#endShare').addEventListener('click', () => shareText(`${outside ? '🌳 I went outside' : '🤯 I reached maximum stimulation'} in Stimulation Clicker after ${fmtTime(st.elapsed)}, ${fmt(st.clicks)} clicks and ${st.owned} distractions. Zoble`));
     c.querySelector('#endAgain').focus();
   }
   function backInside() {
@@ -818,7 +818,7 @@
   async function shareText(t) {
     try { await navigator.clipboard.writeText(t); Curio.toast('Copied to clipboard'); } catch { Curio.toast(t, 4000); }
   }
-  $('#share').addEventListener('click', () => shareText(`🎰 Stimulation Clicker: ${fmt(S.stim)} stimulation, ${fmt(pps())}/s, ${ownedCount()}/${UP.length} distractions owned. Trips outside: ${M.trips}. Curio`));
+  $('#share').addEventListener('click', () => shareText(`🎰 Stimulation Clicker: ${fmt(S.stim)} stimulation, ${fmt(pps())}/s, ${ownedCount()}/${UP.length} distractions owned. Trips outside: ${M.trips}. Zoble`));
 
   const info = $('#info');
   function renderInfo(p) {

@@ -18,7 +18,7 @@
 
   const saved = Curio.store.get('graffiti:state', {});
   let tool = 'spray', cap = saved.cap ?? 1, color = saved.color ?? 4, wall = saved.wall || 'brick', night = false;
-  let shape = 'star', stSize = saved.stSize || 300, word = saved.word || 'CURIO';
+  let shape = 'star', stSize = saved.stSize || 300, word = saved.word || 'ZOBLE';
 
   let seed = 4242;
   const srnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -347,7 +347,7 @@
   cv.addEventListener('pointerleave', () => { if (night) dirty = true; });
 
   function placeStencil(x, y) {
-    stencil = { kind: shape === 'word' ? 'word' : shape, word: word.toUpperCase() || 'CURIO', size: stSize, x, y };
+    stencil = { kind: shape === 'word' ? 'word' : shape, word: word.toUpperCase() || 'ZOBLE', size: stSize, x, y };
     buildStencil(); maskData = null; showTip('Drag to move. Switch to Spray and go over it.');
     Curio.beep(240, .06, 'triangle', .07);
   }

@@ -993,7 +993,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     document.querySelector('[data-share]').addEventListener('click', () => {
         const r = lastResult || { wpm: 0, acc: 100, cleared: 0 };
         const what = S.mode === 'daily' ? `Daily ${today()}` : S.mode === 'sprint' ? '60s Sprint' : S.mode === 'zen' ? 'Zen' : 'Classic';
-        const txt = `Curio Word Rain · ${what} (${packId()})\n🌧️ ${A.score} points, ${r.cleared} words, ${r.wpm} wpm, ${r.acc}% accuracy`;
+        const txt = `Zoble Word Rain · ${what} (${packId()})\n🌧️ ${A.score} points, ${r.cleared} words, ${r.wpm} wpm, ${r.acc}% accuracy`;
         (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
     });
     drops = Array.from({ length: 90 }, () => ({ x: Math.random() * 1000, y: Math.random() * H, v: 300 + Math.random() * 250, l: 10 + Math.random() * 14 }));

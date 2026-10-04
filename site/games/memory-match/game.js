@@ -320,7 +320,7 @@
       p.textContent = `${'★'.repeat(s)}${'☆'.repeat(3 - s)} ${perfect ? 'A perfect game, are you psychic?' : bm.isNew ? 'New fewest-moves record!' : bt.isNew ? 'New fastest time!' : bs.isNew ? 'New high score!' : `Best: ${bm.best} moves.`}`;
       body.append(p);
       v = await Curio.modal({ emoji: s === 3 ? '🧠' : s === 2 ? '😎' : '🙂', title: daily ? 'Daily deck done!' : s === 3 ? 'Total recall!' : s === 2 ? 'Well matched!' : 'All pairs found!', body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Close', value: 'x' }] });
-      if (v === 'share') { try { await navigator.clipboard.writeText(`🃏 Curio Memory Match${daily ? ` daily (${todayKey()})` : ''}: ${total} pairs in ${moves} moves, ${fmtT(elapsed)}, ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+      if (v === 'share') { try { await navigator.clipboard.writeText(`🃏 Zoble Memory Match${daily ? ` daily (${todayKey()})` : ''}: ${total} pairs in ${moves} moves, ${fmtT(elapsed)}, ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
       bests();
     }
     if (v === 'again') newGame(daily);

@@ -694,7 +694,7 @@
     const v = await Curio.modal({ emoji: D.pred.slice(0, 2), title: `${hunt.score} ${D.many} caught`, body: `${best.isNew && hunt.score > 0 ? 'New personal best!' : `Best in the ${world}: ${best.best}.`} Longest combo: x${hunt.bestCombo}. Tip: flocks split around the predator, so cut into the edges of the group.`, buttons: [{ label: 'Hunt again', value: 'again' }, { label: 'Copy result', value: 'share' }, { label: 'Just watch', value: 'done' }] });
     if (v === 'again') startHunt();
     if (v === 'share') {
-      const txt = `${D.pred.slice(0, 2)} Curio Flock hunt (${world}): ${hunt.score} ${D.many} in ${HUNT_T} s, combo x${hunt.bestCombo}. Best ${best.best}.`;
+      const txt = `${D.pred.slice(0, 2)} Zoble Flock hunt (${world}): ${hunt.score} ${D.many} in ${HUNT_T} s, combo x${hunt.bestCombo}. Best ${best.best}.`;
       try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch (e) { Curio.toast(txt, 4000); }
     }
   }

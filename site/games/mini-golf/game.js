@@ -895,7 +895,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         const tot = card.reduce((s, c) => s + c, 0), rel = tot - totalPar(round.length);
         const sq = card.map((n, i) => (n === 1 ? '⭐' : n < round[i].hole.par ? '🟩' : n === round[i].hole.par ? '🟨' : '🟥')).join('');
         const where = mode === 'daily' ? `Daily ${today()}` : course().name;
-        return `Curio Mini Golf · ${where}\n${tot} strokes (${rel > 0 ? '+' + rel : rel === 0 ? 'E' : rel})\n${sq}`;
+        return `Zoble Mini Golf · ${where}\n${tot} strokes (${rel > 0 ? '+' + rel : rel === 0 ? 'E' : rel})\n${sq}`;
     }
     let demoT = 0;
     function idle(dt) {

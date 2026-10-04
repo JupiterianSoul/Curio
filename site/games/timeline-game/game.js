@@ -455,8 +455,8 @@
   }
   function shareText() {
     const grid = G.grid.map((g) => (g ? '🟩' : '🟥')).join('');
-    if (G.mode === 'daily') return `Curio Timeline daily ${today()}: ${G.score}/12\n${grid}`;
-    return `Curio Timeline (${MODES[G.mode].name}, ${G.deck.name}): ${G.score} placed, best streak ${G.bestStreak}\n${grid}`;
+    if (G.mode === 'daily') return `Zoble Timeline daily ${today()}: ${G.score}/12\n${grid}`;
+    return `Zoble Timeline (${MODES[G.mode].name}, ${G.deck.name}): ${G.score} placed, best streak ${G.bestStreak}\n${grid}`;
   }
 
   function award(id) {

@@ -448,7 +448,7 @@
       showCard(`<div class="m-art">${medal(b.isNew ? '#ffd34d' : '#dfe6ee', b.isNew ? '#e0a100' : '#9aa7b6')}</div><h2>Field cleared!</h2><div class="m-big">${secs.toFixed(1)}s</div>${b.isNew ? '<span class="m-new">★ New best time</span>' : `<p>Best: ${best.toFixed(1)}s</p>`}<div class="m-rows"><div><b>${bv3}</b><span>3BV</span></div><div><b>${bvs.toFixed(2)}</b><span>3BV/s</span></div><div><b>${clicks ? Math.round(100 * bv3 / clicks) : 100}%</b><span>Efficiency</span></div></div><p>${L.name}${ng ? ' · no-guess' : ''}${hintsUsed ? ` · ${hintsUsed} hint${hintsUsed > 1 ? 's' : ''}` : ''}. ${winLine(secs)}</p>`, [
         ['Play again', () => newGame()],
         ['Admire the field', hideOv, true],
-        ['Copy result', () => copy(`Curio Minesweeper · ${L.name}${ng ? ' (no-guess)' : ''} · cleared in ${secs.toFixed(1)}s · 3BV ${bv3} · ${bvs.toFixed(2)} 3BV/s`), true]
+        ['Copy result', () => copy(`Zoble Minesweeper · ${L.name}${ng ? ' (no-guess)' : ''} · cleared in ${secs.toFixed(1)}s · 3BV ${bv3} · ${bvs.toFixed(2)} 3BV/s`), true]
       ]);
     }, 900);
   }

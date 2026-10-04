@@ -1163,7 +1163,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
     document.querySelector('[data-share]').addEventListener('click', () => {
         const r = lastRes || { sliced: 0, bestCombo: 0 };
         const name = { classic: 'Classic', arcade: 'Arcade 60s', zen: 'Zen', daily: `Daily ${today()}` }[S.mode];
-        const txt = `Curio Fruit Slicer · ${name}\n🍉 ${A.score} points, ${r.sliced} fruit sliced, best combo ${r.bestCombo}`;
+        const txt = `Zoble Fruit Slicer · ${name}\n🍉 ${A.score} points, ${r.sliced} fruit sliced, best combo ${r.bestCombo}`;
         (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
     });
     const baseMenu = A.menu;

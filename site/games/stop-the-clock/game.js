@@ -124,7 +124,7 @@
       <circle cx="${CX}" cy="${CY}" r="163" fill="${s.bez}"/>
       <circle cx="${CX}" cy="${CY}" r="152" fill="url(#wDial)"/>
       ${ticks}${nums}
-      <text x="${CX}" y="${CY - 52}" text-anchor="middle" font-size="13" font-weight="900" letter-spacing="4" fill="${s.ink}">CURIO</text>
+      <text x="${CX}" y="${CY - 52}" text-anchor="middle" font-size="13" font-weight="900" letter-spacing="4" fill="${s.ink}">ZOBLE</text>
       <text x="${CX}" y="${CY - 38}" text-anchor="middle" font-size="7.5" font-weight="800" letter-spacing="2.5" fill="${s.soft}">CHRONOGRAPH</text>
       ${sub(CX - 66, 'MIN', 30, 'hMin')}${sub(CX + 66, '1/10 S', 10, 'hTen')}
       <rect class="lcdbg" x="${CX - 56}" y="${CY + 38}" width="112" height="36" rx="8" fill="#d9e4cf" stroke="${s.soft}" stroke-width="1.5"/>

@@ -475,7 +475,7 @@
     $('#again').addEventListener('click', () => startRun(m));
     $('#toMenu').addEventListener('click', renderMenu);
     $('#shareBtn').addEventListener('click', async () => {
-      const text = `Absurd Trolley Problems (Curio)\n${MODES.find((x) => x.id === m).name}: ${title} ${emo}\n${Curio.fmt(kills)} casualties · pulled ${pulls}/${ch.length}\n${ch.map((c) => (c.pulled ? '🕹️' : '🧍')).join('')}`;
+      const text = `Absurd Trolley Problems (Zoble)\n${MODES.find((x) => x.id === m).name}: ${title} ${emo}\n${Curio.fmt(kills)} casualties · pulled ${pulls}/${ch.length}\n${ch.map((c) => (c.pulled ? '🕹️' : '🧍')).join('')}`;
       try { await navigator.clipboard.writeText(text); Curio.toast('Copied! Paste it anywhere.'); } catch { Curio.modal({ emoji: '📋', title: 'Your verdict', body: text, buttons: [{ label: 'OK', value: 1 }] }); }
     });
     run = null;

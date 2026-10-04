@@ -358,7 +358,7 @@
 
   $('share').addEventListener('click', async () => {
     const z = zodiac(bm, bd), c = chinese(by, bm, bd);
-    const txt = `🎂 I was born on a ${DOW[new Date(birth).getDay()]} ${z[1]} ${z[0]}, ${c.e} ${c.a[0]} ${c.a[1]}, under a ${moonAt(Date.UTC(by, bm - 1, bd, 12))[1]}. I'm ${fmt(Math.floor((Date.now() - birth) / DAY))} days old and ${((Date.now() - birth) / DAY / 4332.59).toFixed(2)} on Jupiter. Find yours on Curio: Your Birthday`;
+    const txt = `🎂 I was born on a ${DOW[new Date(birth).getDay()]} ${z[1]} ${z[0]}, ${c.e} ${c.a[0]} ${c.a[1]}, under a ${moonAt(Date.UTC(by, bm - 1, bd, 12))[1]}. I'm ${fmt(Math.floor((Date.now() - birth) / DAY))} days old and ${((Date.now() - birth) / DAY / 4332.59).toFixed(2)} on Jupiter. Find yours on Zoble: Your Birthday`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Copied! Paste it anywhere.'); } catch (e) { Curio.toast(txt, 5000); }
   });
   const monthShort = (m) => new Date(2000, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' });

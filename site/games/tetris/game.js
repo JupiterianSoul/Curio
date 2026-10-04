@@ -798,11 +798,11 @@
   function shareText() {
     if (!S) return '';
     const m = D.MODES[S.mode].name;
-    if (S.mode === 'sprint' && S.result === 'win') return `Curio Blocks Sprint: 40 lines in ${fmtTime(S.t)} (${(S.pieces / S.t).toFixed(2)} PPS)`;
-    if (S.mode === 'dig' && S.result === 'win') return `Curio Blocks Dig: cleared 10 garbage rows in ${fmtTime(S.t)}`;
-    if (S.mode === 'daily') return `Curio Blocks Daily ${S.daily}: ${Curio.fmt(S.score)} points, ${S.lines} lines, ${S.tetrises} tetrises, ${S.tspins} T-spins`;
-    if (S.mode === 'zen') return `Curio Blocks Zen: ${S.lines} lines of pure calm`;
-    return `Curio Blocks ${m}: ${Curio.fmt(S.score)} points, ${S.lines} lines${S.mode === 'marathon' ? `, level ${S.level}` : ''}`;
+    if (S.mode === 'sprint' && S.result === 'win') return `Zoble Blocks Sprint: 40 lines in ${fmtTime(S.t)} (${(S.pieces / S.t).toFixed(2)} PPS)`;
+    if (S.mode === 'dig' && S.result === 'win') return `Zoble Blocks Dig: cleared 10 garbage rows in ${fmtTime(S.t)}`;
+    if (S.mode === 'daily') return `Zoble Blocks Daily ${S.daily}: ${Curio.fmt(S.score)} points, ${S.lines} lines, ${S.tetrises} tetrises, ${S.tspins} T-spins`;
+    if (S.mode === 'zen') return `Zoble Blocks Zen: ${S.lines} lines of pure calm`;
+    return `Zoble Blocks ${m}: ${Curio.fmt(S.score)} points, ${S.lines} lines${S.mode === 'marathon' ? `, level ${S.level}` : ''}`;
   }
   async function share() { const t = shareText(); try { await navigator.clipboard.writeText(t); Curio.toast('Copied to clipboard'); } catch { Curio.toast(t, 4000); } }
 

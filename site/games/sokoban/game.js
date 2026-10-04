@@ -383,7 +383,7 @@ const Soko = (() => {
   $('rAgain').addEventListener('click', () => load(li));
   $('rShare').addEventListener('click', () => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
-    const txt = `Curio Box Pusher · ${daily ? `Daily ${today()}` : `${pack.name} ${li + 1}`}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves, ${pushes} pushes (best possible ${LEVELS()[li].p} pushes)`;
+    const txt = `Zoble Box Pusher · ${daily ? `Daily ${today()}` : `${pack.name} ${li + 1}`}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves, ${pushes} pushes (best possible ${LEVELS()[li].p} pushes)`;
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
   });
   function paintProgress() {

@@ -419,7 +419,7 @@
     if (challenge.daily) $('chResult').insertAdjacentHTML('beforeend', ' <button class="c-btn c-btn--ghost" id="chShare" type="button" style="padding:5px 12px;font-size:13px">📋 Share</button>');
     const sh = $('chShare');
     const name = challenge.t.name;
-    if (sh) sh.addEventListener('click', async () => { try { await navigator.clipboard.writeText(`🖍️ Curio Etch Sketch daily ${today}: ${name} ${sc}/100`); Curio.toast('Copied 📋'); } catch { Curio.toast('Copy failed'); } });
+    if (sh) sh.addEventListener('click', async () => { try { await navigator.clipboard.writeText(`🖍️ Zoble Etch Sketch daily ${today}: ${name} ${sc}/100`); Curio.toast('Copied 📋'); } catch { Curio.toast('Copy failed'); } });
     [440, 554, 659, 880].slice(0, sc >= 85 ? 4 : sc >= 60 ? 3 : 1).forEach((f, i) => setTimeout(() => Curio.beep(f, .12, 'triangle', .08), i * 110));
     if (sc >= 85) Curio.confetti();
     $('chScore').disabled = true;

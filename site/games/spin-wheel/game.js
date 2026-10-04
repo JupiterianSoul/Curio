@@ -193,7 +193,7 @@
       if (left.length === 1) {
         unlock('elim'); Curio.confetti(160);
         const v = await Curio.modal({ emoji: '🏁', title: `${left[0].t} survives!`, body: winBody(left[0], 'The last one standing. Everyone else got spun out.'), buttons: [{ label: '↻ Reset and go again', value: 'reset' }, { label: '📋 Copy', value: 'copy' }, { label: 'Close', value: 'close' }] });
-        if (v === 'reset') resetHidden(); if (v === 'copy') copy(`🏁 ${left[0].t} survived the elimination on Curio's Spin the Wheel!`);
+        if (v === 'reset') resetHidden(); if (v === 'copy') copy(`🏁 ${left[0].t} survived the elimination on Zoble's Spin the Wheel!`);
       } else Curio.toast(`${e.t} is out! ${left.length} left`);
       return;
     }
@@ -299,7 +299,7 @@
     const w = W(); w.hist.unshift({ t: `🏆 ${e.t}`, at: Date.now() }); w.wins[e.t] = (w.wins[e.t] || 0) + 1; save(); paintStats();
     const v = await Curio.modal({ emoji: '🏆', title: 'Champion!', body: winBody(e, `Won ${bracket.rounds.length} round${bracket.rounds.length > 1 ? 's' : ''} of pure luck.`), buttons: [{ label: '↻ New tournament', value: 'again' }, { label: '📋 Copy', value: 'copy' }, { label: 'Close', value: 'close' }] });
     if (v === 'again') startBracket();
-    if (v === 'copy') copy(`🏆 ${e.t} won the ${W().name} tournament on Curio's Spin the Wheel!`);
+    if (v === 'copy') copy(`🏆 ${e.t} won the ${W().name} tournament on Zoble's Spin the Wheel!`);
   }
   function roundName(r, n) { const left = n - r; return left === 1 ? 'Final' : left === 2 ? 'Semi-finals' : left === 3 ? 'Quarter-finals' : `Round ${r + 1}`; }
   function paintBracket() {

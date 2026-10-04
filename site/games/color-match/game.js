@@ -176,7 +176,7 @@
     ambient(css(target), css(target), css(target));
     const ms = mode === 'daily' ? 5000 : settings.view;
     view(`${dots()}<p class="cm-label">Memorise this colour</p>
-      <div class="cm-chip" style="--c:${css(target)}"><div class="cm-chip-color" role="img" aria-label="Target colour">${ringSvg(isLight(target))}</div><div class="cm-chip-label"><b>Curio Paints</b><span>${chipNo()} · ???</span></div></div>`);
+      <div class="cm-chip" style="--c:${css(target)}"><div class="cm-chip-color" role="img" aria-label="Target colour">${ringSvg(isLight(target))}</div><div class="cm-chip-label"><b>Zoble Paints</b><span>${chipNo()} · ???</span></div></div>`);
     countdown(ms, isLight(target), () => recreate(target));
   }
 

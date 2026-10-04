@@ -328,7 +328,7 @@
     await sleep(700);
     if (my !== token) return;
     const v = await Curio.modal({ emoji, title, body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Look at the board', value: 'look' }] });
-    if (v === 'share') { try { await navigator.clipboard.writeText(`⚫⚪ Curio Reversi${two() ? '' : ` vs ${save.level} AI`}: ${n.black} to ${n.white}. Biggest flip: ${bestFlip}.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+    if (v === 'share') { try { await navigator.clipboard.writeText(`⚫⚪ Zoble Reversi${two() ? '' : ` vs ${save.level} AI`}: ${n.black} to ${n.white}. Biggest flip: ${bestFlip}.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
     if (v === 'again' && my === token) newGame();
   }
 

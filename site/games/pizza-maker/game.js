@@ -637,7 +637,7 @@
     panel(); paintWallet();
   }
   async function shareReview(r) {
-    const txt = `🍕 Curio Pizza Maker: ${r.total}/100 ${'⭐'.repeat(r.stars)}${st.order ? ` · ${st.order.name}` : ''}\n"${r.text.slice(0, 120)}${r.text.length > 120 ? '...' : ''}"`;
+    const txt = `🍕 Zoble Pizza Maker: ${r.total}/100 ${'⭐'.repeat(r.stars)}${st.order ? ` · ${st.order.name}` : ''}\n"${r.text.slice(0, 120)}${r.text.length > 120 ? '...' : ''}"`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Review copied 📋'); } catch { Curio.toast('Copy failed'); }
   }
   function autoSauce() {

@@ -379,7 +379,7 @@ const LO = (() => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
     const grid = [];
     for (let y = 0; y < n; y++) grid.push([...b.slice(y * n, y * n + n)].map((v) => (v ? '🟨' : '⬛')).join(''));
-    const txt = `Curio Lights Out · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves (best possible ${par})${target ? '\n' + grid.join('\n') : ''}`;
+    const txt = `Zoble Lights Out · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves (best possible ${par})${target ? '\n' + grid.join('\n') : ''}`;
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
   });
   function paintProgress() {

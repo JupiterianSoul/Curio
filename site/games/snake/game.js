@@ -996,11 +996,11 @@
   function shareText() {
     if (!G) return '';
     const len = G.snake.length;
-    if (G.mode === 'daily') return `Curio Snake daily ${G.daily.date} (${G.map.name}): ${G.score} points, length ${len}`;
-    if (G.mode === 'campaign') return `Curio Snake: cleared level ${G.level.n} in ${G.t.toFixed(1)}s (${save.levels[G.level.n] || 0}/3 stars)`;
-    if (G.mode === 'time') return `Curio Snake Blitz: ${G.score} points in 75 seconds`;
-    if (G.mode === 'zen') return `Curio Snake Zen: grew to length ${len}`;
-    return `Curio Snake (${G.map.name}, ${SPEEDS[save.settings.speed].name}): ${G.score} points, length ${len}`;
+    if (G.mode === 'daily') return `Zoble Snake daily ${G.daily.date} (${G.map.name}): ${G.score} points, length ${len}`;
+    if (G.mode === 'campaign') return `Zoble Snake: cleared level ${G.level.n} in ${G.t.toFixed(1)}s (${save.levels[G.level.n] || 0}/3 stars)`;
+    if (G.mode === 'time') return `Zoble Snake Blitz: ${G.score} points in 75 seconds`;
+    if (G.mode === 'zen') return `Zoble Snake Zen: grew to length ${len}`;
+    return `Zoble Snake (${G.map.name}, ${SPEEDS[save.settings.speed].name}): ${G.score} points, length ${len}`;
   }
   async function share() {
     const t = shareText();

@@ -106,7 +106,7 @@
   }
   function setChime(c) {
     save.chime = c; persist(); seg($('chimes'), CHIMES, c, setChime);
-    if (c !== 'off') { award('chime'); if (Curio.muted) Curio.toast('Unmute Curio in the top bar to hear it'); }
+    if (c !== 'off') { award('chime'); if (Curio.muted) Curio.toast('Unmute Zoble in the top bar to hear it'); }
   }
   $('birth').max = new Date().toISOString().slice(0, 10);
   if (save.birth) $('birth').value = save.birth;
@@ -438,7 +438,7 @@
   }
   $('share').addEventListener('click', async () => {
     const { head, parts } = summaryText(popAt(vt));
-    const text = `${head}\n${parts.join('\n')}\n(Curio · World Right Now)`;
+    const text = `${head}\n${parts.join('\n')}\n(Zoble · World Right Now)`;
     try { await navigator.clipboard.writeText(text); Curio.toast('Copied! Paste it anywhere.'); } catch { Curio.modal({ emoji: '📋', title: 'Your summary', body: text, buttons: [{ label: 'OK', value: 1 }] }); }
     award('share');
   });

@@ -646,7 +646,7 @@
     A.over({
       title, msg,
       rows: mode === 'blitz' ? [['Accuracy', acc + '%'], ['Crystals', crystals]] : [['Wave', wave], ['Accuracy', acc + '%'], ['Crystals', crystals]],
-      share: `Curio Asteroids · ${{ classic: 'Classic', blitz: 'Blitz', daily: 'Daily ' + A.today() }[mode]} (${D.label}) · ${Curio.fmt(A.score)} pts${mode === 'blitz' ? '' : ' · wave ' + wave} · ${acc}% accuracy`
+      share: `Zoble Asteroids · ${{ classic: 'Classic', blitz: 'Blitz', daily: 'Daily ' + A.today() }[mode]} (${D.label}) · ${Curio.fmt(A.score)} pts${mode === 'blitz' ? '' : ' · wave ' + wave} · ${acc}% accuracy`
     });
   }
 

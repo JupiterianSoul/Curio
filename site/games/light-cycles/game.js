@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -923,7 +923,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                     A.over({
                         title: 'Derezzed', emoji: '🏍️', msg: `You won ${wins} of ${round} round${round === 1 ? '' : 's'} against ${rivals} rival${rivals > 1 ? 's' : ''}. ${wins >= 5 ? 'The Grid bows to you.' : wins >= 2 ? 'Respectable. Very glowy.' : 'The walls came at you fast.'}`,
                         lines: [[' rounds won', `${wins}/${round}`], [' rivals', rivals], [' orbs', orbsRun], [' cut-offs', cutoffs]],
-                        share: `🏍️ Curio Light Cycles: ${Curio.fmt(A.score)} pts\n🏁 Won ${wins} of ${round} rounds vs ${rivals} rival${rivals > 1 ? 's' : ''} · ✂️ ${cutoffs} cut-offs · 🔮 ${orbsRun} orbs`
+                        share: `🏍️ Zoble Light Cycles: ${Curio.fmt(A.score)} pts\n🏁 Won ${wins} of ${round} rounds vs ${rivals} rival${rivals > 1 ? 's' : ''} · ✂️ ${cutoffs} cut-offs · 🔮 ${orbsRun} orbs`
                     });
                 }
                 else {

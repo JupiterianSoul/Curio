@@ -570,7 +570,7 @@
     const v = VARS.find((x) => x.id === R.id);
     const n = K.count(b);
     const head = !vsAI() ? 'A two player game' : result === 'win' ? `I beat ${opp().name} (${opp().tag}) in ${humanMoves} moves` : result === 'lose' ? `${opp().name} (${opp().tag}) beat me` : `I drew with ${opp().name} (${opp().tag})`;
-    const text = `Checkers on Curio · ${daily ? `Daily ${todayKey()}` : `${v.flag} ${v.name}`}\n${head}\nPieces left: ${'🔴'.repeat(n.men[0] + n.kings[0])}${'⚫'.repeat(n.men[1] + n.kings[1])}`;
+    const text = `Checkers on Zoble · ${daily ? `Daily ${todayKey()}` : `${v.flag} ${v.name}`}\n${head}\nPieces left: ${'🔴'.repeat(n.men[0] + n.kings[0])}${'⚫'.repeat(n.men[1] + n.kings[1])}`;
     try { await navigator.clipboard.writeText(text); Curio.toast('Copied. Go brag.'); }
     catch {
       const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.append(ta); ta.select();
@@ -743,7 +743,7 @@
       </tbody></table>
       <p><b>Fine print.</b> In International and Brazilian, a man only becomes a king if it ends its move on the far row; in Russian it is crowned the moment it arrives, even mid-jump, and carries on as a king. In English, reaching the far row ends the move. Captured pieces come off the board when the move ends, and no piece can be jumped twice.</p>
       <p><b>Giveaway</b> uses English moves but flips the goal: the first player with no pieces, or no legal moves, wins.</p>
-      <p><b>Draws.</b> Curio calls a draw after 40 moves each without a capture, or when the same position appears three times.</p>
+      <p><b>Draws.</b> Zoble calls a draw after 40 moves each without a capture, or when the same position appears three times.</p>
     </div>`);
   }
 

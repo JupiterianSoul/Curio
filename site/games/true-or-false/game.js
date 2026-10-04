@@ -290,7 +290,7 @@
   $('again').addEventListener('click', newGame);
   $('modes').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.m; data.mode = mode; save(); newGame(); });
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Curio True or False, daily ${today()}` : `Curio True or False, ${({ classic: 'Classic', sudden: 'Sudden death', speed: '60s Speed' })[mode]}`;
+    const head = mode === 'daily' ? `Zoble True or False, daily ${today()}` : `Zoble True or False, ${({ classic: 'Classic', sudden: 'Sudden death', speed: '60s Speed' })[mode]}`;
     const t = `${head}\n🔎 ${score} correct, best streak ${bestStreak}\n${log.map((l) => l.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(`${score} correct`));
   });

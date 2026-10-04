@@ -102,7 +102,7 @@
         ${angles.map(([a0, a1], i) => `<g class="pad" data-i="${i}" tabindex="-1" role="button" aria-label="${['Green', 'Red', 'Yellow', 'Blue'][i]} pad"><path class="base" d="${sector(a0, a1)}" fill="url(#pg${i})"/><path class="lt" d="${sector(a0, a1)}" fill="url(#pl${i})"/><path d="${sector(a0, a1)}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/></g>`).join('')}
         <circle cx="200" cy="200" r="${r - 6}" fill="url(#hub)" stroke="#000" stroke-width="3"/>
         <circle cx="200" cy="200" r="${r - 16}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2"/>
-        <text class="sm-hubtext" x="200" y="174" text-anchor="middle">CURIO</text>
+        <text class="sm-hubtext" x="200" y="174" text-anchor="middle">ZOBLE</text>
         <text class="sm-hubnum" id="hubnum" x="200" y="230" text-anchor="middle">0</text>
       </svg>`;
       boardEl.innerHTML = svg;

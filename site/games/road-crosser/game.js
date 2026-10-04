@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -834,7 +834,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             title: maxRow >= 50 ? 'What a journey!' : 'Squawk!', emoji: death === 'water' || death === 'swept' ? '💦' : death === 'eagle' ? '🦅' : em,
             msg: `${Curio.pick(msgs[death] || msgs.car)} ${Curio.fmt(total)} coins in the piggy bank.${nextChar ? ` ${nextChar[1]} ${nextChar[2]} costs ${nextChar[3]}.` : ''}`,
             lines: [[' rows', maxRow], [' coins', coins], [' logs ridden', logsRidden], [' biome', bz]],
-            share: `${em} Curio Road Crosser: ${maxRow} rows\n🗺️ Reached ${bz} · 🪙 ${coins} coins · 🪵 ${logsRidden} logs · 🚂 ${railsCrossed} tracks`
+            share: `${em} Zoble Road Crosser: ${maxRow} rows\n🗺️ Reached ${bz} · 🪙 ${coins} coins · 🪵 ${logsRidden} logs · 🚂 ${railsCrossed} tracks`
         });
     }
     function rowY(r) { return H - (r - camY + 1) * TS; }

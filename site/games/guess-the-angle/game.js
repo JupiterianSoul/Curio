@@ -477,7 +477,7 @@
   });
   $('share').addEventListener('click', () => {
     const total = results.reduce((s, r) => s + r.pts, 0);
-    const head = mode === 'daily' ? `Curio Guess the Angle, daily ${today()}` : `Curio Guess the Angle, ${MODES[mode]} (${DIFFS[diff].name})`;
+    const head = mode === 'daily' ? `Zoble Guess the Angle, daily ${today()}` : `Zoble Guess the Angle, ${MODES[mode]} (${DIFFS[diff].name})`;
     const t = `${head}\n📐 ${total}/1000\n${squares()}`;
     navigator.clipboard?.writeText(t).then(() => Curio.toast('Result copied!'), () => Curio.toast(`${total}/1000`));
   });

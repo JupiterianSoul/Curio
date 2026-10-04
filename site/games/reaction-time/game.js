@@ -551,7 +551,7 @@
   $('share').addEventListener('click', async () => {
     if (!lastResult) return;
     const m = MODES[mode];
-    const t = `⚡ Reaction Time (${m.name}, ${tries} tries${daily ? ', daily ' + today() : ''}): ${lastResult.avg}ms ${kind() === 'timing' ? 'off the line' : 'average, fastest ' + lastResult.fast + 'ms'}. ${lastResult.tier}! Better than ${lastResult.pct}% of people. Curio`;
+    const t = `⚡ Reaction Time (${m.name}, ${tries} tries${daily ? ', daily ' + today() : ''}): ${lastResult.avg}ms ${kind() === 'timing' ? 'off the line' : 'average, fastest ' + lastResult.fast + 'ms'}. ${lastResult.tier}! Better than ${lastResult.pct}% of people. Zoble`;
     try { await navigator.clipboard.writeText(t); Curio.toast('Copied to clipboard'); } catch { Curio.toast(t, 4000); }
   });
   document.addEventListener('visibilitychange', () => {

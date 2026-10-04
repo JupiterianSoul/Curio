@@ -485,7 +485,7 @@
   function shareText() {
     const found = Object.keys(S.endings).length;
     const last = S.ended ? `I reached the "${D.endings[S.ended].title}" ending` : `I'm on chapter ${S.ch + 1}`;
-    return `🔴 The Button: ${last} after ${Curio.fmt(S.presses)} presses. ${found}/${ENDING_IDS.length} endings found, ${Curio.fmt(S.total)} presses all-time. Curio`;
+    return `🔴 The Button: ${last} after ${Curio.fmt(S.presses)} presses. ${found}/${ENDING_IDS.length} endings found, ${Curio.fmt(S.total)} presses all-time. Zoble`;
   }
   async function share() {
     const t = shareText();

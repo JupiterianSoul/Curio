@@ -281,7 +281,7 @@
     await new Promise((r) => setTimeout(r, 800));
     if (my !== token) return;
     const v = await Curio.modal({ emoji, title, body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Look at the board', value: 'look' }] });
-    if (v === 'share') { try { await navigator.clipboard.writeText(`✏️ Curio Dots and Boxes (${g.C}×${g.R}): ${nm.map((n, k) => `${n} ${sc[k]}`).join(', ')}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+    if (v === 'share') { try { await navigator.clipboard.writeText(`✏️ Zoble Dots and Boxes (${g.C}×${g.R}): ${nm.map((n, k) => `${n} ${sc[k]}`).join(', ')}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
     if (v === 'again' && my === token) newGame();
   }
 

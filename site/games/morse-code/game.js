@@ -425,7 +425,7 @@
         if (ear.perfect) unlock('ear10');
         if (r.isNew || ear.perfect) Curio.confetti();
         const v = await Curio.modal({ emoji: ear.score >= 150 ? '📡' : '🎧', title: `${ear.score} points`, body: `${r.isNew ? 'New personal best! ' : `Best: ${r.best}. `}${ear.perfect ? 'A perfect ten. ' : ''}${ear.score >= 150 ? 'Samuel Morse would be proud.' : ear.score >= 80 ? 'Your ears are warming up.' : 'Beep boop… keep practising!'}`, buttons: [{ label: 'Play again', value: 'again' }, { label: '📋 Share', value: 'share' }, { label: 'Close', value: 'close' }] });
-        if (v === 'share') { const t = `🎧 Curio Morse ear trainer: ${ear.score} points on ${S.ear.lv}${ear.perfect ? ', perfect 10/10' : ''}.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch { Curio.toast(t, 4000); } }
+        if (v === 'share') { const t = `🎧 Zoble Morse ear trainer: ${ear.score} points on ${S.ear.lv}${ear.perfect ? ', perfect 10/10' : ''}.`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch { Curio.toast(t, 4000); } }
         if (v === 'again') earNew(true); else if (gameMode === 'ear') { ear.cur = null; $('choices').innerHTML = ''; $('pMsg').textContent = 'Pick a level or press play to start again.'; }
       } else earNew(false);
     }, ok ? 800 : 1800);
@@ -555,7 +555,7 @@
       if (acc >= 90) unlock('daily');
       if (acc === 100) { Curio.confetti(); [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.12, 'triangle', 0.08), i * 90)); }
       const v = await Curio.modal({ emoji: acc === 100 ? '🕵️' : acc >= 70 ? '📻' : '🌫️', title: acc === 100 ? 'Message decoded!' : `${acc}% decoded`, body: `It said: "${ph}". You needed ${listens} listen${listens === 1 ? '' : 's'}.`, buttons: [{ label: '📋 Share result', value: 'share' }, { label: 'Close', value: 'close' }] });
-      if (v === 'share') { const t = `📡 Curio Morse daily decode ${todayKey()}: ${acc === 100 ? '✅ cracked' : acc + '%'} in ${listens} listen${listens === 1 ? '' : 's'}. ${'▮'.repeat(Math.round(acc / 10))}${'▯'.repeat(10 - Math.round(acc / 10))}`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch { Curio.toast(t, 4000); } }
+      if (v === 'share') { const t = `📡 Zoble Morse daily decode ${todayKey()}: ${acc === 100 ? '✅ cracked' : acc + '%'} in ${listens} listen${listens === 1 ? '' : 's'}. ${'▮'.repeat(Math.round(acc / 10))}${'▯'.repeat(10 - Math.round(acc / 10))}`; try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch { Curio.toast(t, 4000); } }
     });
   }
 

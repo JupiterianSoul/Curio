@@ -472,7 +472,7 @@
   $('rShare').addEventListener('click', () => {
     const stars = $('stars').querySelectorAll('[fill="#ffc93c"]').length;
     const what = kind === 'daily' ? `Daily ${today()}` : `${MODES[mode].name}, ${n} discs${kind === 'scramble' ? ' (scrambled)' : ''}`;
-    const txt = `Curio Tower of Hanoi · ${what}\n${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)} ${moves} moves (best possible ${optimalN}) in ${fmtT(Math.round(elapsed))}`;
+    const txt = `Zoble Tower of Hanoi · ${what}\n${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)} ${moves} moves (best possible ${optimalN}) in ${fmtT(Math.round(elapsed))}`;
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
   });
 

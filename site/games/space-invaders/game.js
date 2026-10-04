@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -1113,7 +1113,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         A.over({
             title, emoji, msg,
             lines: [[' wave', wave], [' aliens', kills], [' accuracy', acc + '%'], [' best combo', 'x' + (1 + Math.min(3, Math.floor(bestCombo / 6)))]],
-            share: `👾 Curio Invaders (${dn}): ${Curio.fmt(A.score)} pts, wave ${wave}\n🎯 ${acc}% accuracy · ${kills} aliens${bossKills ? ` · ${bossKills} mothership${bossKills > 1 ? 's' : ''}` : ''}${ufos ? ` · ${ufos} UFO` : ''}`
+            share: `👾 Zoble Invaders (${dn}): ${Curio.fmt(A.score)} pts, wave ${wave}\n🎯 ${acc}% accuracy · ${kills} aliens${bossKills ? ` · ${bossKills} mothership${bossKills > 1 ? 's' : ''}` : ''}${ufos ? ` · ${ufos} UFO` : ''}`
         });
     }
     function idle(dt) {

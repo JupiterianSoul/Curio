@@ -424,7 +424,7 @@
   selB.addEventListener('change', () => { cmp.b = +selB.value; paintCompare(); Curio.beep(700, 0.05, 'sine', 0.06); });
   $('swap').addEventListener('click', () => { [cmp.a, cmp.b] = [cmp.b, cmp.a]; paintCompare(); });
   $('cmpRand').addEventListener('click', () => { cmp.a = Curio.randInt(0, N - 1); do cmp.b = Curio.randInt(0, N - 1); while (cmp.b === cmp.a); paintCompare(); Curio.beep(440, 0.08, 'triangle', 0.08); });
-  $('cmpCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('cmpTxt').textContent + ' (Curio: Size of Space)'); Curio.toast('Copied'); } catch { Curio.toast('Could not copy, sorry'); } });
+  $('cmpCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('cmpTxt').textContent + ' (Zoble: Size of Space)'); Curio.toast('Copied'); } catch { Curio.toast('Could not copy, sorry'); } });
 
   const quiz = { round: 0, score: 0, pair: null, reveal: 1, revealing: false, locked: false, daily: false, rng: Math.random };
   function seeded(seed) { let s = seed % 2147483647 || 1; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
@@ -474,7 +474,7 @@
     const res = Curio.best('quiz', quiz.score);
     if (quiz.daily) Curio.store.set('sos:daily', { d: new Date().toISOString().slice(0, 10), s: quiz.score });
     if (quiz.score === 10) { award('quiz'); Curio.confetti(); }
-    const share = `I scored ${quiz.score}/10 on the ${quiz.daily ? 'daily ' : ''}Curio Size of Space quiz.`;
+    const share = `I scored ${quiz.score}/10 on the ${quiz.daily ? 'daily ' : ''}Zoble Size of Space quiz.`;
     $('qRound').textContent = 'Finished'; $('qScore').textContent = '';
     $('qBody').innerHTML = `<div class="q-end"><b>${quiz.score}/10</b><p>${quiz.score >= 9 ? 'Cosmic intuition.' : quiz.score >= 6 ? 'Pretty good sense of scale.' : 'Space is hard to picture. Everyone struggles.'} Best: ${res.best}/10${res.isNew ? ', a new record!' : ''}</p><div class="q-pick"><button class="c-btn" type="button" id="qAgain">Play again</button><button class="c-btn c-btn--ghost" type="button" id="qShare">Copy score</button></div></div>`;
     $('qAgain').addEventListener('click', () => quizStart(false));

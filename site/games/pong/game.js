@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -816,7 +816,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             A.setScore(longest);
             A.unlock('twop');
             Curio.confetti();
-            A.over({ title: `Player ${youWin ? 1 : 2} wins`, emoji: '🏆', msg: `${pts[0]} to ${pts[1]}. Longest rally: ${longest} hits. Rematch?`, lines: [[' to ', `${pts[0]} : ${pts[1]}`], [' longest rally', longest]], share: `🏓 Curio Pong, two players: ${pts[0]} to ${pts[1]}\n🔁 Longest rally ${longest}` });
+            A.over({ title: `Player ${youWin ? 1 : 2} wins`, emoji: '🏆', msg: `${pts[0]} to ${pts[1]}. Longest rally: ${longest} hits. Rematch?`, lines: [[' to ', `${pts[0]} : ${pts[1]}`], [' longest rally', longest]], share: `🏓 Zoble Pong, two players: ${pts[0]} to ${pts[1]}\n🔁 Longest rally ${longest}` });
             return;
         }
         if (youWin) {
@@ -834,7 +834,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                 if (stage === OPPS.length - 1) {
                     A.unlock('champ');
                     Curio.confetti();
-                    A.over({ title: 'Gauntlet champion!', emoji: '👑', msg: 'All seven rivals defeated. The paddles bow before you.', lines: [[' stages', `${OPPS.length}/${OPPS.length}`], [' longest rally', longest]], share: `🏓 Curio Pong Gauntlet: CHAMPION 👑\n${OPPS.map((o) => o.em).join('')} · ${Curio.fmt(A.score)} pts` });
+                    A.over({ title: 'Gauntlet champion!', emoji: '👑', msg: 'All seven rivals defeated. The paddles bow before you.', lines: [[' stages', `${OPPS.length}/${OPPS.length}`], [' longest rally', longest]], share: `🏓 Zoble Pong Gauntlet: CHAMPION 👑\n${OPPS.map((o) => o.em).join('')} · ${Curio.fmt(A.score)} pts` });
                     return;
                 }
                 Curio.confetti(60);
@@ -845,7 +845,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
             A.over({
                 title: `${opp().name} wins`, emoji: opp().em, msg: `Knocked out at stage ${stage + 1} of 7, ${pts[0]} to ${pts[1]}. ${opp().line}`,
                 lines: [[' stage', `${stage + 1}/7`], [' longest rally', longest]],
-                share: `🏓 Curio Pong Gauntlet: stage ${stage + 1}/7 (${opp().name})\n${OPPS.slice(0, stage + 1).map((o, i) => (i < stage ? '✅' : '❌')).join('')} · ${Curio.fmt(A.score)} pts`
+                share: `🏓 Zoble Pong Gauntlet: stage ${stage + 1}/7 (${opp().name})\n${OPPS.slice(0, stage + 1).map((o, i) => (i < stage ? '✅' : '❌')).join('')} · ${Curio.fmt(A.score)} pts`
             });
             return;
         }
@@ -863,7 +863,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
         A.over({
             title: youWin ? 'You win!' : 'Robot wins', emoji: youWin ? '🏆' : '🤖', msg: Curio.pick(msgs) + ` Longest rally: ${longest}.`,
             lines: [[' score', `${pts[0]} : ${pts[1]}`], [' longest rally', longest], [' robot', DIFF[diff].name]],
-            share: `🏓 Curio Pong vs ${DIFF[diff].name} robot: ${youWin ? 'won' : 'lost'} ${pts[0]} to ${pts[1]}\n🔁 Longest rally ${longest} · ${Curio.fmt(A.score)} pts`
+            share: `🏓 Zoble Pong vs ${DIFF[diff].name} robot: ${youWin ? 'won' : 'lost'} ${pts[0]} to ${pts[1]}\n🔁 Longest rally ${longest} · ${Curio.fmt(A.score)} pts`
         });
     }
     function grab(ball, it) {

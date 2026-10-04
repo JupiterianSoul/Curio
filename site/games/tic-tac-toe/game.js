@@ -478,7 +478,7 @@
     } else {
       for (let y = 0; y < 3; y++) grid += G.u.small.slice(y * 3, y * 3 + 3).map((v) => (v === 1 ? '❌' : v === 2 ? '⭕' : v === 3 ? '➖' : '⬜')).join('') + '\n';
     }
-    const text = `Curio Tic Tac Toe · ${MODES[G.mode].name}\n${res} ${vsAI() ? who : ''} ${kind === 'win' ? '🏆' : kind === 'lose' ? '🫠' : '🤝'}\n${grid}Streak ${S.streak} · best ${S.bestStreak}`;
+    const text = `Zoble Tic Tac Toe · ${MODES[G.mode].name}\n${res} ${vsAI() ? who : ''} ${kind === 'win' ? '🏆' : kind === 'lose' ? '🫠' : '🤝'}\n${grid}Streak ${S.streak} · best ${S.bestStreak}`;
     try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); }
   }
 

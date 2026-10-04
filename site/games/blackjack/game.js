@@ -699,7 +699,7 @@
   $('d-go').addEventListener('click', runDrill);
   segInit('d-len', 'len'); segInit('d-spd', 'spd');
   $('share').addEventListener('click', async () => {
-    const txt = `🃏 Curio Blackjack: ${money(balance)} bankroll (peak ${money(peak)}), ${more.hands} hands, ${more.bjs} blackjacks, ${more.bookTotal ? Math.round(more.book / more.bookTotal * 100) : 0}% by the book. ${badges.length}/${BADGES.length} badges.`;
+    const txt = `🃏 Zoble Blackjack: ${money(balance)} bankroll (peak ${money(peak)}), ${more.hands} hands, ${more.bjs} blackjacks, ${more.bookTotal ? Math.round(more.book / more.bookTotal * 100) : 0}% by the book. ${badges.length}/${BADGES.length} badges.`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Copied to clipboard!'); } catch (e) { Curio.toast(txt, 4000); }
   });
   $('reset').addEventListener('click', async () => {

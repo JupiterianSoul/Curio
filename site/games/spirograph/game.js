@@ -499,7 +499,7 @@
     if (best.isNew && chal.score > 0) Curio.confetti();
     const v = await Curio.modal({ emoji: chal.score >= 450 ? '🏆' : chal.score >= 250 ? '⚙️' : '🌀', title: `${chal.score} points`, body: `${chal.daily ? 'Daily challenge done.' : 'Challenge done.'} ${best.isNew && chal.score > 0 ? 'New best!' : `Best: ${best.best}.`} A perfect run is 500.`, buttons: [{ label: 'Copy result', value: 'share' }, { label: 'Play again', value: 'again' }, { label: 'Close', value: 'x' }] });
     if (v === 'share') {
-      const txt = `⚙️ Curio Spirograph ${chal.daily ? `daily ${chal.key}` : 'challenge'}: ${chal.score}/500`;
+      const txt = `⚙️ Zoble Spirograph ${chal.daily ? `daily ${chal.key}` : 'challenge'}: ${chal.score}/500`;
       try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch (e) { Curio.toast(txt, 4000); }
     }
     if (v === 'again') startChallenge();

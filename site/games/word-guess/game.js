@@ -407,7 +407,7 @@
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'rush') startRush();
       else if (a === 'menu') { show('home'); paintHome(); }
-      else if (a === 'share') copy(`Curio Word Guess · Rush\n⏱️ ${r.solved} words in one rush${isBest ? ' (personal best)' : ''}`);
+      else if (a === 'share') copy(`Zoble Word Guess · Rush\n⏱️ ${r.solved} words in one rush${isBest ? ' (personal best)' : ''}`);
     };
     box.querySelector('[data-a="rush"]').focus({ preventScroll: true });
   }
@@ -440,7 +440,7 @@
       else if (a === 'menu') { show('home'); paintHome(); }
       else if (a === 'share') {
         const head = G.mode === 'daily' ? `Daily #${dayNumber() + 1} (${G.L} letters)` : G.mode === 'theme' ? `${X.themes[G.theme].name} pack` : `Endless, ${G.L} letters`;
-        copy(`Curio Word Guess · ${head}${G.hard ? ' · hard' : ''}\n${won ? G.guesses.length : 'X'}/${ROWS}\n\n${emojiGrid()}`);
+        copy(`Zoble Word Guess · ${head}${G.hard ? ' · hard' : ''}\n${won ? G.guesses.length : 'X'}/${ROWS}\n\n${emojiGrid()}`);
       }
     };
   }

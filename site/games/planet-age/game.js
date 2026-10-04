@@ -294,7 +294,7 @@
     const ev = upcoming();
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     const day = (ms) => { const d = new Date(ms); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`; };
-    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Curio//Age on Other Planets//EN', 'CALSCALE:GREGORIAN'];
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Zoble//Age on Other Planets//EN', 'CALSCALE:GREGORIAN'];
     ev.forEach((e, i) => {
       const next = new Date(e.at); next.setDate(next.getDate() + 1);
       lines.push('BEGIN:VEVENT', `UID:curio-planet-age-${e.b.key}-${e.n}-${i}@curio`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day(e.at)}`, `DTEND;VALUE=DATE:${day(next.getTime())}`, `SUMMARY:My ${ordinal(e.n)} birthday on ${e.b.name}`, `DESCRIPTION:One ${e.b.name} year lasts ${e.b.period} Earth days.`, 'END:VEVENT');

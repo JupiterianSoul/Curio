@@ -493,7 +493,7 @@
     if (mm.idx >= 5) {
       if (mm.mode === 'daily') {
         const sq = mm.scores.map((s) => (s >= 85 ? '🟩' : s >= 60 ? '🟨' : s >= 35 ? '🟧' : '🟥')).join('');
-        const ok = await copy(`🧪 Curio Mix Master ${today}: ${mm.scores.reduce((a, b) => a + b, 0)}/500\n${sq}`, 'Result copied 📋');
+        const ok = await copy(`🧪 Zoble Mix Master ${today}: ${mm.scores.reduce((a, b) => a + b, 0)}/500\n${sq}`, 'Result copied 📋');
         if (!ok) Curio.toast('Copy failed');
       } else mmStart('practice');
       return;

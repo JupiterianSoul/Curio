@@ -922,7 +922,7 @@
     const v = await Curio.modal({ emoji: '🕵️', title: `${'⭐'.repeat(stars)} Cracked it!`, body: `"${chal.L.n}" solved with ${chal.checks} check${chal.checks > 1 ? 's' : ''} and ${chal.listens} listen${chal.listens === 1 ? '' : 's'}.`, buttons: isLast ? [{ label: 'Back to my beats', value: 'exit' }, { label: '📋 Share', value: 'share' }] : [{ label: 'Next level', value: 'next' }, { label: 'Back to my beats', value: 'exit' }, { label: '📋 Share', value: 'share' }] });
     if (v === 'next') { const nx = chal.lvl + 1; exitChal(); startChal(nx); }
     else {
-      if (v === 'share') { const txt = `🥁 I cracked "${chal.L.n}" on Curio Beat Maker with ${'⭐'.repeat(stars)} (${chal.checks} checks).`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch { Curio.toast(txt, 4000); } }
+      if (v === 'share') { const txt = `🥁 I cracked "${chal.L.n}" on Zoble Beat Maker with ${'⭐'.repeat(stars)} (${chal.checks} checks).`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch { Curio.toast(txt, 4000); } }
       exitChal();
     }
   }

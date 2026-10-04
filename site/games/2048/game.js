@@ -504,7 +504,7 @@
   }
   function hideOv() { ovEl.hidden = true; }
   const modeName = () => ({ classic: 'Classic', goal: `Goal ${cfg.goal}`, blitz: 'Blitz', rocks: 'Rocks', daily: `Daily ${cfg.date}` }[cfg.mode]);
-  const shareText = () => `Curio 2048 · ${modeName()} · ${N}×${N} · ${Curio.fmt(score)} pts · top tile ${topTile} · ${moves} moves`;
+  const shareText = () => `Zoble 2048 · ${modeName()} · ${N}×${N} · ${Curio.fmt(score)} pts · top tile ${topTile} · ${moves} moves`;
   function rowsHtml() { return `<div class="t-rows"><div><b>${topTile}</b><span>Top tile</span></div><div><b>${Curio.fmt(moves)}</b><span>Moves</span></div><div><b>${Curio.fmt(mergesGame)}</b><span>Merges</span></div></div>`; }
   function recordGame(win) {
     stat('games');

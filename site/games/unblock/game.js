@@ -243,7 +243,7 @@
     const msg = m === opt ? 'Optimal! The computer could not have done better.' : m <= opt + 3 ? `Only ${m - opt} more than optimal. So close.` : `Optimal is ${opt}. Think you can squeeze it down?`;
     const last = idx === LEVELS.length - 1;
     const v = await Curio.modal({ emoji: s === 3 ? '🏁' : '🚗', title: `${'★'.repeat(s)}${'☆'.repeat(3 - s)}`, body: `${isDaily ? 'Daily jam' : `Level ${idx + 1}`} cleared in ${m} moves and ${fmtT(elapsed)}. ${msg}${last ? ' That was the last level. You are a parking legend.' : ''}`, buttons: [...(last || isDaily ? [] : [{ label: 'Next level', value: 'next' }]), { label: 'Replay', value: 'again' }, { label: 'Share', value: 'share' }] });
-    if (v === 'share') { try { await navigator.clipboard.writeText(`🚗 Curio Unblock ${isDaily ? `daily jam ${todayKey()}` : `level ${idx + 1}`}: out in ${m} moves (optimal ${opt}) ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } loadLevel(idx, isDaily); return; }
+    if (v === 'share') { try { await navigator.clipboard.writeText(`🚗 Zoble Unblock ${isDaily ? `daily jam ${todayKey()}` : `level ${idx + 1}`}: out in ${m} moves (optimal ${opt}) ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } loadLevel(idx, isDaily); return; }
     loadLevel(v === 'next' ? idx + 1 : idx, v !== 'next' && isDaily);
   }
 

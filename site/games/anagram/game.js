@@ -371,7 +371,7 @@
   $('share').addEventListener('click', () => {
     const got = solved.filter((s) => s.ok).length;
     const line = mode === 'daily' ? `Daily ten ${today()}: ${$('cBig').textContent}` : mode === 'zen' ? `${got} words in Zen` : `${score} points, ${got} words (${mode === 'themes' ? TH[theme][0] : 'Sprint ' + diff})`;
-    const t = `Curio Anagram 🔤\n${line}\n${solved.map((s) => s.ok ? '🟩' : '🟥').join('')}`;
+    const t = `Zoble Anagram 🔤\n${line}\n${solved.map((s) => s.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(line));
   });
   document.querySelector('.an-ptabs').addEventListener('click', (e) => {

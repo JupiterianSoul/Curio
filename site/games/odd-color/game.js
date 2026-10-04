@@ -265,7 +265,7 @@
       $('go').focus({ preventScroll: true });
       msg(newSkins.length ? `✨ New skin unlocked: ${newSkins.map((s) => s[1]).join(', ')}!` : '');
     }, 900);
-    shareStr = `👁️ Curio Odd Colour Out, ${MODES[mode].name}${mode === 'daily' ? ' ' + today() : ''}${cb ? ' (lightness)' : ''}\nLevel ${score} · I see like a ${rk[2].toLowerCase()} ${rk[1]}\n` + levelLog.slice(0, 40).map((l) => (l.t < 1 ? '🟩' : l.t < 2.5 ? '🟨' : '🟧')).join('');
+    shareStr = `👁️ Zoble Odd Colour Out, ${MODES[mode].name}${mode === 'daily' ? ' ' + today() : ''}${cb ? ' (lightness)' : ''}\nLevel ${score} · I see like a ${rk[2].toLowerCase()} ${rk[1]}\n` + levelLog.slice(0, 40).map((l) => (l.t < 1 ? '🟩' : l.t < 2.5 ? '🟨' : '🟧')).join('');
     [660, 520, 400].forEach((f, i) => setTimeout(() => C.beep(f, .1, 'triangle'), i * 100));
     if (isNew && score > 0) setTimeout(() => C.confetti(), 900);
   }

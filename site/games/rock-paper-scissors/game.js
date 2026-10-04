@@ -449,7 +449,7 @@
     const p = persona(matchOpp);
     const won = score.you > score.ai;
     const seq = history.map((h) => (h.result > 0 ? '🟩' : h.result < 0 ? '🟥' : '🟨')).join('');
-    return `Rock Paper Scissors on Curio\n${won ? 'Beat' : 'Lost to'} ${p.name} ${score.you}-${score.ai} (${rules.name})\n${seq}\nMy throws: ${history.map((h) => EMO[rules.moves[h.you]]).join('')}`;
+    return `Rock Paper Scissors on Zoble\n${won ? 'Beat' : 'Lost to'} ${p.name} ${score.you}-${score.ai} (${rules.name})\n${seq}\nMy throws: ${history.map((h) => EMO[rules.moves[h.you]]).join('')}`;
   }
   async function copy(text) {
     try { await navigator.clipboard.writeText(text); Curio.toast('Copied. Go brag.'); }
@@ -590,7 +590,7 @@
         const got = award({ won: true, champ: true });
         save();
         Curio.confetti(220); sfx.fanfare();
-        showBracket('Champion!', `You won the whole thing. ${got.concat(fresh).map((b) => `${b.e} ${b.t}`).join(' · ')}`, [['Another tournament', () => { newTour(); tourNext(); }], ['Share', () => copy(`Rock Paper Scissors on Curio\n🏆 Won a tournament, beating ${tour.rounds[2].filter((x) => x !== 'you').map(nameOf).join(', ')} in the final`)], ['Menu', toMenu]]);
+        showBracket('Champion!', `You won the whole thing. ${got.concat(fresh).map((b) => `${b.e} ${b.t}`).join(' · ')}`, [['Another tournament', () => { newTour(); tourNext(); }], ['Share', () => copy(`Rock Paper Scissors on Zoble\n🏆 Won a tournament, beating ${tour.rounds[2].filter((x) => x !== 'you').map(nameOf).join(', ')} in the final`)], ['Menu', toMenu]]);
         return;
       }
       showBracket('Through!', `You beat ${persona(opp).name} ${score.you}-${score.ai}.${fresh.length ? ` New: ${fresh.map((b) => `${b.e} ${b.t}`).join(', ')}.` : ''}`, [['Continue', tourNext], ['Menu', toMenu]]);
@@ -641,7 +641,7 @@
     if (cleared) { Curio.confetti(200); }
     openSheet('Daily gauntlet', body, (a) => {
       if (a === 'retry') { closeSheet(); dailyStart(); }
-      else if (a === 'share') copy(`Rock Paper Scissors on Curio · Daily ${k}\n${'🟩'.repeat(dailyRun.idx)}${'⬜'.repeat(3 - dailyRun.idx)} ${dailyRun.idx}/3 rivals beaten`);
+      else if (a === 'share') copy(`Rock Paper Scissors on Zoble · Daily ${k}\n${'🟩'.repeat(dailyRun.idx)}${'⬜'.repeat(3 - dailyRun.idx)} ${dailyRun.idx}/3 rivals beaten`);
       else { closeSheet(); toMenu(); }
     });
   }

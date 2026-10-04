@@ -412,7 +412,7 @@
 
   let lastShare = '';
   function shareText(gr, opName, finished) {
-    const head = `🧠 Curio Mental Math, ${MODES[mode].name}${mode === 'daily' ? ' ' + today() : ` (${opName}, ${DIFFS[diff].name})`}`;
+    const head = `🧠 Zoble Mental Math, ${MODES[mode].name}${mode === 'daily' ? ' ' + today() : ` (${opName}, ${DIFFS[diff].name})`}`;
     const main = mode === 'race' ? (finished ? `🏁 25 answers in ${C.fmt(elapsed, 1)}s` : `🏁 ${score}/25`) : mode === 'survival' ? `❤️ ${score} answers, ${Math.round(elapsed)}s alive` : `⏱️ ${score} correct in 60s`;
     const strip = log.slice(0, 30).map((l) => (l.ok ? (l.slip ? '🟨' : '🟩') : '⬜')).join('');
     return `${head}\n${main} · grade ${gr} · best streak ${runBestStreak}\n${strip}`;

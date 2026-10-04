@@ -325,7 +325,7 @@
   $('seen').addEventListener('click', () => answer(true));
   $('new').addEventListener('click', () => answer(false));
   $('share').addEventListener('click', async () => {
-    const head = rule === 'daily' ? `Curio Verbal Memory, daily ${today()}` : `Curio Verbal Memory, ${DECKS[deck]} ${RULES[rule]}`;
+    const head = rule === 'daily' ? `Zoble Verbal Memory, daily ${today()}` : `Zoble Verbal Memory, ${DECKS[deck]} ${RULES[rule]}`;
     const t = `${head}\n${score} points 🧠, ${seen.length} cards tracked, longest streak ${maxStreak} 🔥`;
     try { await navigator.clipboard.writeText(t); Curio.toast('Result copied!'); } catch { Curio.toast(t.split('\n')[1]); }
   });

@@ -164,7 +164,7 @@
   paper.addEventListener('click', () => { if (current) paper.classList.toggle('flipped'); });
   $('#copy').addEventListener('click', async () => {
     if (!current) return;
-    const text = `🥠 My ${current.daily ? 'daily ' : ''}fortune: "${clean(current.f.t)}"\nLucky numbers: ${current.nums.join(', ')}\nWord of the cookie: ${current.word[0]} (${current.word[1]}) = ${current.word[2]}\n(cracked on Curio)`;
+    const text = `🥠 My ${current.daily ? 'daily ' : ''}fortune: "${clean(current.f.t)}"\nLucky numbers: ${current.nums.join(', ')}\nWord of the cookie: ${current.word[0]} (${current.word[1]}) = ${current.word[2]}\n(cracked on Zoble)`;
     let ok = false;
     try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { }
     if (!ok) {

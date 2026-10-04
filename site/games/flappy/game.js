@@ -758,9 +758,9 @@
   function shareText() {
     if (!F) return '';
     const m = medalFor(F.score);
-    if (F.mode === 'rush') return `Curio Flappy Coin Rush: ${F.coinsGot} coins in 45 seconds`;
-    if (F.mode === 'daily') return `Curio Flappy daily ${F.daily}: ${F.score} pipes${m ? ` (${m.name})` : ''}`;
-    return `Curio Flappy ${D.MODES[F.mode].name}: ${F.score} pipes as the ${D.CHARS.find((c) => c.id === save.char).name} in ${F.world.name}${m ? `, ${m.name} medal` : ''}`;
+    if (F.mode === 'rush') return `Zoble Flappy Coin Rush: ${F.coinsGot} coins in 45 seconds`;
+    if (F.mode === 'daily') return `Zoble Flappy daily ${F.daily}: ${F.score} pipes${m ? ` (${m.name})` : ''}`;
+    return `Zoble Flappy ${D.MODES[F.mode].name}: ${F.score} pipes as the ${D.CHARS.find((c) => c.id === save.char).name} in ${F.world.name}${m ? `, ${m.name} medal` : ''}`;
   }
   async function share() { const t = shareText(); try { await navigator.clipboard.writeText(t); Curio.toast('Copied to clipboard'); } catch { Curio.toast(t, 4000); } }
 

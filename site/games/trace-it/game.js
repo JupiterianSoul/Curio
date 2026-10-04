@@ -496,7 +496,7 @@
     if (total >= 400) Curio.confetti(140);
     const sq = daily.scores.map((v) => (v >= 95 ? '🟩' : v >= 85 ? '🟨' : v >= 70 ? '🟧' : '🟥')).join('');
     const names = daily.picks.map((i) => SHAPES[i].emoji).join(' ');
-    const share = `✏️ Curio Trace It Daily Five ${today}: ${total}/500\n${sq}\n${names}`;
+    const share = `✏️ Zoble Trace It Daily Five ${today}: ${total}/500\n${sq}\n${names}`;
     const v = await Curio.modal({ emoji: '📅', title: `Daily Five: ${total}/500`, body: `${daily.scores.map((v, i) => `${SHAPES[daily.picks[i]].emoji} ${Math.round(v)}%`).join('  ·  ')}${prev != null && total <= prev ? `  (today's best: ${prev})` : ''}`, buttons: [{ label: 'Copy result', value: 'share' }, { label: 'Done', value: 'done' }] });
     if (v === 'share') { try { await navigator.clipboard.writeText(share); Curio.toast('Result copied 📋'); } catch { Curio.toast('Copy failed'); } }
     stopDaily();

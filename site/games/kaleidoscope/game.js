@@ -681,7 +681,7 @@
       Curio.toast('Downloaded your mandala 🖼️');
     } else if (v === 'gal') addToGallery(name);
     else if (v === 'share') {
-      const text = `I drew "${name}" on Curio Kaleidoscope: ${strokes.length} strokes, ${KIND[strokes[strokes.length - 1].k].name} symmetry, ${used.size} brush${used.size === 1 ? '' : 'es'}. ✨🪞`;
+      const text = `I drew "${name}" on Zoble Kaleidoscope: ${strokes.length} strokes, ${KIND[strokes[strokes.length - 1].k].name} symmetry, ${used.size} brush${used.size === 1 ? '' : 'es'}. ✨🪞`;
       try { await navigator.clipboard.writeText(text); Curio.toast('Copied! Paste it anywhere'); } catch { Curio.toast(text, 4000); }
     }
   }

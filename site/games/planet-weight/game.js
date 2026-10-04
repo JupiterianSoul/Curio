@@ -666,7 +666,7 @@
     const msg = quiz.score === 10 ? 'Flawless. Newton would be proud.' : quiz.score >= 7 ? 'Strong pull. Nicely done.' : quiz.score >= 4 ? 'Not bad for a mere Earthling.' : 'Gravity is hard. Try again?';
     $('quizBody').innerHTML = `<div class="pw-qend"><b>${quiz.score}/10</b><p>${msg}<br><span class="c-muted">Best: ${res.best}/10${res.isNew ? ' · new record!' : ''} · longest streak ${quiz.best}</span></p><div class="c-row"><button class="c-btn" type="button" id="qAgain">Play again</button><button class="c-btn c-btn--ghost" type="button" id="qShare">Copy score</button></div></div>`;
     $('qAgain').addEventListener('click', quizStart);
-    $('qShare').addEventListener('click', () => copy(`I scored ${quiz.score}/10 on the Curio gravity quiz. Where would you weigh more?`));
+    $('qShare').addEventListener('click', () => copy(`I scored ${quiz.score}/10 on the Zoble gravity quiz. Where would you weigh more?`));
   }
   function quizIntro() {
     const best = Curio.getBest('quiz');

@@ -450,7 +450,7 @@ const FlowGen = (() => {
   $('rShare').addEventListener('click', () => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
     const what = mode === 'daily' ? `Daily ${today()}` : mode === 'endless' ? `Endless ${n}×${n}` : `${n}×${n} level ${li + 1}`;
-    const txt = `Curio Flow · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves for ${k} colours in ${fmtT(Math.round(elapsed))}`;
+    const txt = `Zoble Flow · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} ${moves} moves for ${k} colours in ${fmtT(Math.round(elapsed))}`;
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
   });
   function paintProgress() {

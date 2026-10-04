@@ -1,6 +1,6 @@
-# Curio - brief for building a game page
+# Zoble - brief for building a game page
 
-Curio is a neal.fun-style hub of small, polished web toys and games at `site/`.
+Zoble is a neal.fun-style hub of small, polished web toys and games at `site/`.
 It is plain static HTML/CSS/JS: no build step, no npm packages, no CDNs, no network
 requests of any kind (no fonts, no APIs, no images from the web). Everything a page needs
 lives in its own folder.
@@ -27,7 +27,7 @@ Each folder must contain:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Game Title · Curio</title>
+  <title>Game Title · Zoble</title>
   <meta name="description" content="One line.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">

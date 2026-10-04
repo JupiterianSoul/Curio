@@ -304,7 +304,7 @@
     const lines = SHOP.filter((it) => cart[it.id] > 0);
     $('spReceipt').innerHTML = lines.length ? `<h3>🧾 Your receipt</h3><ul>${lines.map((it) => `<li><span>${it.e} ${fmt(cart[it.id])} × ${it.n}</span><b>${money(cart[it.id] * it.p)}</b></li>`).join('')}</ul><div class="sp-tot"><span>Total</span><b>${money(spent())}</b></div><button class="c-btn c-btn--ghost" type="button" id="spShare">📋 Copy receipt</button>` : '<p class="c-muted">Your receipt is empty. Start with something small.</p>';
     const sh = $('spShare');
-    if (sh) sh.addEventListener('click', async () => { const txt = `I spent ${money(spent())} of a billion on Curio:\n${lines.map((it) => `${it.e} ${fmt(cart[it.id])} × ${it.n}`).join('\n')}\nLeft: ${money(BUDGET - spent())}`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied! 📋'); } catch (x) { Curio.toast('Could not copy, sorry'); } });
+    if (sh) sh.addEventListener('click', async () => { const txt = `I spent ${money(spent())} of a billion on Zoble:\n${lines.map((it) => `${it.e} ${fmt(cart[it.id])} × ${it.n}`).join('\n')}\nLeft: ${money(BUDGET - spent())}`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied! 📋'); } catch (x) { Curio.toast('Could not copy, sorry'); } });
     Curio.store.set('billion:cart:v1', cart);
     const sp = spent();
     if (sp >= 1e6) award('spend');

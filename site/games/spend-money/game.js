@@ -264,7 +264,7 @@
   function receiptText() {
     const W = 40;
     const row = (a, b) => { const sp = Math.max(1, W - a.length - b.length); return a + ' '.repeat(sp) + b; };
-    const out = ['CURIO MEGASTORE'.padStart(27), `Paid for by ${fortune().name}`, new Date().toDateString(), '-'.repeat(W)];
+    const out = ['ZOBLE MEGASTORE'.padStart(27), `Paid for by ${fortune().name}`, new Date().toDateString(), '-'.repeat(W)];
     for (const { it, n } of receiptLines()) { out.push(row(it.n.slice(0, 26), money(n * it.p))); out.push(`  ${n.toLocaleString('en-US')} x ${money(it.p)}`); }
     out.push('-'.repeat(W), row('TOTAL', money(spent())), row('LEFT OVER', money(remaining())), '', 'No refunds on islands.');
     return out.join('\n');
@@ -286,7 +286,7 @@
     g.fillStyle = '#fffdf6'; g.fillRect(0, 0, W, H);
     g.fillStyle = '#2a2622'; g.textBaseline = 'top';
     const mono = (s, w = 500) => `${w} ${s}px ui-monospace, Menlo, Consolas, monospace`;
-    g.font = mono(20, 800); g.textAlign = 'center'; g.fillText('CURIO MEGASTORE', W / 2, 24);
+    g.font = mono(20, 800); g.textAlign = 'center'; g.fillText('ZOBLE MEGASTORE', W / 2, 24);
     g.font = mono(12); g.fillStyle = '#7a7067'; g.fillText(`Paid for by ${fortune().name}`, W / 2, 54); g.fillText(new Date().toDateString(), W / 2, 70);
     let y = 100; g.textAlign = 'left'; g.fillStyle = '#2a2622';
     const dash = (yy) => { g.fillStyle = '#c9bfb2'; for (let x = 20; x < W - 20; x += 10) g.fillRect(x, yy, 6, 2); g.fillStyle = '#2a2622'; };
@@ -363,7 +363,7 @@
     }
     const choice = await Curio.modal({ emoji: '💸', title: 'You spent it all!', body, buttons: [{ label: 'Admire the receipt', value: 'r' }, { label: 'Start over', value: 'again' }, { label: 'Copy brag', value: 'brag' }] });
     if (choice === 'again') { counts = ITEMS.map(() => 0); history.length = 0; storeCart(); stopTimer(true); refresh(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    else if (choice === 'brag') { try { await navigator.clipboard.writeText(`I spent all ${short(total())} of ${fortune().name}'s money${ms ? ` in ${(ms / 1000).toFixed(1)} s` : ''}. Biggest buy: ${biggest()}. Curio: Spend a Billionaire's Money`); Curio.toast('Copied'); } catch {} }
+    else if (choice === 'brag') { try { await navigator.clipboard.writeText(`I spent all ${short(total())} of ${fortune().name}'s money${ms ? ` in ${(ms / 1000).toFixed(1)} s` : ''}. Biggest buy: ${biggest()}. Zoble: Spend a Billionaire's Money`); Curio.toast('Copied'); } catch {} }
     else $('receiptSec').scrollIntoView({ behavior: 'smooth' });
   }
   const biggest = () => { let best = null; ITEMS.forEach((it, i) => { if (counts[i] && (!best || it.p * counts[i] > best.p * counts[best.id])) best = it; }); return best ? best.n : 'nothing'; };

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Battleship · Curio</title>
+  <title>Battleship · Zoble</title>
   <meta name="description" content="Hide your fleet, then hunt the computer's ships before its probability-crunching admiral finds yours.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
@@ -668,7 +668,7 @@
       await sleep(900);
       if (my !== token) return;
       const v = await Curio.modal({ emoji: won ? '🏆' : '🌊', title: won ? 'Admiral of the seas!' : 'Sleeping with the fishes', body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Look at the boards', value: 'look' }] });
-      if (v === 'share') { try { await navigator.clipboard.writeText(`⚓ Curio Battleship (${rule}, ${{ easy: 'Rookie', mid: 'Captain', smart: 'Genius' }[level]}): ${won ? 'won' : 'lost'} in ${shots} shots, ${acc}% accuracy.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+      if (v === 'share') { try { await navigator.clipboard.writeText(`⚓ Zoble Battleship (${rule}, ${{ easy: 'Rookie', mid: 'Captain', smart: 'Genius' }[level]}): ${won ? 'won' : 'lost'} in ${shots} shots, ${acc}% accuracy.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
       if (v === 'again' && my === token) newGame();
     }
 

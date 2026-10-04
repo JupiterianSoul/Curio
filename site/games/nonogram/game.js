@@ -472,7 +472,7 @@
       const st2 = +$('rStars').dataset.n || 0;
       const emo = { K: '⬛', W: '⬜', R: '🟥', O: '🟧', Y: '🟨', G: '🟩', g: '🟩', B: '🟦', b: '🟦', P: '🟪', p: '🟪', N: '🟫', n: '🟫', E: '⬜', L: '🟪', '*': '🟦' };
       const grid = n <= 10 ? '\n' + puzzle.g.map((row) => [...row].map((ch) => (ch === '.' ? '⬜' : emo[ch] || '⬛')).join('')).join('\n') : '';
-      const txt = `Curio Nonogram · ${idx === -2 ? `Daily ${today()}` : idx < 0 ? `Random ${n}×${n}` : `${puzzle.t} (${n}×${n})`}\n${'⭐'.repeat(st2)}${'☆'.repeat(3 - st2)} in ${fmtT(Math.round(elapsed))}${grid}`;
+      const txt = `Zoble Nonogram · ${idx === -2 ? `Daily ${today()}` : idx < 0 ? `Random ${n}×${n}` : `${puzzle.t} (${n}×${n})`}\n${'⭐'.repeat(st2)}${'☆'.repeat(3 - st2)} in ${fmtT(Math.round(elapsed))}${grid}`;
       (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
     });
     function paintProgress() {

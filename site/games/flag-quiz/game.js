@@ -441,8 +441,8 @@
   }
   function shareText() {
     const grid = R.log.map((l) => (l.ok ? '🟩' : '🟥')).join('');
-    if (R.mode === 'daily') return `Curio Flag Quiz daily ${today()}: ${R.right}/10\n${grid}`;
-    return `Curio Flag Quiz (${MODES[R.mode].name}, ${REGIONS.find((r) => r[0] === save.region)[1]}): ${C.fmt(R.score)} points, ${R.right}/${R.right + R.wrong}\n${grid}`;
+    if (R.mode === 'daily') return `Zoble Flag Quiz daily ${today()}: ${R.right}/10\n${grid}`;
+    return `Zoble Flag Quiz (${MODES[R.mode].name}, ${REGIONS.find((r) => r[0] === save.region)[1]}): ${C.fmt(R.score)} points, ${R.right}/${R.right + R.wrong}\n${grid}`;
   }
 
   function award(id) {

@@ -402,7 +402,7 @@
     out.innerHTML = `<div class="bmoon">${bigMoon(s.illum, s.waxing, 120, south)}</div><div><b>${nm}</b><span>${Math.round(s.illum * 100)}% lit · ${s.age.toFixed(1)} days old</span><span>Next full moon after: ${fmtDate(nextFull, { day: 'numeric', month: 'short', year: 'numeric' })}</span><div class="c-row"><button class="c-btn c-btn--ghost" type="button" id="bdayJump">See that night</button><button class="c-btn c-btn--ghost" type="button" id="bdayShare">Copy</button></div></div>`;
     out.classList.remove('in'); void out.offsetWidth; out.classList.add('in');
     $('bdayJump').addEventListener('click', () => { setT(ms); document.querySelector('.mn-sky').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
-    $('bdayShare').addEventListener('click', async () => { try { await navigator.clipboard.writeText(`I was born under a ${nm} (${Math.round(s.illum * 100)}% lit). 🌙 Moon Tonight on Curio`); Curio.toast('Copied! 📋'); } catch (x) { Curio.toast('Could not copy, sorry'); } });
+    $('bdayShare').addEventListener('click', async () => { try { await navigator.clipboard.writeText(`I was born under a ${nm} (${Math.round(s.illum * 100)}% lit). 🌙 Moon Tonight on Zoble`); Curio.toast('Copied! 📋'); } catch (x) { Curio.toast('Could not copy, sorry'); } });
     award('bday');
     [523, 659, 784].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.12, 'sine', 0.06), i * 90));
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>The Deep Sea · Curio</title>
+  <title>The Deep Sea · Zoble</title>
   <meta name="description" content="Scroll from the sunny surface to the bottom of the Challenger Deep, meeting over 100 creatures and wrecks at their real depths. Ping your sonar and fill your field guide.">
   <link rel="icon" href="thumb.svg">
   <link rel="stylesheet" href="../../shared.css">
@@ -635,7 +635,7 @@
       if (k === 'escape') { setLog(false); return; }
       if (sinking && ['arrowup', 'arrowdown', 'pageup', 'pagedown', ' ', 'home', 'end'].includes(k)) setSink(false);
     });
-    $('endShare').addEventListener('click', async () => { try { await navigator.clipboard.writeText(`I dived 10,935 m to the bottom of the Challenger Deep and found ${foundSet.size} of ${ITEMS.length} sea creatures and wrecks. Curio: The Deep Sea`); Curio.toast('Copied'); } catch { Curio.toast('Could not copy, sorry'); } });
+    $('endShare').addEventListener('click', async () => { try { await navigator.clipboard.writeText(`I dived 10,935 m to the bottom of the Challenger Deep and found ${foundSet.size} of ${ITEMS.length} sea creatures and wrecks. Zoble: The Deep Sea`); Curio.toast('Copied'); } catch { Curio.toast('Could not copy, sorry'); } });
     const toSurface = () => { setSink(false); scrollTo({ top: 0, behavior: 'smooth' }); Curio.beep(880, 0.2, 'sine', 0.05); };
     $('up').addEventListener('click', toSurface);
     $('again').addEventListener('click', toSurface);

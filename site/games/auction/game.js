@@ -412,7 +412,7 @@
     SFX.fanfare(); if (pct >= .6 || isNew) Curio.confetti();
     $('again').addEventListener('click', () => start(mode));
     $('toMenu').addEventListener('click', renderMenu);
-    $('shareBtn').addEventListener('click', () => share(`The Auction (Curio) · ${mode === 'daily' ? 'Daily ' + todayKey() : 'Classic'}\n${score.toLocaleString('en-US')} / ${max.toLocaleString('en-US')} · ${title}\n${results.map((r) => gradeEmoji(r.pts)).join('')}`));
+    $('shareBtn').addEventListener('click', () => share(`The Auction (Zoble) · ${mode === 'daily' ? 'Daily ' + todayKey() : 'Classic'}\n${score.toLocaleString('en-US')} / ${max.toLocaleString('en-US')} · ${title}\n${results.map((r) => gradeEmoji(r.pts)).join('')}`));
     $('again').focus({ preventScroll: true });
     e.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -558,7 +558,7 @@
     SFX.fanfare(); if (score >= 1200 || isNew) Curio.confetti();
     $('again').addEventListener('click', () => start('war'));
     $('toMenu').addEventListener('click', renderMenu);
-    $('shareBtn').addEventListener('click', () => share(`The Auction (Curio) · Bidding war\n${score.toLocaleString('en-US')} points · ${title}\nWon ${won.length}/${rounds} lots, net ${war.profit < 0 ? '-' : '+'}${short(Math.abs(war.profit))}`));
+    $('shareBtn').addEventListener('click', () => share(`The Auction (Zoble) · Bidding war\n${score.toLocaleString('en-US')} points · ${title}\nWon ${won.length}/${rounds} lots, net ${war.profit < 0 ? '-' : '+'}${short(Math.abs(war.profit))}`));
   }
 
   let hl = null;
@@ -629,7 +629,7 @@
     if (isNew && s >= 3) Curio.confetti();
     $('again').addEventListener('click', () => start('hl'));
     $('toMenu').addEventListener('click', renderMenu);
-    $('shareBtn').addEventListener('click', () => share(`The Auction (Curio) · Higher or lower\n${s} in a row · ${title}`));
+    $('shareBtn').addEventListener('click', () => share(`The Auction (Zoble) · Higher or lower\n${s} in a row · ${title}`));
   }
 
   function showExtra(html, title) {

@@ -1,6 +1,6 @@
-# Curio polish pass
+# Zoble polish pass
 
-You are upgrading existing, working Curio pages. Read `site/BRIEF.md` first (contract and
+You are upgrading existing, working Zoble pages. Read `site/BRIEF.md` first (contract and
 repo rules: no code comments, no em dash character anywhere). Then, for each of your slugs, read
 the whole page, play it in a browser, take before screenshots, and make it substantially better.
 The owner's feedback: "all games need more polish, better graphics, way more features and content".
@@ -11,7 +11,7 @@ The owner's feedback: "all games need more polish, better graphics, way more fea
    canvas illustrations, gradients and soft shadows, textures, depth, animated backgrounds,
    particles, smooth transitions between states, satisfying micro-animations on every action
    (press, hover, success, failure). A designed start screen and a designed result screen.
-   Consistent with the Curio look (shared tokens, rounded, warm) and good in light and dark mode.
+   Consistent with the Zoble look (shared tokens, rounded, warm) and good in light and dark mode.
 2. Features. Add meaningful modes and options: difficulty levels, alternate modes or rule
    variants, daily challenge (seeded by date) where it fits, settings, stats and history,
    achievements/badges stored in `Curio.store`, a "share result" copy text, keyboard shortcuts,

@@ -397,7 +397,7 @@
   $('again').addEventListener('click', () => start(cat));
   $('back').addEventListener('click', () => { show('menu'); drawMenu(); });
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Curio Trivia Night, daily ${today()}` : `Curio Trivia Night, ${M().name} (${cat === 'mix' ? 'Mixed bag' : catOf(cat).label})`;
+    const head = mode === 'daily' ? `Zoble Trivia Night, daily ${today()}` : `Zoble Trivia Night, ${M().name} (${cat === 'mix' ? 'Mixed bag' : catOf(cat).label})`;
     const t = `${head}\n🍻 ${C.fmt(score)} points, ${log.filter((l) => l.ok).length}/${log.length} right\n${log.map((l) => l.ok ? '🟩' : '🟥').join('')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(t.split('\n')[1]));
   });

@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -778,7 +778,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                 missT = 0;
                 const n = top().lvl;
                 const lines = [[' high', n], [' perfect', perfects], [' best streak', runBestCombo], [' mode', M.name]];
-                const share = `🏗️ Curio Stack (${M.name}): ${n} blocks high\n🎯 ${perfects} perfect drops · best streak ${runBestCombo}`;
+                const share = `🏗️ Zoble Stack (${M.name}): ${n} blocks high\n🎯 ${perfects} perfect drops · best streak ${runBestCombo}`;
                 const msg = n >= 50 ? 'A genuine skyscraper. Architects are taking notes.' : n >= 25 ? 'A respectable tower. The pigeons approve.' : n >= 10 ? 'Not bad! The foundations are solid, the rest is vibes.' : 'More of a stack than a tower. Try tapping right as it lines up.';
                 A.over({ title: n >= 25 ? 'What a tower!' : 'Timber!', emoji: n >= 25 ? '🏙️' : '🧱', msg: `${n} block${n === 1 ? '' : 's'} high. ${msg}`, lines, share });
             }

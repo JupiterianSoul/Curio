@@ -371,7 +371,7 @@
   $('skip').addEventListener('click', skip);
   $('again').addEventListener('click', start);
   $('share').addEventListener('click', () => {
-    const head = mode === 'daily' ? `Curio Emoji Movies, daily ${today()}` : `Curio Emoji Movies, ${mode === 'rush' ? '90s Rush' : 'Classic'} (${SETS[set][0].slice(3)})`;
+    const head = mode === 'daily' ? `Zoble Emoji Movies, daily ${today()}` : `Zoble Emoji Movies, ${mode === 'rush' ? '90s Rush' : 'Classic'} (${SETS[set][0].slice(3)})`;
     const t = `${head}\n🍿 ${score} points\n${results.map((r) => r.pts ? '🟩' : '🟥').join('')}\n${results.slice(0, 3).map((r) => r.e).join('  ')}`;
     navigator.clipboard?.writeText(t).then(() => C.toast('Result copied!'), () => C.toast(`${score} points`));
   });

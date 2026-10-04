@@ -771,7 +771,7 @@
       requestAnimationFrame(go);
     });
     if (run.won && C.confetti) setTimeout(() => C.confetti(run.grade === 'S' ? 180 : 90), 300);
-    const share = `💥 I wrecked ${run.page.site} on Curio: Wreck This Page. Grade ${run.grade}, ${fmtInt(run.score)} points, ${fmtInt(run.maxCombo)} hit combo, ${MD.pct().toFixed(0)}% destroyed.`;
+    const share = `💥 I wrecked ${run.page.site} on Zoble: Wreck This Page. Grade ${run.grade}, ${fmtInt(run.score)} points, ${fmtInt(run.maxCombo)} hit combo, ${MD.pct().toFixed(0)}% destroyed.`;
     card.querySelectorAll('[data-r]').forEach((b) => b.addEventListener('click', async () => {
       const a = b.dataset.r;
       if (a === 'again') { o.hidden = true; G.restart(); }

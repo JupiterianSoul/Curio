@@ -675,7 +675,7 @@
   $('showHow').addEventListener('click', () => showExtra('how'));
   $('share').addEventListener('click', () => {
     const line = mode === 'stars' ? `caught ${starCount} stars in ${fmt(t)}s` : `balanced for ${fmt(t)}s (${mode})`;
-    const txt = `Curio Balance the Stick 🥢\nI ${line}, reached ${LEVELS[levelIndex()][1].replace('!', '')}.`;
+    const txt = `Zoble Balance the Stick 🥢\nI ${line}, reached ${LEVELS[levelIndex()][1].replace('!', '')}.`;
     navigator.clipboard?.writeText(txt).then(() => Curio.toast('Result copied!'), () => Curio.toast(line));
   });
   document.addEventListener('keydown', (e) => {

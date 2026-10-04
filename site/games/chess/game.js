@@ -559,8 +559,8 @@
     const d = new Date();
     const tag = (k, v) => `[${k} "${v}"]`;
     const res = over && result ? result.pgn : '*';
-    const head = [tag('Event', 'Curio casual game'), tag('Date', `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`),
-      tag('White', mode === 'two' ? 'Player 1' : human > 0 ? 'You' : `Curio AI (${mode})`), tag('Black', mode === 'two' ? 'Player 2' : human < 0 ? 'You' : `Curio AI (${mode})`), tag('Result', res)];
+    const head = [tag('Event', 'Zoble casual game'), tag('Date', `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`),
+      tag('White', mode === 'two' ? 'Player 1' : human > 0 ? 'You' : `Zoble AI (${mode})`), tag('Black', mode === 'two' ? 'Player 2' : human < 0 ? 'You' : `Zoble AI (${mode})`), tag('Result', res)];
     let moves = '';
     for (let k = 0; k < sanLog.length; k++) moves += (k % 2 === 0 ? `${k / 2 + 1}. ` : '') + sanLog[k] + ' ';
     return `${head.join('\n')}\n\n${moves}${res}`;
@@ -796,7 +796,7 @@
       if (my !== token) return;
       showResult({ kind: 'puz', title: puz.mistakes ? 'Got there!' : 'Flawless mate!', body: `${first ? 'New puzzle solved.' : 'Solved again.'} Mate in ${puz.n} with ${puz.mistakes} miss${puz.mistakes === 1 ? '' : 'es'}.`,
         stats: [[Object.keys(save.solved).length, 'Solved'], [save.streak, 'Streak'], [save.bestStreak, 'Best']],
-        buttons: [['Next puzzle', () => nextPuzzle()], ['Stay here', () => {}], ['Share', () => copy(`Curio Chess: solved puzzle #${puz.idx + 1} (mate in ${puz.n}) ${puz.mistakes ? `with ${puz.mistakes} miss${puz.mistakes === 1 ? '' : 'es'}` : 'flawlessly'} ♟️ ${Object.keys(save.solved).length}/${PUZZLES.length} solved`, 'Result copied!')]] });
+        buttons: [['Next puzzle', () => nextPuzzle()], ['Stay here', () => {}], ['Share', () => copy(`Zoble Chess: solved puzzle #${puz.idx + 1} (mate in ${puz.n}) ${puz.mistakes ? `with ${puz.mistakes} miss${puz.mistakes === 1 ? '' : 'es'}` : 'flawlessly'} ♟️ ${Object.keys(save.solved).length}/${PUZZLES.length} solved`, 'Result copied!')]] });
     }, 650);
   }
 

@@ -497,7 +497,7 @@
     const rating = flips >= 40 ? 'Helicopter mode. Unreal.' : flips >= 25 ? 'A spin cycle in a box.' : flips >= 10 ? 'Proper acrobatics.' : flips >= 3 ? 'A few loops. Try lifting the lower bob straight up.' : 'Barely a wobble. Lift it higher!';
     const v = await Curio.modal({ emoji: '🤸', title: `${flips} flip${flips === 1 ? '' : 's'} in ${CHAL_T} s`, body: `${rating} ${best.isNew && flips > 0 ? 'New personal best!' : `Your best: ${best.best}.`}`, buttons: [{ label: 'Try again', value: 'again' }, { label: 'Copy result', value: 'share' }, { label: 'Done', value: 'done' }] });
     if (v === 'share') {
-      const txt = `🤸 Curio Double Pendulum flip challenge: ${flips} flips in ${CHAL_T} seconds (best ${best.best}).`;
+      const txt = `🤸 Zoble Double Pendulum flip challenge: ${flips} flips in ${CHAL_T} seconds (best ${best.best}).`;
       try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch (e) { Curio.toast(txt, 4000); }
     }
     if (v === 'done') { toggleChallenge(false); setPaused(false); return; }
@@ -511,7 +511,7 @@
     o.drawImage(cv, 0, 0);
     o.fillStyle = C.dark ? 'rgba(255,255,255,.7)' : 'rgba(0,0,0,.6)';
     o.font = `800 ${16 * dpr}px system-ui, sans-serif`;
-    o.fillText('Double Pendulum · Curio', 16 * dpr, out.height - 18 * dpr);
+    o.fillText('Double Pendulum · Zoble', 16 * dpr, out.height - 18 * dpr);
     try {
       const a = document.createElement('a');
       a.download = `double-pendulum-${Date.now()}.png`;

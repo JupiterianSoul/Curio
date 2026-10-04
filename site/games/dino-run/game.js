@@ -306,7 +306,7 @@
       title: s >= 2500 ? 'Prehistoric legend!' : s >= 1000 ? 'Marathon dino!' : s >= 300 ? 'Good run!' : 'Extinct!',
       msg: DATA.quips[(Math.random() * DATA.quips.length) | 0] + tip,
       rows: [['Metres', Curio.fmt(s)], ['Amber', runAmber], ['Biome', BIOMES[biomeI].id[0].toUpperCase() + BIOMES[biomeI].id.slice(1)], ['Near misses', near]],
-      share: `Curio Dino Run · ${{ endless: 'Endless', daily: 'Daily ' + A.today(), hardcore: 'Hardcore' }[mode]} · ${Curio.fmt(s)} m as ${CHARS[dino.char].name} · reached the ${BIOMES[biomeI].name} · ${runAmber} amber`
+      share: `Zoble Dino Run · ${{ endless: 'Endless', daily: 'Daily ' + A.today(), hardcore: 'Hardcore' }[mode]} · ${Curio.fmt(s)} m as ${CHARS[dino.char].name} · reached the ${BIOMES[biomeI].name} · ${runAmber} amber`
     });
     paintChars();
   }

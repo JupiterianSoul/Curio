@@ -483,7 +483,7 @@
       <div class="c-row"><button class="c-btn" type="button" id="again">Play again</button><button class="c-btn c-btn--ghost" type="button" id="shareBtn">📋 Share</button><button class="c-btn c-btn--ghost" type="button" id="toMenu">Menu</button></div>`;
     $('#game').hidden = true; e.hidden = false;
     $('#again').onclick = () => startGame(m); $('#toMenu').onclick = renderMenu;
-    $('#shareBtn').onclick = () => share(`The Password Game (Curio) · ${MODES.find((x) => x.id === m).name}\n${LIST.length} rules in ${tm} · ${glen(pw.value)} characters · Paul ${st.paul === 'chick' ? 'survived 🐣' : 'is fine 🥚'}`);
+    $('#shareBtn').onclick = () => share(`The Password Game (Zoble) · ${MODES.find((x) => x.id === m).name}\n${LIST.length} rules in ${tm} · ${glen(pw.value)} characters · Paul ${st.paul === 'chick' ? 'survived 🐣' : 'is fine 🥚'}`);
     e.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 

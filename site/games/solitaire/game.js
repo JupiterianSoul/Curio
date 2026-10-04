@@ -16,7 +16,7 @@
     9: [[25, 0], [75, 0], [25, 33], [75, 33], [50, 50], [25, 67], [75, 67], [25, 100], [75, 100]],
     10: [[25, 0], [75, 0], [50, 17], [25, 33], [75, 33], [25, 67], [75, 67], [50, 83], [25, 100], [75, 100]]
   };
-  const BACKS = [['classic', 'Classic blue'], ['ruby', 'Ruby medallion'], ['forest', 'Forest plaid'], ['sunset', 'Sunset'], ['night', 'Night sky'], ['tartan', 'Tartan'], ['curio', 'Curio rainbow']];
+  const BACKS = [['classic', 'Classic blue'], ['ruby', 'Ruby medallion'], ['forest', 'Forest plaid'], ['sunset', 'Sunset'], ['night', 'Night sky'], ['tartan', 'Tartan'], ['curio', 'Zoble rainbow']];
   const FELTS = [['green', 'Casino green', '#1f7a3f', '#12592b'], ['blue', 'Ocean blue', '#1f5f8f', '#123c5e'], ['red', 'Burgundy', '#8a2b3a', '#5a1724'], ['purple', 'Royal purple', '#5b3a8f', '#36205c'], ['slate', 'Charcoal', '#3a4250', '#1f242d'], ['wood', 'Oak table', '#9a6a3c', '#6b4423'], ['teal', 'Lagoon', '#1b8a80', '#0f5a54']];
   const GAMES = {
     klondike: { cols: 7, found: 4, cells: 0, name: 'Klondike', sub: 'The one that came free with every computer. Build the four suits from Ace to King.',
@@ -640,7 +640,7 @@
     document.querySelectorAll('.win-canvas').forEach((e) => e.remove());
     if (v === 'share') {
       const label = save.game === 'klondike' ? `Klondike draw ${save.draw}` : save.game === 'spider' ? `Spider ${save.suits} suit${save.suits > 1 ? 's' : ''}` : 'FreeCell';
-      try { await navigator.clipboard.writeText(`🃏 Curio Solitaire: ${label}${isDaily ? ' daily' : ''} deal #${dealNo} won in ${fmtT(secs)} and ${moves} moves.`); Curio.toast('Result copied!'); } catch { Curio.toast('Could not reach the clipboard.'); }
+      try { await navigator.clipboard.writeText(`🃏 Zoble Solitaire: ${label}${isDaily ? ' daily' : ''} deal #${dealNo} won in ${fmtT(secs)} and ${moves} moves.`); Curio.toast('Result copied!'); } catch { Curio.toast('Could not reach the clipboard.'); }
     }
     if (v === 'again') newGame();
   }

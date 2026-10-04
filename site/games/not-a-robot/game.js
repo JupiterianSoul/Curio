@@ -612,7 +612,7 @@
     Curio.confetti(); [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, .18, 'triangle', .1), i * 110));
     const m = mode;
     $('#again').onclick = () => start(m); $('#toMenu').onclick = () => renderMenu();
-    $('#shareBtn').onclick = () => { const t = `I'm Not a Robot (Curio) · ${m === 'speed' ? 'Speedrun' : m === 'daily' ? 'Daily ' + todayKey() : 'Story'}\n${title}: ${conf}% human · ${fails} fails · ${fmtT(ms)}`; navigator.clipboard?.writeText(t).then(() => Curio.toast('Copied! Paste it anywhere.'), () => Curio.modal({ emoji: '📋', title: 'Your result', body: t, buttons: [{ label: 'OK', value: 1 }] })); };
+    $('#shareBtn').onclick = () => { const t = `I'm Not a Robot (Zoble) · ${m === 'speed' ? 'Speedrun' : m === 'daily' ? 'Daily ' + todayKey() : 'Story'}\n${title}: ${conf}% human · ${fails} fails · ${fmtT(ms)}`; navigator.clipboard?.writeText(t).then(() => Curio.toast('Copied! Paste it anywhere.'), () => Curio.modal({ emoji: '📋', title: 'Your result', body: t, buttons: [{ label: 'OK', value: 1 }] })); };
     e.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 

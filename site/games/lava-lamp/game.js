@@ -673,7 +673,7 @@
         <button type="button" class="ll-toggle" id="bloopBtn"></button>
         <label class="ll-range">Sleep timer <select id="sleepSel" class="ll-select"><option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option></select></label>`;
       const sb = g.querySelector('#sndBtn'); sb.textContent = save.sound.on ? '🔊 Soundscape on' : '🔈 Soundscape off'; sb.setAttribute('aria-pressed', String(save.sound.on));
-      sb.addEventListener('click', () => { save.sound.on = !save.sound.on; persist(); if (save.sound.on) { startSound(); if (Curio.muted) Curio.toast('Unmute Curio (top bar) to hear it'); } else stopSound(); paintControls(); });
+      sb.addEventListener('click', () => { save.sound.on = !save.sound.on; persist(); if (save.sound.on) { startSound(); if (Curio.muted) Curio.toast('Unmute Zoble (top bar) to hear it'); } else stopSound(); paintControls(); });
       const vr = g.querySelector('#volR'); vr.value = save.sound.vol; vr.addEventListener('input', () => { save.sound.vol = +vr.value; persist(); setVolume(); });
       const bb = g.querySelector('#bloopBtn'); bb.textContent = save.sound.bloops ? '🫧 Bloops on' : '🫧 Bloops off'; bb.setAttribute('aria-pressed', String(save.sound.bloops)); bb.addEventListener('click', () => { save.sound.bloops = !save.sound.bloops; persist(); paintControls(); });
       const ss = g.querySelector('#sleepSel'); ss.value = sleepEnd ? String(Math.round((sleepEnd - performance.now()) / 60000 / 15) * 15 || 15) : '0'; ss.addEventListener('change', () => setSleep(+ss.value));

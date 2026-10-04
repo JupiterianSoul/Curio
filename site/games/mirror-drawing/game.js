@@ -474,7 +474,7 @@
       badge('daily');
       $('rNew').innerHTML += ` <button class="c-btn c-btn--ghost" id="shareDaily" type="button" style="padding:5px 12px;font-size:13px;margin-top:6px">📋 Share daily</button>`;
       $('shareDaily').addEventListener('click', async () => {
-        const t = `🪞 Curio Mirror Drawing daily ${today}: ${score}/100 (${MODES[modeIdx].name}, ${SHAPES[shapeIdx].name}, ${errors} slips)`;
+        const t = `🪞 Zoble Mirror Drawing daily ${today}: ${score}/100 (${MODES[modeIdx].name}, ${SHAPES[shapeIdx].name}, ${errors} slips)`;
         try { await navigator.clipboard.writeText(t); Curio.toast('Copied 📋'); } catch { Curio.toast('Copy failed'); }
       });
     }

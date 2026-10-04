@@ -1,4 +1,4 @@
-# Curio
+# Zoble
 
 A pile of small web games and toys. Things to poke, break, draw, guess and waste a good afternoon on.
 

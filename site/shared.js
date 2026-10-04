@@ -43,7 +43,7 @@
     el.className = 'curio-bar';
     el.innerHTML = `
       <a class="curio-bar__home" href="${root}index.html" aria-label="All games">
-        <span class="curio-bar__logo">✦</span><span>Curio</span>
+        <span class="curio-bar__logo">✦</span><span>Zoble</span>
       </a>
       <div class="curio-bar__title"></div>
       <button class="curio-bar__btn" data-act="touchpad" type="button"></button>

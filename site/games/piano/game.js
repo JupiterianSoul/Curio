@@ -607,7 +607,7 @@
     else {
       freeBuildForLearn();
       if (v === 'share') {
-        const txt = `🎹 I played "${song.t}" on Curio Piano: ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)} ${acc}% accuracy${R.mode === 'along' ? `, ${Curio.fmt(R.score)} points, ${R.maxCombo} combo` : ''}.`;
+        const txt = `🎹 I played "${song.t}" on Zoble Piano: ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)} ${acc}% accuracy${R.mode === 'along' ? `, ${Curio.fmt(R.score)} points, ${R.maxCombo} combo` : ''}.`;
         try { await navigator.clipboard.writeText(txt); Curio.toast('Result copied to clipboard'); } catch { Curio.toast(txt, 4000); }
       }
     }

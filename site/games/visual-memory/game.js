@@ -387,7 +387,7 @@
   const runEmoji = () => run.map((r) => r === 'p' ? '🟩' : r === 'm' ? '🟨' : '🟥').join('');
 
   function shareText() {
-    const head = mode === 'daily' ? `Curio Visual Memory, daily ${today()}` : `Curio Visual Memory, ${MODES[mode].name} (${DIFFS[diff].name})`;
+    const head = mode === 'daily' ? `Zoble Visual Memory, daily ${today()}` : `Zoble Visual Memory, ${MODES[mode].name} (${DIFFS[diff].name})`;
     return `${head}\nReached level ${level} 🧠\n${runEmoji()}`;
   }
 

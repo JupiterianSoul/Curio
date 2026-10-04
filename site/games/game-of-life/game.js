@@ -558,7 +558,7 @@
     });
     body += '!';
     const wrapped = body.match(/.{1,70}/g).join('\n');
-    return `#C Made on Curio\nx = ${x1 - x0 + 1}, y = ${y1 - y0 + 1}, rule = ${rule.id}\n${wrapped}`;
+    return `#C Made on Zoble\nx = ${x1 - x0 + 1}, y = ${y1 - y0 + 1}, rule = ${rule.id}\n${wrapped}`;
   }
 
   let challenge = null;

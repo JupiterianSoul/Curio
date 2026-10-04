@@ -289,7 +289,7 @@
     pop(capEl);
     statsEl.textContent = `Score ${score} · ${Curio.fmt(ms / 1000, 1)} s · ${Curio.fmt(len / 100, 1)} m of ink${dotsDaily ? ` · today's best ${stats.dots[key] || 0}` : ''}`;
     if (all) { Curio.confetti(110); badge('dots'); if (diff === 'hard') badge('dotshard'); [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, .12, 'triangle', .07), i * 100)); }
-    lastShare = `🔵 Curio One Line Dot Run${dotsDaily ? ` ${today}` : ''} (${diff}): ${hits}/${n} dots, score ${score}\n${dots.map((d) => (d.hit ? '🟢' : '⚪')).join('')}`;
+    lastShare = `🔵 Zoble One Line Dot Run${dotsDaily ? ` ${today}` : ''} (${diff}): ${hits}/${n} dots, score ${score}\n${dots.map((d) => (d.hit ? '🟢' : '⚪')).join('')}`;
     $('next').textContent = '📋 Share';
   }
   let lastShare = '';
@@ -451,7 +451,7 @@
     drawLine(x, d, d.pts.length);
     x.setTransform(1, 0, 0, 1, 0, 0);
     x.font = '700 22px system-ui, sans-serif'; x.fillStyle = Curio.isDark() ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.3)';
-    x.fillText('One Line · Curio', 24, c.height - 24);
+    x.fillText('One Line · Zoble', 24, c.height - 24);
     const a = document.createElement('a');
     a.download = `one-line-${(d.label || (mode === 'free' ? 'drawing' : prompt[1])).replace(/[^a-z]+/gi, '-')}.png`;
     a.href = c.toDataURL('image/png'); a.click();

@@ -260,7 +260,7 @@
       (Math.abs(diff) < 1.5 ? `Rock steady: you held ${bpm} BPM almost exactly.` : diff > 0 ? `You rushed: sped up to about ${yourBpm.toFixed(0)} BPM. Classic excitement.` : `You dragged: slowed down to about ${yourBpm.toFixed(0)} BPM. Very relaxed.`) + (missed ? ` Missed ${missed} beat${missed === 1 ? '' : 's'}.` : ''),
       [[avgErr + 'ms', 'Avg error'], [acc + '%', 'Accuracy'], [yourBpm.toFixed(1), 'Your tempo'], [b.best + 'ms', 'Best here']],
       () => { $('chart').style.display = ''; chart(); });
-    shareText = `Curio Keep the Beat 🥁\nHeld ${bpm} BPM for ${SILENT} silent beats: ${avgErr}ms average error, ended at ${yourBpm.toFixed(1)} BPM.`;
+    shareText = `Zoble Keep the Beat 🥁\nHeld ${bpm} BPM for ${SILENT} silent beats: ${avgErr}ms average error, ended at ${yourBpm.toFixed(1)} BPM.`;
     paintModes();
     if (isPB || avgErr < 20 || newBadges.length) Curio.confetti();
   }
@@ -441,7 +441,7 @@
     showResults(isPB ? '🏆' : '🪘', (isPB ? 'New best! ' : '') + verdict, `You scored ${total} out of 800 across eight grooves.`,
       [[total, 'Total'], [Math.round(total / 8), 'Avg groove'], [Math.max(...scores.map((s) => s.score)), 'Best groove'], [b.best, 'Best here']],
       () => { $('rTable').innerHTML = '<tr><th>#</th><th>Groove</th><th>BPM</th><th>Score</th></tr>' + scores.map((s, i) => `<tr><td>${i + 1}</td><td>${s.name}</td><td>${s.bpm}</td><td><b>${s.score}</b>${s.missed ? ` <span class="c-muted">(${s.missed} missed)</span>` : ''}</td></tr>`).join(''); });
-    shareText = `Curio Keep the Beat 🪘 Copy the Rhythm${data.copy === 'daily' ? ` daily ${today()}` : ` (${data.copy})`}\n${total}/800\n` + scores.map((s) => s.score >= 80 ? '🟩' : s.score >= 50 ? '🟨' : '🟥').join('');
+    shareText = `Zoble Keep the Beat 🪘 Copy the Rhythm${data.copy === 'daily' ? ` daily ${today()}` : ` (${data.copy})`}\n${total}/800\n` + scores.map((s) => s.score >= 80 ? '🟩' : s.score >= 50 ? '🟨' : '🟥').join('');
     paintModes();
     if (isPB || newBadges.length || total >= 700) Curio.confetti();
   }
@@ -515,7 +515,7 @@
     showResults(isPB ? '🏆' : '👂', (isPB ? 'New best! ' : '') + (avg <= 3 ? '🎧 Human metronome' : avg <= 8 ? '🎼 Conductor ears' : avg <= 15 ? '🎸 Band-ready' : avg <= 30 ? '🎵 Roughly right' : '🌊 Vibes only'),
       `Average miss of ${avg.toFixed(1)} BPM.`, [[total, 'Score'], [avg.toFixed(1), 'Avg miss'], [b.best, 'Best']],
       () => { $('rTable').innerHTML = '<tr><th>#</th><th>Tempo</th><th>You</th><th>Points</th></tr>' + rounds.map((r, i) => `<tr><td>${i + 1}</td><td>${r.bpm}</td><td>${r.g}</td><td><b>${r.pts}</b></td></tr>`).join(''); });
-    shareText = `Curio Keep the Beat 👂 Guess the BPM\n${total}/500, average miss ${avg.toFixed(1)} BPM`;
+    shareText = `Zoble Keep the Beat 👂 Guess the BPM\n${total}/500, average miss ${avg.toFixed(1)} BPM`;
     if (isPB || newBadges.length) Curio.confetti();
   }
 

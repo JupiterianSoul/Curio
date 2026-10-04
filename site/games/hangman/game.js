@@ -610,7 +610,7 @@
   async function shareDaily() {
     const d = S.daily[todayKey()] || { won: over && misses < lives, misses, seq };
     const icon = S.scene === 'balloon' ? '🎈' : '⛄';
-    const text = `Hangman on Curio · Daily ${todayKey()}\n${d.won ? `${icon} Solved with ${d.misses} miss${d.misses === 1 ? '' : 'es'}` : '💦 Got away from me'}\n${(d.seq || []).map((x) => (x ? '🟩' : '🟥')).join('')}`;
+    const text = `Hangman on Zoble · Daily ${todayKey()}\n${d.won ? `${icon} Solved with ${d.misses} miss${d.misses === 1 ? '' : 'es'}` : '💦 Got away from me'}\n${(d.seq || []).map((x) => (x ? '🟩' : '🟥')).join('')}`;
     try { await navigator.clipboard.writeText(text); Curio.toast('Copied. No spoilers inside.'); }
     catch {
       const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.append(ta); ta.select();

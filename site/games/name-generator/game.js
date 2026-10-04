@@ -362,7 +362,7 @@
       const y = wrap(g, r.name, W / 2, 620, W - 180, 64);
       g.fillStyle = '#5d5750'; g.font = '600 30px system-ui, sans-serif';
       wrap(g, r.flavor, W / 2, y + 70, W - 200, 40);
-      g.fillStyle = '#948c82'; g.font = '800 22px system-ui, sans-serif'; g.fillText('Curio Name Generator', W / 2, H - 90);
+      g.fillStyle = '#948c82'; g.font = '800 22px system-ui, sans-serif'; g.fillText('Zoble Name Generator', W / 2, H - 90);
       cv.toBlob((b) => {
         if (!b) return;
         const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'curio-' + r.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
@@ -476,7 +476,7 @@
     $('qinfo').textContent = verdict + (qz.score > prev ? ' · new best!' : '');
     $('qdots').innerHTML = qz.results.map((r) => `<i class="${r ? 'g' : 'b'}"></i>`).join('');
     $('qmeta').innerHTML = `<div class="c-stat"><b>${quizBest[st.deck] || 0}/10</b><span>Best</span></div><button class="c-btn c-btn--ghost" id="qShare" type="button">📋 Share</button>`;
-    $('qShare').addEventListener('click', () => copy(`🕵️ Curio Real or Fake (${Q[st.deck].label}): ${qz.score}/10\n${qz.results.map((r) => (r ? '🟩' : '🟥')).join('')}`, 'Result copied 📋'));
+    $('qShare').addEventListener('click', () => copy(`🕵️ Zoble Real or Fake (${Q[st.deck].label}): ${qz.score}/10\n${qz.results.map((r) => (r ? '🟩' : '🟥')).join('')}`, 'Result copied 📋'));
     $('qFake').textContent = '🔁 Play again';
     $('qReal').disabled = true;
     qz.locked = false;

@@ -331,7 +331,7 @@
         else start({ pic: G.pic, n: G.n });
       } else if (a === 'menu') { show('home'); paintHome(); }
       else if (a === 'share') {
-        const text = `Curio Sliding Puzzle${G.daily ? ` · Daily ${G.daily}` : ''}\n${name} ${G.n}×${G.n}: ${G.moves} moves, ${fmtT(secs)} ${'⭐'.repeat(stars)}`;
+        const text = `Zoble Sliding Puzzle${G.daily ? ` · Daily ${G.daily}` : ''}\n${name} ${G.n}×${G.n}: ${G.moves} moves, ${fmtT(secs)} ${'⭐'.repeat(stars)}`;
         try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); }
       }
     };

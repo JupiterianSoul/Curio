@@ -461,7 +461,7 @@
     Curio.confetti();
     const v = await Curio.modal({ emoji: '🎼', title: `${tune.name}!`, body: `Played in ${secs.toFixed(1)} seconds. ${best.isNew ? 'New best time!' : `Best: ${best.best} s.`} ${doneTunes.size} of ${TUNES.length} tunes mastered.`, buttons: [{ label: 'Another tune', value: 'more' }, { label: 'Copy result', value: 'share' }, { label: 'Free play', value: 'free' }] });
     if (v === 'more') $('tunes').classList.remove('hidden');
-    if (v === 'share') { const txt = `🎼 I played ${tune.name} on the Curio Theremin in ${secs.toFixed(1)} s, no hands touching.`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch (e) { Curio.toast(txt, 4000); } }
+    if (v === 'share') { const txt = `🎼 I played ${tune.name} on the Zoble Theremin in ${secs.toFixed(1)} s, no hands touching.`; try { await navigator.clipboard.writeText(txt); Curio.toast('Copied!'); } catch (e) { Curio.toast(txt, 4000); } }
   }
   function drawTune() {
     if (!tune.on) return;

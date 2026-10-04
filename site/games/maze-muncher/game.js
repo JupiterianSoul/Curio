@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -972,7 +972,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                     A.over({
                         title: 'Game over', emoji: '👻', msg: Curio.pick([`Level ${level} in ${MAZES[mazeI].name}, ${Curio.fmt(totalDots - dots)} dots in. The ghosts are throwing a party.`, `Caught on level ${level}. Pepper says thanks for the snack.`, `You munched your way to level ${level}. The dots will grow back.`]),
                         lines: [[' level', level], [' maze', MAZES[mazeI].name], [' ghosts eaten', ghostsEaten], [' fruit', fruitsEaten]],
-                        share: `🟡 Curio Maze Muncher (${mm.name}): ${Curio.fmt(A.score)} pts\n🗺️ Level ${level}, ${MAZES[mazeI].name} · 👻 ${ghostsEaten} ghosts · 🍒 ${fruitsEaten} fruit`
+                        share: `🟡 Zoble Maze Muncher (${mm.name}): ${Curio.fmt(A.score)} pts\n🗺️ Level ${level}, ${MAZES[mazeI].name} · 👻 ${ghostsEaten} ghosts · 🍒 ${fruitsEaten} fruit`
                     });
                     return;
                 }

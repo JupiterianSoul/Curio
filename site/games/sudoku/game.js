@@ -424,7 +424,7 @@
         if (a === 'next') newGame(G.variant, G.level);
         else if (a === 'menu') { show('home'); paintHome(); }
         else if (a === 'share') {
-          const text = `Curio Sudoku${G.daily ? ` · Daily ${G.daily}` : ''}\n${VARIANTS[G.variant].name}, ${LEVELS[G.level]} solved in ${fmtT(secs)}\n${'⭐'.repeat(stars)} · ${G.hints} hints · ${G.mistakes} mistakes`;
+          const text = `Zoble Sudoku${G.daily ? ` · Daily ${G.daily}` : ''}\n${VARIANTS[G.variant].name}, ${LEVELS[G.level]} solved in ${fmtT(secs)}\n${'⭐'.repeat(stars)} · ${G.hints} hints · ${G.mistakes} mistakes`;
           try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); }
         }
       };

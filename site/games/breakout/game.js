@@ -444,7 +444,7 @@
       title, msg,
       medal: win ? ['#ffd34d', '#e0a100', '♛'] : null,
       rows: [['Level', mode === 'daily' ? `${reached}/5` : reached], ['Best combo', bestCombo], ['Power-ups', powersRun]],
-      share: `Curio Breakout · ${mName} (${diff}) · ${Curio.fmt(A.score)} pts · level ${reached}${mode === 'daily' ? ' · ' + A.today() : ''} · best combo ${bestCombo}`
+      share: `Zoble Breakout · ${mName} (${diff}) · ${Curio.fmt(A.score)} pts · level ${reached}${mode === 'daily' ? ' · ' + A.today() : ''} · best combo ${bestCombo}`
     });
   }
   function update(dt) {

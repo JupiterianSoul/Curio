@@ -588,7 +588,7 @@
   });
   $('shareBtn').addEventListener('click', async () => {
     if (!lastShare) return;
-    const txt = `${['⭕', '⬜', '🔺', '⬡', '⭐', '❤️'][SHAPES.indexOf(shape)]} I drew a ${lastShare.s.toFixed(1)}% perfect ${shape.verb} (rank ${lastShare.rk}) in ${(lastShare.ms / 1000).toFixed(1)}s${blind ? ', blind' : ''}${daily ? ' on the ' + today() + ' daily' : ''}. Curio`;
+    const txt = `${['⭕', '⬜', '🔺', '⬡', '⭐', '❤️'][SHAPES.indexOf(shape)]} I drew a ${lastShare.s.toFixed(1)}% perfect ${shape.verb} (rank ${lastShare.rk}) in ${(lastShare.ms / 1000).toFixed(1)}s${blind ? ', blind' : ''}${daily ? ' on the ' + today() + ' daily' : ''}. Zoble`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Copied to clipboard'); } catch { Curio.toast(txt, 4000); }
   });
 

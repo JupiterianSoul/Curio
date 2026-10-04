@@ -293,7 +293,7 @@
     await wait(600);
     const v = await Curio.modal({ emoji: '🧪', title, body, buttons: save.mode === 'daily' ? [{ label: 'Classic levels', value: 'classic' }, { label: 'Share', value: 'share' }] : [{ label: 'Next level', value: 'next' }, { label: 'Replay', value: 'again' }, { label: 'Share', value: 'share' }] });
     if (v === 'share') {
-      try { await navigator.clipboard.writeText(`🧪 Curio Water Sort ${save.mode === 'daily' ? `daily ${todayKey()}` : `${save.mode} level ${level}`}: sorted in ${moves} pours ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); }
+      try { await navigator.clipboard.writeText(`🧪 Zoble Water Sort ${save.mode === 'daily' ? `daily ${todayKey()}` : `${save.mode} level ${level}`}: sorted in ${moves} pours ${'★'.repeat(s)}`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); }
       return;
     }
     if (v === 'classic') { save.mode = 'classic'; loadLevel(save.level.classic); return; }

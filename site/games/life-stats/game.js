@@ -265,7 +265,7 @@
     if (!up.length) { Curio.toast('No milestones left to add. Legendary.'); return; }
     const day = (ms) => { const d = new Date(ms); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`; };
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Curio//Life Stats//EN'];
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Zoble//Life Stats//EN'];
     up.forEach((m, i) => { const e = new Date(m.at); e.setDate(e.getDate() + 1); L.push('BEGIN:VEVENT', `UID:curio-life-${i}-${day(m.at)}@curio`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day(m.at)}`, `DTEND;VALUE=DATE:${day(e.getTime())}`, `SUMMARY:I am ${m.n.toLocaleString('en-US')} ${m.u} old`, 'END:VEVENT'); });
     L.push('END:VCALENDAR');
     const a = document.createElement('a');

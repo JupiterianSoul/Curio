@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -882,7 +882,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                 A.over({
                     title: hero.dead ? 'Bonk!' : 'Splat!', emoji: hero.dead ? '👾' : SKINS.find((k) => k[0] === skin)[1], msg: `${Curio.fmt(maxH)} high. ${hero.dead ? 'A monster got you. Land on their heads, not their faces.' : Curio.pick(msgs)}`,
                     lines: [[' high', Curio.fmt(maxH)], [' stars', stars], [' stomps', stomps], [' zone', zn]],
-                    share: `🦘 Curio Sky Hopper: ${Curio.fmt(maxH)} high\n🌌 Reached ${zn} · ⭐ ${stars} stars · 👾 ${stomps} stomps`
+                    share: `🦘 Zoble Sky Hopper: ${Curio.fmt(maxH)} high\n🌌 Reached ${zn} · ⭐ ${stars} stars · 👾 ${stomps} stomps`
                 });
             }
         }

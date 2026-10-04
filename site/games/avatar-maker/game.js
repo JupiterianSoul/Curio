@@ -311,7 +311,7 @@
     const grd = g.createLinearGradient(0, 0, 0, c.height); grd.addColorStop(0, '#fff3d6'); grd.addColorStop(1, '#ffd9c7');
     g.fillStyle = grd; g.fillRect(0, 0, c.width, c.height);
     g.fillStyle = '#1d1b19'; g.font = '900 40px system-ui, sans-serif'; g.textAlign = 'center';
-    g.fillText(crew.length > 1 ? 'My Curio crew' : nameFor(state), c.width / 2, 60);
+    g.fillText(crew.length > 1 ? 'My Zoble crew' : nameFor(state), c.width / 2, 60);
     try {
       for (let i = 0; i < crew.length; i++) {
         const img = await svgImage(crew[i], S);
@@ -407,7 +407,7 @@
     Curio.confetti(140);
     [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, .14, 'triangle', .08), i * 110));
     if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch {}
-    const share = `🪞 Curio Face Maker Copycat (${CC_LEVELS[lvl].label}): matched in ${t.toFixed(1)}s`;
+    const share = `🪞 Zoble Face Maker Copycat (${CC_LEVELS[lvl].label}): matched in ${t.toFixed(1)}s`;
     const v = await Curio.modal({ emoji: '🪞', title: isNew ? 'New best twin!' : 'Perfect match!', body: `${CC_LEVELS[lvl].label}: ${t.toFixed(1)}s${cc.penalty ? ` (incl. ${cc.penalty}s of hints)` : ''}. Best: ${stats.best[lvl].toFixed(1)}s.`, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Copy result', value: 'share' }, { label: 'Done', value: 'done' }] });
     endCopy();
     if (v === 'share') { try { await navigator.clipboard.writeText(share); Curio.toast('Result copied 📋'); } catch { Curio.toast(share, 3000); } }

@@ -42,7 +42,7 @@ window.MC_DATA = {
     ['SOS', 'The distress call'],
     ['WHAT HATH GOD WROUGHT', 'First public long-line message, 1844'],
     ['CQD CQD SOS DE MGY', 'Titanic, April 1912'],
-    ['CQ CQ CQ DE CURIO K', 'Calling anyone out there'],
+    ['CQ CQ CQ DE ZOBLE K', 'Calling anyone out there'],
     ['73 ES 88', 'Best regards and love'],
     ['THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG', 'Every letter of the alphabet'],
     ['HELLO WORLD', 'A programmer classic']

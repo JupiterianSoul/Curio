@@ -442,7 +442,7 @@
       else if (a === 'new') $('freeBtn').click();
       else if (a === 'retry') start(sp);
       else if (a === 'menu') toHome();
-      else if (a === 'share') { const text = `Curio Maze Runner · ${sp.label}\n${'⭐'.repeat(st)} ${secs.toFixed(1)}s · gems ${G.total - G.gems.length}/${G.total}`; try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); } }
+      else if (a === 'share') { const text = `Zoble Maze Runner · ${sp.label}\n${'⭐'.repeat(st)} ${secs.toFixed(1)}s · gems ${G.total - G.gems.length}/${G.total}`; try { await navigator.clipboard.writeText(text); Curio.toast('Result copied'); } catch { Curio.toast('Could not copy'); } }
     };
   }
   function toHome() { $('play').hidden = true; $('home').hidden = false; G = null; paintHome(); heroT0 = performance.now(); kick(); scrollTo({ top: 0 }); }

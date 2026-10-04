@@ -233,7 +233,7 @@ function Arcade(o) {
                 eb.append(d);
             }
         }
-        A.shareText = share || `${document.title.split('·')[0].trim()} on Curio: ${Curio.fmt(A.score)} points`;
+        A.shareText = share || `${document.title.split('·')[0].trim()} on Zoble: ${Curio.fmt(A.score)} points`;
         const sb = box.querySelector('[data-act="share"]');
         if (sb) sb.hidden = !A.shareText;
         const isNew = r.isNew && val > 0;
@@ -935,7 +935,7 @@ const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -ap
                 A.over({
                     title: 'The lights went out', emoji: '🌆', msg: `You held out for ${wave} wave${wave === 1 ? '' : 's'}. ${wave >= 8 ? 'A true air-defence legend.' : wave >= 4 ? 'The skyline remembers you fondly.' : 'The missiles were, frankly, rude.'}`,
                     lines: [[' waves', wave], [' missiles stopped', kills], [' difficulty', D.name]],
-                    share: `🚀 Curio Missile Defence (${D.name}): ${Curio.fmt(A.score)} pts\n🌆 Held out ${wave} wave${wave === 1 ? '' : 's'} · 💥 ${kills} missiles stopped`
+                    share: `🚀 Zoble Missile Defence (${D.name}): ${Curio.fmt(A.score)} pts\n🌆 Held out ${wave} wave${wave === 1 ? '' : 's'} · 💥 ${kills} missiles stopped`
                 });
             }
             return;

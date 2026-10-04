@@ -441,7 +441,7 @@ const Pipes = (() => {
   $('rShare').addEventListener('click', () => {
     const st = $('rStars').querySelectorAll('[fill="#ffc93c"]').length;
     const what = mode === 'rush' ? `Rush: ${rushCount} boards in 3:00` : mode === 'daily' ? `Daily ${today()} in ${fmtT(Math.round(elapsed))}` : mode === 'campaign' ? `Level ${level} in ${fmtT(Math.round(elapsed))}` : `${n}×${n} in ${fmtT(Math.round(elapsed))}`;
-    const txt = `Curio Pipes · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)}${mode === 'rush' ? '' : ` ${moves} turns`}`;
+    const txt = `Zoble Pipes · ${what}\n${'⭐'.repeat(st)}${'☆'.repeat(3 - st)}${mode === 'rush' ? '' : ` ${moves} turns`}`;
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => Curio.toast('Result copied'), () => Curio.toast('Copy failed, sorry'));
   });
   function paintPicker() {

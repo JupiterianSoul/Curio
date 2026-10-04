@@ -923,7 +923,7 @@
   $('share').addEventListener('click', async () => {
     if (!lastRes) return;
     const m = MODES[lastRes.mode];
-    const txt = `🎯 Aim Trainer, ${m.name} (${DIFFS[lastRes.d].name}${lastRes.daily ? ', daily ' + today() : ''}): ${fmtScore(lastRes.mode, lastRes.score)}${lastRes.mode !== 'track' ? ', ' + lastRes.acc + '% accuracy' : ''}. ${MEDALS[lastRes.tier].name} medal. Curio`;
+    const txt = `🎯 Aim Trainer, ${m.name} (${DIFFS[lastRes.d].name}${lastRes.daily ? ', daily ' + today() : ''}): ${fmtScore(lastRes.mode, lastRes.score)}${lastRes.mode !== 'track' ? ', ' + lastRes.acc + '% accuracy' : ''}. ${MEDALS[lastRes.tier].name} medal. Zoble`;
     try { await navigator.clipboard.writeText(txt); Curio.toast('Copied to clipboard'); } catch { Curio.toast(txt, 4000); }
   });
 

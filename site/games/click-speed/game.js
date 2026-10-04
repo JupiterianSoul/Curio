@@ -460,7 +460,7 @@
   function share() {
     const r = $('rating').textContent;
     const line = mode === 'cps' ? `${big.textContent} CPS over ${data.cpsDur}s (${input})` : mode === 'race' ? `${data.raceN} clicks in ${big.textContent}` : `${big.textContent} points in a ${data.huntDur}s ${data.size} target hunt`;
-    const t = `Curio Click Speed ${$('rAnimal').textContent}\n${line}\n${r}`;
+    const t = `Zoble Click Speed ${$('rAnimal').textContent}\n${line}\n${r}`;
     navigator.clipboard?.writeText(t).then(() => Curio.toast('Result copied!'), () => Curio.toast(line));
   }
 

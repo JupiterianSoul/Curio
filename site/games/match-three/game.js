@@ -462,7 +462,7 @@
       Curio.confetti();
       [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.1), k * 110));
       const v = await Curio.modal({ emoji: '⏱️', title: `${Curio.fmt(score)} points!`, body: `${isNew ? 'A new Blitz record!' : `Your record: ${Curio.fmt(save.blitzBest)}.`} Longest cascade: x${maxCascade}.`, buttons: [{ label: 'Go again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Map', value: 'map' }] });
-      if (v === 'share') { try { await navigator.clipboard.writeText(`💎 Curio Gem Swap Blitz: ${Curio.fmt(score)} points in 60 seconds!`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } showMap(); }
+      if (v === 'share') { try { await navigator.clipboard.writeText(`💎 Zoble Gem Swap Blitz: ${Curio.fmt(score)} points in 60 seconds!`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } showMap(); }
       else if (v === 'again') startBlitz(); else showMap();
       return;
     }
