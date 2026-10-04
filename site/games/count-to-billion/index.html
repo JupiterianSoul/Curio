@@ -9,16 +9,18 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="count-to-billion">
+<body data-game="count-to-billion" data-modes>
   <main class="c-wrap">
     <div class="cb-hero">
+      <div class="note-top" aria-hidden="true"><span>Series B</span><span>No. 1,000,000,000</span></div>
       <h1 class="c-title">What a Billion Looks Like</h1>
       <div class="odo" id="odo" aria-hidden="true"></div>
       <p class="c-sub">Thousand, million, billion, trillion. They sound like neighbours. They are not even on the same planet.</p>
       <div class="cb-jump">
+        <a class="c-btn simple-only" href="#million">👀 Show me a million</a>
         <a class="c-btn" href="#spend">💸 Spend a billion</a>
-        <button class="c-btn c-btn--ghost" type="button" id="openQuiz">🎯 How big is it?</button>
-        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="openQuiz">🎯 How big is it?</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
       </div>
     </div>
 
@@ -54,18 +56,18 @@
     <div class="sp-grid" id="spGrid"></div>
     <div class="c-card sp-receipt" id="spReceipt"></div>
 
-    <h2 class="cb-h">Some numbers to sit with</h2>
-    <div class="cb-big" id="facts"></div>
+    <h2 class="cb-h adv">Some numbers to sit with</h2>
+    <div class="cb-big adv" id="facts"></div>
 
-    <h2 class="cb-h">How long to earn a billion?</h2>
-    <div class="c-card cb-tool">
+    <h2 class="cb-h adv">How long to earn a billion?</h2>
+    <div class="c-card cb-tool adv">
       <label for="salary">Your yearly income (dollars, pounds, whatever)</label>
       <div class="c-row"><input class="c-input" id="salary" type="number" min="1000" max="100000000" step="1000" value="60000" inputmode="numeric"></div>
       <div class="cb-out" id="earn"></div>
     </div>
 
-    <h2 class="cb-h">Count to a million, one per second</h2>
-    <div class="c-card cb-count">
+    <h2 class="cb-h adv">Count to a million, one per second</h2>
+    <div class="c-card cb-count adv">
       <p class="c-muted" style="margin:0">Press start and the counter ticks once a second, like a very patient person saying numbers out loud. Your progress is saved on this device.</p>
       <div class="cb-digits" id="digits">0</div>
       <div class="c-muted" id="eta"></div>
@@ -98,6 +100,7 @@
       </div>
     </section>
 
+    <p class="c-muted cb-more simple-only">Switch to Advanced for three more things to count, the How big is it? quiz, a billion-dollar salary calculator, big-number facts and a counter that ticks to a million.</p>
     <p class="c-muted cb-foot">Assumes a grain of long-grain rice weighs about 25 mg, a US $100 bill is 0.11 mm thick and weighs 1 g, and a resting heart beats 70 times a minute. Billion means the short scale 10⁹ used today almost everywhere in English.</p>
   </main>
   <script src="../../games.js"></script>

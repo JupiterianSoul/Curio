@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="speed-race">
+<body data-game="speed-race" data-modes>
   <main class="c-wrap">
     <header class="hero">
       <div class="gauge" aria-hidden="true">
@@ -20,15 +20,21 @@
           <circle cx="100" cy="110" r="10" fill="var(--ink)"/><circle cx="100" cy="110" r="4" fill="var(--accent)"/>
         </svg>
       </div>
+      <div class="flagline" aria-hidden="true"></div>
       <h1 class="c-title">How Fast?</h1>
-      <p class="c-sub">Pick up to six racers, from drifting continents to a beam of light, and watch them race at their true relative speeds. Spoiler: the snail does not win.</p>
+      <p class="c-sub" id="sub">Pick up to six racers, from drifting continents to a beam of light, and watch them race at their true relative speeds. Spoiler: the snail does not win.</p>
       <div class="heroBtns">
-        <button class="c-btn c-btn--ghost" type="button" id="openOrder">🧩 Slowest to fastest</button>
-        <button class="c-btn c-btn--ghost" type="button" id="openMe">🏃 Add yourself</button>
-        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="openOrder">🧩 Slowest to fastest</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="openMe">🏃 Add yourself</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
       </div>
     </header>
 
+    <div class="match simple-only" id="match">
+      <button type="button" class="mbtn" id="mPrev" aria-label="Previous match-up">‹</button>
+      <div class="match__mid"><small id="mNum">Race 1 of 8</small><b id="mTitle">Animal sprint</b><span id="mDist">100 m sprint</span></div>
+      <button type="button" class="mbtn" id="mNext" aria-label="Next match-up">›</button>
+    </div>
     <section class="c-card arena" aria-label="Race track">
       <div class="stage" id="stage">
         <div class="sky" aria-hidden="true"></div>
@@ -38,14 +44,15 @@
       <div class="controls">
         <div class="left">
           <button class="c-btn" type="button" id="go">🏁 Race!</button>
-          <button class="c-btn c-btn--ghost" type="button" id="rand">🎲 Random</button>
+          <button class="c-btn c-btn--ghost adv" type="button" id="rand">🎲 Random</button>
+          <button class="c-btn c-btn--ghost simple-only" type="button" id="mNext2">Next race ›</button>
         </div>
         <div class="right">
-          <div class="seg" role="group" aria-label="Scale">
+          <div class="seg adv" role="group" aria-label="Scale">
             <button type="button" id="lin" aria-pressed="true">True scale</button>
             <button type="button" id="log" aria-pressed="false">Log scale</button>
           </div>
-          <select class="c-input" id="dist" aria-label="Race distance"></select>
+          <select class="c-input adv" id="dist" aria-label="Race distance"></select>
           <span class="clock" id="clock" aria-hidden="true">0.0 s</span>
         </div>
       </div>
@@ -55,11 +62,12 @@
     <section class="c-card podium" id="podium" hidden aria-live="polite"></section>
     <section class="c-card info" id="info" aria-live="polite"></section>
 
-    <div class="pick-head">
+    <p class="c-muted simple-only more">Eight ready-made races. Switch to Advanced to pick any of 68 racers, change the distance and scale, add yourself and play the Slowest to fastest puzzle.</p>
+    <div class="pick-head adv">
       <h2>Pick your racers</h2>
       <span class="c-muted" id="count" style="font-size:13px;font-weight:700"></span>
     </div>
-    <div class="roster" id="roster"></div>
+    <div class="roster adv" id="roster"></div>
   </main>
 
   <section class="panel" id="orderPanel" hidden aria-label="Slowest to fastest puzzle">

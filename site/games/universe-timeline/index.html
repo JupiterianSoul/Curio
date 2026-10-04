@@ -9,29 +9,30 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="universe-timeline">
+<body data-game="universe-timeline" data-modes>
   <div id="bg" aria-hidden="true"><canvas id="sky"></canvas></div>
   <header class="hero">
     <div class="hero__in">
       <div class="bang" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
-      <h1>Universe Timeline</h1>
+      <h1 data-t="Universe Timeline">Universe Timeline</h1>
       <p>13.8 billion years of everything, in one scroll. The early universe moves fast, then the clock slows down as stars, planets, life and finally people show up.</p>
       <div class="modes">
         <button class="mode mode--go" type="button" id="start">
           <svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="mg1"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffe28a"/><stop offset="1" stop-color="#ff8a3c" stop-opacity="0"/></radialGradient></defs><circle cx="32" cy="18" r="14" fill="url(#mg1)"/><path d="M32 30v26" stroke="#ffcf6e" stroke-width="4" stroke-linecap="round"/><path d="M22 46l10 10 10-10" fill="none" stroke="#ffcf6e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <b>Scroll through time</b><span>Start at the Big Bang</span>
+          <b id="startB">Scroll through time</b><span id="startS">Start at the Big Bang</span>
         </button>
-        <button class="mode" type="button" id="openCal">
+        <button class="mode adv" type="button" id="openCal">
           <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="44" rx="8" fill="#2a2150" stroke="#b06cff" stroke-width="3"/><rect x="8" y="12" width="48" height="12" rx="6" fill="#b06cff"/><g fill="#ffcf6e"><circle cx="20" cy="34" r="3"/><circle cx="32" cy="34" r="3"/><circle cx="44" cy="34" r="3"/><circle cx="20" cy="46" r="3"/><circle cx="32" cy="46" r="3"/></g><circle cx="44" cy="46" r="5" fill="#ff5a36"/></svg>
           <b>Cosmic Calendar</b><span>All of time in one year</span>
         </button>
-        <button class="mode" type="button" id="openQuiz">
+        <button class="mode adv" type="button" id="openQuiz">
           <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="14" width="24" height="34" rx="6" fill="#4fc3f7" transform="rotate(-8 18 31)"/><rect x="34" y="14" width="24" height="34" rx="6" fill="#66d17a" transform="rotate(8 46 31)"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" font-family="sans-serif">?</text></svg>
           <b>Which came first?</b><span>A quick quiz, daily too</span>
         </button>
       </div>
-      <div class="stats"><span id="statN">🕰️ 106 moments</span><span>🔭 11 eras</span><button type="button" class="badgesBtn" id="badgesBtn">🏅 <span id="badgeCount">0</span> badges</button></div>
-      <p class="keys">Keys: <span class="c-kbd">Space</span> play · <span class="c-kbd">N</span>/<span class="c-kbd">P</span> next or previous era · <span class="c-kbd">C</span> calendar · <span class="c-kbd">Q</span> quiz</p>
+      <div class="stats"><span id="statN">🕰️ 106 moments</span><span>🔭 11 eras</span><button type="button" class="badgesBtn adv" id="badgesBtn">🏅 <span id="badgeCount">0</span> badges</button></div>
+      <p class="keys simple-only">Press <span class="c-kbd">Space</span> to pause or play the tour. Switch to Advanced for all 106 moments, the Cosmic Calendar and a quiz.</p>
+      <p class="keys adv">Keys: <span class="c-kbd">Space</span> play · <span class="c-kbd">N</span>/<span class="c-kbd">P</span> next or previous era · <span class="c-kbd">C</span> calendar · <span class="c-kbd">Q</span> quiz · <span class="c-kbd">F</span> find</p>
     </div>
   </header>
   <main class="tl" id="tl" aria-label="Timeline from the Big Bang to today">
@@ -43,12 +44,13 @@
     <div class="pace" id="cPace"></div>
     <div class="btns">
       <button type="button" id="play" aria-pressed="false">▶ Play</button>
-      <button type="button" id="speed" aria-label="Playback speed">1×</button>
-      <button type="button" id="eras" aria-label="Jump to an era" aria-expanded="false">☰</button>
+      <button type="button" id="speed" class="adv" aria-label="Playback speed">1×</button>
+      <button type="button" id="next" class="simple-only" aria-label="Next stop">⏭</button>
+      <button type="button" id="eras" class="adv" aria-label="Jump to an era or find a moment" aria-expanded="false">☰</button>
       <button type="button" id="restart" aria-label="Back to the Big Bang">⏮</button>
     </div>
     <div class="bar"><i id="cBar"></i><div class="ticks" id="ticks"></div></div>
-    <div class="eramenu" id="eraMenu" hidden></div>
+    <div class="eramenu" id="eraMenu" hidden><input class="find" id="find" type="search" placeholder="Find a moment: dinosaurs, Moon..." aria-label="Find a moment" autocomplete="off"><div id="findRes" class="findRes"></div><div id="eraList"></div></div>
   </aside>
 
   <section class="panel" id="calPanel" hidden aria-label="Cosmic Calendar">

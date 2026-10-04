@@ -573,6 +573,67 @@
     if (ev.key === '/') { ev.preventDefault(); $('q').focus(); }
   });
 
+  if (Curio.simple) $('sub').textContent = 'All 118 known elements, hung in one gallery. Take the guided tour of the twelve most famous, or tap any square to read its placard.';
+  const TOUR = [
+    [1, 'The first and simplest element. About three quarters of all normal matter in the universe.'],
+    [2, 'Lighter than air and so cold as a liquid that it never freezes on its own.'],
+    [6, 'The backbone of every living thing, and of diamonds and pencil lead too.'],
+    [8, 'Every breath you take. Also most of the mass of your body, thanks to water.'],
+    [10, 'The glow in old shop signs. It refuses to react with almost anything.'],
+    [14, 'Sand, glass and the chip in the device you are reading this on.'],
+    [26, 'The heart of the Earth and the red in your blood.'],
+    [47, 'The best conductor of electricity of all the elements.'],
+    [79, 'So unreactive that ancient gold jewellery still shines today.'],
+    [80, 'The only metal that is liquid at room temperature.'],
+    [92, 'The heaviest element found in nature in any real amount, and the fuel of nuclear power.'],
+    [118, 'The heaviest element ever made. Only a handful of atoms, each gone in under a millisecond.']
+  ];
+  let tourI = -1, tourTimer = 0, tourPlaying = false;
+  const dots = $('tDots');
+  TOUR.forEach(() => dots.append(document.createElement('i')));
+  function tourGo(i) {
+    tourI = (i + TOUR.length) % TOUR.length;
+    const [z, why] = TOUR[tourI];
+    const e = cells[z - 1].e;
+    $('tour').hidden = false;
+    $('tLabel').textContent = `${tourI + 1} of ${TOUR.length} · ${e.name}`;
+    $('tWhy').textContent = why;
+    [...dots.children].forEach((d, k) => d.classList.toggle('on', k <= tourI));
+    select(e, true);
+    const b = cells[z - 1].b;
+    b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
+    b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    if (narrow.matches) $('tour').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    clearTimeout(tourTimer);
+    if (tourPlaying) tourTimer = setTimeout(() => { if (tourI === TOUR.length - 1) { tourPause(); Curio.confetti(); Curio.toast('Tour complete! Tap any element to keep exploring.', 2600); } else tourGo(tourI + 1); }, 6500);
+  }
+  function tourPause() { tourPlaying = false; clearTimeout(tourTimer); $('tPlay').textContent = '▶'; $('tPlay').setAttribute('aria-pressed', 'false'); $('tPlay').setAttribute('aria-label', 'Play tour'); }
+  function tourPlay() { tourPlaying = true; $('tPlay').textContent = '⏸'; $('tPlay').setAttribute('aria-pressed', 'true'); $('tPlay').setAttribute('aria-label', 'Pause tour'); tourGo(tourI < 0 || tourI === TOUR.length - 1 ? 0 : tourI + 1); }
+  $('tourBtn').addEventListener('click', () => { tourI = -1; tourPlay(); });
+  $('tPlay').addEventListener('click', () => (tourPlaying ? tourPause() : tourPlay()));
+  $('tNext').addEventListener('click', () => tourGo(tourI + 1));
+  $('tPrev').addEventListener('click', () => tourGo(tourI - 1));
+  $('tStop').addEventListener('click', () => { tourPause(); $('tour').hidden = true; });
+  $('luckyBtn').addEventListener('click', () => {
+    tourPause();
+    const e = cells[Math.floor(Math.random() * cells.length)].e;
+    select(e, true);
+    const b = cells[e.z - 1].b;
+    b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
+    b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    if (narrow.matches) $('cardOut').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  grid.addEventListener('pointerdown', () => { if (tourPlaying) tourPause(); });
+  addEventListener('keydown', (ev) => {
+    if (!Curio.simple || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const tag = (ev.target.tagName || '').toLowerCase();
+    if (tag === 'input' || ev.target.closest('.grid')) return;
+    if ($('tour').hidden) return;
+    if (ev.key === 'ArrowRight') { ev.preventDefault(); tourGo(tourI + 1); }
+    else if (ev.key === 'ArrowLeft') { ev.preventDefault(); tourGo(tourI - 1); }
+    else if (ev.key === ' ' && tag !== 'button') { ev.preventDefault(); tourPlaying ? tourPause() : tourPlay(); }
+  });
+
   cells.forEach(({ b }, i) => { b.style.animationDelay = `${(b.style.gridRow * 30 + b.style.gridColumn * 18)}ms`; b.classList.add('intro'); });
   paintSets();
   paintProgress();

@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="world-counter">
+<body data-game="world-counter" data-modes>
   <main class="c-wrap wc">
     <header class="wc-hero">
+      <div class="wc-board" aria-hidden="true"><span>LIVE</span><span>EARTH</span><span>OPS</span></div>
       <h1 class="c-title">World Right Now</h1>
       <p class="c-sub">Everything here is happening while you read this. Spin the globe, fast-forward time, and watch the planet's numbers tick.</p>
     </header>
@@ -41,7 +42,7 @@
     </section>
 
     <section class="c-card wc-controls" aria-label="Controls">
-      <div class="wc-ctl">
+      <div class="wc-ctl adv">
         <span class="wc-ctl-l">Count</span>
         <div class="wc-seg" id="frames" role="tablist"></div>
       </div>
@@ -53,26 +54,28 @@
         <span class="wc-ctl-l">Time speed</span>
         <div class="wc-seg" id="warps"></div>
       </div>
-      <div class="wc-ctl">
+      <div class="wc-ctl adv">
         <span class="wc-ctl-l">Sound</span>
         <div class="wc-seg" id="chimes"></div>
       </div>
     </section>
 
-    <div class="wc-filters">
+    <div class="wc-filters adv">
       <div class="wc-chips" id="chips"></div>
       <input class="c-input wc-search" id="search" type="search" placeholder="Search counters" aria-label="Search counters">
     </div>
+    <h2 class="wc-h simple-only wc-hl"><i aria-hidden="true"></i>Twelve numbers, ticking since you arrived</h2>
     <div id="sections"></div>
+    <p class="c-muted simple-only wc-more">That is 12 of 81 counters. Switch to Advanced to see them all, count your whole lifetime, pin favourites, search and turn on sounds.</p>
     <p class="c-muted wc-empty" id="empty" hidden>No counters match. Try another word.</p>
 
     <section class="c-card wc-summary">
       <h2>While you were here</h2>
       <p id="summary"></p>
-      <div class="c-row"><button class="c-btn" type="button" id="share">📋 Copy this</button><button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 Badges</button></div>
+      <div class="c-row"><button class="c-btn" type="button" id="share">📋 Copy this</button><button class="c-btn c-btn--ghost adv" type="button" id="badgesBtn">🏅 Badges</button></div>
       <div class="wc-badges" id="badges" hidden></div>
     </section>
-    <p class="c-muted wc-foot">These are estimates, not live feeds. Each counter takes a yearly or daily figure from public sources (UN, NASA, USGS, IEA, FAO, OICA, Global Carbon Project, company statements) and spreads it evenly over time. The real world is lumpier. The globe is simplified and the birth locations are illustrative. Nothing here connects to the internet. Keys: <span class="c-kbd">1</span>-<span class="c-kbd">4</span> count mode, <span class="c-kbd">W</span> time speed, <span class="c-kbd">/</span> search.</p>
+    <p class="c-muted wc-foot">These are estimates, not live feeds. Each counter takes a yearly or daily figure from public sources (UN, NASA, USGS, IEA, FAO, OICA, Global Carbon Project, company statements) and spreads it evenly over time. The real world is lumpier. The globe is simplified and the birth locations are illustrative. Nothing here connects to the internet. <span class="adv">Keys: <span class="c-kbd">1</span>-<span class="c-kbd">4</span> count mode, <span class="c-kbd">W</span> time speed, <span class="c-kbd">/</span> search.</span><span class="simple-only">Keys: <span class="c-kbd">W</span> time speed, <span class="c-kbd">Space</span> pause the globe.</span></p>
   </main>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>

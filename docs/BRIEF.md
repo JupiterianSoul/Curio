@@ -125,3 +125,13 @@ Every game and toy has two versions, switched with the Simple / Advanced pill th
 ## Identity
 
 Each game must have its own identity: its own art direction, palette, typography treatment, sounds and copy voice that fit its theme, while still feeling part of Zoble (shared top bar, tokens for UI chrome, light and dark readable). No two games should look like the same template.
+
+## Libraries (allowed, vendored)
+
+You may use open-source libraries and tools (for example 98.css, physics engines, tone or audio helpers, drag and resize helpers, icon or font tooling). Rules:
+
+- Vendor them into the repo: copy the built file(s) into `site/vendor/<name>/` (shared) or into your game folder, with the library's LICENSE file next to it. Only permissive licences (MIT, BSD, ISC, Apache-2.0, OFL for fonts, CC0).
+- The live site must still load nothing from other servers: no CDN links, no runtime fetches outside the site.
+- Prefer small, plain-script or ES-module builds that work without a build step. If a library needs bundling, bundle it once locally (npm, esbuild) and commit the bundled output, not node_modules.
+- Dev-only tools (fontTools, image tools, test helpers) are fine in `tools/` or your scratch folder; they never ship to `site/`.
+- The sweep check skips any `vendor/` folder and `*.min.js` / `*.min.css` files (third-party code keeps its licence comments). Everything you write yourself still follows the repo rules.

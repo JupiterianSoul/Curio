@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="tall-things">
+<body data-game="tall-things" data-modes>
   <div id="sky" aria-hidden="true"></div>
   <div id="stars" aria-hidden="true"></div>
   <div id="limb" aria-hidden="true"></div>
@@ -29,11 +29,12 @@
       <p>Start at ladybird height and climb all the way to the International Space Station, 420 km straight up. The ruler zooms out as you go, so it will not take all day.</p>
       <div class="gbtns">
         <button class="c-btn" type="button" id="go">Start climbing ↑</button>
-        <button class="c-btn c-btn--ghost" type="button" id="openCmp">📏 Compare</button>
-        <button class="c-btn c-btn--ghost" type="button" id="openGuess">🎯 Guess the height</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="openCmp">📏 Compare</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="openGuess">🎯 Guess the height</button>
       </div>
-      <div class="stats"><span id="statN">📏 74 tall things</span><span>🔭 8 zoom levels</span><span>🛰️ 420 km to go</span><button type="button" class="badgesBtn" id="badgesBtn">🏅 <span id="badgeCount">0</span></button></div>
-      <p class="keys">Keys: <span class="c-kbd">Space</span> climb · <span class="c-kbd">C</span> compare · <span class="c-kbd">G</span> guess · <span class="c-kbd">End</span> ground</p>
+      <div class="stats"><span id="statN">📏 74 tall things</span><span>🔭 8 zoom levels</span><span>🛰️ 420 km to go</span><button type="button" class="badgesBtn adv" id="badgesBtn">🏅 <span id="badgeCount">0</span></button></div>
+      <p class="keys simple-only">Sit back: the lift stops at 20 famous heights on the way. <span class="c-kbd">Space</span> pauses, <span class="c-kbd">↑</span> skips to the next stop. Advanced has all 74 things, Compare and a guessing game.</p>
+      <p class="keys adv">Keys: <span class="c-kbd">Space</span> climb · <span class="c-kbd">C</span> compare · <span class="c-kbd">G</span> guess · <span class="c-kbd">End</span> ground</p>
     </div>
   </section>
 
@@ -44,7 +45,7 @@
     <div class="row"><span id="mTemp">15 °C</span><span id="mAir">Air 100%</span></div>
     <div class="pace" id="mPace"></div>
     <div class="bar"><i id="mBar"></i></div>
-    <div class="btns"><button type="button" id="climb" aria-pressed="false">🚀 Climb</button><button type="button" id="speed" aria-label="Climb speed">1×</button><button type="button" id="down">⏬ Ground</button></div>
+    <div class="btns"><button type="button" id="climb" aria-pressed="false">🚀 Climb</button><button type="button" id="speed" class="adv" aria-label="Climb speed">1×</button><button type="button" id="nextStop" class="simple-only" aria-label="Next stop">⏫ Next</button><button type="button" id="down">⏬ Ground</button></div>
   </aside>
 
   <section class="panel" id="cmpPanel" hidden aria-label="Compare tall things">

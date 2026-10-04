@@ -1,5 +1,7 @@
 (() => {
-  const C = window.WC_COUNTERS, CATS = window.WC_CATS, ICONS = window.WC_ICONS;
+  const SIMPLE = Curio.simple;
+  const PICK = ['births', 'deaths', 'heart', 'myheart', 'lightning', 'quakes', 'trees', 'co2', 'coffee', 'emails', 'flights', 'light'];
+  const C = SIMPLE ? PICK.map((id) => window.WC_COUNTERS.find((c) => c.id === id)).filter(Boolean) : window.WC_COUNTERS, CATS = window.WC_CATS, ICONS = window.WC_ICONS;
   const LAND = window.WC_LAND, CITIES = window.WC_CITIES, NAMES = window.WC_CITY_NAMES;
   const $ = (id) => document.getElementById(id);
   const YEAR = 365.2425 * 86400;
@@ -75,7 +77,7 @@
   const WARPS = [[1, 'Real time'], [60, '1 min/s'], [3600, '1 hour/s'], [86400, '1 day/s']];
   const FRAMES = [['arrived', 'Since you arrived'], ['today', 'Today'], ['year', 'This year'], ['life', 'Your lifetime']];
   const CHIMES = [['off', '🔕 Off'], ['births', '👶 Births'], ['heart', '💓 My heartbeat'], ['lightning', '⚡ Lightning']];
-  let frame = FRAMES.some((f) => f[0] === save.frame) ? save.frame : 'arrived';
+  let frame = !SIMPLE && FRAMES.some((f) => f[0] === save.frame) ? save.frame : 'arrived';
   if (frame === 'life' && !save.birth) frame = 'arrived';
   let filter = 'all', query = '';
 
@@ -333,7 +335,7 @@
     if (save.birth) { const b = new Date(save.birth + 'T00:00:00').getTime(); return Math.max(0, (vt - b) / 1000); }
     return 0;
   }
-  const byId = Object.fromEntries(C.map((c) => [c.id, c]));
+  const byId = Object.fromEntries(window.WC_COUNTERS.map((c) => [c.id, c]));
 
   let lastTiles = 0, lastTicker = 0, lastDN = 0, chimeAcc = 0, heartAcc = 0, birthAcc = 0, boltAcc = 0, quakeAcc = 0, chimeCount = 0, chimeWin = 0, raf = 0, lastSave = 0;
   function frameLoop(now) {
@@ -451,6 +453,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input,textarea,select')) return;
     if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); spinOn = !spinOn; Curio.toast(spinOn ? 'Globe spinning' : 'Globe paused'); }
+    else if (SIMPLE) { if (e.key === 'w' || e.key === 'W' || e.key === 'f' || e.key === 'F') { const i = WARPS.findIndex((x) => x[0] === warp); setWarp(WARPS[(i + 1) % WARPS.length][0]); } }
     else if (/^[1-4]$/.test(e.key)) setFrame(FRAMES[Number(e.key) - 1][0]);
     else if (e.key === 'w' || e.key === 'W') { const i = WARPS.findIndex((x) => x[0] === warp); setWarp(WARPS[(i + 1) % WARPS.length][0]); }
     else if (e.key === '/') { e.preventDefault(); $('search').focus(); }
@@ -459,6 +462,7 @@
 
   if (new Date().getHours() < 5) setTimeout(() => award('night'), 1500);
   if (!Curio.store.get('wc:tipShown', false) && !Curio.touchpad) { Curio.store.set('wc:tipShown', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar to spin the globe with clicks', 4200), 1800); }
+  if (SIMPLE) document.body.classList.add('wc-simple');
   buildTiles(); buildChips(); applyFilter();
   seg($('frames'), FRAMES, frame, setFrame, true);
   $('birthRow').hidden = frame !== 'life';

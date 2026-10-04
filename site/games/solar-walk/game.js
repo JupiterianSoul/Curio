@@ -196,7 +196,46 @@
     Curio.beep(400 + Math.log10(mult) * 200, 0.08, 'triangle', 0.06);
     if (!lightOn) setLight(true); else updateEta();
   });
-  $('start').addEventListener('click', () => { started = true; sc.focus({ preventScroll: true }); setLight(true); });
+  const SIMPLE = Curio.simple;
+  const HOPS = [{ n: 'Sun', a: 0 }, ...BODIES.filter((b) => b.n !== 'Ceres')];
+  let flight = 0;
+  function hopIndex() { const km = centerKm(); let i = 0; HOPS.forEach((h, k) => { if (km >= h.a - 5e4) i = k; }); return i; }
+  function paintHop() {
+    const i = hopIndex();
+    const nx = HOPS[i + 1];
+    $('hopNext').textContent = nx ? `Fly to ${nx.n} ›` : 'Back to the Sun ↺';
+    $('hopBack').disabled = i === 0;
+  }
+  function flyTo(km) {
+    setLight(false);
+    cancelAnimationFrame(flight);
+    started = true;
+    const from = sc.scrollLeft, to = Math.max(0, x(km) - sc.clientWidth / 2);
+    const dist = Math.abs(to - from);
+    const dur = Math.min(4200, 900 + Math.log10(1 + dist) * 520);
+    const t0 = performance.now();
+    $('stage').classList.add('flying');
+    Curio.beep(220, 0.5, 'sine', 0.04); setTimeout(() => Curio.beep(330, 0.4, 'sine', 0.03), 150);
+    const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / dur);
+      sc.scrollLeft = from + (to - from) * ease(t);
+      if (t < 1) flight = requestAnimationFrame(step);
+      else { $('stage').classList.remove('flying'); paintHop(); if (!lensOpen && SIMPLE) $('lensToggle').click(); }
+    };
+    flight = requestAnimationFrame(step);
+  }
+  function hop(dir) {
+    const i = hopIndex();
+    const j = i + dir;
+    if (j >= HOPS.length) { flyTo(0); return; }
+    if (j < 0) return;
+    flyTo(HOPS[j].a);
+  }
+  $('hopNext').addEventListener('click', () => hop(1));
+  $('hopBack').addEventListener('click', () => hop(-1));
+  $('start').addEventListener('click', () => { started = true; sc.focus({ preventScroll: true }); if (SIMPLE) hop(1); else setLight(true); });
+  if (SIMPLE) { $('start').textContent = 'Fly to Mercury →'; sc.addEventListener('scroll', () => paintHop(), { passive: true }); }
   $('home').addEventListener('click', () => { setLight(false); sc.scrollLeft = 0; Curio.beep(880, 0.15, 'sine', 0.05); });
   map.addEventListener('click', (e) => {
     const r = map.getBoundingClientRect();
@@ -230,7 +269,7 @@
     started = true;
     if (lightOn) setLight(false);
   }, { passive: false });
-  sc.addEventListener('touchstart', () => { started = true; if (lightOn) setLight(false); }, { passive: true });
+  sc.addEventListener('touchstart', () => { started = true; cancelAnimationFrame(flight); if (lightOn) setLight(false); }, { passive: true });
   addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, select, textarea')) return;
     const step = e.shiftKey ? sc.clientWidth * 10 : sc.clientWidth * 0.4;
@@ -238,7 +277,8 @@
     if (e.key === 'ArrowRight' || e.key === 'PageDown') d = step;
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') d = -step;
     else if (e.key === 'Home') { e.preventDefault(); $('home').click(); return; }
-    else if (e.key === ' ' && e.target === document.body) { e.preventDefault(); setLight(!lightOn); return; }
+    else if (e.key === ' ' && (e.target === document.body || e.target === sc)) { e.preventDefault(); if (SIMPLE) hop(1); else setLight(!lightOn); return; }
+    if (SIMPLE && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target !== map) { e.preventDefault(); hop(e.key === 'ArrowRight' ? 1 : -1); return; }
     if (!d || e.target === map) return;
     e.preventDefault();
     started = true;

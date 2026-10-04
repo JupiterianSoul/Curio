@@ -124,3 +124,36 @@ body.guessing .hp-fact:not(.revealed) .hp-body { display: none; }
   .hp-svg { max-height: 31dvh; }
 }
 @media (prefers-reduced-motion: reduce) { .hp-person { transition: none; } .hp-person .hp-in, .hp-eyes, .hp-cloud { animation: none; } }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+:root { --cork: #c99b68; --cork-2: #b5865a; --paper: #fffaf0; --paper-ink: #2d2620; --hand: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', 'Chalkboard SE', var(--font), cursive; }
+:root[data-theme="dark"] { --cork: #3a2b1f; --cork-2: #2e2219; --paper: #2a2520; --paper-ink: #f3ead9; }
+body { background-color: var(--cork); background-image: radial-gradient(rgba(0,0,0,.14) 1px, transparent 1.6px), radial-gradient(rgba(255,255,255,.12) 1px, transparent 1.5px), radial-gradient(rgba(0,0,0,.08) 2px, transparent 2.6px), linear-gradient(var(--cork), var(--cork-2)); background-size: 9px 9px, 13px 13px, 23px 23px, 100% 100%; background-position: 0 0, 4px 6px, 11px 3px, 0 0; background-attachment: fixed; }
+.hp-hero { position: relative; padding-top: 4px; }
+.hp-sign { display: inline-block; margin: 6px auto 0; padding: 6px 18px; background: linear-gradient(#7a5233, #5e3d24); color: #fff3d6; font: 800 13px/1 var(--hand); letter-spacing: .1em; text-transform: uppercase; border-radius: 6px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 4px 0 #3e2716, 0 8px 16px rgba(0,0,0,.25); transform: rotate(-3deg); position: relative; }
+.hp-sign::before, .hp-sign::after { content: ''; position: absolute; top: -14px; width: 3px; height: 14px; background: #3e2716; }
+.hp-sign::before { left: 18px; } .hp-sign::after { right: 18px; }
+.hp-hero .c-title { display: inline-block; background: var(--paper); color: var(--paper-ink); padding: 10px 22px 12px; margin: 12px auto 6px; transform: rotate(-1deg); box-shadow: 0 2px 2px rgba(0,0,0,.12), 0 12px 24px rgba(0,0,0,.22); font-family: var(--hand); text-shadow: none; position: relative; }
+.hp-hero .c-title::before { content: ''; position: absolute; left: 50%; top: -8px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9a8a, #e0352b 60%, #9a1f18); box-shadow: 0 3px 4px rgba(0,0,0,.35); }
+.hp-hero .c-sub { background: var(--paper); color: var(--paper-ink); display: inline-block; max-width: 640px; padding: 8px 14px; transform: rotate(.8deg); box-shadow: 0 6px 14px rgba(0,0,0,.18); font-family: var(--hand); font-size: 15px; }
+.hp-met { background: var(--paper); color: var(--paper-ink); padding: 6px 10px; border-radius: 4px; box-shadow: 0 3px 8px rgba(0,0,0,.18); }
+.hp-village .c-card { background: var(--paper); border: 0; border-radius: 4px; box-shadow: 0 2px 2px rgba(0,0,0,.1), 0 16px 34px rgba(0,0,0,.28); position: relative; }
+.hp-village .c-card::before, .hp-village .c-card::after { content: ''; position: absolute; top: -6px; width: 70px; height: 20px; background: rgba(255,248,220,.55); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.hp-village .c-card::before { left: -14px; transform: rotate(-30deg); } .hp-village .c-card::after { right: -14px; transform: rotate(30deg); }
+.hp-cap { color: var(--paper-ink); font-family: var(--hand); }
+.hp-fact .c-card { background: var(--paper); color: var(--paper-ink); border: 0; border-radius: 3px; position: relative; box-shadow: 0 2px 2px rgba(0,0,0,.1), 0 10px 22px rgba(0,0,0,.2); }
+.hp-fact:nth-child(odd) .c-card { transform: rotate(-.8deg); }
+.hp-fact:nth-child(even) .c-card { transform: rotate(.7deg); }
+.hp-fact.on .c-card { transform: rotate(0) translateY(-4px) scale(1.01); box-shadow: 0 4px 4px rgba(0,0,0,.12), 0 22px 40px rgba(0,0,0,.3); }
+.hp-fact .c-card::before { content: ''; position: absolute; left: 50%; top: -9px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff 0 12%, var(--pin, #3a86ff) 30%, color-mix(in srgb, var(--pin, #3a86ff) 60%, #000)); box-shadow: 0 3px 4px rgba(0,0,0,.35); }
+.hp-fact:nth-child(3n+1) .c-card { --pin: #e0352b; } .hp-fact:nth-child(3n+2) .c-card { --pin: #06b37e; } .hp-fact:nth-child(3n) .c-card { --pin: #ffb020; }
+.hp-fact h2 { font-family: var(--hand); }
+.hp-fact p, .hp-legend li { color: color-mix(in srgb, var(--paper-ink) 85%, transparent); }
+.hp-legend b { color: var(--paper-ink); }
+.hp-src { color: color-mix(in srgb, var(--paper-ink) 60%, transparent); }
+.hp-hint { color: var(--paper-ink); opacity: .7; }
+#playBtn { font-size: 17px; padding: 12px 22px; }
+@media (max-width: 760px) {
+  .hp-village { background: var(--cork); background-image: inherit; }
+  .hp-village .c-card::before, .hp-village .c-card::after { display: none; }
+  .hp-hero .c-title { padding: 8px 14px; }
+}

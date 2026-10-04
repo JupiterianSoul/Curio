@@ -41,6 +41,7 @@
     ] }
   ];
 
+  if (Curio.simple) for (let i = UNITS.length - 1; i >= 0; i--) if (!['time', 'cash', 'people'].includes(UNITS[i].id)) UNITS.splice(i, 1);
   const tabs = $('tabs'), ladder = $('ladder');
   let unit = Curio.store.get('billion:unit', 'time');
   if (!UNITS.some((u) => u.id === unit)) unit = 'time';
@@ -413,6 +414,6 @@
     if (e.key === 'Escape') { closePanels(); return; }
     if (openPanel) { if (!$('qPlay').hidden && /^[1-6]$/.test(e.key)) { const b = $('qOpts').children[Number(e.key) - 1]; if (b && !b.disabled) b.click(); } else if (e.key === 'Enter' && !$('qNext').hidden && e.target !== $('qNext')) $('qNext').click(); return; }
     if (e.target.matches('input, textarea, select')) return;
-    if (e.key.toLowerCase() === 'q') openQuiz();
+    if (e.key.toLowerCase() === 'q' && !Curio.simple) openQuiz();
   });
 })();

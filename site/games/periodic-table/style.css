@@ -177,3 +177,52 @@ body.questing .el .nm { visibility: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .orb, .shell, .el.intro { animation: none; } }
 body.questing .card-out, body.questing .grid .card-slot .card { display: none; }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+:root { --wall: #dfe5df; --wall-2: #cfd8d0; --brass: #a8822f; --brass-2: #e7c879; --plaque: #fbf8f1; --plaque-ink: #2a2620; --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Times New Roman', serif; }
+:root[data-theme="dark"] { --wall: #141c1a; --wall-2: #1b2522; --plaque: #24221e; --plaque-ink: #f1ead9; --brass: #d3aa55; --brass-2: #8d6a24; }
+body { background: var(--wall); background-image: linear-gradient(90deg, transparent 0 calc(50% - 1px), rgba(0,0,0,.035) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(180deg, rgba(255,255,255,.18), transparent 340px), repeating-linear-gradient(90deg, transparent 0 239px, rgba(0,0,0,.03) 239px 241px); }
+:root[data-theme="dark"] body { background-image: linear-gradient(180deg, rgba(255,255,255,.035), transparent 340px), repeating-linear-gradient(90deg, transparent 0 239px, rgba(255,255,255,.025) 239px 241px); }
+body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: 520px; pointer-events: none; z-index: -1; background: radial-gradient(60% 70% at 50% 0%, rgba(255,240,200,.55), transparent 70%); }
+:root[data-theme="dark"] body::before { background: radial-gradient(55% 70% at 50% 0%, rgba(255,214,140,.10), transparent 70%); }
+.hero { position: relative; padding-top: 8px; }
+.kicker { margin: 4px 0 2px; font: 600 12px/1.2 var(--serif); letter-spacing: .32em; text-transform: uppercase; color: var(--brass); }
+.hero .c-title { font-family: var(--serif); font-weight: 700; letter-spacing: .01em; text-shadow: none; font-variant: small-caps; font-size: clamp(34px, 6vw, 58px); color: var(--ink); }
+.hero .c-title::after { content: ''; display: block; width: min(320px, 70%); height: 10px; margin: 8px auto 0; background: linear-gradient(var(--brass), var(--brass)) center 4px / 100% 1px no-repeat, radial-gradient(circle, var(--brass) 0 3px, transparent 3.5px) center / 10px 10px no-repeat; }
+.hero .c-sub { font-family: var(--serif); font-style: italic; font-size: 17px; }
+.heroAtom { color: var(--brass); filter: drop-shadow(0 6px 12px rgba(0,0,0,.18)); }
+.scroller { background: var(--wall-2); padding: 12px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,.12), 0 0 0 10px color-mix(in srgb, var(--brass) 55%, #3a2a10), 0 0 0 12px color-mix(in srgb, var(--brass-2) 70%, transparent), 0 20px 40px rgba(0,0,0,.25); margin: 10px 12px 18px; }
+.el { border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), inset 0 -2px 0 rgba(0,0,0,.14), 0 2px 3px rgba(0,0,0,.12); }
+.el::after { border-radius: 2px; }
+.el .s { font-family: var(--serif); font-weight: 700; letter-spacing: 0; }
+.el .nm { font-family: var(--serif); font-size: 8.5px; letter-spacing: .02em; }
+.card { background: var(--plaque); color: var(--plaque-ink); border: 0; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--brass) 60%, transparent), 0 0 0 5px var(--plaque), 0 0 0 6px color-mix(in srgb, var(--brass) 35%, transparent), 0 14px 30px rgba(0,0,0,.18); }
+.card h2 { font-family: var(--serif); font-weight: 700; font-size: 26px; letter-spacing: .01em; }
+.card h2::before { content: 'Specimen'; display: block; font: 600 10.5px/1.4 var(--serif); letter-spacing: .28em; text-transform: uppercase; color: var(--brass); }
+.card p { font-family: var(--serif); font-size: 15px; line-height: 1.5; }
+.card .big { border-radius: 3px; }
+.card .big b { font-family: var(--serif); font-weight: 700; }
+.card .tags span { border-radius: 2px; background: transparent; border: 1px solid color-mix(in srgb, var(--brass) 50%, transparent); font-family: var(--serif); font-weight: 600; letter-spacing: .03em; }
+.card .facts { border-top: 1px solid color-mix(in srgb, var(--brass) 40%, transparent); padding-top: 6px; margin-top: 4px; }
+.legend button, .legend .lg { border-radius: 3px; font-family: var(--serif); background: var(--plaque); }
+.tour { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center; margin: 0 12px 14px; padding: 10px 12px; background: var(--plaque); color: var(--plaque-ink); border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--brass) 60%, transparent), 0 10px 24px rgba(0,0,0,.14); position: sticky; top: calc(var(--bar-h) + 6px); z-index: 15; animation: plaqueIn .35s cubic-bezier(.2,.8,.3,1.2); }
+.tour[hidden] { display: none; }
+@keyframes plaqueIn { from { transform: translateY(-10px); opacity: 0; } }
+.tour__mid { min-width: 0; display: grid; gap: 2px; }
+.tour__mid b { font: 700 15px/1.2 var(--serif); letter-spacing: .02em; }
+.tour__mid span { font: italic 14px/1.35 var(--serif); color: color-mix(in srgb, var(--plaque-ink) 80%, transparent); }
+.tour__dots { display: flex; gap: 4px; margin-top: 3px; }
+.tour__dots i { width: 16px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--brass) 25%, transparent); transition: background .3s; }
+.tour__dots i.on { background: var(--brass); }
+.tbtn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--brass) 55%, transparent); background: transparent; color: var(--plaque-ink); font-size: 20px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.tbtn:hover { background: color-mix(in srgb, var(--brass) 15%, transparent); }
+.tbtn.tx { width: 34px; height: 34px; font-size: 14px; opacity: .7; }
+html[data-mode="simple"] .tools { grid-template-columns: minmax(0, 560px); justify-content: center; }
+html[data-mode="simple"] .hero .c-btn { font-size: 17px; padding: 12px 22px; }
+@media (max-width: 600px) {
+  .tour { grid-template-columns: auto minmax(0, 1fr) auto; margin: 0 0 12px; }
+  .tour .tbtn:nth-of-type(2), .tour .tx { grid-row: 2; }
+  .tour #tPlay { grid-column: 1; } .tour #tNext { grid-column: 3; grid-row: 1; } .tour .tx { grid-column: 3; }
+  .scroller { margin: 8px 6px 16px; padding: 8px; }
+  .kicker { letter-spacing: .18em; font-size: 11px; }
+}
+.heroBtns .c-btn { font-family: var(--serif); font-variant: small-caps; text-transform: none; letter-spacing: .03em; border-radius: 4px; }

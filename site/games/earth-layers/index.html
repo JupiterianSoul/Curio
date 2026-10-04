@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="earth-layers">
+<body data-game="earth-layers" data-modes>
   <header class="top">
     <svg class="scene" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       <defs><radialGradient id="sunG"><stop offset="0" stop-color="#fff6c9"/><stop offset=".5" stop-color="#ffd23f"/><stop offset="1" stop-color="#ffb000" stop-opacity="0"/></radialGradient></defs>
@@ -34,8 +34,8 @@
       </div>
       <h1 class="c-title">Dig to the Core</h1>
       <p class="c-sub">Grab a shovel. It is 6,371 km to the centre of the Earth, through rock, crushing pressure and an ocean of liquid metal. Scroll down to dig.</p>
-      <div class="c-row heroBtns"><button class="c-btn" id="dig0" type="button">Start digging ↓</button><button class="c-btn c-btn--ghost" id="openThru" type="button">🌏 Dig straight through</button><button class="c-btn c-btn--ghost" id="openQuiz" type="button">🎯 Deeper or shallower?</button></div>
-      <div class="stats"><span id="statN">⛏️ 56 stops on the way</span><span>🌡️ up to ~5,400 °C</span><span>🧭 6,371 km</span><button type="button" class="badgesBtn" id="badgesBtn">🏅 <span id="badgeCount">0</span></button></div>
+      <div class="c-row heroBtns"><button class="c-btn" id="dig0" type="button">Start digging ↓</button><button class="c-btn c-btn--ghost adv" id="openThru" type="button">🌏 Dig straight through</button><button class="c-btn c-btn--ghost adv" id="openQuiz" type="button">🎯 Deeper or shallower?</button></div>
+      <div class="stats"><span id="statN">⛏️ 56 stops on the way</span><span>🌡️ up to ~5,400 °C</span><span>🧭 6,371 km</span><button type="button" class="badgesBtn adv" id="badgesBtn">🏅 <span id="badgeCount">0</span></button></div>
     </div>
     <svg class="digger" viewBox="0 0 120 110" aria-hidden="true"><circle cx="46" cy="22" r="11" fill="#e0a878"/><path d="M34 16 Q46 2 58 16Z" fill="#ffcf1a"/><rect x="34" y="14" width="24" height="5" rx="2" fill="#e6a100"/><path d="M34 36 Q46 30 58 36 L60 70 L32 70Z" fill="#ff5a36"/><path d="M32 70 L60 70 L60 100 L52 100 L46 80 L40 100 L32 100Z" fill="#2d4a7a"/><g class="shovel"><path d="M58 44 L92 86" stroke="#8a5a33" stroke-width="5" stroke-linecap="round"/><path d="M86 80 L104 96 Q102 108 90 104 L80 92Z" fill="#9aa4ae"/><path d="M58 44 L70 52" stroke="#e0a878" stroke-width="7" stroke-linecap="round"/></g><path d="M88 104 Q96 96 112 104Z" fill="#6e4c2e"/></svg>
     <div class="grass" aria-hidden="true"></div>
@@ -69,7 +69,7 @@
       <div class="gauge" id="gT"><div class="lab"><span>🌡️ Temp</span><b id="mT">15 °C</b></div><div class="tr"><i></i></div></div>
       <div class="gauge" id="gP"><div class="lab"><span>🗜️ Pressure</span><b id="mP">1 atm</b></div><div class="tr"><i></i></div></div>
     </div>
-    <div class="btns"><button type="button" id="dig" aria-pressed="false">⏬ Dig</button><button type="button" id="speed" aria-label="Dig speed">1×</button><button type="button" id="up">⏫ Surface</button></div>
+    <div class="btns"><button type="button" id="dig" aria-pressed="false">⏬ Dig</button><button type="button" id="speed" class="adv" aria-label="Dig speed">1×</button><button type="button" id="nextStop" class="simple-only" aria-label="Next stop">⏬ Next</button><button type="button" id="up">⏫ Surface</button></div>
   </aside>
 
   <section class="panel" id="thruPanel" hidden aria-label="Dig straight through the Earth">

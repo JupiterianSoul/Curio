@@ -1,5 +1,7 @@
 (() => {
-  const { FACTS } = window.HP;
+  const SIMPLE = Curio.simple;
+  const KEEP = ['start', 'sex', 'age', 'cont', 'country', 'urban', 'net', 'power', 'water', 'read', 'poor', 'hand', 'red', 'space', 'end'];
+  const FACTS = SIMPLE ? window.HP.FACTS.filter((f) => KEEP.includes(f.id)) : window.HP.FACTS;
   const $ = (id) => document.getElementById(id);
   const NS = 'http://www.w3.org/2000/svg';
   const svg = $('village');
@@ -286,10 +288,23 @@
     const k = e.key.toLowerCase();
     if (k === 'j' || k === 'n') goTo(current + 1);
     else if (k === 'k' || k === 'p') goTo(current - 1);
-    else if (k === 'g') $('guessBtn').click();
+    else if (k === 'g' && !SIMPLE) $('guessBtn').click();
     else if (e.key === 'Escape') $('pfClose').click();
   });
 
+  let auto = 0;
+  function autoStop() { clearInterval(auto); auto = 0; $('playBtn').textContent = '▶ Play the slideshow'; $('playBtn').setAttribute('aria-pressed', 'false'); }
+  function autoStep() { if (current >= FACTS.length - 1) { autoStop(); return; } goTo(current + 1); }
+  $('playBtn').addEventListener('click', () => {
+    if (auto) { autoStop(); return; }
+    gestured = true;
+    $('playBtn').textContent = '⏸ Pause'; $('playBtn').setAttribute('aria-pressed', 'true');
+    if (current >= FACTS.length - 1) goTo(0); else goTo(current + 1);
+    auto = setInterval(autoStep, 5200);
+  });
+  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, () => { if (auto) autoStop(); }, { passive: true }));
+  document.addEventListener('visibilitychange', () => { if (document.hidden && auto) autoStop(); });
+  if (SIMPLE) addEventListener('keydown', (e) => { if (e.key === ' ' && !(e.target.closest && e.target.closest('button, input'))) { e.preventDefault(); $('playBtn').click(); } });
   show(0, true);
   requestAnimationFrame(pick);
 })();

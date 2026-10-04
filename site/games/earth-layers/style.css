@@ -204,3 +204,11 @@ body { overflow-x: hidden; }
   .vcard b { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .scene .clouds, .globe .spin, .globe .glow, .scene .sunC { animation: none; } .item.rv { opacity: 1; translate: none; } }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+.item { border-left: 0; background-image: linear-gradient(90deg, #c98a4b 0 3px, #8a5a32 3px 5px, #e0b070 5px 7px, #6b4226 7px 9px, transparent 9px); background-repeat: no-repeat; padding-left: 20px; }
+.item .dp { letter-spacing: .02em; }
+.item.spot { z-index: 9; transform: scale(1.07); box-shadow: 0 0 0 3px #ffb23f, 0 0 34px rgba(255,160,40,.45), 0 16px 40px rgba(0,0,0,.5); }
+.item.spot .em { animation: thunk .6s cubic-bezier(.2,1.6,.4,1); }
+@keyframes thunk { from { transform: translateY(-12px) rotate(-14deg) scale(.7); } }
+@media (max-width: 600px) { .item.spot { transform: scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .item.spot .em { animation: none; } }

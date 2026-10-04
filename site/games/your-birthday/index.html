@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="your-birthday">
+<body data-game="your-birthday" data-modes>
   <main class="c-wrap">
     <div class="bd-hero">
       <svg class="bd-scene" viewBox="0 0 560 210" role="img" aria-label="A birthday cake with candles, balloons and bunting">
@@ -34,8 +34,8 @@
           <circle cx="248" cy="80" r="12" fill="url(#bdGlow)"/><circle cx="280" cy="76" r="12" fill="url(#bdGlow)"/><circle cx="312" cy="80" r="12" fill="url(#bdGlow)"/>
           <path class="bd-fl" d="M248 72 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/><path class="bd-fl" d="M280 68 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/><path class="bd-fl" d="M312 72 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/></g>
       </svg>
-      <h1 class="c-title">Your Birthday</h1>
-      <p class="c-sub">Tell us when you arrived and we'll tell you what kind of day it was, what the stars (allegedly) think, how old you are on Jupiter, who shares your birthday, and what the world was up to.</p>
+      <h1 class="c-title"><span>Your</span> <span>Birthday</span></h1>
+      <p class="c-sub" id="sub">Tell us when you arrived and we'll tell you what kind of day it was, what the stars (allegedly) think, how old you are on Jupiter, who shares your birthday, and what the world was up to.</p>
       <form class="bd-form" id="form">
         <label for="dob">Your birthday</label>
         <input class="c-input" type="date" id="dob" min="1900-01-01" required>
@@ -43,7 +43,8 @@
       </form>
     </div>
     <div id="empty">
-      <div class="bd-teasers" aria-hidden="true"><span>🌙 Moon phase</span><span>🪐 Planet ages</span><span>🎂 Blow the candles</span><span>🌟 Famous twins</span><span>👯 Compare a friend</span><span>🗞️ Your year</span></div>
+      <div class="bd-teasers simple-only" aria-hidden="true"><span>📅 The day you were born</span><span>🌙 Moon phase</span><span>💎 Birthstone</span><span>🎂 Blow the candles</span><span>⏳ Next birthday</span></div>
+      <div class="bd-teasers adv" aria-hidden="true"><span>🌙 Moon phase</span><span>🪐 Planet ages</span><span>🎂 Blow the candles</span><span>🌟 Famous twins</span><span>👯 Compare a friend</span><span>🗞️ Your year</span></div>
       <p class="c-muted" style="text-align:center">Pick a date to begin. It's only stored on this device.</p>
     </div>
 
@@ -77,27 +78,27 @@
         <div class="bd-weekdays" id="weekdays"></div>
       </div>
 
-      <h2 class="bd-h">How old are you, exactly?</h2>
-      <div class="bd-ages" id="ages"></div>
+      <h2 class="bd-h adv">How old are you, exactly?</h2>
+      <div class="bd-ages adv" id="ages"></div>
 
-      <h2 class="bd-h">🪐 Your age on other worlds</h2>
-      <div class="c-card bd-planets">
+      <h2 class="bd-h adv">🪐 Your age on other worlds</h2>
+      <div class="c-card bd-planets adv">
         <svg id="orbits" class="bd-orbits" viewBox="0 0 400 400" role="img" aria-label="The planets on their orbits, with your age on each"></svg>
         <div class="bd-plist" id="plist"></div>
       </div>
 
-      <h2 class="bd-h">📊 Your life in numbers</h2>
-      <div class="bd-life" id="life"></div>
-      <p class="c-muted bd-note">Rough estimates using typical adult averages, so treat them as fun, not medical.</p>
+      <h2 class="bd-h adv">📊 Your life in numbers</h2>
+      <div class="bd-life adv" id="life"></div>
+      <p class="c-muted bd-note adv">Rough estimates using typical adult averages, so treat them as fun, not medical.</p>
 
-      <h2 class="bd-h">🌟 Famous birthday twins</h2>
-      <div class="bd-twins" id="twins"></div>
+      <h2 class="bd-h adv">🌟 Famous birthday twins</h2>
+      <div class="bd-twins adv" id="twins"></div>
 
-      <h2 class="bd-h">Strange birthdays to look forward to</h2>
-      <ul class="bd-miles" id="miles"></ul>
+      <h2 class="bd-h adv">Strange birthdays to look forward to</h2>
+      <ul class="bd-miles adv" id="miles"></ul>
 
-      <h2 class="bd-h">👯 Compare with a friend</h2>
-      <div class="c-card bd-friend">
+      <h2 class="bd-h adv">👯 Compare with a friend</h2>
+      <div class="c-card bd-friend adv">
         <form class="bd-form" id="fform">
           <label for="fname">Name</label><input class="c-input" id="fname" maxlength="24" placeholder="Sam" autocomplete="off">
           <label for="fdob">Birthday</label><input class="c-input" type="date" id="fdob" min="1900-01-01">
@@ -106,12 +107,13 @@
         <div id="fout"></div>
       </div>
 
-      <h2 class="bd-h">The world in your year</h2>
-      <div class="bd-year" id="yearCard"></div>
-      <div class="bd-tablewrap" id="tableWrap">
+      <h2 class="bd-h adv">The world in your year</h2>
+      <div class="bd-year adv" id="yearCard"></div>
+      <div class="bd-tablewrap adv" id="tableWrap">
         <table class="bd-table"><tbody id="table"></tbody></table>
       </div>
-      <p class="c-muted bd-foot">Chinese zodiac years start at Chinese New Year, not 1 January, so early-year birthdays may belong to the previous animal. Star signs use the usual tropical dates, which can shift by a day from year to year. Birthstones follow the modern list. Moon phases are calculated, so they can be off by a few hours.</p>
+      <p class="c-muted bd-more simple-only">That is the quick version. Switch to Advanced for your exact age down to the second, your age on every planet, your life in numbers, famous birthday twins, odd milestones, a friend comparison and the news from your birth year.</p>
+      <p class="c-muted bd-foot adv">Chinese zodiac years start at Chinese New Year, not 1 January, so early-year birthdays may belong to the previous animal. Star signs use the usual tropical dates, which can shift by a day from year to year. Birthstones follow the modern list. Moon phases are calculated, so they can be off by a few hours.</p>
     </div>
   </main>
   <script src="../../games.js"></script>

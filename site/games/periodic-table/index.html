@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="periodic-table">
+<body data-game="periodic-table" data-modes>
   <main class="c-wrap">
     <header class="hero">
       <div class="heroAtom" aria-hidden="true">
@@ -18,19 +18,22 @@
           <g class="orb o1"><circle cx="52" cy="0" r="4.5" fill="#4fb3ff"/></g><g transform="rotate(60)"><g class="orb o2"><circle cx="52" cy="0" r="4.5" fill="#66d17a"/></g></g><g transform="rotate(-60)"><g class="orb o3"><circle cx="52" cy="0" r="4.5" fill="#b06cff"/></g></g>
           <circle r="11" fill="url(#nuc)"/><circle cx="-3" cy="-3" r="3.5" fill="#fff" opacity=".5"/></svg>
       </div>
+      <p class="kicker">Gallery of the Elements · Hall 1</p>
       <h1 class="c-title">The Periodic Table</h1>
-      <p class="c-sub">All 118 known elements, from the hydrogen in the stars to the ones that exist for a millisecond. Tap any element, search, or turn up the heat and watch things melt.</p>
+      <p class="c-sub" id="sub">All 118 known elements, from the hydrogen in the stars to the ones that exist for a millisecond. Tap any element, search, or turn up the heat and watch things melt.</p>
       <div class="heroBtns">
-        <button class="c-btn" type="button" id="questBtn">🎮 Element Quest</button>
-        <button class="c-btn c-btn--ghost" type="button" id="dayBtn">✨ Element of the day</button>
-        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+        <button class="c-btn simple-only" type="button" id="tourBtn">▶ Guided tour: 12 famous elements</button>
+        <button class="c-btn c-btn--ghost simple-only" type="button" id="luckyBtn">🎲 Surprise me</button>
+        <button class="c-btn adv" type="button" id="questBtn">🎮 Element Quest</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="dayBtn">✨ Element of the day</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
       </div>
       <div class="explored"><div class="explored__bar"><i id="expBar"></i></div><span id="expTxt">Explored 0 of 118</span></div>
     </header>
 
     <section class="tools" aria-label="Controls">
       <div class="search"><span aria-hidden="true">🔎</span><input class="c-input" id="q" type="search" placeholder="Search: name, symbol or number" aria-label="Search elements" autocomplete="off"></div>
-      <div class="seg" role="group" aria-label="Colour by">
+      <div class="seg adv" role="group" aria-label="Colour by">
         <button type="button" id="modeCat" aria-pressed="true">🎨 Category</button>
         <button type="button" id="modeState" aria-pressed="false">🌡️ State</button>
         <button type="button" id="modeYear" aria-pressed="false">📜 Discovery</button>
@@ -41,8 +44,8 @@
         <div class="read" id="yRead">2010<small>118 known</small></div>
         <p class="ynote" id="yNote"></p>
       </div>
-      <div class="sets" id="sets" aria-label="Collections"></div>
-      <div class="temp">
+      <div class="sets adv" id="sets" aria-label="Collections"></div>
+      <div class="temp adv">
         <label for="t">Temperature</label>
         <input id="t" type="range" min="0" max="6000" step="1" value="298" aria-describedby="tRead">
         <div class="read" id="tRead">298 K<small>25 °C · 77 °F</small></div>
@@ -51,6 +54,13 @@
       </div>
     </section>
 
+    <div class="tour simple-only" id="tour" hidden>
+      <button type="button" class="tbtn" id="tPrev" aria-label="Previous element">‹</button>
+      <div class="tour__mid"><b id="tLabel">Stop 1 of 12</b><span id="tWhy"></span><div class="tour__dots" id="tDots"></div></div>
+      <button type="button" class="tbtn" id="tPlay" aria-pressed="true" aria-label="Pause tour">⏸</button>
+      <button type="button" class="tbtn" id="tNext" aria-label="Next element">›</button>
+      <button type="button" class="tbtn tx" id="tStop" aria-label="End tour">✕</button>
+    </div>
     <div class="quest" id="quest" hidden>
       <div class="quest__prompt" id="qPrompt"></div>
       <div class="quest__opts" id="qOpts"></div>
@@ -65,7 +75,8 @@
       </div>
     </div>
     <div class="legend" id="legend" aria-label="Legend"></div>
-    <p class="foot c-muted">Masses in brackets belong to radioactive elements with no stable form: they show the longest-lived isotope. Values marked ≈ are predictions. Use <span class="c-kbd">←</span><span class="c-kbd">↑</span><span class="c-kbd">→</span><span class="c-kbd">↓</span> to move around the table.</p>
+    <p class="foot c-muted simple-only">Simple shows the essentials. Switch to Advanced for the temperature slider, discovery timeline, collections and the Element Quest game.</p>
+    <p class="foot c-muted adv">Masses in brackets belong to radioactive elements with no stable form: they show the longest-lived isotope. Values marked ≈ are predictions. Use <span class="c-kbd">←</span><span class="c-kbd">↑</span><span class="c-kbd">→</span><span class="c-kbd">↓</span> to move around the table.</p>
   </main>
 
   <script src="../../games.js"></script>

@@ -1,5 +1,7 @@
 (function () {
-  const ITEMS = window.TALL_ITEMS;
+  const SIMPLE = Curio.simple;
+  const HL = new Set(['Ladybird', 'House cat', 'You (roughly)', 'Giraffe', 'Tyrannosaurus rex', 'Blue whale (on its tail)', 'Statue of Liberty', 'Saturn V rocket', 'Hyperion', 'Great Pyramid of Giza', 'Eiffel Tower', 'Empire State Building', 'Burj Khalifa', 'Mount Fuji', 'Mount Everest', 'Cruising airliner', 'Felix Baumgartner', 'Kármán line', 'Northern lights', 'International Space Station']);
+  const ITEMS = SIMPLE ? window.TALL_ITEMS.filter((it) => HL.has(it.name)) : window.TALL_ITEMS;
   const SEC = [[0, 0.2, 2000], [0.2, 2, 400], [2, 12, 160], [12, 120, 20], [120, 1000, 4], [1000, 10000, 0.25], [10000, 100000, 0.04], [100000, 430000, 0.008]];
   const TOP_H = 430000, HEAD = 560;
   const $ = (id) => document.getElementById(id);
@@ -51,7 +53,7 @@
   const end = document.createElement('div');
   end.className = 'endcard c-card';
   end.style.bottom = `${yOf(TOP_H) + 150}px`;
-  end.innerHTML = '<h2>🛰️ You made it to space</h2><p>420 km up, the ISS is closer to you than Paris is to Berlin. The Moon is about 900 times farther away than this. Maybe next time.</p><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the ground ⏬</button><button class="c-btn c-btn--ghost" type="button" id="endCmp">📏 Compare</button><button class="c-btn c-btn--ghost" type="button" id="endGuess">🎯 Guess game</button></div>';
+  end.innerHTML = '<h2>🛰️ You made it to space</h2><p>420 km up, the ISS is closer to you than Paris is to Berlin. The Moon is about 900 times farther away than this. Maybe next time.</p><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the ground ⏬</button><button class="c-btn c-btn--ghost adv" type="button" id="endCmp">📏 Compare</button><button class="c-btn c-btn--ghost adv" type="button" id="endGuess">🎯 Guess game</button><button class="c-btn c-btn--ghost simple-only" type="button" id="endAdv">🔭 All 74 things</button></div>';
   world.append(end);
   const NOTES = [
     [0.7, 'Scroll up to climb. Everything inside one zoom level is drawn on the same ruler.'],
@@ -68,7 +70,7 @@
     [260000, 'The thin air here can reach over 1,000 °C, but you would still freeze: there is almost nothing to carry the heat.'],
     [385000, 'Almost there. Look out for a large shiny thing moving at 28,000 km/h.']
   ];
-  const noteCards = NOTES.map(([h, t]) => {
+  const noteCards = (SIMPLE ? NOTES.filter((n, i) => i % 3 === 0) : NOTES).map(([h, t]) => {
     const el = document.createElement('p');
     el.className = 'note';
     el.textContent = t;
@@ -215,18 +217,52 @@
   let climbing = false, lastT = 0, running = true;
   const climbBtn = $('climb');
   function setClimb(on) { climbing = on; climbBtn.setAttribute('aria-pressed', String(on)); climbBtn.textContent = on ? '⏸ Stop' : '🚀 Climb'; if (on) { lastT = performance.now(); requestAnimationFrame(frame); } }
+  let hold = 0, spot = null;
+  const centerY = () => world.getBoundingClientRect().bottom - innerHeight / 2;
+  const stopY = (c) => parseFloat(c.el.style.bottom) + c.hgt / 2;
+  const stops = () => cards.filter((c) => !c.note).sort((a, b) => stopY(a) - stopY(b));
+  function spotlight(c) {
+    if (spot) spot.el.classList.remove('spot');
+    spot = c;
+    if (!c) return;
+    c.el.classList.add('spot', 'open');
+    const i = stops().indexOf(c);
+    Curio.beep(392 + i * 30, 0.2, 'triangle', 0.05); setTimeout(() => Curio.beep(588 + i * 30, 0.25, 'triangle', 0.04), 100);
+  }
+  function tourStep(now, dt) {
+    if (now < hold) return;
+    const y = centerY();
+    const st = stops().find((c) => stopY(c) > y + 3);
+    if (!st) { window.scrollBy(0, -600 * dt); return; }
+    const gap = stopY(st) - y;
+    const v = gap < 300 ? Math.max(80, gap * 2.6) : Math.min(2400, 800 + gap * 0.5);
+    const step = Math.min(gap, v * dt);
+    window.scrollBy(0, -step);
+    if (gap - step < 4) { hold = now + 2700; spotlight(st); }
+  }
+  function nextStop() {
+    const y = centerY();
+    const st = stops().find((c) => stopY(c) > y + 6);
+    setClimb(false);
+    if (!st) { scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    window.scrollBy({ top: -(stopY(st) - y), behavior: 'smooth' });
+    setTimeout(() => spotlight(st), 500);
+  }
   function frame(now) {
     if (!climbing || !running) return;
     const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
-    window.scrollBy(0, -380 * SPEEDS[speedI] * dt);
+    if (SIMPLE) tourStep(now, dt); else window.scrollBy(0, -380 * SPEEDS[speedI] * dt);
     if (scrollY <= 0) setClimb(false);
     requestAnimationFrame(frame);
   }
-  climbBtn.addEventListener('click', () => setClimb(!climbing));
+  climbBtn.addEventListener('click', () => { hold = 0; setClimb(!climbing); });
+  $('nextStop').addEventListener('click', nextStop);
+  $('endAdv').addEventListener('click', () => Curio.setMode('advanced'));
+  if (SIMPLE) { $('go').textContent = 'Ride the lift to space ↑'; }
   $('go').addEventListener('click', () => { Curio.beep(660, 0.15, 'sine', 0.06); setClimb(true); });
   $('again').addEventListener('click', () => $('down').click());
   $('down').addEventListener('click', () => { setClimb(false); scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); Curio.beep(330, 0.2, 'sine', 0.05); });
-  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (climbing && e.target !== climbBtn && e.target !== $('go')) setClimb(false); }, { passive: true }));
+  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (climbing && e.target !== climbBtn && e.target !== $('go') && e.target !== $('nextStop')) setClimb(false); }, { passive: true }));
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (document.hidden) setClimb(false); });
   window.addEventListener('curio:theme', update);
 
@@ -518,6 +554,7 @@
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
     const k = e.key.toLowerCase();
     if (e.key === ' ' && tag !== 'button') { e.preventDefault(); setClimb(!climbing); return; }
+    if (SIMPLE) { if (e.key === 'ArrowUp' || k === 'n') { e.preventDefault(); nextStop(); } else if (e.key === 'End') { e.preventDefault(); $('down').click(); } return; }
     if (climbing && k !== 'shift') setClimb(false);
     if (k === 'c') openCmp();
     else if (k === 'g') openGuess();

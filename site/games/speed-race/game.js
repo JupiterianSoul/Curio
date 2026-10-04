@@ -123,7 +123,7 @@
       <p>${x.fact}</p><ul>${comps.map((c) => `<li>${c}</li>`).join('')}</ul>`;
   }
 
-  function save() { Curio.store.set('speed-race:picked', picked); }
+  let save = () => Curio.store.set('speed-race:picked', picked);
 
   function toggle(id) {
     stopRace(true);
@@ -258,9 +258,50 @@
   });
   addEventListener('resize', () => { if (!race) setPositions([]); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && race) stopRace(true); });
+  const SIMPLE = Curio.simple;
+  const MATCHES = [
+    { t: 'Animal sprint', ids: ['chicken', 'cat', 'horse', 'greyhound', 'cheetah'], d: 0 },
+    { t: 'Can you outrun a bee?', ids: ['walk', 'bee', 'elephant', 'bolt', 'cat'], d: 0 },
+    { t: 'Slowpokes', ids: ['snail', 'sloth', 'tortoise', 'mosquito', 'walk'], d: 0, log: true },
+    { t: 'Fastest on wheels', ids: ['car', 'shinkansen', 'f1', 'bugatti', 'thrust'], d: 0 },
+    { t: 'Hit it hard', ids: ['pitch', 'tennis', 'golf', 'badminton', 'falcon'], d: 0 },
+    { t: 'London to New York', ids: ['ship', 'airliner', 'sound', 'concorde', 'sr71'], d: 2 },
+    { t: 'Leaving Earth', ids: ['concorde', 'x15', 'iss', 'apollo', 'voyager'], d: 3 },
+    { t: 'Race to the Moon', ids: ['apollo', 'voyager', 'earth', 'parker', 'light'], d: 4 }
+  ];
+  let mi = 0;
+  function loadMatch(i, go) {
+    mi = (i + MATCHES.length) % MATCHES.length;
+    const m = MATCHES[mi];
+    stopRace(true);
+    picked = m.ids.filter((id) => byId[id]);
+    distIdx = m.d; $('dist').value = String(m.d);
+    mode = m.log ? 'log' : 'lin';
+    $('lin').setAttribute('aria-pressed', String(mode === 'lin'));
+    $('log').setAttribute('aria-pressed', String(mode === 'log'));
+    $('mNum').textContent = `Race ${mi + 1} of ${MATCHES.length}`;
+    $('mTitle').textContent = m.t;
+    $('mDist').textContent = `🏁 ${DISTS[m.d].n}${m.log ? ' · squeezed scale so the snail shows up' : ''}`;
+    const box = $('match'); box.classList.remove('in'); void box.offsetWidth; box.classList.add('in');
+    focusId = picked[picked.length - 1];
+    theme(); renderLanes(); renderInfo(focusId); showReal();
+    Curio.beep(520 + mi * 40, 0.06, 'triangle', 0.06);
+    if (go) setTimeout(() => startRace(), 250);
+  }
+  $('mPrev').addEventListener('click', () => loadMatch(mi - 1));
+  $('mNext').addEventListener('click', () => loadMatch(mi + 1));
+  $('mNext2').addEventListener('click', () => loadMatch(mi + 1, true));
+
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'Escape') { closePanels(); return; }
+    if (SIMPLE && !openPanel) {
+      const tg = (e.target.tagName || '').toLowerCase();
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'n') { e.preventDefault(); loadMatch(mi + 1); return; }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); loadMatch(mi - 1); return; }
+      if (e.key === ' ' && tg !== 'button') { e.preventDefault(); $('go').click(); }
+      return;
+    }
     if (openPanel) return;
     const tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
@@ -529,5 +570,6 @@
   distIdx = Math.max(0, Math.min(DISTS.length - 1, Number(Curio.store.get('speed-race:dist', 0)) || 0));
   $('dist').value = String(distIdx);
   renderLanes(); renderRoster(); renderInfo(focusId); showReal(); theme();
+  if (SIMPLE) { save = () => {}; $('sub').textContent = 'Eight ready-made races, from a chicken sprint to a beam of light, all at their true relative speeds. Press Race, then Next race.'; loadMatch(0); }
 })();
 

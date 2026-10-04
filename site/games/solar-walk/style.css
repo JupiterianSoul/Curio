@@ -178,3 +178,11 @@ body { overflow: hidden; }
   .mark { width: 150px; }
 }
 @media (prefers-reduced-motion: reduce) { .sun, .sun::before, .pa-spin, .pa-pulse, .mark i { animation: none; } }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+.hop.c-btn { font-size: 16px; padding: 10px 22px; min-width: 190px; }
+.hbtn.hop { font-size: 22px; line-height: 1; padding: 8px 16px; }
+.hbtn.hop:disabled { opacity: .35; cursor: default; }
+.stage.flying .track { filter: blur(.6px); }
+.stage.flying::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; background: repeating-linear-gradient(90deg, transparent 0 60px, rgba(255,255,255,.05) 61px 62px, transparent 63px 140px); animation: streak .35s linear infinite; }
+@keyframes streak { to { background-position: -140px 0; } }
+@media (prefers-reduced-motion: reduce) { .stage.flying::after { animation: none; } }

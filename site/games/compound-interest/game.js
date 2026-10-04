@@ -398,9 +398,28 @@
   ];
   $('facts').innerHTML = FACTS.map(([e, t, d]) => `<div class="ci-fact"><span class="e">${e}</span><b>${t}</b><p>${d}</p></div>`).join('');
   $('share').addEventListener('click', async () => {
-    const t = `💰 Saving ${money(vals.C)} a month from ${money(vals.P)} at ${vals.r}% for ${vals.Y} years grows to ${$('total').textContent}. Get Rich Slowly on Curio.`;
+    const t = `💰 Saving ${money(vals.C)} a month from ${money(vals.P)} at ${vals.r}% for ${vals.Y} years grows to ${$('total').textContent}. Get Rich Slowly on Zoble.`;
     try { await navigator.clipboard.writeText(t); Curio.toast('Copied!'); } catch (e) { Curio.toast(t, 4000); }
   });
+  let growRaf = 0;
+  function grow() {
+    cancelAnimationFrame(growRaf);
+    const target = Curio.simple ? 40 : Math.max(10, +$('years').value);
+    const t0 = performance.now(), dur = 5200;
+    $('grow').textContent = '⏳ Growing...';
+    let last = -1;
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / dur);
+      const y = Math.max(1, Math.round(1 + (target - 1) * p * p));
+      if (y !== last) { last = y; $('years').value = y; $('years').dispatchEvent(new Event('input')); if (y % 5 === 0) Curio.beep(330 + y * 14, 0.06, 'triangle', 0.05); }
+      if (p < 1) growRaf = requestAnimationFrame(step);
+      else { $('grow').textContent = '▶ Watch it grow again'; Curio.beep(1046, 0.25, 'triangle', 0.07); if (Curio.simple) Curio.confetti(60); }
+    };
+    growRaf = requestAnimationFrame(step);
+  }
+  $('grow').addEventListener('click', grow);
+  ['pointerdown', 'keydown'].forEach((ev) => $('years').addEventListener(ev, () => cancelAnimationFrame(growRaf)));
+  if (Curio.simple) $('sub').textContent = 'Put a little away every month and let it snowball. Pick how much and how long, then press Watch it grow.';
   paintBadges();
   paintPin();
   compute();

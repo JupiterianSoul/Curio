@@ -9,14 +9,16 @@
   <link rel="stylesheet" href="../../shared.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-game="hundred-people">
+<body data-game="hundred-people" data-modes>
   <main class="c-wrap">
     <div class="hp-hero">
+      <div class="hp-sign" aria-hidden="true"><span>Pop. 100</span></div>
       <h1 class="c-title">If the World Were 100 People</h1>
       <p class="c-sub">Shrink all 8.2 billion of us into a village of 100. Scroll down and watch the villagers sort themselves out. Tap anyone to meet them.</p>
       <div class="hp-tools">
-        <button class="c-btn" type="button" id="guessBtn" aria-pressed="false">🎯 Guess mode: off</button>
-        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+        <button class="c-btn simple-only" type="button" id="playBtn" aria-pressed="false">▶ Play the slideshow</button>
+        <button class="c-btn adv" type="button" id="guessBtn" aria-pressed="false">🎯 Guess mode: off</button>
+        <button class="c-btn c-btn--ghost adv" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
         <span class="hp-met">👋 <b id="metCount">0</b> villagers met</span>
       </div>
     </div>

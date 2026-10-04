@@ -1,7 +1,9 @@
 (function () {
   const R = 6371;
   const SEC = [[0, 0.2, 6000], [0.2, 5, 500], [5, 15, 250], [15, 700, 8], [700, R, 1.3]];
-  const ITEMS = window.EARTH_MARKERS;
+  const SIMPLE = Curio.simple;
+  const HL = new Set(['Six feet under', 'Paris Catacombs', 'Seikan Tunnel', 'Deepest cave: Veryovkina', 'Deepest mine: Mponeng', 'Everest, upside down', 'Challenger Deep (for comparison)', 'Kola Superdeep Borehole', 'Moho (under continents)', 'Diamonds are born', 'Deepest earthquakes', 'Core-mantle boundary', 'The geodynamo', 'Inner core boundary', 'As hot as the Sun', 'The centre of the Earth']);
+  const ITEMS = SIMPLE ? window.EARTH_MARKERS.filter((it) => HL.has(it.name)) : window.EARTH_MARKERS;
   const LAYERS = [
     { d: 0, name: 'Crust', note: 'Solid rock. The thin skin we live on.' },
     { d: 35, name: 'Upper mantle', note: 'Solid, rigid rock: still part of the tectonic plate.' },
@@ -66,10 +68,10 @@
   const end = document.createElement('div');
   end.className = 'end';
   end.style.top = `${floorY + 150}px`;
-  end.innerHTML = '<h2>🎯 You reached the centre of the Earth</h2><p>6,371 km down. Every direction is now up. If you kept digging you would come out at your antipode, which for most people is somewhere in the ocean.</p><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the surface ⏫</button><button class="c-btn c-btn--ghost" type="button" id="endThru">🌏 Dig straight through</button><button class="c-btn c-btn--ghost" type="button" id="endQuiz">🎯 Quiz</button></div>';
+  end.innerHTML = '<h2>🎯 You reached the centre of the Earth</h2><p>6,371 km down. Every direction is now up. If you kept digging you would come out at your antipode, which for most people is somewhere in the ocean.</p><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the surface ⏫</button><button class="c-btn c-btn--ghost adv" type="button" id="endThru">🌏 Dig straight through</button><button class="c-btn c-btn--ghost adv" type="button" id="endQuiz">🎯 Quiz</button><button class="c-btn c-btn--ghost simple-only" type="button" id="endAdv">⛏️ All 56 stops</button></div>';
   earth.append(end);
 
-  const noteCards = NOTES.map(([d, t]) => {
+  const noteCards = (SIMPLE ? NOTES.filter((n, i) => i % 3 === 0) : NOTES).map(([d, t]) => {
     const el = document.createElement('p');
     el.className = 'note';
     el.textContent = t;
@@ -224,19 +226,53 @@
     digBtn.textContent = on ? '⏸ Stop' : '⏬ Dig';
     if (on) { lastT = performance.now(); requestAnimationFrame(frame); }
   }
+  let hold = 0, spot = null;
+  const curY = () => innerHeight / 2 - earth.getBoundingClientRect().top;
+  const stopY = (c) => parseFloat(c.el.style.top) + c.h / 2;
+  const stops = () => cards.filter((c) => !c.note).sort((a, b) => stopY(a) - stopY(b));
+  function spotlight(c) {
+    if (spot) spot.el.classList.remove('spot');
+    spot = c;
+    if (!c) return;
+    c.el.classList.add('spot', 'open');
+    const i = stops().indexOf(c);
+    Curio.beep(330 - i * 12, 0.22, 'triangle', 0.06); setTimeout(() => Curio.beep(220 - i * 8, 0.3, 'sine', 0.05), 90);
+  }
+  function tourStep(now, dt) {
+    if (now < hold) return;
+    const y = curY();
+    const st = stops().find((c) => stopY(c) > y + 3);
+    if (!st) { window.scrollBy(0, 700 * dt); return; }
+    const gap = stopY(st) - y;
+    const v = gap < 300 ? Math.max(80, gap * 2.6) : Math.min(2600, 800 + gap * 0.5);
+    const step = Math.min(gap, v * dt);
+    window.scrollBy(0, step);
+    if (gap - step < 4) { hold = now + 2700; spotlight(st); }
+  }
+  function nextStop() {
+    const y = curY();
+    const st = stops().find((c) => stopY(c) > y + 6);
+    setDig(false);
+    if (!st) { scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); return; }
+    window.scrollBy({ top: stopY(st) - y, behavior: 'smooth' });
+    setTimeout(() => spotlight(st), 500);
+  }
   function frame(now) {
     if (!digging || !running) return;
     const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
-    window.scrollBy(0, 420 * SPEEDS[speedI] * dt);
+    if (SIMPLE) tourStep(now, dt); else window.scrollBy(0, 420 * SPEEDS[speedI] * dt);
     if (depth >= R) setDig(false);
     requestAnimationFrame(frame);
   }
-  digBtn.addEventListener('click', () => setDig(!digging));
+  digBtn.addEventListener('click', () => { hold = 0; setDig(!digging); });
+  $('nextStop').addEventListener('click', nextStop);
+  $('endAdv').addEventListener('click', () => Curio.setMode('advanced'));
+  if (SIMPLE) $('dig0').textContent = 'Take the express drill ↓';
   $('dig0').addEventListener('click', () => { Curio.beep(220, 0.15, 'square', 0.04); earth.scrollIntoView({ behavior: 'smooth' }); setTimeout(() => setDig(true), 700); });
   const toSurface = () => { setDig(false); scrollTo({ top: 0, behavior: 'smooth' }); Curio.beep(880, 0.2, 'sine', 0.05); };
   $('up').addEventListener('click', toSurface);
   $('again').addEventListener('click', toSurface);
-  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (digging && e.target !== digBtn) setDig(false); }, { passive: true }));
+  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (digging && e.target !== digBtn && e.target !== $('nextStop') && e.target !== $('dig0')) setDig(false); }, { passive: true }));
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (document.hidden) setDig(false); });
 
   const buzz = (ms) => { try { if (!Curio.muted && navigator.vibrate) navigator.vibrate(ms); } catch (x) {} };
@@ -540,6 +576,7 @@
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
     const k = e.key.toLowerCase();
     if (e.key === ' ' && tag !== 'button') { e.preventDefault(); setDig(!digging); return; }
+    if (SIMPLE) { if (e.key === 'ArrowDown' || k === 'n') { e.preventDefault(); nextStop(); } else if (e.key === 'Home') { e.preventDefault(); toSurface(); } return; }
     if (digging && k !== 'shift') setDig(false);
     if (k === 't') openThru();
     else if (k === 'q') openQuiz();

@@ -182,3 +182,9 @@ body { overflow-x: hidden; }
   .meter .veh { font-size: 20px; top: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .cloudd, .flyer, .climber, #stars { animation: none; } .item.rv { opacity: 1; translate: none; } }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+.item.spot { z-index: 9; transform: scale(1.08); box-shadow: 0 0 0 3px #ff5a36, 0 18px 44px rgba(0,0,0,.35); }
+.item.spot .art { animation: hop .7s cubic-bezier(.2,1.6,.4,1); }
+@keyframes hop { from { transform: translateY(14px) scale(.85); } }
+@media (max-width: 600px) { .item.spot { transform: scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { .item.spot .art { animation: none; } }

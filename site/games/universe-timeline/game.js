@@ -1,4 +1,6 @@
   (function () {
+  const SIMPLE = Curio.simple;
+  const HIGHLIGHTS = new Set(['The Big Bang', 'Cosmic inflation', 'Let there be light', 'The first stars', 'The Sun is born', 'Earth forms', 'The Moon-forming impact', 'First life', 'The Great Oxygenation', 'Snowball Earth', 'Cambrian explosion', 'Plants move onto land', 'The Great Dying', 'The first dinosaurs', 'Tyrannosaurus rex', 'The asteroid', 'Lucy', 'Taming fire', 'Homo sapiens', 'The oldest known art', 'Farming begins', 'Writing', 'The Great Pyramid', 'The printing press', 'The Moon landing', 'Today']);
   const T0 = 13.8e9;
   const NOW = 2026;
   const LOG_FROM = -51, LOG_TO = 8.6, PPD = 70;
@@ -84,14 +86,14 @@
   ];
   const items = [];
   const evs = [];
-  NOTES.forEach(([t, txt]) => {
+  (SIMPLE ? NOTES.filter((n, i) => [0, 4, 6, 8].includes(i)) : NOTES).forEach(([t, txt]) => {
     const el = document.createElement('p');
     el.className = 'note';
     el.textContent = txt;
     tl.append(el);
     items.push({ y: yOfEvent(t), el, note: true });
   });
-  window.UNIVERSE_EVENTS.forEach((ev) => {
+  (SIMPLE ? window.UNIVERSE_EVENTS.filter((ev) => HIGHLIGHTS.has(ev.name)) : window.UNIVERSE_EVENTS).forEach((ev) => {
     const y = yOfEvent(ev);
     const k = segAt(y);
     const c = SEGS[k].c;
@@ -119,7 +121,7 @@
   const endEl = document.createElement('div');
   endEl.className = 'end c-card';
   endEl.style.top = `${TOTAL + 140}px`;
-  endEl.innerHTML = '<h2>📍 You are here</h2><p>13.8 billion years, and you showed up in the last 0.002% of it. Every atom in your body (except the hydrogen) was made inside stars that lived and died before the Sun was born.</p><div class="badgeRow" id="endBadges"></div><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the Big Bang ⏫</button><button class="c-btn c-btn--ghost" type="button" id="endCal">📅 Cosmic Calendar</button><button class="c-btn c-btn--ghost" type="button" id="endQuiz">❓ Quiz</button></div>';
+  endEl.innerHTML = `<h2>📍 You are here</h2><p>13.8 billion years, and you showed up in the last 0.002% of it. Every atom in your body (except the hydrogen) was made inside stars that lived and died before the Sun was born.</p><div class="badgeRow adv" id="endBadges"></div><div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="again">Back to the Big Bang ⏫</button><button class="c-btn c-btn--ghost adv" type="button" id="endCal">📅 Cosmic Calendar</button><button class="c-btn c-btn--ghost adv" type="button" id="endQuiz">❓ Quiz</button><button class="c-btn c-btn--ghost simple-only" type="button" id="endAdv">🔭 See all 106 moments</button></div>`;
   tl.append(endEl);
 
   function layout() {
@@ -192,7 +194,8 @@
       $('cAgo').innerHTML = `${f[0]} <small>${f[1]} ago</small>`;
       $('cSub').textContent = t.ago < 12000 ? `The year ${calYear(t.ago)}` : `${fmtSince(t.since)} after the Big Bang`;
     }
-    if (s.log) $('cPace').textContent = `${s.name} · each step = 10× more time`;
+    if (SIMPLE) { const st = stopsOf(); const i = st.filter((r) => r.y <= y + 6).length; $('cPace').textContent = `${s.name} · stop ${Math.max(1, i)} of ${st.length}`; }
+    else if (s.log) $('cPace').textContent = `${s.name} · each step = 10× more time`;
     else { const per = (s.from - s.to) / s.h * innerHeight; const f = fmtYears(per) || ['<1', 'year']; $('cPace').textContent = `${s.name} · 1 screen ≈ ${f[0]} ${f[1]}`; }
     $('cBar').style.width = `${Math.max(0, Math.min(1, y / TOTAL)) * 100}%`;
     if (k !== lastK) {
@@ -219,14 +222,44 @@
     $('play').textContent = on ? '⏸ Pause' : '▶ Play';
     if (on) { lastT = performance.now(); requestAnimationFrame(frame); }
   }
+  let hold = 0, spot = null;
+  const curY = () => innerHeight / 2 - tl.getBoundingClientRect().top;
+  function spotlight(r) {
+    if (spot) spot.el.classList.remove('spot');
+    spot = r;
+    if (!r) return;
+    r.el.classList.add('spot', 'in');
+    Curio.beep(520 + (stopsOf().indexOf(r) % 8) * 60, 0.25, 'sine', 0.05);
+    setTimeout(() => Curio.beep(780 + (stopsOf().indexOf(r) % 8) * 60, 0.3, 'sine', 0.035), 110);
+  }
+  const stopsOf = () => evs.slice().sort((a, b) => a.y - b.y);
+  function tourStep(now, dt) {
+    if (now < hold) return;
+    const y = curY();
+    const st = stopsOf().find((r) => r.y > y + 3);
+    if (!st) { scrollBy(0, 700 * dt); return; }
+    const gap = st.y - y;
+    const v = gap < 320 ? Math.max(70, gap * 2.4) : Math.min(2600, 900 + gap * 0.6);
+    const step = Math.min(gap, v * dt);
+    scrollBy(0, step);
+    if (gap - step < 4) { hold = now + 2900; spotlight(st); }
+  }
   function frame(now) {
     if (!playing || !running) return;
     const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
-    scrollBy(0, 240 * SPEEDS[speedI] * dt);
+    if (SIMPLE) tourStep(now, dt); else scrollBy(0, 240 * SPEEDS[speedI] * dt);
     if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) setPlay(false);
     requestAnimationFrame(frame);
   }
-  $('play').addEventListener('click', () => setPlay(!playing));
+  $('play').addEventListener('click', () => { hold = 0; setPlay(!playing); });
+  $('next').addEventListener('click', () => {
+    const y = curY();
+    const st = stopsOf().find((r) => r.y > y + 6);
+    if (!st) { jumpY(TOTAL); return; }
+    jumpY(st.y); setTimeout(() => spotlight(st), 500);
+  });
+  $('endAdv').addEventListener('click', () => Curio.setMode('advanced'));
+  if (SIMPLE) { $('startB').textContent = 'Take the 3-minute tour'; $('startS').textContent = '26 big moments, from the Big Bang to you'; }
   const toStart = () => { setPlay(false); scrollTo({ top: tl.offsetTop - innerHeight / 2 + 10, behavior: 'smooth' }); Curio.beep(880, 0.2, 'sine', 0.05); };
   $('restart').addEventListener('click', toStart);
   $('again').addEventListener('click', () => { reached = false; toStart(); });
@@ -235,7 +268,7 @@
     scrollTo({ top: tl.offsetTop - innerHeight / 2 + 10, behavior: 'smooth' });
     setTimeout(() => setPlay(true), 900);
   });
-  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (playing && e.target !== $('play') && e.target !== $('start')) setPlay(false); }, { passive: true }));
+  ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (playing && e.target !== $('play') && e.target !== $('start') && e.target !== $('next')) setPlay(false); }, { passive: true }));
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (document.hidden) setPlay(false); });
 
   const SPEEDS = [1, 3, 8];
@@ -252,7 +285,8 @@
     { id: 'perfect', e: '🏆', name: 'Perfect order', d: 'Get 10 out of 10 in a quiz' },
     { id: 'hard', e: '🧠', name: 'Close call expert', d: 'Score 8 or more on Hard' },
     { id: 'daily', e: '🌅', name: 'Daily dose', d: 'Play the daily challenge' },
-    { id: 'fast', e: '⏩', name: 'Fast forward', d: 'Play the timeline at 8× speed' }
+    { id: 'fast', e: '⏩', name: 'Fast forward', d: 'Play the timeline at 8× speed' },
+    { id: 'find', e: '🔎', name: 'Needle in a haystack', d: 'Find a moment with the search' }
   ];
   const BKEY = 'ut:badges:v1';
   let badges = {};
@@ -349,8 +383,9 @@
   });
 
   const menu = $('eraMenu');
+  const eraList = $('eraList');
   function paintEraMenu() {
-    menu.innerHTML = '';
+    eraList.innerHTML = '';
     SEGS.forEach((s, i) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -359,9 +394,30 @@
       b.querySelector('span').textContent = s.name;
       b.querySelector('small').textContent = s.log ? '0 s' : (fmtYears(s.from) || ['', '']).join(' ').replace(' years', ' yrs').replace('million', 'M').replace('billion', 'B');
       b.addEventListener('click', () => { closeMenu(); jumpY(s.y0 + 60); Curio.beep(520 + i * 40, 0.12, 'sine', 0.05); });
-      menu.append(b);
+      eraList.append(b);
     });
   }
+  const norm = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  $('find').addEventListener('input', () => {
+    const q = norm($('find').value.trim());
+    const res = $('findRes');
+    res.innerHTML = '';
+    if (q.length < 2) return;
+    const hits = evs.filter((r) => norm(`${r.ev.name} ${r.ev.text}`).includes(q)).sort((a, b) => a.y - b.y).slice(0, 8);
+    if (!hits.length) { res.innerHTML = '<p>No moment matches that. Try "fish", "ice" or "Moon".</p>'; return; }
+    hits.forEach((r) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = '<i></i><span></span><small></small>';
+      b.querySelector('i').textContent = r.ev.e;
+      b.querySelector('span').textContent = r.ev.name;
+      b.querySelector('small').textContent = r.ev.when;
+      b.addEventListener('click', () => { closeMenu(); jumpY(r.y); setTimeout(() => { r.el.classList.add('in'); r.el.classList.remove('flash'); void r.el.offsetWidth; r.el.classList.add('flash'); }, 600); award('find'); });
+      res.append(b);
+    });
+  });
+  $('find').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const b = $('findRes').querySelector('button'); if (b) b.click(); } });
+  function openFind() { menu.hidden = false; $('eras').setAttribute('aria-expanded', 'true'); setTimeout(() => $('find').focus(), 30); }
   function closeMenu() { menu.hidden = true; $('eras').setAttribute('aria-expanded', 'false'); }
   $('eras').addEventListener('click', (e) => { e.stopPropagation(); menu.hidden = !menu.hidden; $('eras').setAttribute('aria-expanded', String(!menu.hidden)); });
   document.addEventListener('click', (e) => { if (!menu.hidden && !menu.contains(e.target)) closeMenu(); });
@@ -660,8 +716,10 @@
     const k = e.key.toLowerCase();
     if (e.key === ' ' && tag !== 'button') { e.preventDefault(); setPlay(!playing); return; }
     if (playing && ![' ', 'shift'].includes(k)) setPlay(false);
+    if (SIMPLE) { if (k === 'n' || e.key === 'ArrowRight') $('next').click(); else if (e.key === 'Home') { e.preventDefault(); toStart(); } return; }
     if (k === 'c') openCal();
     else if (k === 'q') openQuiz();
+    else if (k === 'f') { e.preventDefault(); openFind(); }
     else if (k === 'n') stepEra(1);
     else if (k === 'p') stepEra(-1);
     else if (e.key === 'Home') { e.preventDefault(); toStart(); }

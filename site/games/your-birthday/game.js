@@ -117,7 +117,7 @@
       gen ? card('👥', 'Generation', gen[2], `Born ${gen[0]} to ${gen[1]}, by the usual definitions.`) : '',
       card('🌍', 'World population', `${popAt(by)} billion`, `Roughly how many people were alive in ${by}. There are about 8.2 billion now.`),
       card('🎂', 'Birthday sharers', 'about 22 million', `People alive today who share your ${bm === 2 && bd === 29 ? 'leap day birthday: only about 5 million' : 'birthday'}, give or take.`)
-    ].join('');
+    ].filter((x, i) => !Curio.simple || [0, 2, 4, 5, 7, 8].includes(i)).join('');
 
     const rows = EVENTS.map(([y, mo, t]) => `<tr class="${y === by ? 'me' : y < by ? 'pre' : ''}" data-y="${y}"><td>${y}</td><td>${mo}</td><td>${t}</td></tr>`).join('');
     $('table').innerHTML = rows;
@@ -432,6 +432,7 @@
     if (fresh) { Curio.beep(660, 0.08, 'triangle', 0.08); setTimeout(() => Curio.beep(880, 0.1, 'triangle', 0.08), 90); $('out').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     $('out').classList.remove('bd-reveal'); void $('out').offsetWidth; $('out').classList.add('bd-reveal');
   }
+  if (Curio.simple) $('sub').textContent = 'Type your birthday and we will tell you what kind of day it was, what the Moon looked like, and how long until the next one. Then blow out your candles.';
   $('form').addEventListener('submit', (e) => { e.preventDefault(); if (dob.value) start(dob.value, true); });
   dob.addEventListener('change', () => { if (dob.value && dob.value.length === 10 && +dob.value.slice(0, 4) >= 1900) start(dob.value, false); });
   const saved = Curio.store.get('bday:dob', null);

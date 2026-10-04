@@ -132,3 +132,25 @@ h2.ci-h { font-size: 24px; font-weight: 900; margin: 34px 0 10px; letter-spacing
   .ci-table th, .ci-table td { padding: 6px 4px; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .ci-ball { animation: none; transform: translate(420px, 106px); } }
+html[data-mode="simple"] .adv, html[data-mode="advanced"] .simple-only { display: none !important; }
+:root { --ledger: #fbf7ea; --rule: rgba(64,120,190,.16); --margin: rgba(214,60,60,.35); --type: 'Courier Prime', 'Courier New', Courier, var(--mono), monospace; --stamp: #c62828; }
+:root[data-theme="dark"] { --ledger: #15191f; --rule: rgba(120,170,230,.10); --margin: rgba(240,100,100,.28); --stamp: #ef7f7f; }
+body { background-color: var(--ledger); background-image: linear-gradient(90deg, transparent 0 calc(50% - 552px), var(--margin) calc(50% - 552px) calc(50% - 550px), transparent calc(50% - 550px)), repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px); background-attachment: local; }
+.ci-hero { position: relative; }
+.ci-stamp { display: inline-block; margin: 6px 0 4px; padding: 5px 14px; font: 700 13px/1 var(--type); letter-spacing: .22em; text-transform: uppercase; color: var(--stamp); border: 2.5px solid var(--stamp); border-radius: 6px; transform: rotate(-4deg); opacity: .85; mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.6) 61%, #000 70%); -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.6) 61%, #000 70%); }
+.ci-hero .c-title { font-family: var(--type); font-weight: 700; letter-spacing: -.01em; text-shadow: none; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px; text-decoration-color: color-mix(in srgb, var(--ci) 50%, transparent); }
+.ci-hero .c-sub { font-family: var(--type); font-size: 16px; }
+.ci-scene { border-radius: 14px; box-shadow: 0 0 0 1px var(--line), 0 10px 26px rgba(0,0,0,.10); }
+.ci-result { background: linear-gradient(135deg, #1f5f2b, #3f8f4a); border-radius: 10px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.18), inset 0 0 0 8px rgba(0,0,0,.08), 0 14px 30px rgba(31,95,43,.25); position: relative; overflow: hidden; }
+.ci-result::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(180deg, transparent 0 23px, rgba(255,255,255,.06) 23px 24px); }
+.ci-result > * { position: relative; }
+.ci-result b { font-family: var(--type); letter-spacing: -.03em; }
+.ci-grow { margin: 10px auto 2px; display: inline-block; border: 0; border-radius: 999px; padding: 11px 22px; font: 800 16px var(--font); background: #ffd54f; color: #3b2a00; box-shadow: 0 4px 0 #b88a00, 0 8px 18px rgba(0,0,0,.2); cursor: pointer; touch-action: manipulation; transition: transform .1s; }
+.ci-grow:hover { transform: translateY(-1px); }
+.ci-grow:active { transform: translateY(3px); box-shadow: 0 1px 0 #b88a00; }
+.ci-main .c-card, .ci-race, .ci-live, .ci-72, .ci-goal, .ci-fees, .ci-table { border-radius: 8px; background-image: repeating-linear-gradient(180deg, transparent 0 27px, var(--rule) 27px 28px); }
+.ci-field label output, .ci-h { font-family: var(--type); }
+.ci-h { letter-spacing: -.01em; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+html[data-mode="simple"] .ci-field input[type=range] { height: 36px; }
+html[data-mode="simple"] .ci-field label output { font-size: 24px; }
+.ci-more { text-align: center; max-width: 580px; margin: 26px auto 0; font-family: var(--type); }
