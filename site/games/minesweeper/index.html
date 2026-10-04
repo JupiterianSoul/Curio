@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Minesweeper · Curio</title>
+  <meta name="description" content="Clear the minefield: three classic sizes, custom boards, a no-guess mode, a daily board, five themes, hints, stats and badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="minesweeper">
+  <main class="c-wrap">
+    <header class="m-head">
+      <h1 class="c-title">Minesweeper</h1>
+      <p class="c-sub">Numbers count the mines touching a square. Flag them all, open everything else, don't blow up.</p>
+    </header>
+    <div class="m-setup">
+      <div class="seg" role="group" aria-label="Board">
+        <button type="button" data-d="beginner">Beginner</button>
+        <button type="button" data-d="intermediate">Intermediate</button>
+        <button type="button" data-d="expert">Expert</button>
+        <button type="button" data-d="custom">Custom</button>
+        <button type="button" data-d="daily">Daily</button>
+      </div>
+      <form class="m-custom" id="custom" hidden>
+        <label>Rows<input class="c-input" type="number" id="cRows" min="5" max="30" value="12"></label>
+        <label>Columns<input class="c-input" type="number" id="cCols" min="5" max="40" value="20"></label>
+        <label>Mines<input class="c-input" type="number" id="cMines" min="1" max="999" value="45"></label>
+        <button class="c-btn" type="submit">Build</button>
+      </form>
+      <div class="m-opts">
+        <label class="m-check" title="Every board can be solved by pure logic"><input type="checkbox" id="noguess"> No-guess boards</label>
+        <label class="m-check"><input type="checkbox" id="qmarks"> ? marks</label>
+        <div class="m-skins" role="group" aria-label="Theme" id="skins"></div>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="c-stat lcd"><b id="left">10</b><span>Mines</span></div>
+      <button class="face" id="face" type="button" aria-label="New game" title="New game (N)"></button>
+      <div class="c-stat lcd"><b id="time">0</b><span>Seconds</span></div>
+    </div>
+    <div class="hud" style="margin-top:-2px">
+      <button class="tool" id="flagmode" type="button" aria-pressed="false" title="Tap mode: dig or flag"></button>
+      <button class="tool" id="hint" type="button" title="Reveal a safe square (+15 s)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2a6 6 0 0 0-3.5 10.9V15h7v-2.1A6 6 0 0 0 10 2z" fill="#ffc93c"/><rect x="7" y="16" width="6" height="2" rx="1" fill="currentColor"/></svg>Hint</button>
+      <div class="zoom" role="group" aria-label="Zoom"><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="zoomIn" aria-label="Zoom in">+</button></div>
+    </div>
+    <div class="m-stage">
+      <div class="scroller" id="scroller">
+        <div class="field" id="field" role="grid" aria-label="Minefield"></div>
+      </div>
+      <div class="m-start" id="startTip">Click any square to start. The first one is always safe.</div>
+      <div class="m-gen" id="gen" hidden><span>Building a fair board...</span></div>
+    </div>
+    <p class="m-tip" id="tip"></p>
+    <p class="g-help c-muted">Click to dig · right-click, long-press or the flag tool to flag · click a satisfied number to open its neighbours · keys: arrows move, <span class="c-kbd">Enter</span> dig, <span class="c-kbd">F</span> flag, <span class="c-kbd">H</span> hint, <span class="c-kbd">N</span> new</p>
+    <section class="c-card m-panel">
+      <div class="m-tabs" role="tablist">
+        <button type="button" role="tab" data-tab="help" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="ach">Badges</button>
+        <button type="button" role="tab" data-tab="stats">Stats</button>
+      </div>
+      <div class="m-body" data-body="help">
+        <p>Each number tells you how many of the eight squares around it hide a mine. Use that to work out which squares are safe and which to flag. Open every safe square to win. Your first click never hits a mine.</p>
+        <h3>Boards</h3>
+        <ul>
+          <li><b>Beginner</b> 9×9 with 10 mines, <b>Intermediate</b> 16×16 with 40, <b>Expert</b> 16×30 with 99.</li>
+          <li><b>Custom</b>: any size up to 30×40 and as many mines as you dare.</li>
+          <li><b>Daily</b>: one intermediate board for everyone today. Start on the glowing square.</li>
+        </ul>
+        <h3>No-guess mode</h3>
+        <p>With no-guess switched on, boards are generated and checked by a solver so that every one can be cleared with pure logic. No coin flips, no bad luck, just thinking.</p>
+        <h3>Scoring</h3>
+        <p>Your time is the score. On a win you also see the board's <b>3BV</b> (the minimum number of clicks needed to clear it) and your <b>3BV/s</b>, which is how fast you really were. Hints cost 15 seconds each.</p>
+        <h3>Useful patterns</h3>
+        <ul>
+          <li>A 1 that touches only one hidden square: that square is a mine.</li>
+          <li>1-2-1 along a wall: the mines are under the 1s.</li>
+          <li>1-2-2-1 along a wall: the mines are under the 2s.</li>
+          <li>Click a number whose mines are all flagged to open the rest of its neighbours in one go.</li>
+        </ul>
+      </div>
+      <div class="m-body" data-body="ach" hidden></div>
+      <div class="m-body" data-body="stats" hidden></div>
+    </section>
+  </main>
+  <div class="m-ov" id="ov" hidden><div class="m-card" id="card" role="dialog" aria-modal="true" aria-live="polite"></div></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

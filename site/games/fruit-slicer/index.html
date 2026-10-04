@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fruit Slicer · Curio</title>
+  <meta name="description" content="Swipe to slice flying fruit into juicy halves, chain combos and never, ever touch the bombs.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+
+html:has(body.arc), body.arc { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body.arc { min-height: 0; }
+.arc-wrap {
+  width: 100%; max-width: none; margin: 0;
+  height: calc(100vh - var(--bar-h)); height: calc(100dvh - var(--bar-h));
+  padding: 8px 12px max(10px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.arc-hud { display: flex; align-items: center; justify-content: center; gap: 4px 14px; flex-wrap: wrap; min-height: 44px; }
+.arc-hud .c-stat { min-width: 64px; }
+.arc-hud .c-stat b { font-size: 21px; line-height: 1.1; }
+.arc-hud .c-stat span { font-size: 10.5px; }
+.arc-iconbtn {
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-size: 17px; display: grid; place-items: center;
+  box-shadow: var(--shadow); touch-action: manipulation;
+}
+.arc-iconbtn:hover { background: var(--surface-2); }
+.arc-stage { position: relative; flex: 1; min-height: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+#arc-canvas {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 14px; box-shadow: var(--shadow); display: block; outline: none;
+  touch-action: none;
+}
+.arc-ov {
+  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+  padding: 10px; overflow: auto;
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  animation: arc-in .18s ease;
+}
+.arc-ov[hidden] { display: none; }
+@keyframes arc-in { from { opacity: 0; } }
+.arc-card { width: min(100%, 410px); text-align: center; margin: auto; animation: arc-pop .25s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes arc-pop { from { transform: scale(.9); opacity: 0; } }
+.arc-card .c-title { font-size: clamp(28px, 6vw, 38px); margin: 2px 0 6px; }
+.arc-card .c-sub { font-size: 15.5px; margin: 0 0 14px; }
+.arc-emoji { font-size: 44px; line-height: 1; }
+.arc-help { font-size: 13.5px; color: var(--ink-2); margin: 14px 0 0; line-height: 1.7; }
+.arc-help .c-kbd { white-space: nowrap; }
+.arc-small { font-size: 13px; color: var(--ink-3); margin: 10px 0 0; }
+.arc-big { font-size: 54px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+.arc-new {
+  display: inline-block; background: var(--good); color: #fff; font-weight: 800; font-size: 13px;
+  padding: 3px 10px; border-radius: 999px; margin: 6px 0 0; animation: arc-pop .4s cubic-bezier(.2, 1.4, .4, 1);
+}
+.arc-new[hidden] { display: none; }
+.arc-msg { color: var(--ink-2); margin: 10px 0 16px; }
+.arc-opts { display: grid; gap: 10px; justify-items: center; margin: 0 0 16px; }
+.arc-seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+.arc-seg button {
+  border: 0; background: transparent; cursor: pointer; padding: 7px 14px; border-radius: 999px;
+  font-weight: 700; font-size: 14px; color: var(--ink-2);
+}
+.arc-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.arc-check { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; font-size: 14px; color: var(--ink-2); cursor: pointer; }
+.arc-check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.arc-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: var(--ink-3); margin-bottom: -4px; }
+
+.arc-pad { display: none; gap: 8px; }
+.arc-pad__row { display: flex; gap: 8px; }
+.arc-pad button {
+  flex: 1; min-width: 0; height: 58px; border-radius: 16px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font-size: 22px; font-weight: 800; box-shadow: 0 3px 0 var(--line);
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.arc-pad button small { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-top: -2px; }
+.arc-pad button.is-down { background: var(--accent); color: var(--accent-ink); transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.arc-pad button.is-down small { color: inherit; }
+body.arc-touch .arc-pad { display: flex; flex-direction: column; }
+@media (hover: none) and (pointer: coarse) { .arc-pad { display: flex; flex-direction: column; } }
+@media (max-width: 520px) {
+  .arc-wrap { padding-left: 8px; padding-right: 8px; gap: 6px; }
+  .arc-hud { gap: 2px 8px; min-height: 40px; }
+  .arc-hud .c-stat { min-width: 54px; }
+  .arc-hud .c-stat b { font-size: 18px; }
+}
+@media (max-height: 560px) { .arc-pad button { height: 46px; } }
+
+
+
+.fs-menu { width: min(100%, 460px); }
+.fs-hero { width: 100%; max-width: 340px; display: block; margin: 0 auto 4px; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+.fs-h1 { animation: fs-h1 2.4s ease-in-out infinite; }
+.fs-h2 { animation: fs-h2 2.4s ease-in-out infinite; }
+@keyframes fs-h1 { 0%, 40% { transform: none; } 70%, 100% { transform: translate(-6px, -10px) rotate(-8deg); } }
+@keyframes fs-h2 { 0%, 40% { transform: none; } 70%, 100% { transform: translate(6px, 12px) rotate(6deg); } }
+.fs-slash { stroke-dasharray: 280; animation: fs-slash 2.4s ease-in-out infinite; }
+@keyframes fs-slash { 0%, 30% { stroke-dashoffset: 280; opacity: 1; } 45% { stroke-dashoffset: 0; opacity: 1; } 60%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+.fs-wrap { flex-wrap: wrap; justify-content: center; }
+.arc-seg button { font-family: inherit; }
+.fs-blades { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.fs-blades .arc-label { margin: 0; }
+.fs-bladerow { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.fs-blade { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 10px 4px 6px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink-2); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.fs-blade i { width: 22px; height: 6px; border-radius: 3px; display: inline-block; box-shadow: 0 0 0 1px var(--line); }
+.fs-blade[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.fs-blade:disabled { opacity: .5; cursor: not-allowed; }
+.fs-more { margin: 10px 0 0; font-size: 14px; text-align: left; }
+.fs-more summary { cursor: pointer; font-weight: 800; color: var(--ink-2); text-align: center; }
+.fs-stats { display: flex; justify-content: center; gap: 4px 12px; flex-wrap: wrap; margin: 10px 0; }
+.fs-stats .c-stat b { font-size: 18px; }
+.fs-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0 0 12px; }
+.fs-badge { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
+.fs-badge.on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
+.fs-badge.new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+  </style>
+</head>
+<body data-game="fruit-slicer" class="arc">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="sliced">0</b><span>Sliced</span></div>
+      <div class="c-stat"><b data-hud="misses">0</b><span data-hud="missesLbl">Drops</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Fruit Slicer: fruit flying over a wooden board" tabindex="-1"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card fs-menu">
+          <svg class="fs-hero" viewBox="0 0 320 100" aria-hidden="true">
+            <rect width="320" height="100" rx="16" fill="#b9814a"/>
+            <g stroke="rgba(90,50,20,.3)" stroke-width="2"><path d="M80 0v100M160 0v100M240 0v100"/></g>
+            <circle cx="70" cy="44" r="10" fill="#ff3b55" opacity=".5"/><circle cx="92" cy="60" r="6" fill="#ff3b55" opacity=".5"/>
+            <g class="fs-h1"><path d="M60 52a26 26 0 0 1 52 0z" fill="#2f9a3e"/><path d="M64 52a22 22 0 0 1 44 0z" fill="#ff4d5e"/></g>
+            <g class="fs-h2"><path d="M60 58a26 26 0 0 0 52 0z" fill="#2f9a3e"/><path d="M64 58a22 22 0 0 0 44 0z" fill="#ff4d5e"/></g>
+            <circle cx="200" cy="40" r="18" fill="#ff951c"/><circle cx="194" cy="34" r="5" fill="#fff" opacity=".4"/>
+            <circle cx="258" cy="62" r="16" fill="#e3313c"/><path d="M258 46q2-8 6-10" stroke="#5b3a1e" stroke-width="3" fill="none"/>
+            <path class="fs-slash" d="M30 86L290 14" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+          <h1 class="c-title">Fruit Slicer</h1>
+          <p class="c-sub">Fruit flies up. Your finger is a sword. Slice three in one swipe for a combo. Do not slice the bombs. Seriously.</p>
+          <div class="arc-opts">
+            <div class="arc-seg fs-wrap" role="group" aria-label="Mode" data-seg="mode"><button type="button" data-v="classic">Classic</button><button type="button" data-v="arcade">Arcade 60s</button><button type="button" data-v="zen">Zen 90s</button><button type="button" data-v="daily">Daily</button></div>
+            <label class="arc-check"><input type="checkbox" data-wide> Wide blade (easier slicing)</label>
+            <label class="arc-check"><input type="checkbox" data-hover> Blade follows pointer, no click needed</label>
+            <div class="fs-blades"><span class="arc-label">Blade</span><div data-blades class="fs-bladerow"></div></div>
+          </div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><b>Drag</b> the mouse or <b>swipe</b> a finger to slice. Touchpad mode (top bar): click, swipe, click. · <span class="c-kbd">P</span> pause<br>Classic: drop 3 fruit and it's over. Arcade: bombs cost 10 points, ❄ slows time, ⚡ fruit storm, ×2 double points. Zen: no bombs at all.</p>
+          <p class="arc-small">Your best: <b data-hud="best">0</b></p>
+          <details class="fs-more"><summary>Stats and badges <span data-badge-count></span></summary><div class="fs-stats" data-stats></div><div class="fs-badges" data-badges></div></details>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Take a breath. The game will wait.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="fs-badges" data-o="badges"></div>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-share>Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

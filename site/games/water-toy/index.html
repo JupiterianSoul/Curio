@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Water Toy · Curio</title>
+  <meta name="description" content="A box of thousands of water droplets. Pour, slosh, tilt the tank, float rubber ducks and sink rocks.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="water-toy">
+  <main class="c-wrap wt-main">
+    <div class="wt-stage" id="stage">
+      <canvas id="tank" role="img" aria-label="A water tank. Pour water, tilt the tank, drop ducks and rocks, draw walls."></canvas>
+      <div class="wt-intro" id="intro">
+        <h1>Water Toy</h1>
+        <p>Pour, slosh and tilt. Ducks float, rocks sink, faster water turns white.</p>
+      </div>
+      <div class="wt-count"><b id="nDrops">0</b> droplets</div>
+      <div class="wt-tag" id="tag"></div>
+    </div>
+    <div class="wt-tools">
+      <div class="wt-row" role="toolbar" aria-label="Tools">
+        <button type="button" class="wt-t" data-tool="pour" title="Pour (1)" aria-pressed="true"><span class="e">💧</span>Pour</button>
+        <button type="button" class="wt-t" data-tool="hand" title="Stir (2)" aria-pressed="false"><span class="e">✋</span>Stir</button>
+        <button type="button" class="wt-t" data-tool="duck" title="Duck (3)" aria-pressed="false"><span class="e">🦆</span>Duck</button>
+        <button type="button" class="wt-t" data-tool="rock" title="Rock (4)" aria-pressed="false"><span class="e">🪨</span>Rock</button>
+        <button type="button" class="wt-t" data-tool="wall" title="Wall (5)" aria-pressed="false"><span class="e">🧱</span>Wall</button>
+        <button type="button" class="wt-t" data-tool="erase" title="Sponge (6)" aria-pressed="false"><span class="e">🧽</span>Sponge</button>
+        <button type="button" class="wt-t" data-tool="tilt" title="Tilt by dragging (7)" aria-pressed="false"><span class="e">↻</span>Tilt</button>
+      </div>
+      <div class="wt-row">
+        <button type="button" class="wt-b" id="tap" aria-pressed="false" title="Tap (T)">🚰 Tap</button>
+        <label class="wt-tilt">Tilt <input type="range" id="tiltR" min="-30" max="30" value="0" aria-label="Tilt the tank" title="Tilt (arrow keys)"></label>
+        <button type="button" class="wt-b" id="wave" title="Slosh (W)">🌊 Slosh</button>
+        <button type="button" class="wt-b" id="phone">📱 Phone tilt</button>
+        <button type="button" class="wt-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <button type="button" class="wt-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button type="button" class="wt-b" id="empty">🫗 Empty</button>
+        <button type="button" class="wt-b" id="reset">↺ Reset</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fluid.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

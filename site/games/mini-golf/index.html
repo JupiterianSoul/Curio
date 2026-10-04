@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mini Golf · Curio</title>
+  <meta name="description" content="Thirty-six holes of putt-putt across four themed courses: meadow, lava canyon, glacier and outer space.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+
+html:has(body.arc), body.arc { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body.arc { min-height: 0; }
+.arc-wrap {
+  width: 100%; max-width: none; margin: 0;
+  height: calc(100vh - var(--bar-h)); height: calc(100dvh - var(--bar-h));
+  padding: 8px 12px max(10px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.arc-hud { display: flex; align-items: center; justify-content: center; gap: 4px 14px; flex-wrap: wrap; min-height: 44px; }
+.arc-hud .c-stat { min-width: 64px; }
+.arc-hud .c-stat b { font-size: 21px; line-height: 1.1; }
+.arc-hud .c-stat span { font-size: 10.5px; }
+.arc-iconbtn {
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-size: 17px; display: grid; place-items: center;
+  box-shadow: var(--shadow); touch-action: manipulation;
+}
+.arc-iconbtn:hover { background: var(--surface-2); }
+.arc-stage { position: relative; flex: 1; min-height: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+#arc-canvas {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 14px; box-shadow: var(--shadow); display: block; outline: none;
+  touch-action: none;
+}
+.arc-ov {
+  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+  padding: 10px; overflow: auto;
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  animation: arc-in .18s ease;
+}
+.arc-ov[hidden] { display: none; }
+@keyframes arc-in { from { opacity: 0; } }
+.arc-card { width: min(100%, 410px); text-align: center; margin: auto; animation: arc-pop .25s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes arc-pop { from { transform: scale(.9); opacity: 0; } }
+.arc-card .c-title { font-size: clamp(28px, 6vw, 38px); margin: 2px 0 6px; }
+.arc-card .c-sub { font-size: 15.5px; margin: 0 0 14px; }
+.arc-emoji { font-size: 44px; line-height: 1; }
+.arc-help { font-size: 13.5px; color: var(--ink-2); margin: 14px 0 0; line-height: 1.7; }
+.arc-help .c-kbd { white-space: nowrap; }
+.arc-small { font-size: 13px; color: var(--ink-3); margin: 10px 0 0; }
+.arc-big { font-size: 54px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+.arc-new {
+  display: inline-block; background: var(--good); color: #fff; font-weight: 800; font-size: 13px;
+  padding: 3px 10px; border-radius: 999px; margin: 6px 0 0; animation: arc-pop .4s cubic-bezier(.2, 1.4, .4, 1);
+}
+.arc-new[hidden] { display: none; }
+.arc-msg { color: var(--ink-2); margin: 10px 0 16px; }
+.arc-opts { display: grid; gap: 10px; justify-items: center; margin: 0 0 16px; }
+.arc-seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+.arc-seg button {
+  border: 0; background: transparent; cursor: pointer; padding: 7px 14px; border-radius: 999px;
+  font-weight: 700; font-size: 14px; color: var(--ink-2);
+}
+.arc-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.arc-check { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; font-size: 14px; color: var(--ink-2); cursor: pointer; }
+.arc-check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.arc-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: var(--ink-3); margin-bottom: -4px; }
+
+.arc-pad { display: none; gap: 8px; }
+.arc-pad__row { display: flex; gap: 8px; }
+.arc-pad button {
+  flex: 1; min-width: 0; height: 58px; border-radius: 16px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font-size: 22px; font-weight: 800; box-shadow: 0 3px 0 var(--line);
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.arc-pad button small { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-top: -2px; }
+.arc-pad button.is-down { background: var(--accent); color: var(--accent-ink); transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.arc-pad button.is-down small { color: inherit; }
+body.arc-touch .arc-pad { display: flex; flex-direction: column; }
+@media (hover: none) and (pointer: coarse) { .arc-pad { display: flex; flex-direction: column; } }
+@media (max-width: 520px) {
+  .arc-wrap { padding-left: 8px; padding-right: 8px; gap: 6px; }
+  .arc-hud { gap: 2px 8px; min-height: 40px; }
+  .arc-hud .c-stat { min-width: 54px; }
+  .arc-hud .c-stat b { font-size: 18px; }
+}
+@media (max-height: 560px) { .arc-pad button { height: 46px; } }
+
+.mg-card { overflow-x: auto; margin: 10px 0 0; }
+.mg-card table { border-collapse: collapse; margin: 0 auto; font-size: 13px; font-variant-numeric: tabular-nums; }
+.mg-card th, .mg-card td { padding: 3px 5px; text-align: center; border-bottom: 1px solid var(--line); }
+.mg-card th { color: var(--ink-3); font-weight: 700; }
+.mg-card td.is-under { color: var(--good); font-weight: 800; }
+.mg-card td.is-over { color: var(--bad); }
+
+
+.arc-iconbtn[hidden] { display: none; }
+.mg-menu { width: min(100%, 520px); }
+.mg-hero { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto 4px; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.mg-flag { transform-origin: 226px 44px; animation: mg-wave 1.6s ease-in-out infinite; }
+@keyframes mg-wave { 50% { transform: skewY(8deg) scaleX(.92); } }
+.mg-heroball { animation: mg-roll 3.2s cubic-bezier(.3,.6,.3,1) infinite; }
+@keyframes mg-roll { 0%, 15% { transform: translate(0, 0); } 60% { transform: translate(80px, -24px); } 85%, 100% { transform: translate(158px, -4px); opacity: 0; } }
+.mg-courses { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0 8px; }
+.mg-course {
+  display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center; text-align: left;
+  padding: 9px 10px; border-radius: 14px; border: 1px solid var(--line); cursor: pointer; color: #fff;
+  box-shadow: 0 3px 0 rgba(0,0,0,.18), var(--shadow); transition: transform .15s, box-shadow .15s; font: inherit;
+}
+.mg-course svg { grid-row: span 2; width: 40px; height: 40px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+.mg-course b { font-size: 14.5px; line-height: 1.1; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.mg-course small { font-size: 11.5px; opacity: .9; font-weight: 700; }
+.mg-course:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,.18), var(--shadow); }
+.mg-course:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+.mg-course[aria-pressed="true"] { outline: 3px solid var(--accent); outline-offset: 2px; }
+.mg-c-meadow { background: linear-gradient(135deg, #5fd068, #2f8f3a); }
+.mg-c-canyon { background: linear-gradient(135deg, #f0a35a, #b5502a); }
+.mg-c-glacier { background: linear-gradient(135deg, #8fcbe8, #3a7bd5); }
+.mg-c-cosmos { background: linear-gradient(135deg, #6a4fd8, #1b1440); }
+.mg-daily {
+  width: 100%; display: flex; gap: 10px; align-items: center; text-align: left; padding: 9px 12px; border-radius: 14px; cursor: pointer;
+  background: var(--surface-2); border: 1px dashed var(--line); color: var(--ink); font: inherit; transition: transform .15s;
+}
+.mg-daily:hover { transform: translateY(-1px); border-color: var(--accent); }
+.mg-daily b { display: block; font-size: 14.5px; }
+.mg-daily small { color: var(--ink-3); font-size: 12px; font-weight: 700; }
+.mg-daily__cal { width: 34px; height: 36px; border-radius: 8px; background: #fff; border: 2px solid var(--accent); position: relative; flex: none; overflow: hidden; }
+.mg-daily__cal::before { content: ""; position: absolute; inset: 0 0 auto; height: 10px; background: var(--accent); }
+.mg-daily__cal i { position: absolute; left: 8px; top: 15px; width: 14px; height: 14px; border-radius: 50%; background: #5fd068; box-shadow: 0 0 0 2px #2f8f3a inset; }
+.mg-skins { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0 4px; flex-wrap: wrap; }
+.mg-skins .arc-label { margin: 0; }
+.mg-skinrow { display: flex; gap: 8px; }
+.mg-skin { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; font-size: 11px; display: grid; place-items: center; box-shadow: 0 2px 4px rgba(0,0,0,.2); transition: transform .15s; padding: 0; }
+.mg-skin:hover:not(:disabled) { transform: scale(1.15); }
+.mg-skin[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
+.mg-skin:disabled { filter: grayscale(1) opacity(.5); cursor: not-allowed; }
+.mg-more { margin: 10px 0 0; text-align: left; font-size: 14px; }
+.mg-more summary { cursor: pointer; font-weight: 800; color: var(--ink-2); text-align: center; }
+.mg-stats { display: flex; justify-content: center; gap: 4px 12px; flex-wrap: wrap; margin: 10px 0; }
+.mg-stats .c-stat b { font-size: 18px; }
+.mg-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.mg-badges[hidden] { display: none; }
+.mg-badges--new { margin: 0 0 14px; }
+.mg-badge { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
+.mg-badge i { font-style: normal; margin-right: 4px; }
+.mg-badge.is-on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); }
+.mg-badge.is-on i { color: var(--warn); }
+.mg-badge.is-new { animation: arc-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+@media (max-width: 420px) { .mg-course { grid-template-columns: 32px 1fr; padding: 8px; } .mg-course svg { width: 32px; height: 32px; } .mg-course b { font-size: 13px; } }
+  </style>
+</head>
+<body data-game="mini-golf" class="arc">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="hole">0</b><span>Hole</span></div>
+      <div class="c-stat"><b data-hud="par">0</b><span>Par</span></div>
+      <div class="c-stat"><b data-hud="strokes">0</b><span>Strokes</span></div>
+      <div class="c-stat"><b data-hud="total">0</b><span>Total</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-mg-prac="prev" aria-label="Previous hole" title="Previous hole ([)" hidden>‹</button>
+      <button class="arc-iconbtn" type="button" data-mg-prac="next" aria-label="Next hole" title="Next hole (])" hidden>›</button>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Mini Golf course seen from above" tabindex="-1"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card mg-menu">
+          <svg class="mg-hero" viewBox="0 0 320 110" aria-hidden="true">
+            <defs><linearGradient id="mgsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd6ff"/><stop offset="1" stop-color="#d9f4ff"/></linearGradient><linearGradient id="mghill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fdc74"/><stop offset="1" stop-color="#3f9f45"/></linearGradient></defs>
+            <rect width="320" height="110" rx="16" fill="url(#mgsky)"/>
+            <circle cx="270" cy="28" r="14" fill="#ffd166"/>
+            <path d="M0 78Q60 48 130 70T320 60V110H0Z" fill="#7cc46a"/>
+            <path d="M0 92Q90 66 180 86T320 82V110H0Z" fill="url(#mghill)"/>
+            <ellipse cx="226" cy="88" rx="22" ry="6" fill="#1f3a1d"/>
+            <path d="M226 88V34" stroke="#fff" stroke-width="3"/>
+            <path class="mg-flag" d="M226 34q14 4 26 10q-12 5-26 10z" fill="#ff5a36"/>
+            <path d="M70 92q40-40 120-6" stroke="#fff" stroke-width="2.5" stroke-dasharray="2 7" fill="none" stroke-linecap="round"/>
+            <circle class="mg-heroball" cx="66" cy="92" r="6" fill="#fff"/>
+            <g fill="#2f7d32"><circle cx="30" cy="66" r="12"/><circle cx="42" cy="70" r="10"/><circle cx="292" cy="62" r="11"/></g>
+          </svg>
+          <h1 class="c-title">Mini Golf</h1>
+          <p class="c-sub">Thirty-six holes over four themed courses. Lowest score wins, ducks optional.</p>
+          <div class="arc-seg" role="group" aria-label="Mode"><button type="button" data-mode="round" aria-pressed="true">Full round</button><button type="button" data-mode="practice" aria-pressed="false">Practice</button></div>
+          <div class="mg-courses">
+            <button type="button" class="mg-course mg-c-meadow" data-course="meadow"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#5fd068"/><circle cx="18" cy="20" r="9" fill="#2f7d32"/><circle cx="27" cy="17" r="8" fill="#3f9f45"/><ellipse cx="30" cy="34" rx="9" ry="4" fill="#3ba7e6"/></svg><b>Meadow Links</b><small data-cbest>Par 27</small></button>
+            <button type="button" class="mg-course mg-c-canyon" data-course="canyon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#e9a25f"/><path d="M8 36L20 14l8 10 4-5 9 17z" fill="#a65a30"/><path d="M20 14l3 6-6 1z" fill="#ff6a1a"/><rect x="31" y="22" width="5" height="14" rx="2.5" fill="#3fa463"/><path d="M8 38h32" stroke="#ff4d12" stroke-width="4" stroke-linecap="round"/></svg><b>Lava Canyon</b><small data-cbest>Par 28</small></button>
+            <button type="button" class="mg-course mg-c-glacier" data-course="glacier"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#cfe9f7"/><path d="M6 36L20 12l8 12 5-6 10 18z" fill="#7fa6c0"/><path d="M20 12l5 8-4 2-4-3z" fill="#fff"/><path d="M14 40l4-9 4 9z" fill="#2f7a5c"/></svg><b>Glacier Peak</b><small data-cbest>Par 28</small></button>
+            <button type="button" class="mg-course mg-c-cosmos" data-course="cosmos"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#221a48"/><circle cx="22" cy="24" r="9" fill="#8a6bff"/><ellipse cx="22" cy="24" rx="16" ry="4" fill="none" stroke="#58e6ff" stroke-width="2" transform="rotate(-20 22 24)"/><circle cx="36" cy="12" r="1.5" fill="#fff"/><circle cx="12" cy="36" r="1.2" fill="#fff"/></svg><b>Cosmic Course</b><small data-cbest>Par 29</small></button>
+          </div>
+          <button type="button" class="mg-daily" data-daily><span class="mg-daily__cal" aria-hidden="true"><i></i></span><span><b>Daily challenge</b><small data-daily-best>Three random holes</small></span></button>
+          <div class="mg-skins"><span class="arc-label">Ball</span><div data-skins class="mg-skinrow"></div></div>
+          <details class="mg-more">
+            <summary>Stats and badges <span data-badge-count></span></summary>
+            <div class="mg-stats" data-stats></div>
+            <div class="mg-badges" data-badges></div>
+          </details>
+          <p class="arc-help"><b>Drag back</b> from anywhere and let go to putt, like a slingshot. Touchpad mode (top bar): click, pull back, click again · <span class="c-kbd">←</span> <span class="c-kbd">→</span> aim (<span class="c-kbd">Shift</span> for fine), <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> power, <span class="c-kbd">Space</span> putt · <span class="c-kbd">P</span> pause<br>Hazards cost a stroke. Ten strokes and the ball is picked up.</p>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Take a breath. The game will wait.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="mg-card" data-o="card"></div><p class="arc-msg" data-o="msg"></p>
+          <div class="mg-badges mg-badges--new" data-o="badges" hidden></div>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-share>Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

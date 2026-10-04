@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Morse Code · Curio</title>
+  <meta name="description" content="Translate and hear Morse with a lighthouse, lamp, tape and wave display, learn it properly with a Koch-method course, then play Morse Invaders and the daily decode.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="morse-code">
+  <main class="c-wrap mc-wrap">
+    <h1 class="c-title">Morse Code</h1>
+    <p class="c-sub">Dit dah dit. The 1840s' hottest messaging app, now with fewer telegraph wires and a lighthouse.</p>
+
+    <section class="mc-stage" id="stage">
+      <canvas id="scene" role="img" aria-label="Signal display"></canvas>
+      <div class="mc-stagebar">
+        <div class="mc-vis" id="vis" role="group" aria-label="Signal display style">
+          <button data-v="lighthouse" type="button" title="Lighthouse">🗼</button>
+          <button data-v="lamp" type="button" title="Signal lamp">💡</button>
+          <button data-v="tape" type="button" title="Paper tape">📜</button>
+          <button data-v="wave" type="button" title="Waveform">〰️</button>
+          <button data-v="flash" type="button" title="Screen flash">🔦</button>
+        </div>
+        <button class="mc-vibe" id="vibe" type="button" aria-pressed="false" title="Vibrate along (phones)">📳</button>
+      </div>
+      <div class="mc-caption" id="caption" aria-live="polite"></div>
+    </section>
+
+    <div class="mc-tabs" role="tablist">
+      <button role="tab" data-tab="translate" aria-selected="true">🔁 Translate</button>
+      <button role="tab" data-tab="learn" aria-selected="false">🎓 Learn</button>
+      <button role="tab" data-tab="games" aria-selected="false">🎮 Games</button>
+      <button role="tab" data-tab="tap" aria-selected="false">👆 Key</button>
+      <button role="tab" data-tab="ref" aria-selected="false">📖 Reference</button>
+    </div>
+
+    <section class="mc-panel c-card" data-panel="translate">
+      <div class="mc-tr">
+        <div><label for="text">Text</label><textarea class="c-input" id="text" spellcheck="false"></textarea></div>
+        <div><label for="morse">Morse · letters split by space, words by /</label><textarea class="c-input" id="morse" spellcheck="false"></textarea></div>
+      </div>
+      <div class="mc-famous" id="famous"></div>
+      <div class="mc-ctrls">
+        <button class="c-btn" id="playBtn" type="button">▶ Play</button>
+        <div class="mc-knob"><label for="wpm">Speed <b id="wpmV">18 WPM</b></label><input type="range" id="wpm" min="5" max="40" value="18"></div>
+        <div class="mc-knob"><label for="fwpm">Spacing <b id="fwpmV">same</b></label><input type="range" id="fwpm" min="5" max="40" value="40"></div>
+        <div class="mc-knob"><label for="tone">Tone <b id="toneV">600 Hz</b></label><input type="range" id="tone" min="300" max="1100" step="10" value="600"></div>
+      </div>
+      <div class="mc-now" id="now"></div>
+      <div class="mc-row">
+        <button class="c-btn c-btn--ghost mc-sm" id="copyMorse" type="button">📋 Copy Morse</button>
+        <button class="c-btn c-btn--ghost mc-sm" id="shareMsg" type="button">🔗 Share as secret link</button>
+      </div>
+    </section>
+
+    <section class="mc-panel c-card" data-panel="learn" hidden>
+      <div class="mc-learnhead">
+        <div>
+          <h2>Koch method course</h2>
+          <p class="c-muted">The way radio operators learn: characters at full speed from day one, two letters to start, one new letter per lesson. Hit 90% to unlock the next.</p>
+        </div>
+        <div class="mc-lprog"><b id="lessonNo">1</b><span>of 40</span></div>
+      </div>
+      <div class="mc-map" id="kochMap"></div>
+      <div class="mc-lesson" id="lesson"></div>
+    </section>
+
+    <section class="mc-panel c-card" data-panel="games" hidden>
+      <div class="mc-gamepick" id="gamePick">
+        <button class="mc-gcard" data-g="invaders" type="button"><i>👾</i><b>Morse Invaders</b><span>Letters fall from space as Morse. Type them to zap them.</span></button>
+        <button class="mc-gcard" data-g="ear" type="button"><i>🎧</i><b>Ear trainer</b><span>Hear a character, pick the right one. Ten rounds.</span></button>
+        <button class="mc-gcard" data-g="daily" type="button"><i>📅</i><b>Daily decode</b><span id="dailyState">A new secret message every day.</span></button>
+      </div>
+      <div class="mc-game" id="game"></div>
+    </section>
+
+    <section class="mc-panel c-card" data-panel="tap" hidden>
+      <div class="mc-keymode">
+        <div class="mc-seg" id="keyMode" role="group" aria-label="Key type"><button data-k="straight" type="button">Straight key</button><button data-k="paddle" type="button">Dot and dash buttons</button></div>
+        <div class="mc-knob mc-knob--sm"><label for="kwpm">Key speed <b id="kwpmV">12 WPM</b></label><input type="range" id="kwpm" min="5" max="25" value="12"></div>
+      </div>
+      <div class="mc-key-wrap">
+        <div class="mc-target" id="target"></div>
+        <div class="mc-buf" id="buf" aria-live="polite">&nbsp;</div>
+        <div class="mc-keys" id="keys">
+          <button class="mc-key" id="key" type="button" aria-label="Morse key">
+            <svg viewBox="0 0 220 120" aria-hidden="true"><rect x="10" y="92" width="200" height="22" rx="8" fill="#5d4037"/><rect x="18" y="86" width="184" height="10" rx="4" fill="#8d6e63"/><circle cx="40" cy="86" r="9" fill="#c9a227"/><circle cx="180" cy="86" r="9" fill="#c9a227"/><g class="mc-lever"><rect x="30" y="58" width="150" height="10" rx="5" fill="#c9a227"/><rect x="150" y="38" width="44" height="26" rx="13" fill="#212121"/><ellipse cx="172" cy="40" rx="22" ry="7" fill="#424242"/></g><rect x="160" y="68" width="6" height="18" fill="#9e9e9e"/></svg>
+            <span>TAP</span>
+          </button>
+          <button class="mc-paddle" id="dotBtn" type="button" hidden>·<small>dit</small></button>
+          <button class="mc-paddle" id="dashBtn" type="button" hidden>−<small>dah</small></button>
+        </div>
+        <div class="mc-timing" id="timing" aria-hidden="true"></div>
+        <div class="mc-out" id="tapOut" aria-live="polite"></div>
+        <div class="mc-row">
+          <button class="c-btn c-btn--ghost mc-sm" id="tapClear" type="button">Clear</button>
+          <button class="c-btn c-btn--ghost mc-sm" id="tapBack" type="button">⌫</button>
+          <button class="c-btn mc-sm" id="sendIt" type="button">🎯 Send-it challenge</button>
+        </div>
+        <p class="c-muted mc-hint">Tap for a dot, hold for a dash. Pause and the letter locks in. <span class="c-kbd">Space</span> works as the key; with buttons, <span class="c-kbd">.</span> and <span class="c-kbd">-</span>. Hold longer than about <span id="thresh">200</span> ms for a dash.</p>
+      </div>
+    </section>
+
+    <section class="mc-panel c-card" data-panel="ref" hidden>
+      <h2 class="mc-h">Alphabet, numbers and punctuation</h2>
+      <p class="c-muted">Click any character to hear it. A dash is three dots long; gaps between letters are three dots, between words seven.</p>
+      <div class="mc-tree" id="tree"></div>
+      <div class="mc-chart" id="chart"></div>
+      <h2 class="mc-h">Prosigns</h2>
+      <div class="mc-reflist" id="prosigns"></div>
+      <h2 class="mc-h">Q codes and abbreviations</h2>
+      <div class="mc-reflist" id="qcodes"></div>
+      <h2 class="mc-h">A short history</h2>
+      <ol class="mc-history" id="history"></ol>
+    </section>
+
+    <section class="mc-extra">
+      <h3 class="mc-h3">Badges <span id="achCount"></span></h3>
+      <div class="mc-ach" id="ach"></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

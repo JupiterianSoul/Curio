@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Road Crosser · Curio</title>
+  <meta name="description" content="Hop across endless roads, rivers and railways through four biomes. Grab coins to unlock six characters, plus shields and slow-mo.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="road-crosser" class="arc" style="--arc-hue: #8bc34a">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="coins">0</b><span>Coins</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Endless road crossing"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 110" aria-hidden="true"><rect width="300" height="110" rx="18" fill="#8bc34a"/><rect y="28" width="300" height="34" fill="#4a4f57"/><g fill="#fff" opacity=".6"><rect x="10" y="43" width="22" height="4"/><rect x="60" y="43" width="22" height="4"/><rect x="110" y="43" width="22" height="4"/><rect x="160" y="43" width="22" height="4"/><rect x="210" y="43" width="22" height="4"/><rect x="260" y="43" width="22" height="4"/></g><rect y="62" width="300" height="26" fill="#4fc3f7"/><rect x="0" y="88" width="300" height="22" fill="#9ccc65"/><g class="drift"><rect x="40" y="32" width="54" height="26" rx="9" fill="#ef5350"/><rect x="55" y="36" width="22" height="18" rx="5" fill="#c62828"/><rect x="82" y="37" width="6" height="16" fill="#b3e5fc"/></g><g class="drift" style="animation-direction:alternate-reverse"><rect x="190" y="66" width="80" height="18" rx="9" fill="#8d5a3b"/><ellipse cx="262" cy="75" rx="5" ry="8" fill="#d7a77a"/></g><circle cx="250" cy="22" r="10" fill="#2e7d32"/><circle cx="246" cy="19" r="6" fill="#43a047"/><g class="bob" transform="translate(150 92)"><rect x="-7" y="6" width="3" height="6" fill="#ff9800"/><rect x="3" y="6" width="3" height="6" fill="#ff9800"/><rect x="-13" y="-16" width="26" height="24" rx="9" fill="#fff"/><circle cx="-2" cy="-18" r="4" fill="#e53935"/><circle cx="4" cy="-17" r="3.5" fill="#e53935"/><path d="M13-8l7 3-7 3z" fill="#ffa000"/><rect x="6" y="-11" width="3.5" height="3.5" fill="#212121"/></g><g fill="#f9a825"><ellipse cx="110" cy="99" rx="6" ry="7"/><ellipse cx="200" cy="99" rx="6" ry="7"/></g></svg>
+          <h1 class="c-title">Road Crosser</h1>
+          <p class="c-sub">Why did the chicken cross the road? To get to the next road. And the river. And the train tracks. Forever.</p>
+          <div class="arc-opts"><div class="arc-label">Character · <span>🪙 <b id="bank">0</b> saved</span></div><div class="rc-shop" id="shop" role="group" aria-label="Characters"></div>
+<p class="arc-small" style="margin:0">Cars squash · rivers need logs · trains do not stop · dawdle and the eagle comes<br>Pick up <b style="color:#26a6b8">🛡️ shields</b> and <b style="color:#ab47bc">⏳ slow-mo</b>. Meadow, Autumn Woods, Snowy Pass, Desert Dunes.</p></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><span class="c-kbd">↑</span> <span class="c-kbd">↓</span> <span class="c-kbd">←</span> <span class="c-kbd">→</span> or <span class="c-kbd">WASD</span> to hop · <span class="c-kbd">P</span> pause<br>On a phone: tap to hop forward, swipe to hop sideways or back.</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The cars have politely stopped. For now.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"><div class="arc-pad__row"><button type="button" data-key="ArrowLeft" aria-label="Left">◀<small>Left</small></button><button type="button" data-key="ArrowUp" aria-label="Hop">▲<small>Hop</small></button><button type="button" data-key="ArrowDown" aria-label="Back">▼<small>Back</small></button><button type="button" data-key="ArrowRight" aria-label="Right">▶<small>Right</small></button></div></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

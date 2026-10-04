@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#ffd8cc"/>
+  <circle cx="30" cy="270" r="70" fill="#ffc4b3"/>
+  <circle cx="380" cy="30" r="60" fill="#ffc4b3"/>
+  <rect x="34" y="26" width="332" height="250" rx="30" fill="#c62828"/>
+  <rect x="34" y="26" width="332" height="40" rx="20" fill="#e53935" opacity=".6"/>
+  <text x="200" y="52" fill="#f6c945" font-family="cursive" font-style="italic" font-weight="700" font-size="22" text-anchor="middle">Etch Sketch</text>
+  <rect x="62" y="64" width="276" height="150" rx="12" fill="#cfd0cb" stroke="#a51c1c" stroke-width="6"/>
+  <path d="M86 196 L86 168 L112 168 L112 140 L138 140 L138 112 L164 112 L164 88 L180 88 L180 150 L230 150 L230 110 L256 86 L282 110 L282 150 L230 150 M248 150 L248 130 L264 130 L264 150 L310 150 L310 120" fill="none" stroke="#4b4f54" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="310" cy="120" r="3.5" fill="#2f3236"/>
+  <circle cx="84" cy="244" r="24" fill="#f2f0ea"/>
+  <circle cx="84" cy="244" r="12" fill="#fff"/>
+  <rect x="81" y="222" width="6" height="9" rx="2" fill="#c62828"/>
+  <circle cx="316" cy="244" r="24" fill="#f2f0ea"/>
+  <circle cx="316" cy="244" r="12" fill="#fff"/>
+  <rect x="331" y="236" width="9" height="6" rx="2" fill="#c62828" transform="rotate(30 316 244)"/>
+  <path d="M120 234 Q126 244 120 254 M136 230 Q144 244 136 258" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M280 234 Q274 244 280 254 M264 230 Q256 244 264 258" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+</svg>

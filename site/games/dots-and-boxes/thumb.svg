@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#ff7043"/>
+  <circle cx="370" cy="270" r="100" fill="#ff8a65"/>
+  <circle cx="20" cy="20" r="70" fill="#f4511e"/>
+  <g transform="translate(200 150) rotate(-4)">
+    <rect x="-125" y="-115" width="250" height="230" rx="16" fill="#fffdf7"/>
+    <g transform="translate(-90 -80)">
+      <rect x="4" y="4" width="52" height="52" rx="6" fill="#ffccbc"/>
+      <rect x="64" y="4" width="52" height="52" rx="6" fill="#ffccbc"/>
+      <rect x="64" y="64" width="52" height="52" rx="6" fill="#bbdefb"/>
+      <rect x="124" y="64" width="52" height="52" rx="6" fill="#bbdefb"/>
+      <g stroke="#ff5a36" stroke-width="7" stroke-linecap="round">
+        <path d="M0 0h120M0 60h60M0 0v60M60 0v60M120 0v60M60 60h60"/>
+      </g>
+      <g stroke="#2f7de1" stroke-width="7" stroke-linecap="round">
+        <path d="M60 60v60M60 120h120M120 60h60M180 60v60M120 60v60M0 120v40"/>
+      </g>
+      <path d="M120 120v40" stroke="#2f7de1" stroke-width="7" stroke-linecap="round" stroke-dasharray="4 10" opacity=".6"/>
+      <g font-family="Arial,sans-serif" font-weight="900" font-size="28" text-anchor="middle">
+        <text x="30" y="40" fill="#ff5a36">★</text><text x="90" y="40" fill="#ff5a36">★</text>
+        <text x="90" y="100" fill="#2f7de1">●</text><text x="150" y="100" fill="#2f7de1">●</text>
+      </g>
+      <g fill="#1d1b19">
+        <circle cx="0" cy="0" r="6"/><circle cx="60" cy="0" r="6"/><circle cx="120" cy="0" r="6"/><circle cx="180" cy="0" r="6"/>
+        <circle cx="0" cy="60" r="6"/><circle cx="60" cy="60" r="6"/><circle cx="120" cy="60" r="6"/><circle cx="180" cy="60" r="6"/>
+        <circle cx="0" cy="120" r="6"/><circle cx="60" cy="120" r="6"/><circle cx="120" cy="120" r="6"/><circle cx="180" cy="120" r="6"/>
+        <circle cx="0" cy="180" r="6"/><circle cx="60" cy="180" r="6"/><circle cx="120" cy="180" r="6"/><circle cx="180" cy="180" r="6"/>
+      </g>
+    </g>
+  </g>
+  <g transform="translate(320 70) rotate(35)">
+    <rect x="-8" y="-50" width="16" height="80" rx="3" fill="#ffca28"/>
+    <path d="M-8 30 L0 48 L8 30z" fill="#ffe0b2"/><path d="M-3 41 L0 48 L3 41z" fill="#333"/>
+    <rect x="-8" y="-50" width="16" height="12" rx="3" fill="#ec407a"/>
+  </g>
+</svg>

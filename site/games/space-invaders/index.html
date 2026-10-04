@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Invaders · Curio</title>
+  <meta name="description" content="Hold the line against marching pixel aliens: armoured invaders, mothership bosses, power-ups, combos and badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="space-invaders" class="arc" style="--arc-hue: #7c4dff">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="wave">0</b><span>Wave</span></div>
+      <div class="c-stat"><b data-hud="lives">0</b><span>Lives</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Invaders battlefield"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 120" aria-hidden="true"><defs><linearGradient id="siSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#151a46"/><stop offset="1" stop-color="#3b2f7a"/></linearGradient></defs><rect x="0" y="0" width="300" height="120" rx="18" fill="url(#siSky)"/><circle cx="250" cy="30" r="14" fill="#ffb74d"/><ellipse cx="250" cy="30" rx="24" ry="5" fill="none" stroke="#ffe0b2" stroke-width="2" opacity=".6" transform="rotate(-20 250 30)"/><g fill="#fff" opacity=".8"><rect x="20" y="14" width="2" height="2"/><rect x="80" y="30" width="2" height="2"/><rect x="140" y="10" width="2" height="2"/><rect x="200" y="60" width="2" height="2"/><rect x="40" y="70" width="2" height="2"/><rect x="280" y="80" width="2" height="2"/></g><g class="drift"><path d="M135 8h6v3h-6zM129 11h18v3h-18zM123 14h30v3h-30zM120 17h6v3h-6zM129 17h6v3h-6zM138 17h6v3h-6zM147 17h6v3h-6zM120 20h36v3h-36zM126 23h9v3h-9zM141 23h9v3h-9zM129 26h3v3h-3zM144 26h3v3h-3z" fill="#ff5a36"/></g><g class="bob"><path d="M52.8 40h6.4v3.2h-6.4zM49.6 43.2h12.8v3.2h-12.8zM46.4 46.4h19.2v3.2h-19.2zM43.2 49.6h6.4v3.2h-6.4zM52.8 49.6h6.4v3.2h-6.4zM62.4 49.6h6.4v3.2h-6.4zM43.2 52.8h25.6v3.2h-25.6zM49.6 56h3.2v3.2h-3.2zM59.2 56h3.2v3.2h-3.2zM46.4 59.2h3.2v3.2h-3.2zM52.8 59.2h6.4v3.2h-6.4zM62.4 59.2h3.2v3.2h-3.2zM43.2 62.4h3.2v3.2h-3.2zM49.6 62.4h3.2v3.2h-3.2zM59.2 62.4h3.2v3.2h-3.2zM65.6 62.4h3.2v3.2h-3.2z" fill="#b388ff"/><path d="M205.6 40h16v3.2h-16zM199.2 43.2h28.8v3.2h-28.8zM196 46.4h35.2v3.2h-35.2zM196 49.6h6.4v3.2h-6.4zM208.8 49.6h9.6v3.2h-9.6zM224.8 49.6h6.4v3.2h-6.4zM196 52.8h35.2v3.2h-35.2zM202.4 56h6.4v3.2h-6.4zM218.4 56h6.4v3.2h-6.4zM199.2 59.2h6.4v3.2h-6.4zM208.8 59.2h9.6v3.2h-9.6zM221.6 59.2h6.4v3.2h-6.4zM196 62.4h6.4v3.2h-6.4zM224.8 62.4h6.4v3.2h-6.4z" fill="#ff5ca8"/></g><g class="bob2"><path d="M125.2 44h3.6v3.6h-3.6zM146.8 44h3.6v3.6h-3.6zM118 47.6h3.6v3.6h-3.6zM128.8 47.6h3.6v3.6h-3.6zM143.2 47.6h3.6v3.6h-3.6zM154 47.6h3.6v3.6h-3.6zM118 51.2h3.6v3.6h-3.6zM125.2 51.2h25.2v3.6h-25.2zM154 51.2h3.6v3.6h-3.6zM118 54.8h10.8v3.6h-10.8zM132.4 54.8h10.8v3.6h-10.8zM146.8 54.8h10.8v3.6h-10.8zM118 58.4h39.6v3.6h-39.6zM121.6 62h32.4v3.6h-32.4zM125.2 65.6h3.6v3.6h-3.6zM146.8 65.6h3.6v3.6h-3.6zM121.6 69.2h3.6v3.6h-3.6zM150.4 69.2h3.6v3.6h-3.6z" fill="#4dd0e1"/></g><rect x="148" y="70" width="3" height="16" fill="#fff" class="blink"/><path d="M148 92h3v3h-3zM145 95h9v3h-9zM145 98h9v3h-9zM133 101h33v3h-33zM130 104h39v3h-39zM130 107h39v3h-39zM130 110h39v3h-39z" fill="#7ee081"/><rect x="0" y="113" width="300" height="7" fill="#2f6b4a"/></svg>
+          <h1 class="c-title">Invaders</h1>
+          <p class="c-sub">They march, they wiggle, they get faster as you thin them out. Every fourth wave, the mothership arrives.</p>
+          <div class="arc-opts"><div class="arc-label">Difficulty</div><div class="arc-seg" role="group" aria-label="Difficulty" data-opt="diff" data-def="classic"><button type="button" data-val="cadet">🐣 Cadet</button><button type="button" data-val="classic">👾 Classic</button><button type="button" data-val="veteran">🎖️ Veteran</button></div>
+<p class="arc-small" style="margin:0"><b style="color:#ff5ca8">10</b> · <b style="color:#4dd0e1">20</b> · <b style="color:#b388ff">30</b> · armoured <b style="color:#ffb74d">40</b> · mystery ship <b style="color:#ff5a36">???</b><br>Power-ups: <b style="color:#e6a100">⚡ rapid</b> · <b style="color:#26a6b8">✦ spread</b> · <b style="color:#3bb54a">◎ shield</b> · <b style="color:#4fa3d1">❄ freeze</b> · <b style="color:#ff5ca8">♥ life</b></p></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><span class="c-kbd">←</span> <span class="c-kbd">→</span> or <span class="c-kbd">A</span> <span class="c-kbd">D</span> to move · <span class="c-kbd">Space</span> to fire · <span class="c-kbd">P</span> pause<br>Chain hits for a combo multiplier. On a phone: use the buttons, or tap the sky to fire.</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The aliens are frozen mid-wiggle.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"><div class="arc-pad__row"><button type="button" data-key="ArrowLeft" aria-label="Left">◀<small>Left</small></button><button type="button" data-key=" " aria-label="Fire">✦<small>Fire</small></button><button type="button" data-key="ArrowRight" aria-label="Right">▶<small>Right</small></button></div></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Marble Run · Curio</title>
+  <meta name="description" content="Build a marble run from ramps, funnels, bumpers, see-saws, xylophone bars and an elevator, then release a flood of marbles.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="marble-run">
+  <main class="c-wrap mr-main">
+    <div class="mr-stage" id="stage">
+      <canvas id="board" role="img" aria-label="Marble run board. Drag pieces from the palette onto the board, drag to move them, then release marbles."></canvas>
+      <div class="mr-intro" id="intro">
+        <h1>Marble Run</h1>
+        <p>Drag pieces onto the board, tilt them, then hit Release and listen to the clatter.</p>
+      </div>
+      <div class="mr-count" aria-live="polite"><b id="nMarbles">0</b> marbles</div>
+      <div class="mr-paused" id="pausedTag">PAUSED</div>
+      <div class="mr-sel" id="selBar" role="toolbar" aria-label="Selected piece">
+        <button type="button" data-sel="ccw" title="Rotate left (Q)" aria-label="Rotate left">⟲</button>
+        <button type="button" data-sel="cw" title="Rotate right (E)" aria-label="Rotate right">⟳</button>
+        <button type="button" data-sel="flip" title="Mirror (F)" aria-label="Mirror">⇋</button>
+        <button type="button" data-sel="note" title="Change note" aria-label="Change note">♪</button>
+        <button type="button" data-sel="del" title="Delete (Del)" aria-label="Delete piece">🗑</button>
+      </div>
+    </div>
+    <div class="mr-tools">
+      <div class="mr-palette" id="palette" role="toolbar" aria-label="Pieces"></div>
+      <div class="mr-actions">
+        <button type="button" class="c-btn mr-go" id="release">▶ Release</button>
+        <button type="button" class="mr-b" id="pause" aria-pressed="false">⏸ Pause</button>
+        <button type="button" class="mr-b" id="undo">↶ Undo</button>
+        <button type="button" class="mr-b" id="clearM">🫧 Clear marbles</button>
+        <label class="mr-b mr-presets">📐 <select id="preset" aria-label="Load a preset track">
+          <option value="">Presets…</option>
+        </select></label>
+        <button type="button" class="mr-b" id="reset">🗑 Empty board</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="physics.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

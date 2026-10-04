@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Piano · Curio</title>
+  <meta name="description" content="A playable piano with twelve instruments, chord pads, recording and 37 songs to learn with Synthesia-style falling notes.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="piano">
+  <main class="c-wrap pn-wrap">
+    <header class="pn-hero">
+      <h1 class="c-title">Piano</h1>
+      <p class="c-sub">No lessons required. Click, tap or mash your keyboard, or let the falling notes teach you a song.</p>
+    </header>
+
+    <div class="pn-modes" role="tablist" aria-label="Mode">
+      <button role="tab" data-mode="free" aria-selected="true"><i>🎹</i><span>Free play</span></button>
+      <button role="tab" data-mode="learn" aria-selected="false"><i>🎼</i><span>Learn songs</span></button>
+      <button role="tab" data-mode="chords" aria-selected="false"><i>🎸</i><span>Chord pads</span></button>
+    </div>
+
+    <div class="pn-insts" id="insts" role="group" aria-label="Instrument"></div>
+
+    <div class="pn-case" id="case">
+      <div class="pn-display">
+        <button class="pn-oct" id="down" type="button" aria-label="Octave down">‹</button>
+        <div class="pn-lcd" id="lcd" aria-live="polite">Ready.</div>
+        <div class="pn-meter" aria-hidden="true"><i id="meter"></i></div>
+        <button class="pn-oct" id="up" type="button" aria-label="Octave up">›</button>
+      </div>
+      <div class="pn-rollbox">
+        <canvas class="pn-roll" id="roll" role="img" aria-label="Falling notes display"></canvas>
+        <div class="pn-hud" id="hud" hidden>
+          <div><b id="hScore">0</b><span>Score</span></div>
+          <div><b id="hCombo">0</b><span>Combo</span></div>
+          <div><b id="hAcc">100%</b><span>Accuracy</span></div>
+          <button class="pn-hudbtn" id="pauseBtn" type="button">❚❚</button>
+          <button class="pn-hudbtn" id="quitBtn" type="button">✕</button>
+        </div>
+        <div class="pn-prog" id="progBox" hidden><i id="prog"></i></div>
+        <div class="pn-count" id="count" hidden></div>
+        <div class="pn-splash" id="splash">
+          <h2>Play anything.</h2>
+          <p>Every key makes a little light. Or let the notes rain down and learn a song.</p>
+          <div class="c-row">
+            <button class="c-btn" id="splashLearn" type="button">🎼 Learn a song</button>
+            <button class="c-btn c-btn--ghost" id="splashDaily" type="button">⭐ Song of the day</button>
+          </div>
+        </div>
+      </div>
+      <div class="pn-keys" id="keys" role="group" aria-label="Piano keys"></div>
+      <div class="pn-pedal">
+        <button class="pn-pedalbtn" id="sustain" type="button" aria-pressed="false" title="Sustain (Space)"><span></span>Sustain</button>
+      </div>
+    </div>
+
+    <section class="pn-panel" data-panel="free">
+      <div class="pn-tools">
+        <button class="pn-tool pn-rec" id="rec" type="button" aria-pressed="false">⏺ Record</button>
+        <button class="pn-tool" id="play" type="button" disabled>▶ Play back</button>
+        <button class="pn-tool" id="metro" type="button" aria-pressed="false">🥁 Metronome</button>
+        <label class="pn-slide">BPM <b id="bpmV">100</b><input type="range" id="bpm" min="40" max="200" value="100" aria-label="Metronome tempo"></label>
+        <div class="pn-seg" role="group" aria-label="Key labels" id="labels">
+          <button data-l="keys" type="button">⌨ Keys</button><button data-l="names" type="button">C D E</button><button data-l="solfege" type="button">Do Re Mi</button><button data-l="none" type="button">None</button>
+        </div>
+        <div class="pn-seg" role="group" aria-label="One-finger chords" id="chordMode">
+          <button data-c="off" type="button">Single</button><button data-c="maj" type="button">Major</button><button data-c="min" type="button">Minor</button><button data-c="7" type="button">7th</button><button data-c="pow" type="button">Power</button>
+        </div>
+      </div>
+      <p class="pn-help c-muted">Keyboard: <span class="c-kbd">A</span> <span class="c-kbd">S</span> <span class="c-kbd">D</span> <span class="c-kbd">F</span> are white keys, <span class="c-kbd">W</span> <span class="c-kbd">E</span> <span class="c-kbd">T</span> <span class="c-kbd">Y</span> <span class="c-kbd">U</span> the black ones. <span class="c-kbd">Z</span>/<span class="c-kbd">X</span> shift octave, <span class="c-kbd">Space</span> sustains, <span class="c-kbd">,</span>/<span class="c-kbd">.</span> change instrument. Tap low on a key to play louder.</p>
+    </section>
+
+    <section class="pn-panel" data-panel="chords" hidden>
+      <div class="pn-tools">
+        <span class="pn-lab">Key</span>
+        <div class="pn-seg" id="chordKey" role="group" aria-label="Key"></div>
+      </div>
+      <div class="pn-pads" id="pads"></div>
+      <p class="pn-help c-muted">Pads play the seven chords that live in your chosen key. Number keys <span class="c-kbd">1</span> to <span class="c-kbd">7</span> trigger them. Try 1, 5, 6, 4: it is half the pop charts.</p>
+    </section>
+
+    <section class="pn-panel" data-panel="learn" hidden>
+      <div class="pn-daily" id="daily"></div>
+      <div class="pn-libtop">
+        <input class="c-input" id="search" type="search" placeholder="Search 37 songs" aria-label="Search songs">
+        <div class="pn-cats" id="cats" role="group" aria-label="Category"></div>
+      </div>
+      <div class="pn-setup">
+        <div class="pn-seg" id="lmode" role="group" aria-label="Learn mode">
+          <button data-m="wait" type="button" title="The music waits for you">🐢 Wait for me</button><button data-m="along" type="button" title="Real time, scored">🎯 Play along</button><button data-m="watch" type="button" title="Sit back and listen">👀 Watch</button>
+        </div>
+        <div class="pn-seg" id="lspeed" role="group" aria-label="Speed">
+          <button data-s="0.5" type="button">50%</button><button data-s="0.75" type="button">75%</button><button data-s="1" type="button">100%</button>
+        </div>
+      </div>
+      <div class="pn-lib" id="lib"></div>
+      <div class="pn-stats" id="pstats"></div>
+      <h3 class="pn-h3">Badges <span id="achCount"></span></h3>
+      <div class="pn-ach" id="ach"></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="songs.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

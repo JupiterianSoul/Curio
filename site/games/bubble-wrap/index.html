@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bubble Wrap · Curio</title>
+  <meta name="description" content="An endless roll of bubble wrap in seven materials: classic, jumbo, soap foam, air pillows, popcorn, pop-it and gold. Sprint, rush and pop art modes.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="bubble-wrap">
+  <main class="c-wrap bw">
+    <header class="bw-head">
+      <div class="bw-titles">
+        <h1 class="c-title">Bubble Wrap</h1>
+        <p class="c-sub" id="modeNote">Free, infinite, and nobody will tell you to stop.</p>
+      </div>
+      <div class="bw-stats" aria-live="polite">
+        <div class="c-stat"><b id="sPops">0</b><span id="sPopsL">This session</span></div>
+        <div class="c-stat"><b id="sAll">0</b><span>All time</span></div>
+        <div class="c-stat"><b id="sThird">0</b><span id="sThirdL">Best combo</span></div>
+      </div>
+    </header>
+    <div class="bw-controls">
+      <div class="bw-modes" id="modes" role="group" aria-label="Mode"></div>
+      <div class="bw-icons">
+        <button type="button" id="statsBtn" aria-label="Stats and trophies" title="Stats and trophies (S)">🏆</button>
+        <button type="button" id="helpBtn" aria-label="How to play" title="How to play">?</button>
+        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
+      </div>
+    </div>
+    <div class="bw-mats" id="mats" role="group" aria-label="Material"></div>
+    <div class="bw-sheet" id="sheetWrap">
+      <canvas id="sheet" tabindex="0" role="application" aria-label="A sheet of bubble wrap. Click, tap or drag to pop bubbles. With the keyboard, press Space or Enter to pop the next bubble."></canvas>
+      <div class="bw-rushbar" id="rushBar" hidden><i></i></div>
+    </div>
+    <div class="bw-foot" id="foot">
+      <div class="bw-bar" aria-hidden="true"><i id="prog"></i></div>
+      <button type="button" class="c-btn c-btn--ghost" id="unrollBtn" title="Unroll more (U)">⬇ Unroll</button>
+      <button type="button" class="bw-toggle" id="autoBtn" aria-pressed="true" title="Unroll automatically when the view is popped">Auto</button>
+      <button type="button" class="c-btn" id="newSheet" title="New sheet (N)">✨ New sheet</button>
+    </div>
+  </main>
+
+  <div class="bw-start" id="start" hidden>
+    <div class="bw-start__card">
+      <svg class="bw-start__art" viewBox="0 0 260 120" aria-hidden="true">
+        <defs>
+          <radialGradient id="bb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".45" stop-color="#d4ecf8" stop-opacity=".6"/><stop offset=".9" stop-color="#7fb8dc" stop-opacity=".7"/><stop offset="1" stop-color="#5b9cc8" stop-opacity=".85"/></radialGradient>
+          <radialGradient id="bg2" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fffbe0"/><stop offset=".45" stop-color="#ffd65a"/><stop offset="1" stop-color="#c88a12"/></radialGradient>
+          <filter id="bs" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#14506e" flood-opacity=".3"/></filter>
+        </defs>
+        <rect x="6" y="8" width="248" height="104" rx="18" fill="#cfe8f5"/>
+        <g filter="url(#bs)">
+          <g class="bw-b"><circle cx="38" cy="38" r="20" fill="url(#bb)"/><ellipse cx="31" cy="29" rx="7" ry="4" fill="#fff" transform="rotate(-30 31 29)"/></g>
+          <g class="bw-b bw-b--2"><circle cx="86" cy="38" r="20" fill="url(#bb)"/><ellipse cx="79" cy="29" rx="7" ry="4" fill="#fff" transform="rotate(-30 79 29)"/></g>
+          <g class="bw-b bw-b--3"><circle cx="134" cy="38" r="20" fill="url(#bg2)"/><ellipse cx="127" cy="29" rx="7" ry="4" fill="#fff" transform="rotate(-30 127 29)"/></g>
+          <g class="bw-b bw-b--4"><circle cx="182" cy="38" r="20" fill="url(#bb)"/><ellipse cx="175" cy="29" rx="7" ry="4" fill="#fff" transform="rotate(-30 175 29)"/></g>
+          <g class="bw-b bw-b--5"><circle cx="230" cy="38" r="20" fill="url(#bb)"/><ellipse cx="223" cy="29" rx="7" ry="4" fill="#fff" transform="rotate(-30 223 29)"/></g>
+          <g class="bw-b bw-b--3"><circle cx="62" cy="80" r="20" fill="url(#bb)"/><ellipse cx="55" cy="71" rx="7" ry="4" fill="#fff" transform="rotate(-30 55 71)"/></g>
+          <g class="bw-b bw-b--5"><circle cx="158" cy="80" r="20" fill="url(#bb)"/><ellipse cx="151" cy="71" rx="7" ry="4" fill="#fff" transform="rotate(-30 151 71)"/></g>
+          <g class="bw-b bw-b--2"><circle cx="206" cy="80" r="20" fill="url(#bb)"/><ellipse cx="199" cy="71" rx="7" ry="4" fill="#fff" transform="rotate(-30 199 71)"/></g>
+        </g>
+        <g><circle cx="110" cy="80" r="17" fill="#a9d3ea" opacity=".45"/><path d="M100 74l8 5 6-7 4 9-9 3m-3-7l-5 9" stroke="#fff" stroke-width="1.6" fill="none" opacity=".9"/></g>
+        <text x="110" y="62" font-size="13" font-weight="900" fill="#ff5a36" text-anchor="middle" font-family="system-ui, sans-serif" class="bw-popword">POP!</text>
+      </svg>
+      <h1>Bubble Wrap</h1>
+      <p class="bw-start__sub">Seven materials, four modes and zero reasons to stop.</p>
+      <div class="bw-start__modes">
+        <button type="button" data-go="relax" id="goRelax" class="bw-start__go"><i>🧻</i><b>Endless roll</b><small>Just pop. Forever.</small></button>
+        <button type="button" data-go="sprint"><i>⏱️</i><b>Sprint</b><small>Clear a sheet fast</small></button>
+        <button type="button" data-go="rush"><i>⚡</i><b>30s rush</b><small>Combos and gold</small></button>
+        <button type="button" data-go="art"><i>🖼️</i><b>Pop art</b><small>24 hidden pictures</small></button>
+      </div>
+      <button type="button" class="bw-start__daily" data-go="daily"><span>📅</span><b>Daily picture</b><small id="stDaily">New picture today</small></button>
+      <p class="bw-start__line"><b id="stTotal">0</b> bubbles popped all time</p>
+    </div>
+  </div>
+
+  <div class="bw-result" id="result" hidden>
+    <div class="bw-result__card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+      <div class="bw-result__emoji" id="resEmoji"></div>
+      <h2 id="resTitle"></h2>
+      <div id="resPic" class="bw-result__pic"></div>
+      <div class="bw-result__big" id="resBig"></div>
+      <div class="bw-result__stars" id="resStars"></div>
+      <p id="resLine"></p>
+      <p class="bw-result__best" id="resBest"></p>
+      <div class="c-row bw-result__btns">
+        <button type="button" class="c-btn" id="resAgain">↺ Again</button>
+        <button type="button" class="c-btn c-btn--ghost" id="resShare">📋 Share</button>
+        <button type="button" class="c-btn c-btn--ghost" id="resStay">Admire it</button>
+        <button type="button" class="c-btn c-btn--ghost" id="resMenu">☰ Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bw-drawer" id="drawer" hidden>
+    <div class="bw-drawer__box" role="dialog" aria-modal="true" aria-labelledby="drawerT">
+      <header><h2 id="drawerT"></h2><button type="button" class="bw-drawer__x" aria-label="Close">✕</button></header>
+      <div class="bw-drawer__body" id="drawerBody"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

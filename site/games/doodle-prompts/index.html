@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Doodle Prompts · Curio</title>
+  <meta name="description" content="Twenty seconds to draw a narwhal doing taxes. Five silly prompts, a snooty art critic, and a pass-and-play guessing mode.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    body { overflow-x: hidden; }
+    .dp { width: min(100%, 980px); margin: 0 auto; padding: 18px 16px 48px; }
+    .dp [hidden] { display: none !important; }
+    .dp-hero { text-align: center; }
+    .dp-hero .c-sub { max-width: 560px; margin: 0 auto 18px; }
+    .dp-setup { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .dp-lab { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); font-weight: 800; margin-bottom: 6px; display: block; }
+    .dp-seg { display: flex; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+    .dp-seg button { flex: 1; border: 0; background: transparent; padding: 9px 6px; border-radius: 999px; cursor: pointer; font-weight: 800; font-size: 14px; color: var(--ink-2); touch-action: manipulation; }
+    .dp-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+    .dp-modeinfo { font-size: 14px; color: var(--ink-2); margin: 8px 2px 0; min-height: 2.6em; }
+    .dp-go { font-size: 19px; padding: 14px 24px; }
+    .dp-stats { display: flex; justify-content: center; gap: 22px; }
+    .dp-last { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .dp-last img { width: 84px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+    .dp-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .dp-num { font-weight: 800; color: var(--ink-3); font-size: 14px; text-transform: uppercase; letter-spacing: .06em; }
+    .dp-clock { font: 900 26px var(--mono); font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+    .dp-clock.hot { color: var(--bad); animation: dp-pulse .5s ease infinite alternate; }
+    @keyframes dp-pulse { to { transform: scale(1.12); } }
+    .dp-prompt { font-size: clamp(22px, 4.2vw, 34px); font-weight: 900; letter-spacing: -.02em; line-height: 1.15; margin: 0 0 10px; }
+    .dp-prompt small { display: block; font-size: 13px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; }
+    .dp-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-bottom: 12px; }
+    .dp-bar i { display: block; height: 100%; width: 100%; background: var(--good); border-radius: 999px; transform-origin: left; }
+    .dp-board { position: relative; width: min(100%, calc((100dvh - var(--bar-h) - 270px) * 4 / 3)); min-width: min(100%, 300px); aspect-ratio: 4 / 3; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; }
+    .dp-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: crosshair; display: block; }
+    .dp-flash { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(28px, 6vw, 54px); font-weight: 900; color: #fff; background: rgba(214, 69, 69, .82); opacity: 0; pointer-events: none; transition: opacity .2s; text-align: center; padding: 10px; }
+    .dp-flash.on { opacity: 1; }
+    .dp-keys { font-size: 13px; text-align: center; margin: 10px 0 0; }
+    .dp-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-top: 12px; }
+    .dp-pal { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .dp-sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--ink) 28%, transparent); padding: 0; cursor: pointer; touch-action: manipulation; }
+    .dp-sw[aria-pressed="true"] { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .dp-tb { border: 1.5px solid var(--line); background: var(--surface-2); height: 36px; padding: 0 12px; border-radius: 999px; cursor: pointer; font-weight: 800; font-size: 14px; touch-action: manipulation; color: var(--ink); }
+    .dp-tb[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+    .dp-tools .dp-seg button { padding: 6px 10px; font-size: 13px; }
+    .dp-center { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 30px 0; }
+    .dp-bigemoji { font-size: 70px; line-height: 1; }
+    .dp-guessimg { width: min(100%, 560px); aspect-ratio: 4 / 3; border-radius: 12px; border: 1px solid var(--line); background: #fff; box-shadow: var(--shadow); display: block; margin: 0 auto; }
+    .dp-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 560px; margin: 14px auto 0; }
+    .dp-opt { border: 2px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px; font-weight: 800; font-size: 15px; cursor: pointer; text-align: left; touch-action: manipulation; color: var(--ink); min-height: 58px; }
+    .dp-opt:hover { border-color: var(--accent); }
+    .dp-opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 18%, var(--surface)); }
+    .dp-opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
+    .dp-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .dp-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; opacity: 0; transform: translateY(14px) rotate(-1deg); transition: opacity .4s ease, transform .5s cubic-bezier(.2, 1.3, .4, 1); }
+    .dp-card.in { opacity: 1; transform: none; }
+    .dp-frame { background: #6b4a2e; padding: 10px; }
+    .dp-frame img { display: block; width: 100%; aspect-ratio: 4 / 3; background: #fff; border: 4px solid #f3e6c9; }
+    .dp-cap { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+    .dp-cap h3 { margin: 0; font-size: 17px; line-height: 1.2; }
+    .dp-stars { color: #f2a900; font-size: 18px; letter-spacing: 2px; }
+    .dp-review { margin: 0; font-size: 14px; color: var(--ink-2); font-style: italic; }
+    .dp-critic { font-size: 12px; color: var(--ink-3); font-weight: 700; }
+    .dp-badge { align-self: flex-start; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); }
+    .dp-cap .dp-tb { align-self: flex-start; height: 30px; font-size: 13px; }
+    .dp-sum { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; align-items: center; }
+    @media (max-width: 560px) {
+      .dp-opts { grid-template-columns: 1fr; }
+      .dp-board { width: 100%; }
+      .dp-sw { width: 27px; height: 27px; }
+    }
+  </style>
+</head>
+<body data-game="doodle-prompts">
+  <main class="dp">
+    <section id="sStart">
+      <div class="dp-hero">
+        <h1 class="c-title">Doodle Prompts</h1>
+        <p class="c-sub">Five ridiculous prompts. A ticking clock. Then a very serious art critic reviews your work. Nobody is ready.</p>
+      </div>
+      <div class="dp-setup c-card">
+        <div>
+          <span class="dp-lab">Time per drawing</span>
+          <div class="dp-seg" role="group" aria-label="Time per drawing">
+            <button data-time="20">20 s</button><button data-time="40">40 s</button><button data-time="60">60 s</button>
+          </div>
+        </div>
+        <div>
+          <span class="dp-lab">Mode</span>
+          <div class="dp-seg" role="group" aria-label="Mode">
+            <button data-mode="solo">🧐 Critic</button><button data-mode="party">👯 Pass and play</button>
+          </div>
+          <p class="dp-modeinfo" id="modeInfo"></p>
+        </div>
+        <button class="c-btn dp-go" id="go">Start drawing</button>
+        <div class="dp-stats">
+          <div class="c-stat"><b id="stRounds">0</b><span>Rounds</span></div>
+          <div class="c-stat"><b id="stBest">-</b><span>Best stars</span></div>
+          <div class="c-stat"><b id="stGuess">-</b><span>Best guesses</span></div>
+        </div>
+        <div id="lastWrap" hidden>
+          <span class="dp-lab" style="text-align:center">Your last gallery</span>
+          <div class="dp-last" id="last"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sDraw" hidden>
+      <div class="dp-top">
+        <span class="dp-num" id="num">Drawing 1 of 5</span>
+        <span class="dp-clock" id="clock" aria-live="off">20</span>
+      </div>
+      <h2 class="dp-prompt"><small>Draw</small><span id="prompt"></span></h2>
+      <div class="dp-bar"><i id="bar"></i></div>
+      <div class="dp-board">
+        <canvas id="cv" role="img" aria-label="Drawing canvas"></canvas>
+        <div class="dp-flash" id="flash">Pencils down!</div>
+      </div>
+      <div class="dp-tools">
+        <div class="dp-pal" id="pal"></div>
+        <div class="dp-seg" role="group" aria-label="Pen size"><button data-w="4">S</button><button data-w="9">M</button><button data-w="18">L</button></div>
+        <button class="dp-tb" id="eraser" aria-pressed="false">🧽 Eraser</button>
+        <button class="dp-tb" id="undo">↶ Undo</button>
+        <button class="dp-tb" id="clear">Clear</button>
+        <button class="dp-tb" id="reroll">🎲 New prompt</button>
+        <button class="c-btn" id="done">Done ✓</button>
+      </div>
+      <p class="dp-keys c-muted">Keys: <span class="c-kbd">1</span> to <span class="c-kbd">9</span> colours, <span class="c-kbd">[</span> <span class="c-kbd">]</span> pen size, <span class="c-kbd">E</span> eraser, <span class="c-kbd">U</span> undo, <span class="c-kbd">Enter</span> done. On a touchpad, turn on Touchpad mode in the top bar: click to put the pen down, click again to lift it.</p>
+    </section>
+
+    <section id="sPass" hidden>
+      <div class="dp-center c-card">
+        <div class="dp-bigemoji">🙈</div>
+        <h2 class="c-title" style="font-size:30px">Pass the device!</h2>
+        <p class="c-sub" style="margin:0">Hand it to your friends. Artist, look away and try to keep a straight face.</p>
+        <button class="c-btn dp-go" id="ready">We are ready</button>
+      </div>
+    </section>
+
+    <section id="sGuess" hidden>
+      <div class="dp-top"><span class="dp-num" id="gNum">Guess 1 of 5</span><span class="dp-num" id="gScore">0 right</span></div>
+      <h2 class="dp-prompt" style="text-align:center">What on earth is this?</h2>
+      <img class="dp-guessimg" id="gImg" alt="A friend's drawing to guess">
+      <div class="dp-opts" id="opts"></div>
+    </section>
+
+    <section id="sGallery" hidden>
+      <div class="dp-hero">
+        <h1 class="c-title">The Gallery</h1>
+        <p class="c-sub" id="galSub">Opening night. The critics have arrived. Someone brought cheese cubes.</p>
+      </div>
+      <div class="dp-sum c-card">
+        <div class="c-stat"><b id="sumStars">0</b><span>Stars</span></div>
+        <div class="c-stat" id="sumGuessWrap"><b id="sumGuess">0</b><span>Guessed</span></div>
+        <div class="c-stat"><b id="sumBest">0</b><span>Best</span></div>
+        <div class="c-row">
+          <button class="c-btn" id="again">Play again</button>
+          <button class="c-btn c-btn--ghost" id="saveAll">Save gallery</button>
+          <button class="c-btn c-btn--ghost" id="home">Change settings</button>
+        </div>
+      </div>
+      <div class="dp-gal" id="gal"></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

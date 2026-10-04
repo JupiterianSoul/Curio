@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Flappy · Curio</title>
+  <meta name="description" content="Tap to flap through eight day-and-night worlds with twelve characters, coins, power-ups, a daily course and medals.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="flappy" class="fl">
+  <main class="c-wrap fl-wrap">
+    <div class="fl-hud">
+      <div class="fl-stat fl-coins"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#ffc933" stroke="#c98a00" stroke-width="1.6"/><path d="M10 5.5l1.3 2.8 3 .4-2.2 2.1.6 3-2.7-1.5-2.7 1.5.6-3-2.2-2.1 3-.4z" fill="#fff3b0"/></svg><b data-hud="coins">0</b></div>
+      <div class="fl-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="fl-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="12" y="3" width="4" height="14" rx="1.5" fill="currentColor"/></svg></button>
+    </div>
+    <div class="fl-stage">
+      <canvas id="sky" role="img" aria-label="Flappy game. Tap, click or press Space to flap."></canvas>
+
+      <section class="fl-ov fl-ov--low" id="ov-menu" aria-label="Start menu">
+        <div class="fl-card">
+          <h1 class="fl-title">Flappy</h1>
+          <p class="fl-sub">Tap to flap. Dodge the pipes, grab the coins, unlock new flyers and worlds.</p>
+          <div class="fl-modes" id="modes" role="tablist" aria-label="Mode"></div>
+          <div class="fl-panel" id="mode-panel"></div>
+          <div class="fl-foot">
+            <button class="c-btn c-btn--ghost fl-small" type="button" data-act="shop">Shop</button>
+            <button class="c-btn c-btn--ghost fl-small" type="button" data-act="badges">Badges &amp; stats</button>
+            <button class="c-btn c-btn--ghost fl-small" type="button" data-act="help">How to play</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fl-ov" id="ov-shop" aria-label="Shop" hidden>
+        <div class="fl-card fl-wide">
+          <div class="fl-head"><h2>Shop</h2><div class="fl-wallet"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#ffc933" stroke="#c98a00" stroke-width="1.6"/></svg><b data-hud="coins">0</b></div><button class="fl-x" type="button" data-act="menu" aria-label="Back">✕</button></div>
+          <div class="fl-tabs" role="tablist" aria-label="Shop sections">
+            <button type="button" role="tab" data-tab="chars">Flyers</button>
+            <button type="button" role="tab" data-tab="worlds">Worlds</button>
+            <button type="button" role="tab" data-tab="trails">Trails</button>
+          </div>
+          <div class="fl-shop" id="shop"></div>
+        </div>
+      </section>
+
+      <section class="fl-ov" id="ov-badges" aria-label="Badges and stats" hidden>
+        <div class="fl-card fl-wide">
+          <div class="fl-head"><h2>Badges &amp; stats</h2><button class="fl-x" type="button" data-act="menu" aria-label="Back">✕</button></div>
+          <div class="fl-stats" id="stats"></div>
+          <div class="fl-badges" id="badges"></div>
+          <h3 class="fl-h3">Recent flights</h3>
+          <ol class="fl-history" id="history"></ol>
+        </div>
+      </section>
+
+      <section class="fl-ov" id="ov-help" aria-label="How to play" hidden>
+        <div class="fl-card fl-wide">
+          <div class="fl-head"><h2>How to play</h2><button class="fl-x" type="button" data-act="menu" aria-label="Back">✕</button></div>
+          <ul class="fl-howto">
+            <li>Tap, click, or press <span class="c-kbd">Space</span> / <span class="c-kbd">↑</span> / <span class="c-kbd">W</span> to flap.</li>
+            <li>Fly through the gaps. Each pipe you pass is a point. Touch a pipe or the ground and it's over.</li>
+            <li>Coins are saved forever. Spend them in the shop on new flyers, worlds and trails.</li>
+            <li>Medals: bronze 10, silver 20, gold 40, platinum 80, diamond 150.</li>
+            <li>Squeeze close past a pipe edge for a "close shave" bonus coin.</li>
+            <li><span class="c-kbd">P</span> pauses, <span class="c-kbd">R</span> restarts after a crash.</li>
+          </ul>
+          <h3 class="fl-h3">Power-ups</h3>
+          <div class="fl-powers" id="powers"></div>
+        </div>
+      </section>
+
+      <section class="fl-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="fl-card">
+          <h2 class="fl-title fl-mid">Paused</h2>
+          <p class="fl-sub">Hovering in place. Very impressive, actually.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fl-ov" id="ov-over" aria-label="Result" aria-live="polite" hidden>
+        <div class="fl-card fl-result">
+          <h2 class="fl-title fl-mid" data-o="title">Game over</h2>
+          <div class="fl-scoreboard">
+            <div class="fl-medal" data-o="medal"></div>
+            <div class="fl-nums">
+              <div><span>Score</span><b data-o="score">0</b></div>
+              <div><span>Best</span><b data-o="best">0</b></div>
+              <div><span>Coins</span><b data-o="coins">0</b></div>
+            </div>
+          </div>
+          <div class="fl-new" data-o="new" hidden>New personal best!</div>
+          <p class="fl-msg" data-o="msg"></p>
+          <div class="fl-earned" data-o="earned"></div>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">Fly again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="shop">Shop</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>I'm Not a Robot · Curio</title>
+  <meta name="description" content="Prove you are human. Then prove it again. 35 increasingly strange captchas, a daily gauntlet, a speedrun mode and a robot inspector who is not convinced.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="not-a-robot">
+  <main class="c-wrap r-wrap">
+    <header>
+      <h1 class="c-title">I'm Not a Robot</h1>
+      <p class="c-sub">Please verify that you are human. This will only take a moment. Or thirty-five.</p>
+    </header>
+
+    <section class="c-card r-menu" id="menu"></section>
+
+    <section id="play" hidden>
+      <div class="r-hud">
+        <div class="r-inspector" id="inspector" aria-hidden="true"></div>
+        <div class="r-hud-mid">
+          <div class="r-level" id="lvl">Level 1</div>
+          <div class="r-meter" title="Humanity"><i id="meter"></i><span id="meterTxt">Humanity 100%</span></div>
+          <div class="r-say" id="say" aria-live="polite">Hello. I am Unit 7. I will be watching you.</div>
+        </div>
+        <div class="r-hud-right"><div class="r-time" id="time">0:00</div><button class="c-btn c-btn--ghost r-small" type="button" id="hintBtn">Hint</button><button class="c-btn c-btn--ghost r-small" type="button" id="quitBtn">Menu</button></div>
+      </div>
+      <div class="r-dots" id="dots" aria-hidden="true"></div>
+      <div class="cap" id="cap">
+        <div class="cap__head" id="head"></div>
+        <div class="cap__body" id="body"></div>
+        <div class="msg" id="msg" role="status"></div>
+        <div class="cap__foot"><div class="brand"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2 l8 3 v6 c0 5 -3.5 9 -8 11 c-4.5 -2 -8 -6 -8 -11 v-6Z" fill="#4a90e2"/><path d="M8 12 l3 3 l5 -6" stroke="#fff" stroke-width="2.4" fill="none"/></svg>notCAPTCHA · Privacy · Terms</div><button class="verify" id="verify" type="button">Verify</button></div>
+      </div>
+      <p class="c-muted r-keys">Keys: <span class="c-kbd">Enter</span> verify · <span class="c-kbd">H</span> hint · arrows and <span class="c-kbd">Space</span> work on most levels</p>
+    </section>
+
+    <section class="c-card r-end" id="end" hidden></section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="art.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Reaction Time · Curio</title>
+  <meta name="description" content="How fast are your reflexes? Seven tests: light, sound, colour choices, four colours, tricky words, go/no-go and timing, with stats and badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="reaction-time">
+  <main class="c-wrap rt-wrap">
+    <div class="rt-head">
+      <h1 class="c-title">Reaction Time</h1>
+      <p class="c-sub">Seven ways to test your reflexes, from traffic lights to tricky words. No cheating, we can tell.</p>
+    </div>
+
+    <div class="rt-modes" id="modes" role="tablist" aria-label="Test mode"></div>
+    <div class="rt-opts">
+      <div class="rt-seg" role="group" aria-label="Number of tries" id="tries"></div>
+      <button class="rt-chip" id="daily" type="button" aria-pressed="false">📅 Daily</button>
+      <span class="rt-modeinfo c-muted" id="modeInfo"></span>
+    </div>
+
+    <div class="rt-panelwrap">
+      <button class="rt-panel" id="panel" type="button" aria-live="assertive">
+        <span class="rt-bg" aria-hidden="true"></span>
+        <span class="rt-bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="rt-rings" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="rt-inner">
+          <span class="rt-icon" id="icon"></span>
+          <span class="rt-big" id="big">Click to start</span>
+          <span class="rt-small" id="small">Or press Space</span>
+        </span>
+      </button>
+      <div class="rt-choice" id="choice" hidden></div>
+    </div>
+    <div class="rt-pips" id="pips" aria-label="Attempts"></div>
+    <p class="rt-hint c-muted" id="hint"></p>
+    <p class="rt-fact" id="fact"></p>
+
+    <section class="c-card rt-results" id="results" aria-live="polite">
+      <div class="rt-res-top">
+        <svg class="rt-gauge" id="gauge" viewBox="0 0 220 130" role="img" aria-label="Speed gauge"></svg>
+        <div class="rt-res-main">
+          <div class="rt-medal" id="medal" aria-hidden="true"></div>
+          <div class="rt-res-kicker" id="resKicker">Average</div>
+          <div class="rt-res-big" id="avg">-</div>
+          <div class="rt-verdict" id="verdict"></div>
+        </div>
+      </div>
+      <div class="rt-stats" id="stats"></div>
+      <h3 class="rt-h">How you compare</h3>
+      <svg class="rt-chart" id="chart" viewBox="0 0 640 210" role="img" aria-label="Distribution of reaction times with your average marked"></svg>
+      <p class="rt-cmp c-muted" id="cmpNote"></p>
+      <h3 class="rt-h">This session</h3>
+      <svg class="rt-chart rt-bars" id="bars" viewBox="0 0 640 150" role="img" aria-label="Each attempt in this session"></svg>
+      <h3 class="rt-h">Your history</h3>
+      <svg class="rt-chart rt-hist" id="hist" viewBox="0 0 640 140" role="img" aria-label="Your recent session averages in this mode"></svg>
+      <div class="c-row">
+        <button class="c-btn" id="again" type="button">Try again</button>
+        <button class="c-btn c-btn--ghost" id="share" type="button">🔗 Share</button>
+      </div>
+    </section>
+
+    <nav class="rt-tabs">
+      <button class="rt-chip" type="button" data-panel="badges">🏆 Badges <em id="achCount">0</em></button>
+      <button class="rt-chip" type="button" data-panel="records">📈 Stats</button>
+      <button class="rt-chip" type="button" data-panel="help">❓ How it works</button>
+    </nav>
+    <section class="c-card rt-info" id="info" hidden></section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

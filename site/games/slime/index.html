@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Slime · Curio</title>
+  <meta name="description" content="A squishy virtual slime. Poke it, stretch it, pinch it, slap it. Glitter, clear, cloud and butter slime with crunchy add-ins.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 12px; padding-bottom: 16px; }
+    .sl-head { text-align: center; }
+    .sl-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .sl-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .sl-stage { position: relative; height: max(340px, calc(100dvh - var(--bar-h) - 270px)); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+    #slime { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+    #slime.grabbing { cursor: grabbing; }
+    .sl-tip { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; pointer-events: none; font-size: 13px; font-weight: 700; color: rgba(20, 50, 44, .55); }
+    .sl-tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center; margin-top: 12px; }
+    .sl-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .lbl { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-right: 2px; }
+    .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+    .seg button { border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .sw { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--surface); cursor: pointer; box-shadow: 0 0 0 1.5px var(--line); padding: 0; touch-action: manipulation; transition: transform .12s ease; }
+    .sw:hover { transform: scale(1.1); }
+    .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); transform: scale(1.1); }
+    .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 11px; font-weight: 800; font-size: 13px; cursor: pointer; touch-action: manipulation; }
+    .chip[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+    .sl-tools .c-btn { padding: 8px 16px; font-size: 15px; }
+    @media (max-width: 560px) {
+      .sl-head .c-sub { font-size: 13px; }
+      .sl-stage { height: max(320px, calc(100dvh - var(--bar-h) - 360px)); }
+      .sw { width: 27px; height: 27px; }
+      .seg button { padding: 7px 9px; font-size: 13px; white-space: nowrap; }
+      .sl-tip { font-size: 11px; padding: 0 12px; }
+    }
+  </style>
+</head>
+<body data-game="slime">
+  <main class="c-wrap">
+    <div class="sl-head">
+      <h1 class="c-title">Slime</h1>
+      <p class="c-sub">Zero mess, maximum squish. It forgives every poke, eventually.</p>
+    </div>
+    <div class="sl-stage" id="stage">
+      <canvas id="slime" role="img" aria-label="A blob of slime on a craft mat. Tap to poke, hold or use the Squish tool to squish, drag to stretch."></canvas>
+      <div class="sl-tip" id="tip">Tap to poke · Hold to squish · Drag to stretch · Two fingers to pull apart</div>
+    </div>
+    <div class="sl-tools">
+      <div class="sl-group">
+        <div class="seg" role="group" aria-label="Hand tool">
+          <button type="button" data-tool="hand" aria-pressed="true" title="Hand (1)">✋ Hand</button>
+          <button type="button" data-tool="pinch" aria-pressed="false" title="Pinch (2)">🤏 Pinch</button>
+          <button type="button" data-tool="poke" aria-pressed="false" title="Poke (3)">👉 Poke</button>
+          <button type="button" data-tool="squish" aria-pressed="false" title="Squish (4)">🫳 Squish</button>
+        </div>
+        <button type="button" class="c-btn" id="slap" title="Slap (Space)">👋 Slap</button>
+      </div>
+      <div class="sl-group" role="group" aria-label="Texture"><span class="lbl">Type</span><span class="sl-group" id="types"></span></div>
+      <div class="sl-group" role="group" aria-label="Colour" id="colors"></div>
+      <div class="sl-group" role="group" aria-label="Add-ins"><span class="lbl">Add</span><span class="sl-group" id="addins"></span></div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const COLORS = [
+      ['Mint', '#6fe3bf'], ['Bubblegum', '#ff8cc6'], ['Grape', '#a98bff'], ['Sky', '#62c4ff'],
+      ['Lemon', '#ffe066'], ['Peach', '#ffa86e'], ['Lime', '#b4ec52'], ['Galaxy', '#3d2b86']
+    ];
+    const TYPES = {
+      glossy: { name: 'Glossy', gloss: 1, alpha: 1, glitter: 0 },
+      glitter: { name: 'Glitter', gloss: 0.9, alpha: 1, glitter: 1 },
+      clear: { name: 'Clear', gloss: 1.2, alpha: 0.32, glitter: 0 },
+      cloud: { name: 'Cloud', gloss: 0.25, alpha: 1, glitter: 0 },
+      butter: { name: 'Butter', gloss: 0.45, alpha: 1, glitter: 0 }
+    };
+    const ADDINS = { beads: '🫧 Foam beads', sprinkles: '🍬 Sprinkles', stars: '⭐ Charms', bubbles: '◌ Bubbles' };
+
+    const canvas = document.getElementById('slime');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('stage');
+    const tip = document.getElementById('tip');
+    let W = 0, H = 0, dpr = 1, R = 120, home = { x: 0, y: 0 };
+    let color = Curio.store.get('slime:color', 0), type = Curio.store.get('slime:type', 'glossy');
+    if (!TYPES[type]) type = 'glossy';
+    const addins = Curio.store.get('slime:addins', { beads: false, sprinkles: false, stars: false, bubbles: false });
+    let tool = 'hand';
+
+    const N = 64;
+    let pts = [], A0 = 1, L0 = 1, restScale = 1, restTarget = 1;
+    const bg = document.createElement('canvas'), bgc = bg.getContext('2d');
+
+    const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    const css = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+    function paintBg() {
+      bg.width = canvas.width; bg.height = canvas.height;
+      const dark = Curio.isDark();
+      bgc.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const g = bgc.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, dark ? '#173d37' : '#cfeee3'); g.addColorStop(1, dark ? '#10302b' : '#bfe5d8');
+      bgc.fillStyle = g; bgc.fillRect(0, 0, W, H);
+      const step = 28;
+      bgc.lineWidth = 1;
+      for (let x = (W / 2) % step, i = 0; x < W; x += step, i++) {
+        bgc.strokeStyle = dark ? 'rgba(160,230,210,.08)' : 'rgba(40,120,100,.12)';
+        bgc.beginPath(); bgc.moveTo(x + 0.5, 0); bgc.lineTo(x + 0.5, H); bgc.stroke();
+      }
+      for (let y = (H / 2) % step; y < H; y += step) {
+        bgc.strokeStyle = dark ? 'rgba(160,230,210,.08)' : 'rgba(40,120,100,.12)';
+        bgc.beginPath(); bgc.moveTo(0, y + 0.5); bgc.lineTo(W, y + 0.5); bgc.stroke();
+      }
+      bgc.strokeStyle = dark ? 'rgba(160,230,210,.18)' : 'rgba(40,120,100,.28)';
+      for (let x = (W / 2) % (step * 5); x < W; x += step * 5) { bgc.beginPath(); bgc.moveTo(x + 0.5, 0); bgc.lineTo(x + 0.5, H); bgc.stroke(); }
+      for (let y = (H / 2) % (step * 5); y < H; y += step * 5) { bgc.beginPath(); bgc.moveTo(0, y + 0.5); bgc.lineTo(W, y + 0.5); bgc.stroke(); }
+      bgc.fillStyle = dark ? 'rgba(160,230,210,.3)' : 'rgba(40,120,100,.4)';
+      for (let x = 0; x < W; x += 7) bgc.fillRect(x, 0, 1, x % 35 === 0 ? 10 : 5);
+      const v = bgc.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, dark ? 'rgba(0,0,0,.35)' : 'rgba(0,60,40,.12)');
+      bgc.fillStyle = v; bgc.fillRect(0, 0, W, H);
+      tip.style.color = dark ? 'rgba(200,240,230,.5)' : 'rgba(20,70,60,.55)';
+    }
+
+    function build() {
+      pts = [];
+      const ph = Math.random() * 6;
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2;
+        const rr = R * (1 + 0.035 * Math.sin(3 * a + ph) + 0.02 * Math.sin(5 * a + ph * 2));
+        pts.push({ x: home.x + Math.cos(a) * rr * 1.05, y: home.y + Math.sin(a) * rr * 0.92, vx: 0, vy: 0, ox: Math.cos(a) * rr, oy: Math.sin(a) * rr });
+      }
+      A0 = 0; let per = 0;
+      for (let i = 0; i < N; i++) { const p = pts[i], q = pts[(i + 1) % N]; A0 += p.ox * q.oy - q.ox * p.oy; per += Math.hypot(q.ox - p.ox, q.oy - p.oy); }
+      A0 /= 2; L0 = per / N;
+    }
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      const oldW = W, oldH = H, oldR = R;
+      dpr = Math.min(2, devicePixelRatio || 1);
+      W = r.width; H = r.height;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      R = Math.max(70, Math.min(W, H) * 0.28);
+      home = { x: W / 2, y: H / 2 - 6 };
+      if (!pts.length) build();
+      else {
+        const k = R / oldR;
+        for (const p of pts) { p.x = home.x + (p.x - oldW / 2) * k; p.y = home.y + (p.y - oldH / 2 + 6) * k; p.ox *= k; p.oy *= k; }
+        A0 *= k * k; L0 *= k;
+      }
+      paintBg();
+    }
+
+    function centroid() {
+      let x = 0, y = 0;
+      for (const p of pts) { x += p.x; y += p.y; }
+      return { x: x / N, y: y / N };
+    }
+    function area() {
+      let a = 0;
+      for (let i = 0; i < N; i++) { const p = pts[i], q = pts[(i + 1) % N]; a += p.x * q.y - q.x * p.y; }
+      return a / 2;
+    }
+
+    const grabs = new Map();
+    let squish = null;
+
+    function step(dt) {
+      const c = centroid();
+      let num = 0, den = 0;
+      for (const p of pts) { const dx = p.x - c.x, dy = p.y - c.y; num += p.ox * dy - p.oy * dx; den += p.ox * dx + p.oy * dy; }
+      const th = Math.atan2(num, den), co = Math.cos(th), si = Math.sin(th);
+      restScale += (restTarget - restScale) * Math.min(1, dt * 5);
+      const s = restScale;
+      const A = area(), P = 2600 * ((A0 * s * s) / Math.max(1, A) - 1);
+      const kShape = 26, kHome = 2.2;
+      const hx = (home.x - c.x) * kHome, hy = (home.y - c.y) * kHome;
+      for (const p of pts) {
+        const gx = c.x + (co * p.ox - si * p.oy) * s, gy = c.y + (si * p.ox + co * p.oy) * s;
+        p.fx = (gx - p.x) * kShape + hx; p.fy = (gy - p.y) * kShape + hy;
+      }
+      for (let i = 0; i < N; i++) {
+        const p = pts[i], q = pts[(i + 1) % N];
+        const dx = q.x - p.x, dy = q.y - p.y, L = Math.hypot(dx, dy) || 0.001, ux = dx / L, uy = dy / L;
+        const rv = (q.vx - p.vx) * ux + (q.vy - p.vy) * uy;
+        const F = 300 * (L - L0 * s) + 8 * rv;
+        p.fx += F * ux; p.fy += F * uy; q.fx -= F * ux; q.fy -= F * uy;
+        const nx = dy * P * 0.5, ny = -dx * P * 0.5;
+        p.fx += nx; p.fy += ny; q.fx += nx; q.fy += ny;
+        const r2 = pts[(i + 2) % N];
+        const ex = r2.x - p.x, ey = r2.y - p.y, E = Math.hypot(ex, ey) || 0.001;
+        const F2 = 50 * (E - L0 * 2 * s * 0.995);
+        p.fx += F2 * ex / E; p.fy += F2 * ey / E; r2.fx -= F2 * ex / E; r2.fy -= F2 * ey / E;
+      }
+      for (const g of grabs.values()) {
+        if (!g.active) continue;
+        const mx = g.x - g.sx, my = g.y - g.sy;
+        for (const w of g.w) {
+          const p = pts[w.i];
+          const tx = w.x0 + mx * w.k, ty = w.y0 + my * w.k;
+          p.fx += (tx - p.x) * 650 * w.k - p.vx * 14 * w.k;
+          p.fy += (ty - p.y) * 650 * w.k - p.vy * 14 * w.k;
+        }
+      }
+      if (squish) {
+        for (const p of pts) {
+          const dx = p.x - squish.x, dy = p.y - squish.y, d = Math.hypot(dx, dy) || 1;
+          const f = 900 * squish.amt * Math.exp(-(d * d) / (R * R * 1.4));
+          p.fx += (dx / d) * f; p.fy += (dy / d) * f;
+        }
+      }
+      const damp = Math.exp(-2.4 * dt);
+      for (const p of pts) {
+        p.vx = (p.vx + p.fx * dt) * damp; p.vy = (p.vy + p.fy * dt) * damp;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.x < 4) { p.x = 4; p.vx *= -0.3; } if (p.x > W - 4) { p.x = W - 4; p.vx *= -0.3; }
+        if (p.y < 4) { p.y = 4; p.vy *= -0.3; } if (p.y > H - 4) { p.y = H - 4; p.vy *= -0.3; }
+      }
+    }
+
+    function sample(s) {
+      s = ((s % N) + N) % N;
+      const i = Math.floor(s), t = s - i, p = pts[i], q = pts[(i + 1) % N];
+      return { x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t };
+    }
+    function mapSF(s, f, c) {
+      const b = sample(s);
+      return { x: c.x + (b.x - c.x) * f, y: c.y + (b.y - c.y) * f };
+    }
+    function locate(x, y, c) {
+      const dx = x - c.x, dy = y - c.y, d = Math.hypot(dx, dy);
+      if (d < 0.001) return { s: 0, f: 0 };
+      const ux = dx / d, uy = dy / d;
+      let best = null;
+      for (let i = 0; i < N; i++) {
+        const p = pts[i], q = pts[(i + 1) % N];
+        const ex = q.x - p.x, ey = q.y - p.y;
+        const den = ux * ey - uy * ex;
+        if (Math.abs(den) < 1e-9) continue;
+        const wx = p.x - c.x, wy = p.y - c.y;
+        const t = (wx * ey - wy * ex) / den, u = (wx * uy - wy * ux) / den;
+        if (t > 0 && u >= 0 && u <= 1 && (!best || t < best.t)) best = { t, s: i + u };
+      }
+      if (!best) return null;
+      return { s: best.s, f: d / best.t };
+    }
+
+    const parts = [];
+    function seedParts() {
+      parts.length = 0;
+      const add = (kind, n, fn) => { for (let i = 0; i < n; i++) parts.push({ kind, s: Math.random() * N, f: Math.sqrt(Math.random()) * 0.88, ph: Math.random() * 6.28, rot: Math.random() * 6.28, ...fn(i) }); };
+      if (TYPES[type].glitter) add('glitter', 260, () => ({ size: Curio.rand(1.2, 2.6), c: Curio.pick(['#ffffff', '#ffe9a8', '#ffd1f0', '#c6f2ff', '#e0d1ff']) }));
+      if (type === 'cloud') add('puff', 26, () => ({ size: Curio.rand(0.16, 0.3) }));
+      if (type === 'clear') add('bubble', 18, () => ({ size: Curio.rand(2, 7) }));
+      if (addins.beads) add('bead', 46, () => ({ size: Curio.rand(4.5, 6.5), c: Curio.pick(['#ffffff', '#ff9ccf', '#8fd9ff', '#fff07a', '#b9f78b', '#d2b4ff']) }));
+      if (addins.sprinkles) add('sprinkle', 40, () => ({ size: Curio.rand(6, 9), c: Curio.pick(['#ff5a8a', '#ffd23f', '#3ec7ff', '#7cf07c', '#ffffff', '#b07cff']) }));
+      if (addins.stars) add('star', 9, () => ({ size: Curio.rand(7, 10), c: Curio.pick(['#ffd23f', '#ff7eb6', '#7ee0ff']) }));
+      if (addins.bubbles) add('bubble', 22, () => ({ size: Curio.rand(2, 6) }));
+      parts.sort((a, b) => (a.kind === 'puff' ? -1 : 0) - (b.kind === 'puff' ? -1 : 0));
+    }
+
+    const holes = [];
+    const ripples = [];
+
+    function smoothPath(c2, list, scale, cx, cy) {
+      const n = list.length;
+      const P = (i) => { const p = list[(i + n) % n]; return scale === 1 ? p : { x: cx + (p.x - cx) * scale, y: cy + (p.y - cy) * scale }; };
+      c2.beginPath();
+      let a = P(n - 1), b = P(0);
+      c2.moveTo((a.x + b.x) / 2, (a.y + b.y) / 2);
+      for (let i = 0; i < n; i++) {
+        const p = P(i), q = P(i + 1);
+        c2.quadraticCurveTo(p.x, p.y, (p.x + q.x) / 2, (p.y + q.y) / 2);
+      }
+      c2.closePath();
+    }
+    function arcPath(c2, s0, s1, f, c) {
+      c2.beginPath();
+      for (let k = 0; k <= 20; k++) {
+        const p = mapSF(s0 + (s1 - s0) * k / 20, f, c);
+        k ? c2.lineTo(p.x, p.y) : c2.moveTo(p.x, p.y);
+      }
+    }
+    function star(c2, x, y, r, rot) {
+      c2.beginPath();
+      for (let k = 0; k < 10; k++) {
+        const a = rot + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r;
+        c2.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+      }
+      c2.closePath();
+    }
+
+    let time = 0;
+    function draw() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.drawImage(bg, 0, 0, W, H);
+      const c = centroid();
+      const T = TYPES[type];
+      const base = rgb(COLORS[color][1]);
+      const light = mix(base, [255, 255, 255], type === 'cloud' ? 0.55 : 0.45);
+      const darkC = mix(base, [10, 0, 30], 0.35);
+      const A = area(), stretch = Math.sqrt(Math.max(1, A) / A0);
+
+      for (const r of ripples) {
+        ctx.strokeStyle = `rgba(255,255,255,${0.35 * (1 - r.t)})`;
+        ctx.lineWidth = 3 * (1 - r.t);
+        ctx.beginPath(); ctx.arc(r.x, r.y, R * (0.9 + r.t * 0.9), 0, 7); ctx.stroke();
+      }
+
+      ctx.save();
+      smoothPath(ctx, pts, 1);
+      ctx.shadowColor = `rgba(0,40,30,${type === 'clear' ? 0.18 : 0.32})`;
+      ctx.shadowBlur = 26; ctx.shadowOffsetY = 12;
+      ctx.fillStyle = css(darkC, type === 'clear' ? 0.25 : 1);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      smoothPath(ctx, pts, 1);
+      ctx.clip();
+      if (type === 'clear') {
+        ctx.save();
+        ctx.translate(c.x, c.y); ctx.scale(1.08, 1.08); ctx.translate(-c.x, -c.y);
+        ctx.drawImage(bg, 0, 0, W, H);
+        ctx.restore();
+      }
+      const gr = ctx.createRadialGradient(c.x - R * 0.35, c.y - R * 0.4, R * 0.1, c.x, c.y, R * 1.35 * stretch);
+      gr.addColorStop(0, css(light, T.alpha));
+      gr.addColorStop(0.45, css(base, T.alpha));
+      gr.addColorStop(1, css(darkC, Math.min(1, T.alpha + 0.25)));
+      ctx.fillStyle = gr;
+      ctx.fillRect(0, 0, W, H);
+      if (type === 'butter') {
+        const sh = ctx.createLinearGradient(c.x - R, c.y - R, c.x + R, c.y + R);
+        sh.addColorStop(0, 'rgba(255,255,240,.35)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(120,80,0,.12)');
+        ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
+      }
+
+      for (const p of parts) {
+        const q = mapSF(p.s, p.f, c);
+        if (p.kind === 'puff') {
+          const r = R * p.size * stretch;
+          const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
+          g.addColorStop(0, 'rgba(255,255,255,.42)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fill();
+        }
+      }
+      for (const p of parts) {
+        if (p.kind === 'puff') continue;
+        const q = mapSF(p.s, p.f, c);
+        if (p.kind === 'glitter') {
+          const glint = Math.pow(Math.max(0, Math.sin(p.ph + (q.x * 0.045 + q.y * 0.03) + time * 1.5)), 10);
+          ctx.globalAlpha = 0.45 + 0.55 * glint;
+          ctx.fillStyle = glint > 0.6 ? '#ffffff' : p.c;
+          ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(p.rot + time * 0.2);
+          ctx.fillRect(-p.size, -p.size * 0.6, p.size * 2, p.size * 1.2);
+          ctx.restore();
+          if (glint > 0.8) {
+            ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1;
+            const l = p.size * 3.5 * glint;
+            ctx.beginPath(); ctx.moveTo(q.x - l, q.y); ctx.lineTo(q.x + l, q.y); ctx.moveTo(q.x, q.y - l); ctx.lineTo(q.x, q.y + l); ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+        } else if (p.kind === 'bead') {
+          const g = ctx.createRadialGradient(q.x - p.size * 0.35, q.y - p.size * 0.35, 0.5, q.x, q.y, p.size);
+          g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, p.c); g.addColorStop(1, css(mix(rgb(p.c), [0, 0, 0], 0.25)));
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, p.size, 0, 7); ctx.fill();
+        } else if (p.kind === 'sprinkle') {
+          ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(p.rot);
+          ctx.strokeStyle = p.c; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(-p.size / 2, 0); ctx.lineTo(p.size / 2, 0); ctx.stroke();
+          ctx.restore();
+        } else if (p.kind === 'star') {
+          star(ctx, q.x, q.y, p.size, p.rot);
+          ctx.fillStyle = p.c; ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.2; ctx.stroke();
+        } else if (p.kind === 'bubble') {
+          ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.arc(q.x, q.y, p.size, 0, 7); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,255,255,.75)';
+          ctx.beginPath(); ctx.arc(q.x - p.size * 0.35, q.y - p.size * 0.35, p.size * 0.25, 0, 7); ctx.fill();
+        }
+      }
+
+      if (squish) {
+        const r = R * (0.45 + squish.amt * 0.35);
+        const g = ctx.createRadialGradient(squish.x + r * 0.15, squish.y + r * 0.2, r * 0.1, squish.x, squish.y, r);
+        g.addColorStop(0, css(darkC, 0.28 * squish.amt + 0.1)); g.addColorStop(0.7, css(darkC, 0.08)); g.addColorStop(1, css(darkC, 0));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(squish.x, squish.y, r, 0, 7); ctx.fill();
+        ctx.strokeStyle = `rgba(255,255,255,${0.35 * squish.amt})`; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(squish.x, squish.y, r * 0.8, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke();
+      }
+
+      for (const h of holes) {
+        const q = mapSF(h.s, h.f, c);
+        const k = h.r * (h.heal < 0.15 ? h.heal / 0.15 : 1) * Math.max(0.2, 1 - Math.max(0, (h.age - h.life * 0.35)) / (h.life * 0.65)) * stretch;
+        if (k < 0.5) continue;
+        const g = ctx.createRadialGradient(q.x - k * 0.25, q.y - k * 0.3, 0, q.x, q.y, k);
+        g.addColorStop(0, css(mix(darkC, [0, 0, 0], 0.45), type === 'clear' ? 0.45 : 0.95));
+        g.addColorStop(0.75, css(darkC, 0.7)); g.addColorStop(1, css(base, 0));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(q.x, q.y, k, k * 0.92, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = Math.max(1.5, k * 0.16); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(q.x, q.y, k * 0.95, Math.PI * 0.1, Math.PI * 0.75); ctx.stroke();
+        ctx.strokeStyle = css(mix(darkC, [0, 0, 0], 0.3), 0.35); ctx.lineWidth = Math.max(1, k * 0.12);
+        ctx.beginPath(); ctx.arc(q.x, q.y, k * 1.02, Math.PI * 1.1, Math.PI * 1.75); ctx.stroke();
+      }
+
+      for (let w = 5; w >= 1; w--) {
+        smoothPath(ctx, pts, 1);
+        ctx.strokeStyle = css(darkC, 0.07 * (type === 'clear' ? 2 : 1));
+        ctx.lineWidth = R * 0.07 * w;
+        ctx.stroke();
+      }
+      if (type === 'cloud') {
+        smoothPath(ctx, pts, 1);
+        ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = R * 0.12; ctx.stroke();
+      }
+      ctx.lineCap = 'round';
+      const gl = T.gloss;
+      if (gl > 0) {
+        const s0 = N * 0.56, s1 = N * 0.7;
+        arcPath(ctx, s0, s1, 0.8, c);
+        ctx.strokeStyle = `rgba(255,255,255,${0.55 * Math.min(1, gl)})`; ctx.lineWidth = R * 0.075; ctx.stroke();
+        arcPath(ctx, s1 + N * 0.025, s1 + N * 0.05, 0.8, c);
+        ctx.lineWidth = R * 0.06; ctx.stroke();
+        const dot = mapSF(N * 0.62, 0.5, c);
+        ctx.fillStyle = `rgba(255,255,255,${0.5 * Math.min(1, gl)})`;
+        ctx.beginPath(); ctx.ellipse(dot.x, dot.y, R * 0.07, R * 0.045, -0.6, 0, 7); ctx.fill();
+        arcPath(ctx, N * 0.08, N * 0.2, 0.86, c);
+        ctx.strokeStyle = `rgba(255,255,255,${0.22 * gl})`; ctx.lineWidth = R * 0.05; ctx.stroke();
+      }
+      ctx.restore();
+      smoothPath(ctx, pts, 1);
+      ctx.strokeStyle = css(mix(darkC, [0, 0, 0], 0.2), type === 'clear' ? 0.5 : 0.25); ctx.lineWidth = 1.5; ctx.stroke();
+
+      for (const g of grabs.values()) {
+        if (!g.active) continue;
+        ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.strokeStyle = 'rgba(0,60,50,.25)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.pinch ? 9 : 16, 0, 7); ctx.fill(); ctx.stroke();
+      }
+    }
+
+    let noiseBuf = null, stretchNode = null;
+    function ac() { if (Curio.muted) return null; return Curio.audioContext(); }
+    function noise(a) {
+      if (!noiseBuf) {
+        noiseBuf = a.createBuffer(1, a.sampleRate * 1.5, a.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      const s = a.createBufferSource(); s.buffer = noiseBuf; return s;
+    }
+    function squelch(power = 1) {
+      const a = ac(); if (!a) return;
+      const t = a.currentTime, dur = 0.18 + 0.15 * power;
+      const n = noise(a); n.playbackRate.value = Curio.rand(0.6, 1);
+      const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 5;
+      f.frequency.setValueAtTime(Curio.rand(250, 400), t); f.frequency.exponentialRampToValueAtTime(Curio.rand(900, 1500), t + dur * 0.6); f.frequency.exponentialRampToValueAtTime(300, t + dur);
+      const g = a.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32 * power, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      n.connect(f); f.connect(g); g.connect(a.destination); n.start(t, Math.random()); n.stop(t + dur + 0.05);
+      for (let k = 0; k < 3; k++) {
+        const o = a.createOscillator(), og = a.createGain(), st = t + Curio.rand(0.02, dur * 0.8);
+        o.frequency.setValueAtTime(Curio.rand(500, 900), st); o.frequency.exponentialRampToValueAtTime(Curio.rand(150, 260), st + 0.05);
+        og.gain.setValueAtTime(0.0001, st); og.gain.exponentialRampToValueAtTime(0.05 * power, st + 0.005); og.gain.exponentialRampToValueAtTime(0.0001, st + 0.06);
+        o.connect(og); og.connect(a.destination); o.start(st); o.stop(st + 0.08);
+      }
+    }
+    function crunch(n = 6) {
+      if (!addins.beads) return;
+      const a = ac(); if (!a) return;
+      const t = a.currentTime;
+      for (let k = 0; k < n; k++) {
+        const st = t + Math.random() * 0.25;
+        const s = noise(a), f = a.createBiquadFilter(), g = a.createGain();
+        f.type = 'highpass'; f.frequency.value = Curio.rand(1800, 4200);
+        g.gain.setValueAtTime(Curio.rand(0.05, 0.14), st); g.gain.exponentialRampToValueAtTime(0.0001, st + 0.018);
+        s.connect(f); f.connect(g); g.connect(a.destination); s.start(st, Math.random()); s.stop(st + 0.03);
+      }
+    }
+    function slapSound() {
+      const a = ac(); if (!a) return;
+      const t = a.currentTime;
+      const n = noise(a), f = a.createBiquadFilter(), g = a.createGain();
+      f.type = 'lowpass'; f.frequency.setValueAtTime(5000, t); f.frequency.exponentialRampToValueAtTime(400, t + 0.12);
+      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      n.connect(f); f.connect(g); g.connect(a.destination); n.start(t); n.stop(t + 0.2);
+      const o = a.createOscillator(), og = a.createGain();
+      o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(50, t + 0.2);
+      og.gain.setValueAtTime(0.35, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      o.connect(og); og.connect(a.destination); o.start(t); o.stop(t + 0.3);
+      setTimeout(() => squelch(1.2), 60);
+    }
+    function healPop() {
+      const a = ac(); if (!a) return;
+      const t = a.currentTime, o = a.createOscillator(), g = a.createGain();
+      o.frequency.setValueAtTime(380, t); o.frequency.exponentialRampToValueAtTime(980, t + 0.08);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.14);
+    }
+    function stretchSound(level) {
+      const a = Curio.audioContext && !Curio.muted ? Curio.audioContext() : null;
+      if (!stretchNode && a && level > 0.01) {
+        const s = noise(a); s.loop = true;
+        const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 3; f.frequency.value = 500;
+        const g = a.createGain(); g.gain.value = 0;
+        s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+        stretchNode = { a, f, g };
+      }
+      if (stretchNode) {
+        const t = stretchNode.a.currentTime;
+        stretchNode.g.gain.setTargetAtTime(Curio.muted ? 0 : Math.min(0.12, level * 0.12), t, 0.05);
+        stretchNode.f.frequency.setTargetAtTime(380 + level * 700 + Math.random() * 200, t, 0.04);
+      }
+    }
+
+    function toLocal(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function inside(x, y) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); smoothPath(ctx, pts, 1); return ctx.isPointInPath(x * dpr, y * dpr); }
+    function nearEdge(x, y) { let m = 1e9; for (const p of pts) m = Math.min(m, Math.hypot(p.x - x, p.y - y)); return m; }
+
+    function makeGrab(x, y, pinch) {
+      const sig = pinch ? R * 0.16 : R * 0.36;
+      const w = [];
+      let max = 0;
+      pts.forEach((p, i) => { const d = Math.hypot(p.x - x, p.y - y); const k = Math.exp(-(d * d) / (2 * sig * sig)); if (k > 0.02) w.push({ i, k, x0: p.x, y0: p.y }); max = Math.max(max, k); });
+      w.forEach((o) => { o.k = Math.min(1, o.k / max) * (pinch ? 1 : 0.95); });
+      return w;
+    }
+    function poke(x, y, big) {
+      const c = centroid();
+      const loc = locate(x, y, c);
+      for (const p of pts) {
+        const d = Math.hypot(p.x - x, p.y - y), k = Math.exp(-(d * d) / (R * R * 0.35));
+        p.vx += (c.x - p.x) / R * 260 * k * (big ? 1.4 : 1); p.vy += (c.y - p.y) / R * 260 * k * (big ? 1.4 : 1);
+      }
+      if (loc && loc.f < 0.95) {
+        holes.push({ s: loc.s, f: loc.f, r: Curio.rand(10, 16) * (R / 130) * (big ? 1.3 : 1), age: 0, heal: 0, life: Curio.rand(5, 8) });
+        if (holes.length > 24) holes.shift();
+      }
+      squelch(0.8); crunch(5);
+    }
+    function slap() {
+      const c = centroid();
+      for (const p of pts) {
+        const dx = p.x - c.x, dy = p.y - c.y, d = Math.hypot(dx, dy) || 1;
+        p.vx += (dx / d) * 520 + Curio.rand(-60, 60); p.vy += (dy / d) * 380 + Curio.rand(-60, 60);
+      }
+      ripples.push({ x: c.x, y: c.y, t: 0 });
+      stage.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(3px,-2px)' }, { transform: 'translate(-3px,2px)' }, { transform: 'translate(0,0)' }], { duration: 180 });
+      slapSound(); crunch(14);
+      tip.style.opacity = 0;
+    }
+
+    function down(id, x, y) {
+      const ins = inside(x, y), edge = nearEdge(x, y);
+      tip.style.opacity = 0;
+      if (!ins && edge > 40) return false;
+      if (tool === 'squish' && !ins) return false;
+      const g = { id, x, y, sx: x, sy: y, t0: performance.now(), active: false, w: null, pinch: tool === 'pinch', moved: 0, inside: ins, lx: x, ly: y, tp: id === 'drag' && Curio.touchpad };
+      grabs.set(id, g);
+      if (tool === 'poke') { if (ins) poke(x, y, false); grabs.delete(id); return true; }
+      if (tool === 'squish') { g.squish = true; g.keep = true; squish = { x, y, amt: 0 }; restTarget = 1.14; squelch(0.7); crunch(6); return true; }
+      if (tool === 'pinch' || !ins) { g.active = true; g.pinch = true; g.w = makeGrab(x, y, true); squelch(0.5); canvas.classList.add('grabbing'); }
+      if (grabs.size > 1) { for (const o of grabs.values()) if (!o.active && !o.squish) { o.active = true; o.w = makeGrab(o.x, o.y, false); } }
+      return true;
+    }
+    function moveTo(id, x, y) {
+      const g = grabs.get(id); if (!g) return;
+      g.moved = Math.max(g.moved, Math.hypot(x - g.sx, y - g.sy));
+      g.x = x; g.y = y;
+      if (!g.active && !g.squish && g.moved > 9) {
+        g.active = true; g.w = makeGrab(g.sx, g.sy, false); canvas.classList.add('grabbing'); squelch(0.5);
+      }
+      if (g.squish && squish) {
+        if (g.keep) { squish.x += (x - squish.x) * 0.3; squish.y += (y - squish.y) * 0.3; }
+        else if (Math.hypot(x - squish.x, y - squish.y) > 34) {
+          g.squish = false; squish = null; restTarget = 1;
+          g.sx = x; g.sy = y; g.active = true; g.w = makeGrab(x, y, false); canvas.classList.add('grabbing');
+        } else { squish.x += (x - squish.x) * 0.3; squish.y += (y - squish.y) * 0.3; }
+      }
+    }
+    function release(id) {
+      const g = grabs.get(id); if (!g) return;
+      grabs.delete(id);
+      const dt = performance.now() - g.t0;
+      if (!g.active && !g.squish && dt < 260 && g.inside) poke(g.x, g.y, false);
+      if (g.squish) { squish = null; restTarget = 1; squelch(1); crunch(8); }
+      if (g.active) { squelch(Math.min(1.2, 0.4 + Math.hypot(g.x - g.sx, g.y - g.sy) / R)); crunch(4); }
+      if (![...grabs.values()].some((o) => o.active)) canvas.classList.remove('grabbing');
+    }
+    let held = false;
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (held) return;
+      if (e.pointerType === 'touch') {
+        e.stopImmediatePropagation();
+        canvas.setPointerCapture?.(e.pointerId);
+        const { x, y } = toLocal(e);
+        down(e.pointerId, x, y);
+        return;
+      }
+      if (tool === 'poke' && e.button === 0) { e.stopImmediatePropagation(); const { x, y } = toLocal(e); down('click', x, y); }
+    });
+    canvas.addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') return; const { x, y } = toLocal(e); moveTo(e.pointerId, x, y); });
+    const touchUp = (e) => { if (e.pointerType === 'touch') release(e.pointerId); };
+    canvas.addEventListener('pointerup', touchUp);
+    canvas.addEventListener('pointercancel', touchUp);
+    Curio.drag(canvas, {
+      start: (q) => { held = true; down('drag', q.x, q.y); },
+      move: (q) => {
+        if (!grabs.has('drag')) { if (held && Curio.touchpad && tool !== 'poke' && (inside(q.x, q.y) || (tool !== 'squish' && nearEdge(q.x, q.y) < 30))) down('drag', q.x, q.y); return; }
+        moveTo('drag', q.x, q.y);
+      },
+      end: () => { held = false; release('drag'); }
+    });
+    canvas.addEventListener('dblclick', (e) => { e.preventDefault(); if (!Curio.touchpad) slap(); });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click the slime to grab it, move to stretch, click again to let go. Squish tool (4) kneads it', 3800); paintTip(); });
+    function paintTip() { tip.textContent = Curio.touchpad ? 'Click to grab, move to stretch, click to let go · Squish tool kneads · Space slaps' : 'Tap to poke · Hold to squish · Drag to stretch · Two fingers to pull apart'; }
+    paintTip();
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-slime', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-slime', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to grab the slime, click again to let go', 4200), 1800); }
+
+    let raf = 0, last = 0, bubbleT = 0;
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;
+      time += dt;
+      for (const g of grabs.values()) {
+        if (!g.active && !g.squish && !g.tp && g.inside && performance.now() - g.t0 > 230 && g.moved <= 9) {
+          g.squish = true; squish = { x: g.x, y: g.y, amt: 0 }; restTarget = 1.14; squelch(0.7); crunch(6);
+        }
+      }
+      if (squish) {
+        squish.amt = Math.min(1, squish.amt + dt * 1.6);
+        bubbleT -= dt;
+        if (bubbleT < 0) { bubbleT = Curio.rand(0.25, 0.6); squelch(0.35); crunch(3); }
+      }
+      let pull = 0;
+      for (const g of grabs.values()) if (g.active) { pull += Math.hypot(g.x - g.lx, g.y - g.ly) / Math.max(dt, 0.001) / 1500; g.lx = g.x; g.ly = g.y; }
+      stretchSound(Math.min(1, pull));
+      const sub = Math.max(1, Math.round(dt / (1 / 240)));
+      for (let i = 0; i < sub; i++) step(dt / sub);
+      for (let i = holes.length - 1; i >= 0; i--) {
+        const h = holes[i]; h.age += dt; h.heal = Math.min(1, h.heal + dt * 3);
+        if (h.age > h.life) { holes.splice(i, 1); healPop(); }
+      }
+      for (let i = ripples.length - 1; i >= 0; i--) { ripples[i].t += dt * 1.8; if (ripples[i].t > 1) ripples.splice(i, 1); }
+      draw();
+    }
+    const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; stretchSound(0); };
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => {
+      tool = b.dataset.tool;
+      document.querySelectorAll('[data-tool]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    }));
+    document.getElementById('slap').addEventListener('click', slap);
+    addEventListener('keydown', (e) => {
+      if (e.target.closest && e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
+      if (e.key === ' ') { e.preventDefault(); slap(); }
+      else if (/^[1-4]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) document.querySelectorAll('[data-tool]')[+e.key - 1].click();
+      else if (e.key === 'p' || e.key === 'P') { const c = centroid(); poke(c.x + Curio.rand(-R, R) * 0.5, c.y + Curio.rand(-R, R) * 0.5, false); }
+    });
+
+    const typesEl = document.getElementById('types');
+    for (const k in TYPES) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.type = k; b.textContent = TYPES[k].name;
+      b.addEventListener('click', () => { type = k; Curio.store.set('slime:type', k); syncUi(); seedParts(); squelch(0.6); });
+      typesEl.append(b);
+    }
+    const colorsEl = document.getElementById('colors');
+    COLORS.forEach(([name, hex], i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sw'; b.dataset.i = i; b.title = name; b.setAttribute('aria-label', `${name} slime`);
+      b.style.background = `radial-gradient(circle at 35% 30%, #fff 0 8%, ${hex} 40%, ${css(mix(rgb(hex), [10, 0, 30], 0.3))})`;
+      b.addEventListener('click', () => { color = i; Curio.store.set('slime:color', i); syncUi(); squelch(0.4); });
+      colorsEl.append(b);
+    });
+    const addEl = document.getElementById('addins');
+    for (const k in ADDINS) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.add = k; b.textContent = ADDINS[k];
+      b.addEventListener('click', () => { addins[k] = !addins[k]; Curio.store.set('slime:addins', addins); syncUi(); seedParts(); if (addins[k]) { crunch(10); squelch(0.5); } });
+      addEl.append(b);
+    }
+    function syncUi() {
+      typesEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.type === type)));
+      colorsEl.querySelectorAll('.sw').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.i === color)));
+      addEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(!!addins[b.dataset.add])));
+    }
+
+    addEventListener('resize', resize);
+    addEventListener('curio:theme', paintBg);
+    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', paintBg);
+    resize(); seedParts(); syncUi(); start();
+    window.__sl = { poke, slap, pts: () => pts, centroid, grabs };
+  })();
+  </script>
+</body>
+</html>

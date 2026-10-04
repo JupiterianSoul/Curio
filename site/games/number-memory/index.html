@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Number Memory · Curio</title>
+  <meta name="description" content="Memorise a sequence before it flips away. Digits, letters, mixed and binary, forwards or backwards, all at once or one at a time.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="fx.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="number-memory">
+  <main class="c-wrap nm">
+    <header>
+      <h1 class="c-title">Number Memory</h1>
+      <p class="c-sub">The average person can hold about 7 digits in their head. The departure board is about to test yours.</p>
+    </header>
+    <div class="nm-opts" id="opts">
+      <div class="nm-opt"><span>What</span><div id="oKind"></div></div>
+      <div class="nm-opt"><span>Show</span><div id="oShow"></div></div>
+      <div class="nm-opt"><span>Recall</span><div id="oDir"></div></div>
+      <div class="nm-opt"><span>Lives</span><div id="oLives"></div></div>
+      <div class="nm-opt"><span>Start at</span><div id="oStart"></div></div>
+    </div>
+    <div class="nm-hud">
+      <div class="c-stat"><b id="level">1</b><span>Length</span></div>
+      <div class="nm-lives" id="lives" aria-label="Lives"></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <section class="nm-board" id="stage" aria-live="polite"></section>
+    <div id="tabs"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fx.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

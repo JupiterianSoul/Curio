@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Unblock · Curio</title>
+  <meta name="description" content="Slide the cars and trucks out of the way so the red car can escape. Over 100 levels, each solved by computer, plus a daily jam.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="unblock">
+  <main class="c-wrap">
+    <header class="g-head">
+      <svg class="logo" viewBox="0 0 170 56" aria-hidden="true" id="logo"></svg>
+      <h1 class="c-title">Unblock</h1>
+      <p class="c-sub">Rush hour in a tiny car park. Slide the cars and trucks along their lanes until the red car can drive out of the gap on the right.</p>
+    </header>
+    <div class="hud">
+      <div class="lvl"><button type="button" id="prev" aria-label="Previous level">‹</button><div class="c-stat"><b id="level">1</b><span>Level</span></div><button type="button" id="next" aria-label="Next level">›</button></div>
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="opt">0</b><span>Optimal</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <span class="tier" id="tier"></span>
+    </div>
+    <div class="stage">
+      <div class="frame">
+        <div class="lot" id="lot" role="group" aria-label="Car park, 6 by 6"><div class="lane" aria-hidden="true"></div></div>
+        <div class="exit" aria-hidden="true"></div>
+        <svg class="sign" viewBox="0 0 26 40" aria-hidden="true"><rect x="1" y="2" width="24" height="24" rx="5" fill="#2fb36d" stroke="#fff" stroke-width="2"/><path d="M7 14h10M13 9l5 5-5 5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="26" width="4" height="14" fill="#9aa0ad"/></svg>
+      </div>
+      <div class="c-row g-row">
+        <button class="c-btn c-btn--ghost" type="button" id="undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" type="button" id="hint">💡 Hint</button>
+        <button class="c-btn c-btn--ghost" type="button" id="solve">🎬 Solution</button>
+        <button class="c-btn c-btn--ghost" type="button" id="daily">📅 Daily jam</button>
+        <button class="c-btn" type="button" id="reset">Reset</button>
+      </div>
+    </div>
+    <p class="g-help c-muted">Drag a vehicle along its lane. Keyboard: <span class="c-kbd">Tab</span> to a vehicle, arrow keys to slide it, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">R</span> reset. Moving the same vehicle twice in a row counts as one move, just like the optimal count.</p>
+    <div class="panels">
+      <details class="c-card picker" id="picker">
+        <summary>🅿️ All levels <span id="lv-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div id="levels"></div>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

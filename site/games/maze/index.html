@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Maze Runner · Curio</title>
+  <meta name="description" content="Thirty handmade-feeling maze levels across five worlds: square, hexagon and circular mazes, gems to collect, fog of war, a daily maze and free play.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="maze">
+  <main class="c-wrap mz" id="root">
+    <section id="home" class="mz-home">
+      <header class="mz-hero">
+        <canvas id="heroCv" class="mz-herocv" width="200" height="200" aria-hidden="true"></canvas>
+        <div>
+          <h1 class="c-title">Maze Runner</h1>
+          <p class="c-sub">Five worlds, thirty mazes. Square, hexagon and round ones, gems tucked into dead ends, and dungeons you can only see by torchlight. Grab the gems, find the exit, earn three stars.</p>
+        </div>
+      </header>
+      <div class="mz-top">
+        <article class="mz-daily c-card" id="daily"></article>
+        <article class="mz-free c-card">
+          <h3>Free play</h3>
+          <div class="mz-row"><span>Shape</span><div class="mz-seg" id="fShape" role="radiogroup" aria-label="Maze shape"></div></div>
+          <div class="mz-row"><span>Size</span><div class="mz-seg" id="fSize" role="radiogroup" aria-label="Maze size"></div></div>
+          <div class="mz-row"><span>World</span><div class="mz-themes" id="fTheme" role="radiogroup" aria-label="World"></div></div>
+          <div class="mz-row"><label class="mz-check"><input type="checkbox" id="fFog"> Fog of war</label><label class="mz-check"><input type="checkbox" id="fGems"> Gems</label><button class="c-btn" type="button" id="freeBtn">Generate</button></div>
+        </article>
+      </div>
+      <h2 class="mz-h">Adventure</h2>
+      <div class="mz-worlds" id="worlds"></div>
+      <div class="c-row mz-links">
+        <button class="c-btn c-btn--ghost" type="button" id="howBtn">📖 How to play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="trophyBtn">🏆 Trophies <span id="trophyN"></span></button>
+        <button class="c-btn c-btn--ghost" type="button" id="statsBtn">📊 Stats</button>
+      </div>
+    </section>
+
+    <section id="play" class="mz-play" hidden>
+      <div class="mz-bar">
+        <button class="mz-ib" type="button" id="backBtn" aria-label="Back to the map">←</button>
+        <div class="mz-chip" id="chip"></div>
+        <div class="mz-hud">
+          <div><b id="gems">0/0</b><span>gems</span></div>
+          <div><b id="time">0.0</b><span>time</span></div>
+          <div><b id="par">-</b><span>par</span></div>
+        </div>
+      </div>
+      <div class="mz-arena">
+        <div class="mz-stage" id="stage">
+          <canvas id="cv" tabindex="0" role="img" aria-label="Maze. Move with the arrow keys, the on-screen pad, by swiping, or by tracing a path from your explorer."></canvas>
+          <div class="mz-result" id="result" hidden></div>
+        </div>
+        <div class="mz-controls">
+          <div class="mz-pad" id="pad" aria-label="Direction pad"></div>
+          <div class="mz-side">
+            <button class="mz-tool" type="button" id="hintBtn"><i>🧭</i>Show path <small>+10s</small></button>
+            <button class="mz-tool" type="button" id="restartBtn"><i>↺</i>Restart</button>
+          </div>
+        </div>
+      </div>
+      <p class="c-muted mz-keys" id="keys"></p>
+    </section>
+  </main>
+  <div class="mz-badge" id="badge" role="status" aria-live="polite"></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="maze.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

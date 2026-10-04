@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spirograph · Curio</title>
+  <meta name="description" content="Gears that draw. Roll a gear around a ring, stack layers, try 14 classic designs, glow pens and paper styles, and match mystery patterns in the daily gear challenge.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="spirograph">
+  <main class="c-wrap sp-main">
+    <canvas id="cv" role="img" aria-label="A spirograph: a toothed gear rolls around a ring while a pen in one of its holes draws looping patterns."></canvas>
+    <div class="sp-intro" id="intro">
+      <h1>Spirograph</h1>
+      <p>A gear rolls around a ring, a pen pokes through one of its holes, and loops appear. Change the gears, add layers, or let chance design one.</p>
+    </div>
+    <div class="chal hidden" id="chal" aria-live="polite">
+      <div class="chal-top"><b id="chalTitle">Target 1 of 5</b><span id="chalScore">0 pts</span></div>
+      <p id="chalHint">Match the dotted gold pattern. Change the gears and pen hole, then check.</p>
+      <div class="chal-btns">
+        <button type="button" class="c-btn" id="chalCheck">✓ Check</button>
+        <button type="button" class="c-btn c-btn--ghost" id="chalSkip">Skip</button>
+        <button type="button" class="c-btn c-btn--ghost" id="chalQuit">Quit</button>
+      </div>
+    </div>
+    <div class="panel" id="panel" hidden>
+      <h2>Classic designs</h2>
+      <div class="presets" id="presets"></div>
+      <h2>Gears</h2>
+      <div class="seg" role="group" aria-label="Gear position">
+        <button type="button" data-mode="in" aria-pressed="true">Inside ring</button>
+        <button type="button" data-mode="out" aria-pressed="false">Outside ring</button>
+      </div>
+      <label class="sl">Ring teeth <output id="oR"></output><input type="range" id="R" min="40" max="150" step="1" value="105"></label>
+      <label class="sl">Gear teeth <output id="or"></output><input type="range" id="r" min="8" max="120" step="1" value="63"></label>
+      <label class="sl">Pen hole <output id="op"></output><input type="range" id="p" min="0" max="1.3" step="0.01" value="0.8"></label>
+      <p class="note" id="petals"></p>
+      <h2>Pen</h2>
+      <div class="swatches" id="swatches" role="group" aria-label="Pen colour"></div>
+      <div class="seg seg3" role="group" aria-label="Pen style" id="pens">
+        <button type="button" data-pen="ink" aria-pressed="true">🖊️ Ink</button>
+        <button type="button" data-pen="glow" aria-pressed="false">✨ Glow</button>
+        <button type="button" data-pen="pencil" aria-pressed="false">✏️ Pencil</button>
+      </div>
+      <label class="sl">Line width <output id="ow"></output><input type="range" id="w" min="0.4" max="6" step="0.1" value="1.4"></label>
+      <label class="sl">Speed <output id="os"></output><input type="range" id="s" min="0.2" max="12" step="0.1" value="2"></label>
+      <p class="layers" id="layersInfo"></p>
+      <h2>Paper</h2>
+      <div class="papers" id="papers">
+        <button type="button" data-paper="cream"><i style="background:#fffdf8"></i>Cream</button>
+        <button type="button" data-paper="velvet"><i style="background:#0c0a14"></i>Velvet</button>
+        <button type="button" data-paper="blueprint"><i style="background:#1d5c94"></i>Blueprint</button>
+        <button type="button" data-paper="kraft"><i style="background:#c9a273"></i>Kraft</button>
+      </div>
+      <label class="swrow"><span>Preview whole pattern</span><button type="button" class="sw" id="swPrev" aria-pressed="false" aria-label="Preview whole pattern"></button></label>
+      <h2>Badges</h2>
+      <div class="badges" id="badges"></div>
+      <p class="layers">Keys: Space pause, N new layer, R random, G gears, Z undo, C challenge.</p>
+    </div>
+    <div class="dock" role="toolbar" aria-label="Spirograph controls">
+      <button type="button" class="chip" id="bPlay" aria-pressed="false">⏸ Pause</button>
+      <button type="button" class="chip" id="bLayer">➕ New layer</button>
+      <button type="button" class="chip" id="bRandom">🎲 Random</button>
+      <button type="button" class="chip" id="bChal">🎯 Challenge</button>
+      <button type="button" class="chip" id="bUndo">↩ Undo</button>
+      <button type="button" class="chip" id="bClear">🧹 Clear</button>
+      <button type="button" class="chip" id="bGears" aria-pressed="true">⚙️ Gears</button>
+      <button type="button" class="chip" id="bSave">💾 Save</button>
+      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">🎛️ Controls</button>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

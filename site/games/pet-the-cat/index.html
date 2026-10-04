@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pet the Cat · Curio</title>
+  <meta name="description" content="A very good cat. Stroke it gently, find the good spots, feed it treats, play with the laser. Avoid the belly. Seriously.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="pet-the-cat">
+  <main class="c-wrap pc">
+    <h1 class="c-title">Pet the Cat</h1>
+    <p class="c-sub">Slow, gentle strokes. Find the good spots. Read the room. The belly is a trap.</p>
+    <div class="pc-meters">
+      <div class="pc-meter"><span>💗 Purr</span><div class="pc-bar"><i id="purrBar"></i></div></div>
+      <div class="pc-meter"><span>🧘 Patience</span><div class="pc-bar pc-bar--pat"><i id="patBar"></i></div></div>
+    </div>
+    <div class="pc-mood" id="mood" aria-live="polite">🐱 Curious</div>
+    <div class="pc-roster" id="roster" role="group" aria-label="Your cats"></div>
+    <div class="pc-catinfo"><b id="catName"></b><span id="catQuirk"></span><em id="bondTotal"></em></div>
+    <div class="pc-room" id="room">
+      <svg class="pc-bg" viewBox="0 0 720 470" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="pcSky" x1="0" x2="0" y1="0" y2="1"><stop class="sk1" offset="0" stop-color="#9ad8ff"/><stop class="sk2" offset="1" stop-color="#e3f5ff"/></linearGradient>
+          <pattern id="pcPaper" width="36" height="36" patternUnits="userSpaceOnUse"><rect width="36" height="36" class="pc-wallc"/><path d="M18 6l3 6-3 6-3-6z" fill="#fff" opacity=".25"/></pattern>
+          <linearGradient id="pcFloor" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c48b5a"/><stop offset="1" stop-color="#9a6638"/></linearGradient>
+        </defs>
+        <rect width="720" height="470" fill="url(#pcPaper)"/>
+        <g class="pc-win"><rect x="470" y="40" width="190" height="170" rx="10" fill="url(#pcSky)" stroke="#fff" stroke-width="10"/><path d="M565 40v170M470 125h190" stroke="#fff" stroke-width="6"/><circle class="pc-sun" cx="510" cy="80" r="16" fill="#ffe082"/><g class="pc-stars" fill="#fff"><circle cx="610" cy="70" r="2"/><circle cx="640" cy="100" r="1.5"/><circle cx="590" cy="170" r="1.6"/><circle cx="500" cy="160" r="1.4"/></g><path d="M480 210q40-30 80-10t90-6v6h-170z" fill="#81c784" opacity=".7"/><path d="M462 34h206" stroke="#a1887f" stroke-width="8" stroke-linecap="round"/><path d="M470 34q-10 90 6 180M660 34q10 90 -6 180" stroke="#ef9a9a" stroke-width="18" fill="none" opacity=".9"/></g>
+        <g transform="translate(46 70)"><rect width="150" height="12" rx="3" fill="#8d6e63"/><rect x="0" y="12" width="150" height="6" fill="#6d4c41"/><rect x="10" y="-44" width="14" height="44" fill="#ef5350"/><rect x="26" y="-38" width="12" height="38" fill="#42a5f5"/><rect x="40" y="-48" width="16" height="48" fill="#66bb6a"/><rect x="58" y="-34" width="12" height="34" fill="#ffca28" transform="rotate(12 64 0)"/><path d="M110 0c-12-26 0-44 14-46c-4 16 6 30-2 46z M124 0c4-20 16-30 28-28c-8 10-14 18-20 28z" fill="#43a047"/><rect x="104" y="-14" width="30" height="14" rx="3" fill="#ff7043"/></g>
+        <g transform="translate(70 150)"><rect width="90" height="70" rx="4" fill="#fff" stroke="#8d6e63" stroke-width="6"/><circle cx="45" cy="40" r="16" fill="#ffb877"/><path d="M33 30l-4-14 12 8zM57 30l4-14-12 8z" fill="#ffb877"/><circle cx="40" cy="38" r="2" fill="#333"/><circle cx="50" cy="38" r="2" fill="#333"/><path d="M8 62h74" stroke="#90caf9" stroke-width="5"/></g>
+        <rect y="380" width="720" height="90" fill="url(#pcFloor)"/>
+        <path d="M0 380h720" stroke="#7b4f2a" stroke-width="5"/>
+        <path d="M0 420h720M0 452h720M120 380v40M300 420v32M480 380v40M640 420v32" stroke="#8a5a30" stroke-width="2" opacity=".5"/>
+        <g transform="translate(600 300)"><path d="M0 80h70l-8-60h-54z" fill="#e57373"/><path d="M35 20c-30-30-10-70 0-80c10 10 30 50 0 80z" fill="#66bb6a"/><path d="M35 20c-40-10-50-40-46-56c14 6 40 24 46 56zM35 20c40-10 50-40 46-56c-14 6-40 24-46 56z" fill="#4caf50"/></g>
+      </svg>
+    <div class="pc-stage" id="stage" role="img" aria-label="A large orange cat. Move your pointer or finger across it to pet it.">
+      <div class="pc-rug" aria-hidden="true"></div>
+      <svg id="svg" viewBox="0 0 400 440" aria-hidden="true">
+        <defs>
+          <clipPath id="eyeL"><ellipse cx="158" cy="150" rx="24" ry="26"/></clipPath>
+          <clipPath id="eyeR"><ellipse cx="242" cy="150" rx="24" ry="26"/></clipPath>
+          <radialGradient id="iris" cx=".5" cy=".45" r=".6"><stop offset="0" stop-color="#d4e157"/><stop offset=".7" stop-color="#8bc34a"/><stop offset="1" stop-color="#558b2f"/></radialGradient>
+          <radialGradient id="fur" cx=".45" cy=".35" r=".8"><stop offset="0" stop-color="#ffb877"/><stop offset="1" stop-color="#f08a3e"/></radialGradient>
+        </defs>
+        <g id="cat">
+          <g id="tail"><path d="M282 380C340 380 370 340 362 280C356 236 330 214 336 186" stroke="#e07b39" stroke-width="30" stroke-linecap="round" fill="none"/><path d="M282 380C340 380 370 340 362 280C356 236 330 214 336 186" stroke="#f39a52" stroke-width="22" stroke-linecap="round" fill="none"/><path d="M350 300l18-4M352 260l16-6M344 224l14-8" stroke="#d06a2b" stroke-width="6" stroke-linecap="round"/></g>
+          <g id="body">
+            <path d="M200 196C120 196 94 286 98 352C101 404 140 414 200 414S299 404 302 352C306 286 280 196 200 196Z" fill="url(#fur)" stroke="#c9652a" stroke-width="3"/>
+            <path d="M112 300q14-6 26 4M106 336q14-4 24 6M288 300q-14-6-26 4M294 336q-14-4-24 6" stroke="#d06a2b" stroke-width="7" stroke-linecap="round" fill="none"/>
+            <ellipse id="belly" cx="200" cy="330" rx="56" ry="72" fill="#ffe4c7"/>
+            <path d="M180 300q20 10 40 0M178 330q22 10 44 0M182 360q18 8 36 0" stroke="#f6cfa6" stroke-width="3" fill="none"/>
+            <g id="pawL"><ellipse cx="164" cy="408" rx="30" ry="16" fill="#ffe4c7" stroke="#c9652a" stroke-width="3"/><path d="M154 402v10M166 400v12M178 402v10" stroke="#e8b48a" stroke-width="2.5" stroke-linecap="round"/></g>
+            <g id="pawR"><ellipse cx="236" cy="408" rx="30" ry="16" fill="#ffe4c7" stroke="#c9652a" stroke-width="3"/><path d="M222 402v10M234 400v12M246 402v10" stroke="#e8b48a" stroke-width="2.5" stroke-linecap="round"/></g>
+          </g>
+          <g id="head">
+            <g id="earL"><path d="M112 118L118 22L188 78Z" fill="#f08a3e" stroke="#c9652a" stroke-width="3" stroke-linejoin="round"/><path d="M126 100L128 46L170 80Z" fill="#ffb3b3"/></g>
+            <g id="earR"><path d="M288 118L282 22L212 78Z" fill="#f08a3e" stroke="#c9652a" stroke-width="3" stroke-linejoin="round"/><path d="M274 100L272 46L230 80Z" fill="#ffb3b3"/></g>
+            <path d="M200 64C268 64 312 106 312 160C312 204 284 236 248 246C230 252 214 254 200 254S170 252 152 246C116 236 88 204 88 160C88 106 132 64 200 64Z" fill="url(#fur)" stroke="#c9652a" stroke-width="3"/>
+            <path d="M88 168l-14 10 18 2-10 12 22-4M312 168l14 10-18 2 10 12-22-4" fill="#f39a52" stroke="#c9652a" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M200 72v26M182 76l4 22M218 76l-4 22" stroke="#d06a2b" stroke-width="7" stroke-linecap="round"/>
+            <path d="M200 180c-34 0-58 18-58 40c0 22 26 34 58 34s58-12 58-34c0-22-24-40-58-40z" fill="#ffe4c7"/>
+            <ellipse id="blushL" cx="128" cy="196" rx="18" ry="9" fill="#ff7aa2" opacity="0"/>
+            <ellipse id="blushR" cx="272" cy="196" rx="18" ry="9" fill="#ff7aa2" opacity="0"/>
+            <g clip-path="url(#eyeL)">
+              <ellipse cx="158" cy="150" rx="24" ry="26" fill="url(#iris)"/>
+              <ellipse id="pupL" cx="158" cy="152" rx="7" ry="21" fill="#1b1b1b"/>
+              <circle id="hiL" cx="166" cy="142" r="5" fill="#fff"/>
+              <rect id="lidL" x="130" y="120" width="56" height="0" fill="#f08a3e"/>
+              <rect id="lidLo" x="130" y="182" width="56" height="0" fill="#f6a865"/>
+            </g>
+            <g clip-path="url(#eyeR)">
+              <ellipse cx="242" cy="150" rx="24" ry="26" fill="url(#iris)"/>
+              <ellipse id="pupR" cx="242" cy="152" rx="7" ry="21" fill="#1b1b1b"/>
+              <circle id="hiR" cx="250" cy="142" r="5" fill="#fff"/>
+              <rect id="lidR" x="214" y="120" width="56" height="0" fill="#f08a3e"/>
+              <rect id="lidRo" x="214" y="182" width="56" height="0" fill="#f6a865"/>
+            </g>
+            <ellipse cx="158" cy="150" rx="24" ry="26" fill="none" stroke="#5d3a1a" stroke-width="3"/>
+            <ellipse cx="242" cy="150" rx="24" ry="26" fill="none" stroke="#5d3a1a" stroke-width="3"/>
+            <path id="browL" d="M134 116l40 10" stroke="#5d3a1a" stroke-width="4" stroke-linecap="round" opacity="0"/>
+            <path id="browR" d="M266 116l-40 10" stroke="#5d3a1a" stroke-width="4" stroke-linecap="round" opacity="0"/>
+            <path d="M190 192h20l-10 11z" fill="#ff8fa3" stroke="#c2185b" stroke-width="2" stroke-linejoin="round"/>
+            <path id="mouth" d="M184 210q8 10 16 0q8 10 16 0" stroke="#5d3a1a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path id="mouthOpen" d="M182 208q18 4 36 0q-4 30-18 30t-18-30z" fill="#7a1f2b" stroke="#5d3a1a" stroke-width="3" opacity="0"/>
+            <g id="whiskers" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".9">
+              <path d="M150 204l-66-12M150 212l-68 6M152 220l-60 20"/><path d="M250 204l66-12M250 212l68 6M248 220l60 20"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <div class="pc-laser" id="laser" aria-hidden="true"></div>
+      <div class="pc-yarn" id="yarn" hidden aria-hidden="true"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="17" fill="#ec407a" stroke="#ad1457" stroke-width="2"/><path d="M6 14q14 4 28 -4M5 22q16 6 30 -6M9 30q12 2 24 -12M14 6q4 14 -2 30M24 4q6 16 0 32" stroke="#f8bbd0" stroke-width="2" fill="none"/></svg></div>
+    </div>
+    </div>
+    <p class="pc-hint c-muted" id="hint">Stroke the cat with your mouse or finger. Click it once so you can hear it purr.</p>
+    <div class="c-row pc-actions">
+      <button class="c-btn" id="treat" type="button">🐟 Give a treat</button>
+      <button class="c-btn c-btn--ghost" id="blink" type="button">😌 Slow blink</button>
+      <button class="c-btn c-btn--ghost" id="laserBtn" type="button" aria-pressed="false">🔴 Laser pointer</button>
+      <button class="c-btn c-btn--ghost" id="yarnBtn" type="button">🧶 Yarn ball</button>
+    </div>
+    <div class="pc-stats">
+      <div class="c-stat"><b id="sPets">0</b><span>Pets</span></div>
+      <div class="c-stat"><b id="sTreats">0</b><span>Treats</span></div>
+      <div class="c-stat"><b id="sCatch">0</b><span>Dots caught</span></div>
+      <div class="c-stat"><b id="sYarn">0</b><span>Swats</span></div>
+      <div class="c-stat"><b id="sBites">0</b><span>Bites</span></div>
+    </div>
+    <div class="pc-ach" id="ach" aria-label="Achievements"></div>
+    <p class="c-muted pc-how">Every cat has a secret favourite spot. Keep a cat blissed out (purr bar full) for a few seconds to earn a bond heart. Bond hearts bring new cats to visit.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

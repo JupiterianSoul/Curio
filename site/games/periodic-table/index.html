@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Periodic Table · Curio</title>
+  <meta name="description" content="Poke at all 118 elements: what they are, where their names come from, when we found them, what melts as you crank up the heat, plus a game to learn them all.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="periodic-table">
+  <main class="c-wrap">
+    <header class="hero">
+      <div class="heroAtom" aria-hidden="true">
+        <svg viewBox="-60 -60 120 120"><defs><radialGradient id="nuc"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#ff5a36"/></radialGradient></defs>
+          <g fill="none" stroke="currentColor" stroke-width="1.4" opacity=".35"><ellipse rx="52" ry="18"/><ellipse rx="52" ry="18" transform="rotate(60)"/><ellipse rx="52" ry="18" transform="rotate(-60)"/></g>
+          <g class="orb o1"><circle cx="52" cy="0" r="4.5" fill="#4fb3ff"/></g><g transform="rotate(60)"><g class="orb o2"><circle cx="52" cy="0" r="4.5" fill="#66d17a"/></g></g><g transform="rotate(-60)"><g class="orb o3"><circle cx="52" cy="0" r="4.5" fill="#b06cff"/></g></g>
+          <circle r="11" fill="url(#nuc)"/><circle cx="-3" cy="-3" r="3.5" fill="#fff" opacity=".5"/></svg>
+      </div>
+      <h1 class="c-title">The Periodic Table</h1>
+      <p class="c-sub">All 118 known elements, from the hydrogen in the stars to the ones that exist for a millisecond. Tap any element, search, or turn up the heat and watch things melt.</p>
+      <div class="heroBtns">
+        <button class="c-btn" type="button" id="questBtn">🎮 Element Quest</button>
+        <button class="c-btn c-btn--ghost" type="button" id="dayBtn">✨ Element of the day</button>
+        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+      </div>
+      <div class="explored"><div class="explored__bar"><i id="expBar"></i></div><span id="expTxt">Explored 0 of 118</span></div>
+    </header>
+
+    <section class="tools" aria-label="Controls">
+      <div class="search"><span aria-hidden="true">🔎</span><input class="c-input" id="q" type="search" placeholder="Search: name, symbol or number" aria-label="Search elements" autocomplete="off"></div>
+      <div class="seg" role="group" aria-label="Colour by">
+        <button type="button" id="modeCat" aria-pressed="true">🎨 Category</button>
+        <button type="button" id="modeState" aria-pressed="false">🌡️ State</button>
+        <button type="button" id="modeYear" aria-pressed="false">📜 Discovery</button>
+      </div>
+      <div class="yearbox" id="yearbox" hidden>
+        <button class="c-btn" type="button" id="yPlay" aria-pressed="false">▶ Play history</button>
+        <input id="y" type="range" min="1200" max="2010" step="1" value="2010" aria-label="Year">
+        <div class="read" id="yRead">2010<small>118 known</small></div>
+        <p class="ynote" id="yNote"></p>
+      </div>
+      <div class="sets" id="sets" aria-label="Collections"></div>
+      <div class="temp">
+        <label for="t">Temperature</label>
+        <input id="t" type="range" min="0" max="6000" step="1" value="298" aria-describedby="tRead">
+        <div class="read" id="tRead">298 K<small>25 °C · 77 °F</small></div>
+        <div class="presets" id="presets"></div>
+        <div class="counts" id="counts" hidden></div>
+      </div>
+    </section>
+
+    <div class="quest" id="quest" hidden>
+      <div class="quest__prompt" id="qPrompt"></div>
+      <div class="quest__opts" id="qOpts"></div>
+      <div class="quest__side"><b id="qScore">0</b><span id="qTime">60</span><button type="button" class="quest__x" id="qQuit" aria-label="Quit quest">✕</button></div>
+      <div class="quest__bar"><i id="qBar"></i></div>
+    </div>
+    <div class="card-out" id="cardOut"></div>
+    <p class="swipe c-muted">Swipe sideways to see the whole table →</p>
+    <div class="scroller" id="scroller">
+      <div class="grid" id="grid" role="grid" aria-label="Periodic table of the elements">
+        <div class="card-slot" id="cardSlot"></div>
+      </div>
+    </div>
+    <div class="legend" id="legend" aria-label="Legend"></div>
+    <p class="foot c-muted">Masses in brackets belong to radioactive elements with no stable form: they show the longest-lived isotope. Values marked ≈ are predictions. Use <span class="c-kbd">←</span><span class="c-kbd">↑</span><span class="c-kbd">→</span><span class="c-kbd">↓</span> to move around the table.</p>
+  </main>
+
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

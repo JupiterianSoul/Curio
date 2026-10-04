@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Terrible Forms · Curio</title>
+  <meta name="description" content="A sign-up form built entirely out of the worst input widgets imaginable. They all work. Technically.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="terrible-ui">
+  <main class="c-wrap tf">
+    <header class="tf-head">
+      <h1 class="c-title">Terrible Forms</h1>
+      <p class="c-sub">Please create your account. Our designers worked very hard on these inputs. Please do not tell them anything.</p>
+    </header>
+    <div class="tf-mascot" id="mascot" data-state="idle" aria-hidden="true">
+      <svg viewBox="0 0 90 110">
+        <rect x="10" y="14" width="70" height="90" rx="10" fill="#c58b4f" stroke="#8a5a2b" stroke-width="3"/>
+        <rect x="18" y="24" width="54" height="74" rx="4" fill="#fffdf6"/>
+        <rect x="30" y="6" width="30" height="16" rx="5" fill="#9e9e9e" stroke="#616161" stroke-width="2"/>
+        <path d="M26 74h38M26 82h30M26 90h34" stroke="#d7ccc8" stroke-width="3" stroke-linecap="round"/>
+        <g class="tf-m-eyes"><ellipse cx="35" cy="46" rx="7" ry="8" fill="#fff" stroke="#333" stroke-width="2"/><ellipse cx="57" cy="46" rx="7" ry="8" fill="#fff" stroke="#333" stroke-width="2"/><circle class="tf-m-p" cx="36" cy="47" r="3.2" fill="#222"/><circle class="tf-m-p" cx="58" cy="47" r="3.2" fill="#222"/></g>
+        <path class="tf-m-mouth" d="M36 60q10 8 20 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path class="tf-m-sad" d="M36 64q10 -7 20 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="26" cy="58" rx="4" ry="2.5" fill="#ffab91" opacity=".7"/><ellipse cx="66" cy="58" rx="4" ry="2.5" fill="#ffab91" opacity=".7"/>
+      </svg>
+      <div class="tf-m-say" id="mascotSay"></div>
+    </div>
+    <div class="tf-progress" aria-hidden="true"><i id="bar"></i></div>
+    <div class="tf-meta"><span id="stepLabel">Step 1 of 13</span><span id="timer">0:00</span></div>
+    <section class="c-card tf-card" id="card" aria-live="polite"></section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

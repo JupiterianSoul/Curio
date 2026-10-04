@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hangman · Curio</title>
+  <meta name="description" content="A friendlier hangman: keep Biscuit the cat afloat or save the snowman from the sun. 17 categories, 1,400+ words, a daily word, blitz mode and two-player.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="hangman">
+  <main class="c-wrap hm" id="app">
+    <header class="hm-head">
+      <h1 class="c-title">Hangman</h1>
+      <p class="c-sub">The friendly version. Guess the word before Biscuit the cat runs out of balloons, or before the sun turns your snowman into a puddle.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero c-card" id="hero-card">
+        <div class="hero-scene" id="hero-scene" aria-hidden="true"></div>
+        <div class="hero-txt">
+          <div class="modes" id="modes" role="radiogroup" aria-label="Mode"></div>
+          <div class="row2">
+            <div><h2>Lives</h2><div class="seg" id="diff" role="radiogroup" aria-label="Difficulty"></div></div>
+            <div><h2>Scene</h2><div class="seg" id="scenes" role="radiogroup" aria-label="Scene"></div></div>
+          </div>
+        </div>
+      </div>
+      <section class="c-card cats-card" id="cats-card">
+        <h2>Category</h2>
+        <div class="cats" id="cats" role="radiogroup" aria-label="Category"></div>
+      </section>
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Start guessing</button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Game">
+      <div class="hud">
+        <span class="tag" id="mode-tag">Classic</span>
+        <span class="hstat"><b id="h-streak">0</b> streak</span>
+        <span class="hstat"><b id="h-best">0</b> best</span>
+        <span class="hstat timer" id="h-timer" hidden><b id="h-time">90</b>s</span>
+        <span class="hstat" id="h-blitz" hidden><b id="h-solved">0</b> solved</span>
+      </div>
+      <div class="play">
+        <div class="scene-box">
+          <div class="scene" id="scene" role="img" aria-label="Scene"></div>
+          <div class="lives" id="lives" aria-live="polite"></div>
+        </div>
+        <div class="board">
+          <p class="cat-label" id="cat-label"></p>
+          <div class="word" id="word" aria-live="polite"></div>
+          <p class="clue" id="clue" hidden></p>
+          <div id="controls">
+            <div class="kb" id="kb"></div>
+            <div class="tools">
+              <button type="button" class="c-btn c-btn--ghost" id="hint"><span aria-hidden="true">💡</span> Hint <small>costs a life</small></button>
+              <button type="button" class="c-btn c-btn--ghost" id="skip">Skip</button>
+              <button type="button" class="c-btn c-btn--ghost" id="back">Menu</button>
+            </div>
+          </div>
+          <div class="result" id="result" hidden></div>
+        </div>
+      </div>
+      <p class="keys c-muted">Type letters on your keyboard or tap them. <span class="c-kbd">?</span> hint, <span class="c-kbd">Enter</span> next word, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

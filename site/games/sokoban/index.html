@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Box Pusher · Curio</title>
+  <meta name="description" content="A warehouse puzzle: push every crate onto a target. You can push but never pull. Three packs of levels, every one checked solvable by computer, with hints from a built-in solver.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="sokoban">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Box Pusher</h1>
+      <p class="c-sub">Push every crate onto a glowing target. You are strong enough to push one crate, but far too polite to pull. Think before you shove.</p>
+    </header>
+    <div class="packs"><div class="seg" role="group" aria-label="Level pack" id="packs"></div></div>
+    <div class="lvl">
+      <button type="button" class="arrow" id="prev" aria-label="Previous level">‹</button>
+      <button type="button" class="name" id="lvlName" aria-expanded="false" aria-controls="picker">Level 1</button>
+      <button type="button" class="arrow" id="nextL" aria-label="Next level">›</button>
+    </div>
+    <div class="picker" id="picker"></div>
+    <div class="hud">
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="pushes">0</b><span>Pushes</span></div>
+      <div class="c-stat"><b id="crates">0/0</b><span>Crates</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <div class="stage">
+      <div class="stage-bg">
+        <div class="board" id="board" tabindex="0" role="application" aria-label="Warehouse. Arrow keys or WASD to move, swipe on touch screens."></div>
+      </div>
+      <div class="result" id="result" hidden>
+        <div class="result-card">
+          <div class="stars" id="rStars" aria-hidden="true"></div>
+          <h2 id="rTitle">Level cleared!</h2>
+          <p id="rBody"></p>
+          <div class="badges" id="rBadges"></div>
+          <div class="c-row">
+            <button class="c-btn" type="button" id="rNext">Next level</button>
+            <button class="c-btn c-btn--ghost" type="button" id="rAgain">Replay</button>
+            <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="msg" id="msg" aria-live="polite"></p>
+    <div class="controls">
+      <div class="pad" aria-label="Direction pad">
+        <button type="button" class="u" data-d="0" aria-label="Up">▲</button>
+        <button type="button" class="l" data-d="3" aria-label="Left">◀</button>
+        <button type="button" class="r" data-d="1" aria-label="Right">▶</button>
+        <button type="button" class="d" data-d="2" aria-label="Down">▼</button>
+      </div>
+      <div class="side">
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="restart"><i>⟲</i>Restart</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="daily"><i>📅</i>Daily</button>
+      </div>
+    </div>
+    <div class="chars"><span class="lbl">Pusher</span><div id="chars" class="charrow"></div></div>
+    <details class="c-card prog">
+      <summary>Stats and badges <span id="badgeCount"></span></summary>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Arrows or <span class="c-kbd">W</span><span class="c-kbd">A</span><span class="c-kbd">S</span><span class="c-kbd">D</span> to walk, swipe on a phone, or tap any floor square to walk there. <span class="c-kbd">Z</span> undo, <span class="c-kbd">R</span> restart, <span class="c-kbd">H</span> hint. A crate shoved into a corner is stuck for good, so undo is your friend.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

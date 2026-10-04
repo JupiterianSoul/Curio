@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spend a Billionaire's Money · Curio</title>
+  <meta name="description" content="Pick a billionaire and try to spend every last dollar on over 100 things, from a Big Mac to the International Space Station. Print the receipt.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="spend-money">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="sm-shine" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <linearGradient id="sm-metal" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".15"/></linearGradient>
+      <linearGradient id="sm-gold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#e8c24a"/><stop offset="1" stop-color="#a87a1a"/></linearGradient>
+      <linearGradient id="sm-screen" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#5ad8ff"/><stop offset=".55" stop-color="#6c5ce7"/><stop offset="1" stop-color="#e84393"/></linearGradient>
+    </defs>
+  </svg>
+  <main class="c-wrap sm">
+    <header class="sm-hero">
+      <div class="sm-coins" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h1 class="c-title">Spend a Billionaire's Money</h1>
+      <p class="c-sub">You have been handed a colossal fortune. Every dollar must go. Choose whose bank account to raid:</p>
+      <div class="sm-who" id="who" role="group" aria-label="Choose a fortune"></div>
+      <div class="sm-custom" id="customBox" hidden>
+        <label for="custom">Your fortune in dollars</label>
+        <input class="c-input" id="custom" type="text" inputmode="numeric" placeholder="1,000,000,000">
+      </div>
+      <p class="c-muted sm-disclaimer">Net worths are rough 2025 figures. Real fortunes move every day, mostly in shares, not cash.</p>
+    </header>
+
+    <div class="sm-bar" id="bar">
+      <div class="sm-bar__money"><span id="money">$0</span><small id="spentTxt">Go on, buy something</small></div>
+      <div class="sm-bar__track"><i id="fill"></i></div>
+      <div class="sm-bar__btns">
+        <button type="button" class="sm-icon" id="undo" aria-label="Undo last purchase" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 0 10h-3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="sm-icon" id="toReceipt" aria-label="View receipt" title="Receipt"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="cartCount">0</b></button>
+      </div>
+      <div class="sm-timer" id="timer" hidden></div>
+    </div>
+
+    <div class="sm-tools">
+      <nav class="sm-cats" id="cats" aria-label="Categories"></nav>
+      <div class="sm-tools__row">
+        <input class="c-input sm-search" id="search" type="search" placeholder="Search 100+ things  /" aria-label="Search items">
+        <select class="c-input" id="sort" aria-label="Sort"><option value="up">Cheapest first</option><option value="down">Priciest first</option><option value="owned">What I own</option></select>
+        <label class="sm-speed"><input type="checkbox" id="speedrun"> Speedrun mode</label>
+      </div>
+    </div>
+
+    <div class="sm-grid" id="grid"></div>
+    <p class="c-muted sm-none" id="none" hidden>Nothing matches. Try "yacht".</p>
+
+    <section class="sm-sec sm-two">
+      <div class="c-card sm-persp">
+        <h2>Put it in perspective</h2>
+        <ul id="persp"></ul>
+      </div>
+      <div class="c-card sm-badges">
+        <h2>Achievements</h2>
+        <div id="badges"></div>
+      </div>
+    </section>
+
+    <section class="sm-sec" id="receiptSec">
+      <h2>Your receipt</h2>
+      <div class="sm-receipt" id="receipt">
+        <div class="sm-receipt__head"><b>CURIO MEGASTORE</b><span id="rcSub"></span></div>
+        <ul id="rcList"></ul>
+        <div class="sm-receipt__tot"><span>TOTAL</span><b id="rcTotal">$0</b></div>
+        <div class="sm-receipt__tot sm-receipt__left"><span>LEFT OVER</span><b id="rcLeft">$0</b></div>
+        <svg class="sm-barcode" viewBox="0 0 200 40" aria-hidden="true" id="barcode"></svg>
+        <div class="sm-receipt__thanks">Thank you for shopping. No refunds on islands.</div>
+      </div>
+      <div class="c-row sm-rc-btns">
+        <button class="c-btn" type="button" id="rcCopy">Copy receipt</button>
+        <button class="c-btn c-btn--ghost" type="button" id="rcTxt">Download .txt</button>
+        <button class="c-btn c-btn--ghost" type="button" id="rcPng">Save as image</button>
+        <button class="c-btn c-btn--ghost" type="button" id="reset">Refund everything</button>
+      </div>
+    </section>
+    <p class="c-muted sm-foot">Prices are rough US figures for 2025 and very much for fun. Keys: <span class="c-kbd">/</span> search, <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undo. Hold Buy to buy faster.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="art.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

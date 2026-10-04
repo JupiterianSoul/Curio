@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kaleidoscope · Curio</title>
+  <meta name="description" content="Draw once, get a mandala. Eleven brushes, eight kinds of symmetry, a spinning view, replays and a daily prompt.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="kaleidoscope">
+  <div class="kd-sky" aria-hidden="true"><i></i><i></i><i></i></div>
+  <main class="kd">
+    <section class="kd-stage">
+      <div class="kd-bezel" id="bezel">
+        <canvas id="cv" role="img" aria-label="Kaleidoscope drawing canvas. Drag to draw."></canvas>
+        <div class="kd-replaybar" id="replayBar" hidden><i id="replayFill"></i></div>
+        <div class="kd-intro" id="intro">
+          <svg class="kd-intro__art" viewBox="0 0 120 120" aria-hidden="true">
+            <g class="kd-intro__spin">
+              <g id="introPetals"></g>
+            </g>
+            <circle cx="60" cy="60" r="9" fill="#fff"/>
+          </svg>
+          <h1>Kaleidoscope</h1>
+          <p>Scribble anything. The mirrors make it beautiful. Probably.</p>
+          <div class="kd-intro__btns">
+            <button class="c-btn" id="go" type="button">Start drawing</button>
+            <button class="c-btn c-btn--ghost" id="surprise" type="button">🎲 Surprise me</button>
+          </div>
+          <button class="kd-daily" id="dailyBtn" type="button"></button>
+        </div>
+      </div>
+      <div class="kd-dock" role="toolbar" aria-label="Drawing actions">
+        <button class="kd-ib" id="undo" type="button" title="Undo (Z)" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-3"/></svg></button>
+        <button class="kd-ib" id="redo" type="button" title="Redo (Y)" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5M20 12H9a5 5 0 0 0 0 10h3"/></svg></button>
+        <button class="kd-ib" id="replay" type="button" title="Replay (R)" aria-label="Replay drawing"><svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg></button>
+        <button class="kd-ib" id="spinBtn" type="button" aria-pressed="false" title="Spin view (Space)" aria-label="Spin view"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg></button>
+        <button class="kd-ib" id="cycleBtn" type="button" aria-pressed="false" title="Colour cycle (H)" aria-label="Colour cycle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg></button>
+        <button class="kd-ib" id="autoBtn" type="button" aria-pressed="false" title="Auto painter (A)" aria-label="Auto painter"><svg viewBox="0 0 24 24"><path d="M12 3c4 3 4 6 0 9s-4 6 0 9M5 8c3 0 4 2 7 4s4 4 7 4"/></svg></button>
+        <button class="kd-ib kd-ib--bad" id="clear" type="button" title="Clear (C)" aria-label="Clear"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button>
+        <button class="kd-ib kd-ib--go" id="save" type="button" title="Finish and save (S)" aria-label="Finish and save"><svg viewBox="0 0 24 24"><path d="m5 13 4 4 10-10"/></svg></button>
+      </div>
+    </section>
+
+    <aside class="kd-panel c-card">
+      <header class="kd-head">
+        <div>
+          <h2>Kaleidoscope</h2>
+          <p class="c-muted" id="status">8 mirrors · Neon</p>
+        </div>
+        <div class="kd-count"><b id="strokeCount">0</b><span>strokes</span></div>
+      </header>
+      <div class="kd-tabs" role="tablist">
+        <button role="tab" data-tab="brush" aria-selected="true">Brush</button>
+        <button role="tab" data-tab="sym" aria-selected="false">Mirrors</button>
+        <button role="tab" data-tab="color" aria-selected="false">Colour</button>
+        <button role="tab" data-tab="more" aria-selected="false">More</button>
+      </div>
+
+      <div class="kd-pane" data-pane="brush">
+        <div class="kd-brushes" id="brushes"></div>
+        <div class="kd-field">
+          <label for="size">Size <span id="sizeV">6</span></label>
+          <input type="range" id="size" min="1" max="40" value="6">
+        </div>
+        <div class="kd-field">
+          <label for="opac">Opacity <span id="opacV">100%</span></label>
+          <input type="range" id="opac" min="10" max="100" value="100">
+        </div>
+        <div class="kd-toggles">
+          <button class="kd-tog" id="glow" type="button" aria-pressed="true">✨ Glow</button>
+          <button class="kd-tog" id="sound" type="button" aria-pressed="true">🎵 Chimes</button>
+        </div>
+      </div>
+
+      <div class="kd-pane" data-pane="sym" hidden>
+        <div class="kd-kinds" id="kinds"></div>
+        <div class="kd-field" id="foldField">
+          <label for="fold">Mirrors <span id="foldV">8</span></label>
+          <input type="range" id="fold" min="2" max="16" value="8">
+        </div>
+        <div class="kd-field" id="tileField" hidden>
+          <label for="tiles">Tiles per side <span id="tilesV">4</span></label>
+          <input type="range" id="tiles" min="2" max="6" value="4">
+        </div>
+        <div class="kd-toggles">
+          <button class="kd-tog" id="guides" type="button" aria-pressed="false">📐 Guides</button>
+        </div>
+      </div>
+
+      <div class="kd-pane" data-pane="color" hidden>
+        <div class="kd-seg" role="group" aria-label="Colour mode">
+          <button data-mode="rainbow" type="button">Rainbow</button><button data-mode="palette" type="button">Palette</button><button data-mode="gradient" type="button">Blend</button><button data-mode="solid" type="button">Solid</button>
+        </div>
+        <div class="kd-pals" id="pals"></div>
+        <div class="kd-colors" id="pickers">
+          <input type="color" id="c1" value="#ff4fd8" aria-label="Colour 1">
+          <input type="color" id="c2" value="#36e0ff" aria-label="Colour 2">
+          <span class="c-muted" id="cHint"></span>
+        </div>
+        <span class="kd-lab">Background</span>
+        <div class="kd-bgs" id="bgs"></div>
+      </div>
+
+      <div class="kd-pane" data-pane="more" hidden>
+        <span class="kd-lab">Auto painter pattern</span>
+        <div class="kd-seg kd-seg--wrap" id="gens" role="group" aria-label="Auto painter pattern"></div>
+        <div class="kd-field">
+          <label for="rspeed">Replay speed <span id="rspeedV">2x</span></label>
+          <input type="range" id="rspeed" min="1" max="8" value="2">
+        </div>
+        <span class="kd-lab">Gallery <span id="galCount"></span></span>
+        <div class="kd-gallery" id="gallery"></div>
+        <span class="kd-lab">Badges <span id="achCount"></span></span>
+        <div class="kd-ach" id="ach"></div>
+        <details class="kd-help">
+          <summary>Keyboard shortcuts</summary>
+          <p><span class="c-kbd">Z</span> undo · <span class="c-kbd">Y</span> redo · <span class="c-kbd">B</span> next brush · <span class="c-kbd">M</span> next mirror kind · <span class="c-kbd">[</span> <span class="c-kbd">]</span> size · <span class="c-kbd">-</span> <span class="c-kbd">+</span> mirrors · <span class="c-kbd">Space</span> spin · <span class="c-kbd">H</span> colour cycle · <span class="c-kbd">R</span> replay · <span class="c-kbd">A</span> auto · <span class="c-kbd">C</span> clear · <span class="c-kbd">S</span> save</p>
+        </details>
+      </div>
+    </aside>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+window.BUBBLE_DATA = {
+  MATERIALS: [
+    { id: 'classic', name: 'Classic', blurb: 'The original small bubbles', icon: '🫧' },
+    { id: 'jumbo', name: 'Jumbo', blurb: 'Big bubbles, big bangs', icon: '🎈' },
+    { id: 'foam', name: 'Soap foam', blurb: 'Fizzy suds that pop in chains', icon: '🧼' },
+    { id: 'pillow', name: 'Air pillows', blurb: 'Packing cushions. Pffft.', icon: '📦' },
+    { id: 'popcorn', name: 'Popcorn', blurb: 'Tap kernels, hold to heat', icon: '🍿' },
+    { id: 'popit', name: 'Pop-it', blurb: 'Silicone domes, flip and repeat', icon: '🌈' },
+    { id: 'golden', name: 'Golden', blurb: 'Unlocks at 2,500 pops', icon: '✨', unlock: 2500 }
+  ],
+  MODES: [
+    { id: 'relax', short: 'Endless', name: 'Endless roll', icon: '🧻', blurb: 'An infinite roll. Pop forever.' },
+    { id: 'sprint', short: 'Sprint', name: 'Sprint', icon: '⏱️', blurb: 'Clear one sheet as fast as you can' },
+    { id: 'rush', short: 'Rush', name: '30s rush', icon: '⚡', blurb: 'Score big with combos and gold' },
+    { id: 'art', short: 'Art', name: 'Pop art', icon: '🖼️', blurb: 'Pop only the picture bubbles' }
+  ],
+  PICTURES: [
+    { id: 'heart', name: 'Heart', color: '#ff4f6d', rows: ['.##...##.', '#########', '#########', '#########', '.#######.', '..#####..', '...###...', '....#....'] },
+    { id: 'star', name: 'Star', color: '#ffc233', rows: ['....#....', '...###...', '#########', '.#######.', '..#####..', '..##.##..', '.##...##.', '.#.....#.'] },
+    { id: 'smiley', name: 'Smiley', color: '#ffcf3a', rows: ['..#####..', '.#######.', '##.###.##', '#########', '#.#####.#', '##.....##', '.#######.', '..#####..'] },
+    { id: 'cat', name: 'Cat', color: '#ff9f43', rows: ['#.......#', '##.....##', '#########', '##.###.##', '#########', '###.#.###', '.#######.', '..#####..'] },
+    { id: 'fish', name: 'Fish', color: '#3fa7ff', rows: ['...####..', '#.######.', '#####.###', '#########', '#.######.', '...####..'] },
+    { id: 'house', name: 'House', color: '#e8743b', rows: ['....#....', '...###...', '..#####..', '.#######.', '#########', '.#.###.#.', '.#######.', '.###.###.', '.###.###.'] },
+    { id: 'tree', name: 'Pine tree', color: '#2fae66', rows: ['....#....', '...###...', '..#####..', '.#######.', '..#####..', '.#######.', '#########', '....#....', '....#....'] },
+    { id: 'mushroom', name: 'Mushroom', color: '#e84a5f', rows: ['..#####..', '.##.####.', '####.##.#', '#########', '...###...', '...###...', '..#####..'] },
+    { id: 'ghost', name: 'Ghost', color: '#a98bff', rows: ['..#####..', '.#######.', '##.###.##', '##.###.##', '#########', '#########', '#########', '#.#.#.#.#'] },
+    { id: 'rocket', name: 'Rocket', color: '#ff6b4a', rows: ['....#....', '...###...', '...#.#...', '...###...', '...###...', '..#####..', '.##.#.##.', '.#..#..#.'] },
+    { id: 'crown', name: 'Crown', color: '#f4b400', rows: ['#...#...#', '##.###.##', '#########', '#########', '#.#.#.#.#', '#########'] },
+    { id: 'umbrella', name: 'Umbrella', color: '#7b61ff', rows: ['...###...', '.#######.', '#########', '#.#.#.#.#', '....#....', '....#....', '..#.#....', '...#.....'] },
+    { id: 'note', name: 'Music note', color: '#ff5fa2', rows: ['...####..', '...#####.', '...#..##.', '...#.....', '...#.....', '.###.....', '####.....', '.##......'] },
+    { id: 'duck', name: 'Duck', color: '#ffd23f', rows: ['..###....', '.##.#....', '######...', '..##.....', '.######.#', '#########', '.#######.', '..#####..'] },
+    { id: 'apple', name: 'Apple', color: '#e63946', rows: ['.....#...', '....#....', '.###.###.', '#########', '#########', '#########', '.#######.', '..##.##..'] },
+    { id: 'moon', name: 'Moon', color: '#9fb4ff', rows: ['..####...', '.###.....', '###......', '###......', '###......', '###......', '.###.....', '..####...'] },
+    { id: 'bolt', name: 'Lightning', color: '#ffb000', rows: ['....###..', '...###...', '..###....', '.#######.', '....###..', '...###...', '..##.....', '.#.......'] },
+    { id: 'gem', name: 'Diamond', color: '#3fd0e0', rows: ['..#####..', '.#.#.#.#.', '#########', '.#######.', '..#####..', '...###...', '....#....'] },
+    { id: 'anchor', name: 'Anchor', color: '#2f6fd6', rows: ['...###...', '...#.#...', '...###...', '....#....', '.#######.', '....#....', '#...#...#', '.##.#.##.', '..#####..'] },
+    { id: 'flower', name: 'Flower', color: '#ff7eb6', rows: ['...#.#...', '..#####..', '.###.###.', '..#####..', '...#.#...', '....#....', '.#..#..#.', '..#.#.#..', '....#....'] },
+    { id: 'sun', name: 'Sun', color: '#ff9f1c', rows: ['#...#...#', '.#.###.#.', '..#####..', '.#######.', '#########', '.#######.', '..#####..', '.#.###.#.', '#...#...#'] },
+    { id: 'key', name: 'Key', color: '#d4a017', rows: ['.###.....', '#...#....', '#...#####', '#...#.#.#', '.###..#.#'] },
+    { id: 'cup', name: 'Mug', color: '#8d6e63', rows: ['.#.#.#...', '..#.#....', '#######..', '#######.#', '#######.#', '#######.#', '.#####.#.', '..###....'] },
+    { id: 'invader', name: 'Space bug', color: '#5ad65a', rows: ['..#...#..', '...#.#...', '..#####..', '.##.#.##.', '#########', '#.#####.#', '#.#...#.#', '...#.#...'] }
+  ],
+  ACH: [
+    { id: 'pop1', icon: '🫧', name: 'First pop', desc: 'Pop a single bubble' },
+    { id: 'pop100', icon: '💯', name: 'Relaxed', desc: '100 pops all time' },
+    { id: 'pop1k', icon: '🎖️', name: 'Connoisseur', desc: '1,000 pops all time' },
+    { id: 'pop10k', icon: '👑', name: 'Bubble royalty', desc: '10,000 pops all time' },
+    { id: 'combo25', icon: '🔥', name: 'On a roll', desc: 'Hit a 25 pop combo' },
+    { id: 'combo60', icon: '🌪️', name: 'Whirlwind', desc: 'Hit a 60 pop combo' },
+    { id: 'allmats', icon: '🧪', name: 'Material scientist', desc: 'Pop every unlocked material' },
+    { id: 'sprint', icon: '⏱️', name: 'Sprinter', desc: 'Finish a sprint sheet' },
+    { id: 'rush150', icon: '⚡', name: 'Rush hour', desc: 'Score 150 in a 30s rush' },
+    { id: 'rush300', icon: '🚀', name: 'Pop storm', desc: 'Score 300 in a 30s rush' },
+    { id: 'art1', icon: '🖼️', name: 'Pop artist', desc: 'Finish a pop art picture' },
+    { id: 'art10', icon: '🎨', name: 'Gallery', desc: 'Finish 10 different pictures' },
+    { id: 'artclean', icon: '🎯', name: 'Clean lines', desc: 'Finish a picture with zero mistakes' },
+    { id: 'daily', icon: '📅', name: 'Daily popper', desc: 'Finish the daily picture' },
+    { id: 'flip', icon: '🔄', name: 'Flipper', desc: 'Flip a pop-it 5 times' },
+    { id: 'kernel', icon: '🍿', name: 'Movie night', desc: 'Pop 300 popcorn kernels' },
+    { id: 'golden', icon: '✨', name: 'Gold standard', desc: 'Unlock golden bubble wrap' },
+    { id: 'roll', icon: '🧻', name: 'Long roll', desc: 'Unroll 20 screens in one go' }
+  ],
+  MILESTONES: {
+    100: 'A hundred pops. You are officially relaxed.',
+    500: '500 pops! Your stress has left the building.',
+    1000: '1,000 pops. A true connoisseur.',
+    2500: '2,500 pops. Golden bubble wrap unlocked! ✨',
+    5000: '5,000 pops. The bubble factory is nervous.',
+    10000: '10,000 pops. Please go outside. Then come back.',
+    25000: '25,000 pops. You have popped a small warehouse.'
+  },
+  WORDS: ['pop!', 'POP', 'snap', 'pok', 'plip', 'blop', 'pap!', 'tik', 'POW', 'bap']
+};

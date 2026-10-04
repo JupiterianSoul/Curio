@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pong · Curio</title>
+  <meta name="description" content="Classic paddle tennis: beat the robot on three difficulties, fight through a seven-rival Gauntlet, play a friend, with power-ups and four courts.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="pong" class="arc" style="--arc-hue: #3d8bfd">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="p1">0</b><span data-hud="p1l">You</span></div>
+      <div class="c-stat"><b data-hud="p2">0</b><span data-hud="p2l">CPU</span></div>
+      <div class="c-stat"><b data-hud="score">0</b><span data-hud="scl">Score</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Pong court"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 110" aria-hidden="true"><defs><radialGradient id="pgC" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#2b5a72"/><stop offset="1" stop-color="#1f3b4d"/></radialGradient></defs><rect width="300" height="110" rx="18" fill="url(#pgC)"/><rect x="8" y="8" width="284" height="94" rx="4" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/><path d="M150 12v86" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="6 6"/><circle cx="150" cy="55" r="20" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/><g class="bob"><rect x="22" y="30" width="8" height="40" rx="4" fill="#ff5a36"/></g><g class="bob2"><rect x="270" y="40" width="8" height="40" rx="4" fill="#3d8bfd"/></g><g class="drift"><circle cx="120" cy="44" r="6" fill="#fff"/><circle cx="108" cy="47" r="4" fill="#ffd54f" opacity=".6"/><circle cx="98" cy="50" r="3" fill="#ffb74d" opacity=".4"/></g><g font-family="ui-rounded,system-ui,sans-serif" font-weight="900" font-size="26" fill="rgba(255,255,255,.35)" text-anchor="middle"><text x="110" y="96">3</text><text x="190" y="96">2</text></g><g transform="translate(205 30)"><circle r="10" fill="rgba(10,14,30,.85)" stroke="#ffd54f" stroke-width="2"/><text y="5" text-anchor="middle" font-size="13" font-weight="900" fill="#ffd54f">⁂</text></g></svg>
+          <h1 class="c-title">Pong</h1>
+          <p class="c-sub">Two paddles, one ball. Beat the robot, take on the seven-rival Gauntlet, or grab a friend.</p>
+          <div class="arc-opts"><div class="arc-label">Mode</div><div class="arc-seg" role="group" aria-label="Mode" data-opt="mode" data-def="cpu"><button type="button" data-val="cpu">🤖 Robot</button><button type="button" data-val="gauntlet">🏆 Gauntlet</button><button type="button" data-val="2p">👥 2 players</button></div>
+<div class="pg-ladder" id="ladder" aria-label="Gauntlet rivals"></div>
+<div id="diffwrap" style="display:grid;gap:10px;justify-items:center"><div class="arc-label">Robot skill</div><div class="arc-seg" role="group" aria-label="Robot skill" data-opt="diff" data-def="normal"><button type="button" data-val="easy">Easy</button><button type="button" data-val="normal">Normal</button><button type="button" data-val="hard">Hard</button></div></div>
+<div class="arc-label">Power-ups</div><div class="arc-seg" role="group" aria-label="Power-ups" data-opt="pw" data-def="on"><button type="button" data-val="off">Off</button><button type="button" data-val="on">🎁 On</button></div>
+<div class="arc-label">Court</div><div class="arc-seg" role="group" aria-label="Court" data-opt="court" data-def="classic"><button type="button" data-val="classic">Classic</button><button type="button" data-val="neon">Neon</button><button type="button" data-val="grass">Grass</button><button type="button" data-val="clay">Clay</button></div></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help">Move the pointer (no clicking needed), <span class="c-kbd">W</span> <span class="c-kbd">S</span> or <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> to move · <span class="c-kbd">P</span> pause<br>Paddle edges hit sharper angles. Hit power-ups with the ball to claim them. Two players: <span class="c-kbd">W</span> <span class="c-kbd">S</span> vs <span class="c-kbd">↑</span> <span class="c-kbd">↓</span>, or a finger each.</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The ball is hovering politely.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

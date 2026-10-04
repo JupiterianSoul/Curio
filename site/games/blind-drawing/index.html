@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Blind Drawing · Curio</title>
+  <meta name="description" content="Draw behind a curtain, then reveal it to a panel of judges. 160 prompts, random twists, friend portraits and a Pass the Pen party mode.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="blind-drawing">
+  <main class="c-wrap">
+    <div class="bd-head">
+      <h1 class="c-title">Blind Drawing</h1>
+      <p class="c-sub">The curtain stays shut while you draw. Trust your hand, then enjoy the big reveal.</p>
+    </div>
+    <div class="bd-top">
+      <div class="bd-seg" role="group" aria-label="Mode">
+        <button type="button" data-mode="prompt" aria-pressed="true">🎲 Prompts</button>
+        <button type="button" data-mode="friend" aria-pressed="false">🧑 Friend's face</button>
+        <button type="button" data-mode="party" aria-pressed="false">🎉 Pass the pen</button>
+      </div>
+    </div>
+    <div class="bd-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="Hidden drawing area. Draw with your mouse or finger. Your lines stay hidden until you reveal them."></canvas>
+      <div class="bd-curtain" aria-hidden="true">
+        <div class="bd-panel l"></div>
+        <div class="bd-panel r"></div>
+        <div class="bd-valance"></div>
+        <div class="bd-sign">
+          <div class="bd-emoji" id="emo">🐘</div>
+          <div class="bd-word" id="word">Draw an elephant</div>
+          <div class="bd-small" id="small">Draw anywhere on the curtain. No peeking!</div>
+          <div class="bd-twist" id="twist" hidden></div>
+        </div>
+        <div class="bd-pen"><span class="bd-dot" id="dot"></span><span id="count">0 strokes</span></div>
+        <div class="bd-clock" id="clock"></div>
+      </div>
+    </div>
+    <div class="bd-res" aria-live="polite">
+      <div class="bd-cap" id="cap"></div>
+      <div class="bd-det" id="det"></div>
+      <div class="bd-judges" id="judges"></div>
+    </div>
+    <div class="bd-actions" id="drawBtns">
+      <button class="c-btn c-btn--ghost" id="undo" type="button" disabled>↶ Undo stroke</button>
+      <button class="c-btn c-btn--ghost" id="skip" type="button">🔀 Different prompt</button>
+      <button class="c-btn" id="reveal" type="button" disabled>🎭 Reveal!</button>
+    </div>
+    <div class="bd-actions" id="doneBtns" hidden>
+      <button class="c-btn c-btn--ghost" id="keep" type="button">⭐ Keep</button>
+      <button class="c-btn c-btn--ghost" id="png" type="button">⬇ PNG</button>
+      <button class="c-btn" id="again" type="button">Next drawing ›</button>
+    </div>
+    <div class="bd-opts">
+      <label>Timer
+        <select class="c-input" id="timer" aria-label="Timer">
+          <option value="0">None</option><option value="15">15 s</option><option value="30">30 s</option><option value="60">60 s</option><option value="90">90 s</option>
+        </select>
+      </label>
+      <label>Pen
+        <select class="c-input" id="pen" aria-label="Pen size">
+          <option value="4">Fine</option><option value="7">Marker</option><option value="12">Crayon</option>
+        </select>
+      </label>
+      <label>Ink <select class="c-input" id="ink" aria-label="Ink colour"></select></label>
+      <label class="bd-check"><input type="checkbox" id="twistOn"> 🌀 Random twists</label>
+      <label class="bd-partyopt">Players <select class="c-input" id="players" aria-label="Number of players"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
+      <div class="bd-partyopt bd-pnames" id="pnames"></div>
+      <button class="c-btn c-btn--ghost bd-partyopt" id="partyGo" type="button">🔁 Restart party</button>
+      <label class="bd-friend">Friend's name <input class="c-input" id="fname" maxlength="20" placeholder="optional" size="10"></label>
+    </div>
+
+    <section class="c-card bd-party" id="partyRes" hidden aria-live="polite">
+      <h2 id="partyTitle">Results</h2>
+      <p class="c-muted" style="margin:0 0 10px">The judges have spoken. Their decision is final and slightly random.</p>
+      <div class="bd-pgrid" id="partyGrid"></div>
+      <div class="bd-actions"><button class="c-btn" id="partyAgain" type="button">🎉 Another round</button></div>
+    </section>
+    <div class="bd-gal-head">
+      <h2>Expectation vs reality</h2>
+      <span class="c-muted" id="galCount"></span>
+    </div>
+    <div class="bd-gal" id="gal"></div>
+    <section class="c-card bd-rec" aria-label="Stats and badges">
+      <h2>🏅 Backstage</h2>
+      <div class="bd-stats2" id="stats2"></div>
+      <div class="bd-badges" id="badges"></div>
+    </section>
+    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">Enter</span> reveal / next · <span class="c-kbd">Z</span> undo stroke · <span class="c-kbd">N</span> new prompt · <span class="c-kbd">K</span> keep · Touchpad mode: click to start a stroke, click again to lift the pen</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Checkers · Curio</title>
+  <meta name="description" content="Checkers and draughts on a wooden board: English, International 10x10, Brazilian, Russian and Giveaway rules against four AI levels or a friend.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="checkers">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.38" numOctaves="3" seed="7" result="n"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 -0.45"/>
+      </filter>
+      <filter id="grain2" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.4 0.015" numOctaves="3" seed="3" result="n"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.3 -0.42"/>
+      </filter>
+      <symbol id="crown" viewBox="0 0 40 30"><path d="M4 24 L2 8 L12 15 L20 3 L28 15 L38 8 L36 24 Z" fill="#ffd54f" stroke="#a87b00" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="23" width="32" height="5" rx="2" fill="#ffca28" stroke="#a87b00" stroke-width="2"/><circle cx="20" cy="15" r="2.6" fill="#e53935"/><circle cx="11" cy="19" r="1.8" fill="#42a5f5"/><circle cx="29" cy="19" r="1.8" fill="#42a5f5"/></symbol>
+    </defs>
+  </svg>
+  <main class="c-wrap ck" id="app">
+    <header class="ck-head">
+      <h1 class="c-title">Checkers</h1>
+      <p class="c-sub">Five rule sets from three continents on a proper wooden board. Jumps are compulsory, kings are mighty, and the robots are patient.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero" aria-hidden="true"><svg viewBox="0 0 640 210" id="hero"></svg></div>
+      <div class="daily c-card" id="daily-card">
+        <div class="daily-ico" aria-hidden="true">📅</div>
+        <div class="daily-txt"><b>Daily challenge</b><span id="daily-sub">A seeded opening against the Hard AI.</span></div>
+        <button type="button" class="c-btn" id="daily-go">Play today</button>
+      </div>
+      <div class="pick-grid">
+        <section class="c-card pick"><h2>Rules</h2><div class="list" id="variants" role="radiogroup" aria-label="Rules"></div></section>
+        <section class="c-card pick"><h2>Opponent</h2><div class="list" id="opps" role="radiogroup" aria-label="Opponent"></div></section>
+        <section class="c-card pick">
+          <h2>Board</h2><div class="swatches" id="boards" role="radiogroup" aria-label="Board"></div>
+          <h2 class="mt">Pieces</h2><div class="swatches" id="sets" role="radiogroup" aria-label="Pieces"></div>
+          <label class="tog"><input type="checkbox" id="opt-dots" checked> <span>Show legal move dots</span></label>
+          <label class="tog"><input type="checkbox" id="opt-nums"> <span>Show square numbers</span></label>
+        </section>
+      </div>
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Set up the board</button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Game">
+      <div class="layout">
+        <div class="board-col">
+          <div class="board-wrap" id="board-wrap">
+            <div class="frame-grain"></div>
+            <div class="board" id="board" role="grid" aria-label="Checkers board">
+              <div class="grain" aria-hidden="true"></div>
+              <div class="pieces" id="pieces" aria-hidden="true"></div>
+              <svg class="arrows" id="arrows" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <section class="c-card side-card">
+            <div class="who" id="who-ai"><span class="ava" id="ava-ai"></span><span class="wmeta"><b id="name-ai">Medium AI</b><span class="tray" id="tray-ai"></span></span><span class="cnt" id="c-ai">12</span></div>
+            <p class="status" id="status" aria-live="polite"></p>
+            <div class="who" id="who-you"><span class="ava" id="ava-you"></span><span class="wmeta"><b id="name-you">You</b><span class="tray" id="tray-you"></span></span><span class="cnt" id="c-you">12</span></div>
+            <div class="btns">
+              <button type="button" class="c-btn c-btn--ghost" id="undo"><span aria-hidden="true">↶</span> Undo</button>
+              <button type="button" class="c-btn c-btn--ghost" id="hint"><span aria-hidden="true">💡</span> Hint</button>
+              <button type="button" class="c-btn c-btn--ghost" id="flip"><span aria-hidden="true">⇅</span> Flip</button>
+              <button type="button" class="c-btn c-btn--ghost" id="new"><span aria-hidden="true">⟳</span> New</button>
+              <button type="button" class="c-btn c-btn--ghost" id="back"><span aria-hidden="true">☰</span> Menu</button>
+            </div>
+          </section>
+          <section class="c-card">
+            <h2 class="small">Moves</h2>
+            <ol class="history" id="history"></ol>
+          </section>
+          <p class="record" id="record"></p>
+        </aside>
+      </div>
+      <p class="c-muted tips">Tap a glowing piece, then a dot, or drag it. Keys: arrows move the cursor, <span class="c-kbd">Enter</span> selects, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">F</span> flip, <span class="c-kbd">N</span> new, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="logic.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

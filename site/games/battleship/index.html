@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Battleship · Curio</title>
+  <meta name="description" content="Hide your fleet, then hunt the computer's ships before its probability-crunching admiral finds yours.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    :root { --sea: #1f78c1; --sea-2: #1a6cb0; --sea-line: rgba(255, 255, 255, .14); --hull: #8a96a3; --hull-2: #5f6b78; --deck: #b8c2cc; --hit: #ff4d2e; }
+    .bs { text-align: center; }
+    .seg { display: inline-flex; gap: 4px; padding: 5px; background: var(--surface-2); border-radius: 999px; }
+    .seg button { border: 0; background: transparent; padding: 8px 14px; border-radius: 999px; font-weight: 800; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .status { font-weight: 900; font-size: 20px; margin: 14px 0; min-height: 30px; }
+    .status small { display: block; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+    .arena { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; text-align: left; }
+    .side h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); margin: 0 0 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .side h2 span { font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+    .side.active .frame { box-shadow: 0 0 0 4px var(--accent), 0 6px 0 #0d3a63; }
+    .frame { padding: 8px; background: #0d4a80; border-radius: 16px; box-shadow: 0 6px 0 #0d3a63, var(--shadow); transition: box-shadow .2s; }
+    .board { display: grid; grid-template-columns: 16px 1fr; grid-template-rows: 16px auto; gap: 3px; }
+    .lbl-top, .lbl-left { display: grid; font-size: 10px; font-weight: 800; color: rgba(255, 255, 255, .6); text-align: center; }
+    .lbl-top { grid-template-columns: repeat(10, 1fr); }
+    .lbl-left { grid-template-rows: repeat(10, 1fr); align-items: center; }
+    .grid { position: relative; aspect-ratio: 1; display: grid; grid-template: repeat(10, 1fr) / repeat(10, 1fr); background: var(--sea); border-radius: 6px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+      background-image: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.12), transparent 60%), linear-gradient(var(--sea), var(--sea-2)); }
+    .cell { position: relative; border: 0; padding: 0; margin: 0; background: transparent; box-shadow: inset -1px -1px 0 var(--sea-line); min-width: 0; z-index: 2; }
+    .enemy .cell.open { cursor: crosshair; }
+    .enemy .cell.open:hover { background: rgba(255, 255, 255, .18); }
+    .cell:focus-visible { outline: 3px solid #ffeb3b; outline-offset: -3px; z-index: 6; }
+    .cell.pv-ok { background: rgba(120, 255, 160, .45); }
+    .cell.pv-bad { background: rgba(255, 80, 80, .5); }
+    .cell.miss::after { content: ""; position: absolute; left: 50%; top: 50%; width: 26%; height: 26%; transform: translate(-50%, -50%); border-radius: 50%; background: rgba(255, 255, 255, .85); }
+    .cell.miss.fresh::before { content: ""; position: absolute; inset: 10%; border-radius: 50%; border: 3px solid #fff; animation: ripple .6s ease-out forwards; }
+    @keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+    .cell.hit::after, .cell.sunk::after { content: ""; position: absolute; left: 50%; top: 50%; width: 52%; height: 52%; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #ffe08a 0 18%, var(--hit) 40%, #c62800 70%); box-shadow: 0 0 8px rgba(255, 90, 40, .8); z-index: 4; }
+    .cell.sunk::after { background: radial-gradient(circle, #ff8a65 0 20%, #8d1c00 60%); box-shadow: none; width: 40%; height: 40%; }
+    .cell.hit.fresh::before { content: ""; position: absolute; inset: -40%; border-radius: 50%; background: radial-gradient(circle, #fff6c0, #ffb300 30%, rgba(255, 80, 0, .7) 55%, transparent 70%); animation: boom .55s ease-out forwards; z-index: 5; pointer-events: none; }
+    @keyframes boom { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+    .cell.target { animation: aim .5s ease; }
+    @keyframes aim { 0% { box-shadow: inset 0 0 0 30px rgba(255, 255, 255, .5); } }
+    .ships { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .ship { position: absolute; pointer-events: none; }
+    .ship i { position: absolute; inset: 3px; border-radius: 40% 40% 40% 40% / 50%; background: linear-gradient(var(--deck), var(--hull)); box-shadow: inset 0 0 0 2px var(--hull-2), 0 3px 4px rgba(0, 0, 0, .3); }
+    .ship.v i { border-radius: 50% / 40%; background: linear-gradient(90deg, var(--deck), var(--hull)); }
+    .ship i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22%; height: 34%; transform: translate(-50%, -50%); border-radius: 4px; background: var(--hull-2); }
+    .ship.v i::after { width: 34%; height: 22%; }
+    .placing .cell.occ { cursor: grab; }
+    .ship.lift { opacity: .35; }
+    .ship.sunk i { background: linear-gradient(#6d4c41, #3e2723); box-shadow: inset 0 0 0 2px #2b1b17; }
+    .enemy .ship { animation: reveal .5s ease; }
+    @keyframes reveal { from { transform: scale(1.3); opacity: 0; } }
+    .ghost { position: fixed; z-index: 3000; pointer-events: none; opacity: .85; }
+    .ghost i { display: block; width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(var(--deck), var(--hull)); box-shadow: inset 0 0 0 2px var(--hull-2), 0 10px 20px rgba(0, 0, 0, .35); }
+    .dock { display: grid; gap: 10px; }
+    .dock-list { display: grid; gap: 8px; }
+    .dock-ship { display: flex; align-items: center; gap: 10px; border: 2px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 8px 10px; cursor: grab; text-align: left; touch-action: none; }
+    .dock-ship[aria-pressed="true"] { border-color: var(--accent); }
+    .dock-ship.placed { opacity: .45; cursor: default; }
+    .dock-ship .hullbar { display: flex; gap: 2px; flex: none; }
+    .dock-ship .hullbar b { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(var(--deck), var(--hull)); box-shadow: inset 0 0 0 1.5px var(--hull-2); }
+    .dock-ship span { font-weight: 800; }
+    .dock-ship small { color: var(--ink-3); font-weight: 700; margin-left: auto; }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tools .c-btn { padding: 9px 14px; font-size: 15px; }
+    .roster { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .roster span { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); }
+    .roster span.down { text-decoration: line-through; color: var(--bad); opacity: .7; }
+    .stats { display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .hidden { display: none !important; }
+    .tips { font-size: 14px; margin-top: 16px; }
+    .hero { display: block; width: 180px; height: 64px; margin: 0 auto -4px; }
+    .hero .bob { animation: bob 2.6s ease-in-out infinite; transform-box: fill-box; }
+    @keyframes bob { 50% { transform: translateY(-3px) rotate(-2deg); } }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .grid::before { content: ""; position: absolute; inset: -50%; background: repeating-radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, .05) 0 6px, transparent 6px 22px); animation: waves 16s linear infinite; pointer-events: none; z-index: 0; }
+    @keyframes waves { to { transform: translate(10%, 6%); } }
+    .ship svg, .ghost svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); }
+    .ship.sunk svg { filter: grayscale(.8) brightness(.55) sepia(.5) drop-shadow(0 2px 2px rgba(0, 0, 0, .4)); }
+    .cell.hit::before { content: ""; position: absolute; inset: 18% 22% 40%; border-radius: 50% 50% 40% 40%; background: radial-gradient(circle at 50% 80%, #fff3b0, #ffb300 40%, rgba(255, 80, 0, .6) 70%, transparent 72%); animation: fire .5s ease-in-out infinite alternate; z-index: 5; pointer-events: none; }
+    @keyframes fire { to { transform: scale(1.15, 1.3) translateY(-8%); opacity: .8; } }
+    .cell.sunk::before { content: ""; position: absolute; left: 30%; top: -10%; width: 40%; height: 40%; border-radius: 50%; background: rgba(60, 60, 60, .45); animation: smoke 2s ease-out infinite; z-index: 5; pointer-events: none; }
+    @keyframes smoke { from { transform: translateY(20%) scale(.6); opacity: .8; } to { transform: translateY(-60%) scale(1.5); opacity: 0; } }
+    .salvo { display: flex; gap: 4px; justify-content: center; margin: -6px 0 10px; min-height: 18px; }
+    .salvo i { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 2px 0 #c43d1e; transition: opacity .2s, transform .2s; }
+    .salvo i.used { opacity: .2; transform: scale(.7); }
+    .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; max-width: 760px; margin: 14px auto 0; text-align: left; }
+    details.c-card summary { cursor: pointer; font-weight: 900; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    details.c-card summary::-webkit-details-marker { display: none; }
+    details.c-card summary::after { content: "+"; font-size: 20px; color: var(--ink-3); transition: transform .2s; }
+    details[open].c-card summary::after { transform: rotate(45deg); }
+    details.c-card[open] summary { margin-bottom: 12px; }
+    .achs { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; }
+    .ach { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 12px; background: var(--surface-2); font-size: 12px; color: var(--ink-3); line-height: 1.25; }
+    .ach span { font-size: 22px; filter: grayscale(1); opacity: .45; }
+    .ach b { display: block; color: var(--ink-2); font-size: 13px; }
+    .ach.on { background: linear-gradient(135deg, rgba(255, 194, 51, .25), rgba(255, 90, 54, .12)); color: var(--ink-2); }
+    .ach.on span { filter: none; opacity: 1; }
+    .ach.on b { color: var(--ink); }
+    .statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+    .fleetlist { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+    .seg { flex-wrap: wrap; justify-content: center; }
+    @media (max-width: 760px) {
+      .arena { grid-template-columns: 1fr; gap: 16px; }
+      .arena.battle .enemy { order: -1; }
+      .frame { padding: 6px; border-radius: 12px; }
+      .board { grid-template-columns: 13px 1fr; grid-template-rows: 13px auto; gap: 2px; }
+      .lbl-top, .lbl-left { font-size: 9px; }
+    }
+  </style>
+</head>
+<body data-game="battleship">
+  <main class="c-wrap bs">
+    <svg class="hero" viewBox="0 0 180 64" aria-hidden="true">
+      <rect x="0" y="40" width="180" height="24" rx="8" fill="#1f78c1"/><path d="M0 46q10-4 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0" stroke="#fff" stroke-opacity=".35" stroke-width="2" fill="none"/>
+      <g class="bob"><path d="M24 40h96l-10 12H34z" fill="#8a96a3" stroke="#5f6b78" stroke-width="2"/><rect x="50" y="28" width="26" height="12" rx="2" fill="#b8c2cc"/><rect x="60" y="18" width="8" height="10" fill="#5f6b78"/><circle cx="94" cy="36" r="5" fill="#5f6b78"/><path d="M98 34l14-4" stroke="#5f6b78" stroke-width="3"/><circle cx="36" cy="36" r="5" fill="#5f6b78"/></g>
+      <circle cx="150" cy="38" r="9" fill="#ffb300" opacity=".85"/><circle cx="150" cy="38" r="5" fill="#fff3b0"/><path d="M146 28q4-10 10-12" stroke="#777" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+    </svg>
+    <h1 class="c-title">Battleship</h1>
+    <p class="c-sub">Hide five ships. Find five ships. The enemy admiral does maths about where you might be hiding.</p>
+    <div class="controls">
+      <div class="seg" id="levels" role="group" aria-label="Enemy admiral">
+        <button type="button" data-level="easy">Rookie</button>
+        <button type="button" data-level="mid">Captain</button>
+        <button type="button" data-level="smart">Genius</button>
+      </div>
+      <div class="seg" id="rules" role="group" aria-label="Rules">
+        <button type="button" data-rule="classic">🎯 Classic</button>
+        <button type="button" data-rule="salvo">💥 Salvo</button>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="salvo" id="salvo" aria-hidden="true"></div>
+    <div class="arena" id="arena">
+      <section class="side mine" id="side-me">
+        <h2>Your waters <span id="me-left"></span></h2>
+        <div class="frame"><div class="board" id="b-me"></div></div>
+        <div class="roster" id="roster-me"></div>
+      </section>
+      <section class="side dock" id="dock">
+        <h2>Shipyard <span>drag, tap or randomise</span></h2>
+        <div class="dock-list" id="dock-list"></div>
+        <div class="tools">
+          <button type="button" class="c-btn c-btn--ghost" id="rotate">⟳ Rotate <span class="c-kbd">R</span></button>
+          <button type="button" class="c-btn c-btn--ghost" id="random">🎲 Random</button>
+          <button type="button" class="c-btn c-btn--ghost" id="clear">Clear</button>
+        </div>
+        <button type="button" class="c-btn" id="start" disabled>Start battle ⚓</button>
+        <p class="c-muted" style="margin:0;font-size:14px">Tap a placed ship to rotate it, or drag it somewhere new (on a touchpad: click to pick up, click to drop). Ships can touch but not overlap.</p>
+      </section>
+      <section class="side enemy hidden" id="side-ai">
+        <h2>Enemy waters <span id="ai-left"></span></h2>
+        <div class="frame"><div class="board" id="b-ai"></div></div>
+        <div class="roster" id="roster-ai"></div>
+      </section>
+    </div>
+    <div class="stats" id="stats">
+      <div class="c-stat"><b id="s-shots">0</b><span>Shots</span></div>
+      <div class="c-stat"><b id="s-acc">0%</b><span>Accuracy</span></div>
+      <div class="c-stat"><b id="s-best">-</b><span>Best win</span></div>
+    </div>
+    <div class="panels">
+      <details class="c-card">
+        <summary>📖 How to play</summary>
+        <ul class="fleetlist">
+          <li>Place your five ships: Carrier (5), Battleship (4), Cruiser (3), Submarine (3) and Destroyer (2). Tap a ship in the shipyard, then a square. Tap a placed ship to rotate it, or drag it. While carrying a ship, <span class="c-kbd">R</span> turns it.</li>
+          <li>Classic: one shot per turn. Salvo: one shot for every ship you still have afloat, so losing ships hurts twice.</li>
+          <li>Rookie fires half at random. Captain hunts properly once it hits. Genius computes where every remaining ship could fit.</li>
+        </ul>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+    <p class="c-muted tips">Fire by tapping or clicking enemy waters. Keyboard: Tab to a square, Enter to fire, <span class="c-kbd">R</span> rotates while placing, <span class="c-kbd">N</span> starts over.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="logic.js"></script>
+  <script>
+  (() => {
+    const BS = window.Battleship;
+    const { N, FLEET, UNKNOWN, MISS, HIT, SUNK } = BS;
+    const $ = (id) => document.getElementById(id);
+    const LETTERS = 'ABCDEFGHIJ';
+    let level = Curio.store.get('bs:level', 'smart');
+    if (!['easy', 'mid', 'smart'].includes(level)) level = 'smart';
+    let rule = Curio.store.get('bs:rule', 'classic') === 'salvo' ? 'salvo' : 'classic';
+    let volley = 0, lostShips = 0;
+    const SAVE_V = 2;
+    const sv = (() => { const raw = Curio.store.get('bs:v2', null); const base = { v: SAVE_V, rec: {}, ach: {}, shots: 0, hits: 0, sunk: 0 }; return raw && raw.v === SAVE_V ? { ...base, ...raw, rec: raw.rec || {}, ach: raw.ach || {} } : base; })();
+    const persist = () => Curio.store.set('bs:v2', sv);
+    const ACH = [
+      ['first', '⚓', 'First victory', 'Win a battle'],
+      ['captain', '🎖️', 'Outranked', 'Beat the Captain'],
+      ['genius', '🧠', 'Outfoxed', 'Beat the Genius admiral'],
+      ['salvo', '💥', 'Broadside', 'Win a Salvo game'],
+      ['flawless', '🛡️', 'Untouchable', 'Win without losing a ship'],
+      ['sharp', '🎯', 'Sharpshooter', 'Win with 60% accuracy or better'],
+      ['quick', '⚡', 'Blitz', 'Win in 40 shots or fewer'],
+      ['comeback', '🩹', 'Last ship standing', 'Win with only one ship left'],
+      ['sinker', '🌊', 'Sea floor', 'Sink 25 enemy ships in total']
+    ];
+    function unlock(id) {
+      if (sv.ach[id]) return;
+      sv.ach[id] = Date.now(); persist();
+      const a = ACH.find((x) => x[0] === id);
+      if (a) setTimeout(() => Curio.toast(`${a[1]} Badge unlocked: ${a[2]}`, 2400), 1200);
+    }
+    function paintStats() {
+      const r = (k) => sv.rec[k] || { w: 0, l: 0 };
+      $('statgrid').innerHTML = [[r('easy').w + '-' + r('easy').l, 'vs Rookie'], [r('mid').w + '-' + r('mid').l, 'vs Captain'], [r('smart').w + '-' + r('smart').l, 'vs Genius'], [Curio.fmt(sv.shots), 'Shots'], [sv.shots ? `${Math.round(sv.hits / sv.shots * 100)}%` : '-', 'Accuracy'], [sv.sunk, 'Ships sunk']]
+        .map(([v, l]) => `<div class="c-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+      $('achs').innerHTML = ACH.map(([id, e, n, d]) => `<div class="ach${sv.ach[id] ? ' on' : ''}" title="${d}"><span>${e}</span><div><b>${n}</b>${d}</div></div>`).join('');
+      $('ach-count').textContent = `${Object.keys(sv.ach).length}/${ACH.length}`;
+    }
+    function shipSvg(id, len, dir) {
+      const L = len * 100;
+      const hull = `<defs><linearGradient id="hg-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c3ccd6"/><stop offset=".5" stop-color="#8a96a3"/><stop offset="1" stop-color="#5f6b78"/></linearGradient></defs>`;
+      const body = id === 'submarine'
+        ? `<path d="M10 50Q10 26 40 24H${L - 50}Q${L - 6} 26 ${L - 6} 50Q${L - 6} 74 ${L - 50} 76H40Q10 74 10 50Z" fill="#3d4a57" stroke="#1f2a33" stroke-width="4"/><rect x="${L * 0.4}" y="36" width="${L * 0.18}" height="28" rx="12" fill="#56636f" stroke="#1f2a33" stroke-width="3"/><path d="M${L * 0.49} 40v-14" stroke="#1f2a33" stroke-width="4"/>`
+        : `<path d="M8 50Q8 18 34 16H${L - 60}Q${L - 8} 22 ${L - 2} 50Q${L - 8} 78 ${L - 60} 84H34Q8 82 8 50Z" fill="url(#hg-${id})" stroke="#4a5562" stroke-width="4"/>`;
+      let deck = '';
+      if (id === 'carrier') deck = `<rect x="22" y="26" width="${L - 80}" height="48" rx="6" fill="#6b7682"/><path d="M34 50H${L - 70}" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/><rect x="${L * 0.55}" y="12" width="40" height="22" rx="4" fill="#4a5562"/><rect x="${L * 0.55 + 8}" y="16" width="10" height="8" fill="#9fd5ff"/>`;
+      else if (id === 'battleship') deck = [0.18, 0.38, 0.72].map((f) => `<circle cx="${L * f}" cy="50" r="15" fill="#5f6b78" stroke="#3a434d" stroke-width="3"/><path d="M${L * f} 46h34M${L * f} 54h34" stroke="#3a434d" stroke-width="4"/>`).join('') + `<rect x="${L * 0.48}" y="34" width="${L * 0.14}" height="32" rx="4" fill="#b8c2cc" stroke="#4a5562" stroke-width="2"/>`;
+      else if (id === 'cruiser') deck = [0.2, 0.7].map((f) => `<circle cx="${L * f}" cy="50" r="13" fill="#5f6b78" stroke="#3a434d" stroke-width="3"/><path d="M${L * f} 50h28" stroke="#3a434d" stroke-width="5"/>`).join('') + `<rect x="${L * 0.38}" y="34" width="${L * 0.18}" height="32" rx="4" fill="#b8c2cc" stroke="#4a5562" stroke-width="2"/>`;
+      else if (id === 'destroyer') deck = `<circle cx="${L * 0.68}" cy="50" r="12" fill="#5f6b78" stroke="#3a434d" stroke-width="3"/><path d="M${L * 0.68} 50h26" stroke="#3a434d" stroke-width="5"/><rect x="${L * 0.25}" y="36" width="${L * 0.22}" height="28" rx="4" fill="#b8c2cc" stroke="#4a5562" stroke-width="2"/>`;
+      const inner = hull + body + deck;
+      return `<svg viewBox="0 0 ${dir ? 100 : L} ${dir ? L : 100}" preserveAspectRatio="none" aria-hidden="true">${dir ? `<g transform="translate(100 0) rotate(90)">${inner}</g>` : inner}</svg>`;
+    }
+    let phase, mine, theirs, myShots, aiShots, turn, orient = 0, selected = null, shots, hits, token = 0;
+
+    function buildBoard(host, onCell) {
+      host.innerHTML = `<span></span><div class="lbl-top">${[...LETTERS].map((l) => `<span>${l}</span>`).join('')}</div><div class="lbl-left">${Array.from({ length: N }, (_, k) => `<span>${k + 1}</span>`).join('')}</div><div class="grid" role="grid"><div class="ships"></div></div>`;
+      const grid = host.querySelector('.grid');
+      const cells = [];
+      for (let i = 0; i < N * N; i++) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cell';
+        b.setAttribute('role', 'gridcell');
+        b.addEventListener('click', () => onCell(i));
+        b.addEventListener('keydown', (e) => {
+          const d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -N, ArrowDown: N }[e.key];
+          if (d == null) return;
+          const j = i + d;
+          if (j >= 0 && j < N * N && !(Math.abs(d) === 1 && Math.floor(j / N) !== Math.floor(i / N))) { cells[j].focus(); e.preventDefault(); }
+        });
+        grid.insertBefore(b, grid.lastChild);
+        cells.push(b);
+      }
+      return { grid, cells, layer: grid.querySelector('.ships') };
+    }
+    const me = buildBoard($('b-me'), (i) => myCell(i));
+    const ai = buildBoard($('b-ai'), (i) => fire(i));
+    me.grid.setAttribute('aria-label', 'Your waters');
+    ai.grid.setAttribute('aria-label', 'Enemy waters, tap to fire');
+
+    const cellName = (i) => `${LETTERS[i % N]}${Math.floor(i / N) + 1}`;
+
+    function shipEl(s) {
+      const el = document.createElement('div');
+      el.className = `ship${s.dir ? ' v' : ''}`;
+      el.dataset.id = s.id;
+      el.style.left = `${s.c * 10}%`; el.style.top = `${s.r * 10}%`;
+      el.style.width = `${(s.dir ? 1 : s.len) * 10}%`; el.style.height = `${(s.dir ? s.len : 1) * 10}%`;
+      el.innerHTML = shipSvg(s.id, s.len, s.dir);
+      return el;
+    }
+
+    function newGame() {
+      token++;
+      phase = 'place';
+      mine = FLEET.map((f) => ({ ...f, r: null, c: null, dir: 0 }));
+      theirs = BS.randomFleet();
+      myShots = new Array(N * N).fill(UNKNOWN);
+      aiShots = new Array(N * N).fill(UNKNOWN);
+      turn = 'you'; selected = 'carrier'; shots = 0; hits = 0;
+      me.cells.forEach((c) => { c.className = 'cell'; });
+      ai.cells.forEach((c) => { c.className = 'cell'; });
+      ai.layer.replaceChildren();
+      $('dock').classList.remove('hidden');
+      $('side-ai').classList.add('hidden');
+      $('arena').classList.remove('battle');
+      document.querySelector('.curio-modal')?.remove();
+      render(); paintSalvo();
+    }
+
+    function renderMine() {
+      me.layer.replaceChildren(...mine.filter((s) => s.r != null).map((s) => {
+        const el = shipEl(s);
+        if (phase !== 'place' && BS.cellsOf(s).every((x) => aiShots[x] === SUNK)) el.classList.add('sunk');
+        return el;
+      }));
+      me.grid.classList.toggle('placing', phase === 'place');
+      me.cells.forEach((c, i) => {
+        const s = BS.shipAt(mine, i), v = aiShots[i];
+        c.classList.toggle('miss', v === MISS);
+        c.classList.toggle('hit', v === HIT);
+        c.classList.toggle('sunk', v === SUNK);
+        c.classList.toggle('occ', !!s);
+        c.setAttribute('aria-label', `${cellName(i)}${s ? `, your ${s.name}` : ''}${v === MISS ? ', enemy missed' : v ? ', hit' : ''}`);
+      });
+    }
+
+    function renderEnemy() {
+      ai.cells.forEach((c, i) => {
+        const v = myShots[i];
+        c.classList.toggle('miss', v === MISS);
+        c.classList.toggle('hit', v === HIT);
+        c.classList.toggle('sunk', v === SUNK);
+        c.classList.toggle('open', v === UNKNOWN && phase === 'battle');
+        c.setAttribute('aria-label', `${cellName(i)}${v === MISS ? ', miss' : v === HIT ? ', hit' : v === SUNK ? ', sunk ship' : ', unknown'}`);
+      });
+    }
+
+    function renderDock() {
+      const list = $('dock-list');
+      list.replaceChildren(...mine.map((s) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `dock-ship${s.r != null ? ' placed' : ''}`;
+        b.dataset.id = s.id;
+        b.setAttribute('aria-pressed', String(selected === s.id && s.r == null));
+        b.innerHTML = `<span class="hullbar">${'<b></b>'.repeat(s.len)}</span><span>${s.name}</span><small>${s.r != null ? 'placed ✓' : `${s.len} squares`}</small>`;
+        return b;
+      }));
+      const all = mine.every((s) => s.r != null);
+      $('start').disabled = !all;
+    }
+
+    function roster(el, fleet, sunkFn) {
+      el.replaceChildren(...fleet.map((s) => {
+        const x = document.createElement('span');
+        x.textContent = `${s.name} ${s.len}`;
+        if (sunkFn(s)) x.className = 'down';
+        return x;
+      }));
+    }
+
+    const isSunk = (s, board) => BS.cellsOf(s).every((x) => board[x] === HIT || board[x] === SUNK);
+
+    function render() {
+      renderMine();
+      renderEnemy();
+      if (phase === 'place') renderDock();
+      const myLeft = mine.filter((s) => s.r != null && !isSunk(s, aiShots)).length;
+      const aiLeft = theirs.filter((s) => !isSunk(s, myShots)).length;
+      $('me-left').textContent = phase === 'place' ? '' : `${myLeft} afloat`;
+      $('ai-left').textContent = `${aiLeft} afloat`;
+      if (phase !== 'place') {
+        roster($('roster-me'), mine, (s) => isSunk(s, aiShots));
+        roster($('roster-ai'), theirs, (s) => isSunk(s, myShots));
+      } else { $('roster-me').replaceChildren(); }
+      $('side-ai').classList.toggle('active', phase === 'battle' && turn === 'you');
+      $('side-me').classList.toggle('active', phase === 'battle' && turn === 'ai');
+      $('s-shots').textContent = shots;
+      $('s-acc').textContent = shots ? `${Math.round(hits / shots * 100)}%` : '0%';
+      const best = Curio.getBest(`shots-${level}`);
+      $('s-best').textContent = best == null ? '-' : `${best} shots`;
+      document.querySelectorAll('#levels button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.level === level)));
+      document.querySelectorAll('#rules button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.rule === rule)));
+      if (phase === 'place') {
+        const left = mine.filter((s) => s.r == null).length;
+        setStatus(left ? `Place your fleet: ${left} ship${left === 1 ? '' : 's'} to go.` : 'Fleet ready. Hit Start battle!', left ? `Selected: ${(mine.find((s) => s.id === selected) || {}).name || 'none'}, ${orient ? 'vertical' : 'horizontal'}.` : 'You can still drag or rotate ships.');
+      }
+    }
+
+    function setStatus(big, small = '') { $('status').innerHTML = `${big}${small ? `<small>${small}</small>` : ''}`; }
+
+    function placeAt(id, r, c, dir) {
+      const s = mine.find((x) => x.id === id);
+      const cand = { ...s, r, c, dir };
+      if (!BS.fits(mine, cand, id)) return false;
+      Object.assign(s, { r, c, dir });
+      Curio.beep(330, 0.06, 'triangle', 0.1);
+      const next = mine.find((x) => x.r == null);
+      selected = next ? next.id : null;
+      return true;
+    }
+
+    function myCell(i) {
+      if (phase !== 'place') return;
+      if (dragMoved || performance.now() - skipClick < 400) return;
+      const r = Math.floor(i / N), c = i % N;
+      const onShip = BS.shipAt(mine, i);
+      if (onShip) { rotateShip(onShip); return; }
+      if (!selected) { Curio.toast('All ships placed. Drag one to move it.'); return; }
+      const s = mine.find((x) => x.id === selected);
+      let rr = r, cc = c;
+      if (orient) rr = Math.min(r, N - s.len); else cc = Math.min(c, N - s.len);
+      if (!placeAt(selected, rr, cc, orient)) { Curio.beep(150, 0.1, 'square', 0.05); Curio.toast('That overlaps another ship.'); }
+      render();
+    }
+
+    function rotateShip(s) {
+      const dir = 1 - s.dir;
+      let ok = false;
+      for (const shift of [0, -1, -2, -3, -4]) {
+        const r = dir ? Math.min(s.r, N - s.len) + (dir ? shift : 0) : s.r;
+        const c = dir ? s.c : Math.min(s.c, N - s.len) + shift;
+        if (r < 0 || c < 0) continue;
+        if (BS.fits(mine, { ...s, r, c, dir }, s.id)) { Object.assign(s, { r, c, dir }); ok = true; break; }
+      }
+      if (ok) Curio.beep(500, 0.05, 'sine', 0.08);
+      else { Curio.beep(150, 0.1, 'square', 0.05); Curio.toast('No room to rotate there.'); }
+      render();
+    }
+
+    let drag = null, dragMoved = false;
+    const cellAt = (x, y) => {
+      const r = me.grid.getBoundingClientRect();
+      const c = Math.floor((x - r.left) / r.width * N), row = Math.floor((y - r.top) / r.height * N);
+      return c >= 0 && c < N && row >= 0 && row < N ? { r: row, c } : null;
+    };
+    function clearPreview() { me.cells.forEach((c) => c.classList.remove('pv-ok', 'pv-bad')); }
+    function startDrag(e, s, fromDock, rectEl) {
+      const rect = rectEl.getBoundingClientRect();
+      const dir = fromDock ? orient : s.dir;
+      let k = 0;
+      if (fromDock) k = 0;
+      else k = dir ? Math.floor((e.clientY - rect.top) / rect.height * s.len) : Math.floor((e.clientX - rect.left) / rect.width * s.len);
+      drag = { s, fromDock, dir, k: Math.max(0, Math.min(s.len - 1, k)), x: e.clientX, y: e.clientY, id: e.pointerId, moved: false, ghost: null, el: fromDock ? null : rectEl };
+      dragMoved = false;
+    }
+    let skipClick = 0, wantUnlatch = false;
+    function paintGhost(x, y) {
+      const cw = me.grid.getBoundingClientRect().width / N;
+      if (!drag.ghost) {
+        const g = document.createElement('div');
+        g.className = 'ghost';
+        document.body.append(g);
+        drag.ghost = g;
+        if (drag.el) drag.el.classList.add('lift');
+      }
+      drag.ghost.innerHTML = shipSvg(drag.s.id, drag.s.len, drag.dir);
+      drag.ghost.style.width = `${(drag.dir ? 1 : drag.s.len) * cw - 6}px`;
+      drag.ghost.style.height = `${(drag.dir ? drag.s.len : 1) * cw - 6}px`;
+      const offX = drag.dir ? cw / 2 : drag.k * cw + cw / 2, offY = drag.dir ? drag.k * cw + cw / 2 : cw / 2;
+      drag.ghost.style.left = `${x - offX + 3}px`;
+      drag.ghost.style.top = `${y - offY + 3}px`;
+      clearPreview();
+      const at = cellAt(x, y);
+      drag.anchor = null;
+      if (at) {
+        const r = drag.dir ? at.r - drag.k : at.r, c = drag.dir ? at.c : at.c - drag.k;
+        const ok = BS.fits(mine, { ...drag.s, r, c, dir: drag.dir }, drag.s.id);
+        for (let k = 0; k < drag.s.len; k++) {
+          const rr = drag.dir ? r + k : r, cc = drag.dir ? c : c + k;
+          if (rr >= 0 && rr < N && cc >= 0 && cc < N) me.cells[rr * N + cc].classList.add(ok ? 'pv-ok' : 'pv-bad');
+        }
+        if (ok) drag.anchor = { r, c };
+      }
+      drag.lx = x; drag.ly = y;
+    }
+    Curio.drag($('arena'), {
+      start(p) {
+        drag = null;
+        const free = () => { wantUnlatch = true; try { $('arena').releasePointerCapture(p.event.pointerId); } catch {} };
+        if (phase !== 'place') { free(); return; }
+        const e = p.event;
+        const dockBtn = e.target.closest('.dock-ship');
+        if (dockBtn) {
+          const s = mine.find((x) => x.id === dockBtn.dataset.id);
+          if (s.r != null) { free(); return; }
+          startDrag(e, s, true, dockBtn);
+        } else if (e.target.closest('#b-me .grid')) {
+          const at = cellAt(e.clientX, e.clientY);
+          const s = at && BS.shipAt(mine, at.r * N + at.c);
+          if (!s) { free(); return; }
+          startDrag(e, s, false, me.layer.querySelector(`[data-id="${s.id}"]`));
+        } else { free(); return; }
+        if (Curio.touchpad && p.pointerType === 'mouse') { skipClick = performance.now(); drag.picked = true; if (!drag.fromDock) { drag.moved = true; dragMoved = true; paintGhost(p.clientX, p.clientY); } }
+      },
+      move(p) {
+        if (!drag) return;
+        const dx = p.clientX - drag.x, dy = p.clientY - drag.y;
+        if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+        p.event.preventDefault?.();
+        drag.moved = true; dragMoved = true;
+        paintGhost(p.clientX, p.clientY);
+      },
+      end(p) {
+        if (!drag) return;
+        const d = drag; drag = null;
+        clearPreview();
+        d.ghost?.remove();
+        if (d.el) d.el.classList.remove('lift');
+        if (d.picked) skipClick = performance.now();
+        if (!p || !d.moved) { if (!d.moved && d.picked && d.fromDock) { selected = d.s.id; render(); } dragMoved = false; return; }
+        if (d.anchor) placeAt(d.s.id, d.anchor.r, d.anchor.c, d.dir);
+        else Curio.beep(150, 0.08, 'square', 0.04);
+        render();
+        setTimeout(() => { dragMoved = false; }, 0);
+      }
+    });
+    addEventListener('pointerup', () => { if (wantUnlatch) { wantUnlatch = false; if (Curio.touchpad) window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); } });
+    $('dock-list').addEventListener('click', (e) => {
+      const b = e.target.closest('.dock-ship');
+      if (!b || dragMoved || performance.now() - skipClick < 400) return;
+      const s = mine.find((x) => x.id === b.dataset.id);
+      if (s.r != null) { Curio.toast(`${s.name} is already on the board. Drag it to move.`); return; }
+      selected = s.id; Curio.beep(600, 0.03, 'sine', 0.06);
+      render();
+    });
+
+    function rotateCurrent() {
+      if (phase !== 'place') return;
+      if (drag && drag.moved) { drag.dir = 1 - drag.dir; drag.k = Math.min(drag.k, drag.s.len - 1); paintGhost(drag.lx ?? drag.x, drag.ly ?? drag.y); Curio.beep(520, 0.04, 'sine', 0.07); return; }
+      orient = 1 - orient;
+      Curio.beep(520, 0.04, 'sine', 0.07);
+      render();
+    }
+
+    const afloat = (fleet, board) => fleet.filter((x) => !isSunk(x, board)).length;
+    function paintSalvo() {
+      const box = $('salvo');
+      if (rule !== 'salvo' || phase !== 'battle') { box.replaceChildren(); return; }
+      const total = afloat(mine, aiShots);
+      box.innerHTML = Array.from({ length: total }, (_, k) => `<i class="${k < total - volley ? '' : 'used'}"></i>`).join('');
+    }
+    function startBattle() {
+      if (!mine.every((s) => s.r != null)) return;
+      phase = 'battle'; turn = 'you'; volley = rule === 'salvo' ? 5 : 1; lostShips = 0;
+      $('dock').classList.add('hidden');
+      $('side-ai').classList.remove('hidden');
+      $('arena').classList.add('battle');
+      [262, 330, 392].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.12, 'square', 0.06), k * 110));
+      render();
+      setStatus('Battle stations! Your shot.', rule === 'salvo' ? 'Salvo rules: one shot per ship you have afloat.' : 'Tap enemy waters to fire.');
+      paintSalvo();
+      if (matchMedia('(max-width: 760px)').matches) $('side-ai').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    function resolveShot(board, fleet, i) {
+      const s = BS.shipAt(fleet, i);
+      if (!s) { board[i] = MISS; return { hit: false }; }
+      board[i] = HIT;
+      if (BS.cellsOf(s).every((x) => board[x] === HIT)) { for (const x of BS.cellsOf(s)) board[x] = SUNK; return { hit: true, sunk: s }; }
+      return { hit: true };
+    }
+
+    function flash(cell) {
+      cell.classList.add('fresh');
+      setTimeout(() => cell.classList.remove('fresh'), 650);
+    }
+
+    function splash() { Curio.beep(180, 0.15, 'sine', 0.08); setTimeout(() => Curio.beep(120, 0.12, 'sine', 0.05), 60); }
+    function boom() {
+      const ac = !Curio.muted && Curio.audioContext();
+      if (!ac) return;
+      const len = 0.35, buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
+      for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / d.length, 2.5);
+      const src = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = 900;
+      g.gain.value = 0.35;
+      src.buffer = buf; src.connect(f).connect(g).connect(ac.destination); src.start();
+    }
+
+    async function fire(i) {
+      if (phase !== 'battle' || turn !== 'you' || myShots[i] !== UNKNOWN) {
+        if (phase === 'battle' && turn === 'you' && myShots[i] !== UNKNOWN) Curio.toast('Already fired there.');
+        return;
+      }
+      volley--;
+      turn = volley > 0 ? 'you' : 'ai';
+      shots++; sv.shots++;
+      const res = resolveShot(myShots, theirs, i);
+      if (res.hit) { hits++; sv.hits++; }
+      if (res.sunk) sv.sunk++;
+      if (res.sunk) {
+        const el = shipEl(res.sunk); el.classList.add('sunk'); ai.layer.append(el);
+      }
+      render();
+      flash(ai.cells[i]);
+      if (res.hit) boom(); else splash();
+      if (res.sunk) {
+        setStatus(`You sank their ${res.sunk.name}! 💥`, `${theirs.filter((s) => !isSunk(s, myShots)).length} enemy ships left.`);
+        Curio.toast(`Sunk: ${res.sunk.name}!`);
+        [523, 659, 784].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.1, 'triangle', 0.1), 200 + k * 80));
+      } else setStatus(res.hit ? `Hit at ${cellName(i)}! 🔥` : `Miss at ${cellName(i)}.`, volley > 0 ? `${volley} more shot${volley === 1 ? '' : 's'} this salvo.` : 'The enemy is taking aim...');
+      paintSalvo();
+      if (theirs.every((s) => isSunk(s, myShots))) { finish(true); return; }
+      if (volley > 0) { render(); return; }
+      const my = token;
+      await sleep(res.sunk ? 1100 : 750);
+      if (my !== token) return;
+      aiFire();
+    }
+
+    async function aiFire() {
+      const count = rule === 'salvo' ? afloat(theirs, myShots) : 1;
+      for (let k = 0; k < count; k++) {
+        const r = await aiOne(k < count - 1);
+        if (r !== 'ok') return;
+      }
+      volley = rule === 'salvo' ? afloat(mine, aiShots) : 1;
+      turn = 'you';
+      render(); paintSalvo();
+    }
+    async function aiOne(more) {
+      const my = token;
+      const lens = mine.filter((s) => !isSunk(s, aiShots)).map((s) => s.len);
+      let i;
+      if (level === 'mid' && !aiShots.some((v) => v === HIT) && Math.random() < 0.45) { const open = aiShots.map((v, k) => (v === UNKNOWN ? k : -1)).filter((k) => k >= 0); i = open[Math.floor(Math.random() * open.length)]; }
+      else i = BS.aiShot(aiShots, lens, level === 'mid' ? 'smart' : level);
+      me.cells[i].classList.add('target');
+      await sleep(300);
+      if (my !== token) return 'stop';
+      me.cells[i].classList.remove('target');
+      const res = resolveShot(aiShots, mine, i);
+      render();
+      flash(me.cells[i]);
+      if (res.hit) boom(); else splash();
+      if (res.hit) { try { navigator.vibrate?.(res.sunk ? [40, 30, 60] : 25); } catch {} }
+      if (res.sunk) {
+        lostShips++;
+        setStatus(`They sank your ${res.sunk.name}. 😱`, more ? 'More incoming...' : 'Your shot. Get revenge.');
+        Curio.toast(`Your ${res.sunk.name} went down!`);
+      } else setStatus(res.hit ? `Enemy hit your ship at ${cellName(i)}!` : `Enemy missed at ${cellName(i)}. Phew.`, more ? 'More incoming...' : 'Your shot.');
+      if (mine.every((s) => isSunk(s, aiShots))) { finish(false); return 'stop'; }
+      if (more) { await sleep(450); if (my !== token) return 'stop'; }
+      return 'ok';
+    }
+
+    async function finish(won) {
+      phase = 'over';
+      const my = token;
+      if (!won) {
+        for (const s of theirs) if (!isSunk(s, myShots)) { const el = shipEl(s); el.style.opacity = '.55'; ai.layer.append(el); }
+      }
+      render();
+      const acc = shots ? Math.round(hits / shots * 100) : 0;
+      let body = `${shots} shots, ${acc}% accuracy. `;
+      const rr = (sv.rec[level] ||= { w: 0, l: 0 });
+      if (won) rr.w++; else rr.l++;
+      if (won) {
+        unlock('first');
+        if (level === 'mid') unlock('captain');
+        if (level === 'smart') unlock('genius');
+        if (rule === 'salvo') unlock('salvo');
+        if (!lostShips) unlock('flawless');
+        if (acc >= 60) unlock('sharp');
+        if (shots <= 40) unlock('quick');
+        if (afloat(mine, aiShots) === 1) unlock('comeback');
+      }
+      if (sv.sunk >= 25) unlock('sinker');
+      persist(); paintStats();
+      if (won) {
+        const best = Curio.best(`shots-${level}`, shots, false);
+        body += best.isNew ? 'Your most efficient victory yet!' : `Your record is ${best.best} shots.`;
+        setStatus('Victory! The enemy fleet is on the sea floor. 🏆');
+        Curio.confetti();
+        [523, 659, 784, 1046].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.12, 'triangle', 0.12), k * 90));
+      } else {
+        const left = theirs.filter((s) => !isSunk(s, myShots)).length;
+        body += `The enemy still had ${left} ship${left === 1 ? '' : 's'} afloat (now revealed).`;
+        setStatus('Your fleet is sunk. 🌊', 'The admiral wins this round.');
+        [392, 330, 262].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.16, 'sawtooth', 0.07), k * 120));
+      }
+      render();
+      await sleep(900);
+      if (my !== token) return;
+      const v = await Curio.modal({ emoji: won ? '🏆' : '🌊', title: won ? 'Admiral of the seas!' : 'Sleeping with the fishes', body, buttons: [{ label: 'Play again', value: 'again' }, { label: 'Share', value: 'share' }, { label: 'Look at the boards', value: 'look' }] });
+      if (v === 'share') { try { await navigator.clipboard.writeText(`⚓ Curio Battleship (${rule}, ${{ easy: 'Rookie', mid: 'Captain', smart: 'Genius' }[level]}): ${won ? 'won' : 'lost'} in ${shots} shots, ${acc}% accuracy.`); Curio.toast('Copied!'); } catch { Curio.toast('Could not reach the clipboard.'); } }
+      if (v === 'again' && my === token) newGame();
+    }
+
+    $('rotate').addEventListener('click', rotateCurrent);
+    $('random').addEventListener('click', () => {
+      const f = BS.randomFleet();
+      mine = f.map((s) => ({ ...s }));
+      selected = null;
+      Curio.beep(440, 0.05, 'triangle', 0.08); setTimeout(() => Curio.beep(560, 0.05, 'triangle', 0.08), 60);
+      render();
+    });
+    $('clear').addEventListener('click', () => { mine.forEach((s) => { s.r = null; s.c = null; s.dir = 0; }); selected = 'carrier'; render(); });
+    $('start').addEventListener('click', startBattle);
+    $('levels').addEventListener('click', (e) => {
+      const x = e.target.closest('button'); if (!x) return;
+      level = x.dataset.level; Curio.store.set('bs:level', level);
+      Curio.toast(level === 'easy' ? 'Rookie: shoots a bit randomly.' : level === 'mid' ? 'Captain: sloppy searching, ruthless once it hits.' : 'Genius: calculates where ships could hide.');
+      if (phase !== 'place') newGame(); else render();
+    });
+    $('rules').addEventListener('click', (e) => {
+      const x = e.target.closest('button'); if (!x) return;
+      rule = x.dataset.rule; Curio.store.set('bs:rule', rule);
+      Curio.toast(rule === 'salvo' ? 'Salvo: one shot for every ship you still have.' : 'Classic: one shot per turn.');
+      if (phase !== 'place') newGame(); else render();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.curio-modal')) return;
+      const k = e.key.toLowerCase();
+      if (k === 'r') rotateCurrent();
+      else if (k === 'n') newGame();
+    });
+
+    paintStats();
+    newGame();
+    if (!Curio.touchpad && !Curio.store.get('padtip:battleship', false)) { Curio.store.set('padtip:battleship', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad? Turn on Touchpad mode in the top bar.', 3400), 2200); }
+    window.__bs = { get phase() { return phase; }, get turn() { return turn; }, get mine() { return mine; }, get theirs() { return theirs; }, get myShots() { return myShots; }, get aiShots() { return aiShots; }, fire, startBattle, get volley() { return volley; }, setRule(r) { rule = r; newGame(); }, setLevel(l) { level = l; } };
+  })();
+  </script>
+</body>
+</html>

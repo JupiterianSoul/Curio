@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Balance the Stick · Curio</title>
+  <meta name="description" content="Balance a pole on your fingertip with real physics. Wind gusts, storms, a wobbly double stick, star catching and unlockable sticks.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="balance-stick">
+  <main class="c-wrap bs-stage" id="stage">
+    <canvas class="bs-canvas" id="cv" role="img" aria-label="A stick balanced on a fingertip. Move your mouse or finger left and right to keep it upright. Arrow keys work too."></canvas>
+    <div class="bs-head">
+      <h1 class="c-title">Balance the Stick</h1>
+      <p class="c-sub" id="sub">Keep the pole upright on your fingertip. Move left and right to catch it as it tips.</p>
+      <div class="bs-seg" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-m="single">🥢 One stick</button>
+        <button type="button" data-m="double">🔥 Double</button>
+        <button type="button" data-m="stars">⭐ Stars</button>
+        <button type="button" data-m="zen">🧘 Zen</button>
+      </div>
+      <div class="bs-skins" id="skins" role="group" aria-label="Stick style"></div>
+    </div>
+    <div class="bs-hud" aria-live="off">
+      <div class="bs-time" id="time">0.00</div>
+      <div class="bs-level" id="level">Calm</div>
+      <div class="bs-stars" id="starCount" hidden>⭐ 0</div>
+      <div class="bs-gust" id="gust">💨 Gust!</div>
+    </div>
+    <div class="bs-banner" id="banner"></div>
+    <div class="bs-card" id="card">
+      <div class="bs-emoji" id="cEmoji">🥢</div>
+      <h2 id="cTitle">Ready?</h2>
+      <div id="cNew"></div>
+      <p id="cText">Mouse: just move. Touch: drag anywhere. Keyboard: arrow keys.</p>
+      <div class="bs-rstats" id="rStats" hidden></div>
+      <div class="bs-chips" id="rChips"></div>
+      <svg class="bs-spark" id="spark" viewBox="0 0 360 50" role="img" aria-label="Your recent runs" hidden></svg>
+      <div class="c-row">
+        <button class="c-btn" id="go" type="button">Start balancing</button>
+        <button class="c-btn c-btn--ghost" id="share" type="button" hidden>📋 Share</button>
+      </div>
+      <div class="bs-links"><button type="button" id="showBadges">Badges <span id="badgeCount"></span></button><button type="button" id="showHow">How to play</button></div>
+      <div id="extra" hidden></div>
+    </div>
+    <div class="bs-foot">
+      <div class="bs-best"><span>Best</span><b id="best">-</b></div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Curio · little games and toys</title>
+  <meta name="description" content="A big box of free little games, toys and interactive pages. No sign-up, no ads, just play.">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .hero { text-align: center; padding: 42px 16px 10px; }
+    .hero__logo {
+      display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: 32px;
+      box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 60%, #000);
+      animation: spin-in .8s cubic-bezier(.2, 1.4, .4, 1);
+    }
+    .hero h1 { font-size: clamp(44px, 9vw, 84px); line-height: .95; font-weight: 900; letter-spacing: -.04em; margin: 14px 0 8px; }
+    .hero p { color: var(--ink-2); font-size: clamp(16px, 2.4vw, 20px); margin: 0 auto; max-width: 560px; }
+    @keyframes spin-in { from { transform: rotate(-180deg) scale(.3); } }
+
+    .tools { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 12px 16px; }
+    .tools__inner { width: min(100%, 1200px); margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+    .search { flex: 1; min-width: 0; padding: 12px 16px 12px 40px; border-radius: 999px; border: 1.5px solid var(--line);
+      background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23948c82' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M12.5 12.5 17 17'/%3E%3C/svg%3E") no-repeat 15px 50%; outline: none; font-size: 16px; }
+    .search:focus { border-color: var(--accent); }
+    .icon-btn { border: 0; cursor: pointer; width: 44px; height: 44px; flex: none; border-radius: 50%; background: var(--surface-2); font-size: 19px; }
+    .icon-btn:hover { filter: brightness(.96); }
+    .chips { width: min(100%, 1200px); margin: 10px auto 0; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex: none; border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+    .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+    .grid { width: min(100%, 1200px); margin: 8px auto 0; padding: 8px 16px 40px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    @media (max-width: 520px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+    .tile { position: relative; display: flex; flex-direction: column; text-decoration: none; color: var(--ink);
+      background: var(--surface); border-radius: 18px; overflow: hidden; border: 1px solid var(--line);
+      box-shadow: var(--shadow); transition: transform .18s cubic-bezier(.2, 1.4, .4, 1), box-shadow .18s ease; }
+    .tile:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 12px 30px rgba(40, 30, 20, .16); }
+    .tile:nth-child(even):hover { transform: translateY(-4px) rotate(.6deg); }
+    .tile__art { position: relative; aspect-ratio: 4 / 3; overflow: hidden; display: grid; place-items: center; }
+    .tile__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
+    .tile:hover .tile__art img { transform: scale(1.05); }
+    .tile__emoji { font-size: 64px; filter: drop-shadow(0 4px 0 rgba(0, 0, 0, .15)); }
+    .tile__body { padding: 11px 14px 14px; }
+    .tile__title { font-weight: 850; font-size: 17px; line-height: 1.2; }
+    .tile__blurb { color: var(--ink-3); font-size: 14px; margin-top: 3px; line-height: 1.3; }
+    .tile__new { position: absolute; top: 10px; left: 10px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 900;
+      letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+    .tile__played { position: absolute; top: 10px; right: 10px; background: rgba(0, 0, 0, .55); color: #fff; font-size: 11px; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px; }
+    .tile__best { font-size: 12px; font-weight: 800; color: var(--good); margin-top: 6px; }
+    @media (max-width: 520px) {
+      .tile__title { font-size: 15px; }
+      .tile__blurb { font-size: 13px; }
+      .tile__emoji { font-size: 48px; }
+    }
+    .empty { grid-column: 1 / -1; text-align: center; color: var(--ink-3); padding: 40px 0; }
+    .count { text-align: center; color: var(--ink-3); font-weight: 700; font-size: 14px; margin-top: 4px; }
+
+    footer { text-align: center; color: var(--ink-3); padding: 20px 16px 48px; font-size: 14px; }
+    footer a { color: var(--ink-2); }
+  </style>
+</head>
+<body data-nobar>
+  <header class="hero">
+    <div class="hero__logo" aria-hidden="true">✦</div>
+    <h1>Curio</h1>
+    <p>A big box of little games, toys and odd corners of the internet. No sign-up, no ads. Just click something.</p>
+  </header>
+
+  <div class="tools">
+    <div class="tools__inner">
+      <input class="search" id="search" type="search" placeholder="Search things to do…" aria-label="Search games" autocomplete="off">
+      <button class="icon-btn" id="random" type="button" title="Surprise me" aria-label="Open a random game">🎲</button>
+      <button class="icon-btn" id="theme" type="button" aria-label="Toggle dark mode"></button>
+    </div>
+    <div class="chips" id="chips" role="toolbar" aria-label="Filter by category"></div>
+  </div>
+  <p class="count" id="count"></p>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>
+    Made for poking at. Your scores stay in this browser.
+  </footer>
+
+  <script src="games.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      const games = window.CURIO_READY;
+      const tags = window.CURIO_TAGS;
+      const grid = document.getElementById('grid');
+      const search = document.getElementById('search');
+      const chips = document.getElementById('chips');
+      const count = document.getElementById('count');
+      const played = Curio.store.get('played', {});
+      let tag = Curio.store.get('hub:tag', 'all');
+      if (tag !== 'all' && tag !== 'unplayed' && !tags[tag]) tag = 'all';
+
+      const all = [['all', 'Everything'], ['unplayed', 'Not played yet'], ...Object.entries(tags)];
+      for (const [key, label] of all) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'chip'; b.dataset.tag = key; b.textContent = label;
+        b.addEventListener('click', () => { tag = key; Curio.store.set('hub:tag', tag); render(); });
+        chips.append(b);
+      }
+
+      function tile(g, i) {
+        const a = document.createElement('a');
+        a.className = 'tile';
+        a.href = `games/${g.slug}/index.html`;
+        const art = document.createElement('div');
+        art.className = 'tile__art';
+        art.style.background = `linear-gradient(135deg, ${g.color}, color-mix(in srgb, ${g.color} 65%, #000))`;
+        const emoji = document.createElement('span');
+        emoji.className = 'tile__emoji'; emoji.textContent = g.emoji; emoji.setAttribute('aria-hidden', 'true');
+        art.append(emoji);
+        const img = new Image();
+        img.alt = ''; img.loading = i < 12 ? 'eager' : 'lazy'; img.decoding = 'async';
+        img.onload = () => emoji.remove();
+        img.onerror = () => img.remove();
+        img.src = `games/${g.slug}/thumb.svg`;
+        art.append(img);
+        if (played[g.slug]) {
+          const p = document.createElement('span');
+          p.className = 'tile__played'; p.textContent = '✓ Played';
+          art.append(p);
+        }
+        const body = document.createElement('div');
+        body.className = 'tile__body';
+        body.innerHTML = '<div class="tile__title"></div><div class="tile__blurb"></div>';
+        body.querySelector('.tile__title').textContent = g.title;
+        body.querySelector('.tile__blurb').textContent = g.blurb;
+        a.append(art, body);
+        return a;
+      }
+
+      function render() {
+        for (const c of chips.children) c.setAttribute('aria-pressed', String(c.dataset.tag === tag));
+        const q = search.value.trim().toLowerCase();
+        search.placeholder = `Search ${games.length} things to do…`;
+        const shown = games.filter((g) => {
+          if (tag === 'unplayed' && played[g.slug]) return false;
+          if (tag !== 'all' && tag !== 'unplayed' && g.tag !== tag) return false;
+          if (!q) return true;
+          return `${g.title} ${g.blurb} ${tags[g.tag]}`.toLowerCase().includes(q);
+        });
+        grid.replaceChildren(...shown.map(tile));
+        if (!shown.length) {
+          const e = document.createElement('p');
+          e.className = 'empty';
+          e.textContent = tag === 'unplayed' && !q ? 'You have played every single one. Impressive. 🏆' : 'Nothing matches that. Try another word?';
+          grid.append(e);
+        }
+        const done = games.filter((g) => played[g.slug]).length;
+        count.textContent = `${shown.length} of ${games.length} shown · you've tried ${done}`;
+      }
+
+      search.addEventListener('input', render);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== search) { e.preventDefault(); search.focus(); }
+      });
+      document.getElementById('random').addEventListener('click', () => {
+        const pool = games.filter((g) => !played[g.slug]);
+        const g = Curio.pick(pool.length ? pool : games);
+        location.href = `games/${g.slug}/index.html`;
+      });
+      const themeBtn = document.getElementById('theme');
+      const paint = () => { themeBtn.textContent = Curio.isDark() ? '☀️' : '🌙'; };
+      paint();
+      themeBtn.addEventListener('click', () => {
+        const next = Curio.isDark() ? 'light' : 'dark';
+        Curio.store.set('theme', next);
+        document.documentElement.dataset.theme = next;
+        paint();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

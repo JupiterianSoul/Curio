@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Solitaire · Curio</title>
+  <meta name="description" content="Klondike, FreeCell and Spider solitaire with numbered deals, a daily deal, hints, card-back and felt themes, stats and badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="solitaire">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="s0" viewBox="0 0 100 100"><path d="M50 4C38 22 6 38 6 60c0 13 10 22 22 22 8 0 14-4 17-9-1 9-5 15-12 21h34c-7-6-11-12-12-21 3 5 9 9 17 9 12 0 22-9 22-22C94 38 62 22 50 4z"/></symbol>
+      <symbol id="s1" viewBox="0 0 100 100"><path d="M50 90C22 68 5 52 5 31 5 17 16 7 29 7c9 0 16 5 21 12 5-7 12-12 21-12 13 0 24 10 24 24 0 21-17 37-45 59z"/></symbol>
+      <symbol id="s2" viewBox="0 0 100 100"><path d="M50 3L86 50 50 97 14 50z"/></symbol>
+      <symbol id="s3" viewBox="0 0 100 100"><path d="M50 8a19 19 0 1 1-.1 0zM28 40a19 19 0 1 1-.1 0zM72 40a19 19 0 1 1-.1 0zM44 55h12c0 16 4 26 14 37H30c10-11 14-21 14-37z"/></symbol>
+    </defs>
+  </svg>
+  <main class="c-wrap">
+    <header class="g-head">
+      <svg class="fan" viewBox="-5 -14 160 100" aria-hidden="true">
+        <g transform="rotate(-24 75 70)"><rect x="55" y="6" width="40" height="56" rx="5" fill="#fffdf8" stroke="#d8cfc0"/><use href="#s0" x="63" y="22" width="24" height="24" fill="#1d1b19"/></g>
+        <g transform="rotate(-8 75 70)"><rect x="55" y="6" width="40" height="56" rx="5" fill="#fffdf8" stroke="#d8cfc0"/><use href="#s1" x="63" y="22" width="24" height="24" fill="#d32f2f"/></g>
+        <g transform="rotate(8 75 70)"><rect x="55" y="6" width="40" height="56" rx="5" fill="#fffdf8" stroke="#d8cfc0"/><use href="#s3" x="63" y="22" width="24" height="24" fill="#1d1b19"/></g>
+        <g transform="rotate(24 75 70)"><rect x="55" y="6" width="40" height="56" rx="5" fill="#fffdf8" stroke="#d8cfc0"/><use href="#s2" x="63" y="22" width="24" height="24" fill="#d32f2f"/></g>
+      </svg>
+      <h1 class="c-title">Solitaire</h1>
+      <p class="c-sub" id="sub">Three classics on one felt: Klondike, FreeCell and Spider. Build the suits home from Ace to King.</p>
+    </header>
+    <div class="modes">
+      <div class="seg big" id="games" role="group" aria-label="Game">
+        <button type="button" data-g="klondike">Klondike</button>
+        <button type="button" data-g="freecell">FreeCell</button>
+        <button type="button" data-g="spider">Spider</button>
+      </div>
+      <div class="seg" id="opts" role="group" aria-label="Variant"></div>
+    </div>
+    <div class="bar2">
+      <div class="stats">
+        <div class="c-stat"><b id="score">0</b><span id="score-l">Score</span></div>
+        <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+        <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      </div>
+      <div class="ctrls">
+        <button class="c-btn c-btn--ghost" type="button" id="hint">💡 Hint</button>
+        <button class="c-btn c-btn--ghost" type="button" id="undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" type="button" id="daily">📅 Daily</button>
+        <button class="c-btn c-btn--ghost" type="button" id="restart">↺ Restart</button>
+        <button class="c-btn" type="button" id="new">New deal</button>
+      </div>
+    </div>
+    <p class="dealno" id="dealno"></p>
+    <div class="table" id="table" role="application" aria-label="Solitaire table">
+      <div class="layer" id="layer"></div>
+    </div>
+    <p class="g-help c-muted" id="help">Drag cards, or tap one and it jumps to the best spot. Double-click sends a card home. Keys: <span class="c-kbd">D</span> draw or deal, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">N</span> new deal, <span class="c-kbd">Tab</span> + <span class="c-kbd">Enter</span> to move a card.</p>
+    <div class="panels">
+      <details class="c-card" id="rules-card">
+        <summary>📜 How to play <span id="rules-name" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <ul class="rules" id="rules"></ul>
+      </details>
+      <details class="c-card">
+        <summary>🎨 Card backs and felt</summary>
+        <p class="sub">Card back</p>
+        <div class="backs" id="backs" role="group" aria-label="Card back"></div>
+        <p class="sub">Table</p>
+        <div class="felts" id="felts" role="group" aria-label="Table colour"></div>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="st-grid" id="st-grid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

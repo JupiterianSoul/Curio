@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Draw a Perfect Circle · Curio</title>
+  <meta name="description" content="Draw a circle around the dot. Then try squares, triangles, hexagons, stars and hearts, in five kinds of ink, with a daily challenge and a hall of fame.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="perfect-circle">
+  <main class="c-wrap pc-stage" id="stage">
+    <canvas class="pc-paper" id="paper" aria-hidden="true"></canvas>
+    <canvas class="pc-canvas" id="cv" role="img" aria-label="Drawing area. Draw the chosen shape around the dot in the middle using your mouse, pen or finger."></canvas>
+    <div class="pc-head">
+      <h1 class="c-title" id="title">Draw a perfect circle</h1>
+      <p class="c-sub" id="sub">Go around the dot in one smooth loop. Either direction. No pressure.</p>
+      <div class="pc-shapes" id="shapes" role="group" aria-label="Shape"></div>
+    </div>
+    <div class="pc-score" aria-live="polite">
+      <div class="pc-rank" id="rank"></div>
+      <div class="pc-pct" id="pct"></div>
+      <div class="pc-msg" id="msg"></div>
+      <div class="pc-detail" id="detail"></div>
+    </div>
+    <div class="pc-foot">
+      <div class="pc-best" id="bestPill"><span>Best</span><b id="best">-</b></div>
+      <button class="pc-btn" id="inkBtn" type="button" title="Change ink (I)">🖋️ <span id="inkName">Pen</span></button>
+      <button class="pc-btn" id="blindBtn" type="button" aria-pressed="false" title="Blind mode (B)">🙈 <span>Blind</span></button>
+      <button class="pc-btn" id="dailyBtn" type="button" aria-pressed="false" title="Daily challenge (D)">📅 <span>Daily</span></button>
+      <button class="pc-btn" id="hallBtn" type="button" title="Hall of fame (H)">🏆 <span>Hall</span></button>
+      <button class="pc-btn pc-hidden" id="shareBtn" type="button">🔗 <span>Share</span></button>
+      <button class="c-btn pc-hidden" id="again" type="button">Try again</button>
+    </div>
+    <div class="pc-sheet" id="sheet" hidden>
+      <div class="pc-sheet__box" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <div class="pc-sheet__head"><h2 id="sheetTitle">Hall of fame</h2><button class="pc-x" id="sheetClose" type="button" aria-label="Close">✕</button></div>
+        <div class="pc-tabs" id="sheetTabs" role="tablist"></div>
+        <div id="sheetBody"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

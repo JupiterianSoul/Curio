@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tower of Hanoi · Curio</title>
+  <meta name="description" content="Move the whole tower to the goal peg, one disc at a time. Classic, four-peg and clockwise variants, scrambles and a daily puzzle.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="tower-of-hanoi">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Tower of Hanoi</h1>
+      <p class="c-sub">Move the whole tower to the goal peg. One disc at a time, and never a big disc on a smaller one. Legend says monks are doing this with 64 discs, and the world ends when they finish.</p>
+    </header>
+    <div class="h-controls">
+      <div class="seg" role="group" aria-label="Rules" id="modes">
+        <button type="button" data-mode="classic">Classic</button>
+        <button type="button" data-mode="four">4 pegs</button>
+        <button type="button" data-mode="cyclic">Clockwise</button>
+      </div>
+      <div class="seg" role="group" aria-label="Number of discs" id="seg"><span class="seg-l">Discs</span></div>
+      <div class="h-row">
+        <button class="c-btn c-btn--ghost h-small" type="button" id="scramble">🎲 Scramble</button>
+        <button class="c-btn c-btn--ghost h-small" type="button" id="daily">📅 Daily puzzle</button>
+        <button class="c-btn c-btn--ghost h-small" type="button" id="howBtn" aria-expanded="false">How to play</button>
+      </div>
+    </div>
+    <section class="c-card how" id="how" hidden>
+      <h2>How to play</h2>
+      <ol>
+        <li>Pick up the top disc of any peg and drop it on another peg.</li>
+        <li>A disc can only land on an empty peg or on a bigger disc.</li>
+        <li>Rebuild the whole tower on the goal peg, glowing green.</li>
+      </ol>
+      <p><b>4 pegs</b> gives you an extra peg, so the tower moves in far fewer moves. <b>Clockwise</b> only lets discs travel one step to the right, wrapping from the last peg back to the first. <b>Scramble</b> drops the discs in a random legal pile and asks you to tidy up.</p>
+    </section>
+    <div class="hud">
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="opt">7</b><span>Optimal</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <div class="play">
+      <div class="stage" id="stage" role="application" aria-label="Tower of Hanoi board. Use number keys or arrow keys and space to move discs.">
+        <svg class="scene" viewBox="0 0 720 340" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sky1"/><stop offset="1" class="sky2"/></linearGradient>
+          </defs>
+          <rect width="720" height="340" fill="url(#hsky)"/>
+          <circle class="sun" cx="590" cy="80" r="40"/>
+          <path class="mtn2" d="M0 250L90 160l70 60 90-110 110 120 80-70 120 90 90-80 70 60V340H0Z"/>
+          <path class="mtn1" d="M0 280l120-70 90 50 120-60 100 70 110-50 180 70V340H0Z"/>
+          <g class="temple" transform="translate(70 196)">
+            <rect x="0" y="40" width="70" height="40"/>
+            <path d="M-10 42h90l-12-14h-66z"/>
+            <rect x="10" y="14" width="50" height="16"/>
+            <path d="M0 16h70l-10-12h-50z"/>
+            <rect x="26" y="56" width="18" height="24" class="door"/>
+          </g>
+          <g class="cloud"><ellipse cx="200" cy="70" rx="40" ry="12"/><ellipse cx="225" cy="62" rx="26" ry="12"/></g>
+          <g class="cloud c2"><ellipse cx="460" cy="110" rx="34" ry="10"/><ellipse cx="480" cy="103" rx="20" ry="10"/></g>
+        </svg>
+        <div class="result" id="result" hidden>
+          <div class="result-card">
+            <div class="stars" id="stars" aria-hidden="true"></div>
+            <h2 id="rTitle">Tower moved!</h2>
+            <p id="rBody"></p>
+            <div class="r-badges" id="rBadges"></div>
+            <div class="c-row">
+              <button class="c-btn" type="button" id="rNext">Next</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rAgain">Again</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="meter" aria-hidden="true"><div id="meter"></div></div>
+      <p class="legend" id="legend" aria-live="polite"></p>
+      <div class="tools">
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="restart"><i>⟲</i>Restart</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="solve" aria-pressed="false" aria-label="Auto-solve"><i>▶</i>Solve</button>
+      </div>
+      <div class="h-skins"><span class="seg-l">Discs look</span><div id="skins" class="skinrow"></div></div>
+    </div>
+    <details class="c-card prog">
+      <summary>Progress, stats and badges <span id="badgeCount"></span></summary>
+      <div class="starmap" id="starmap"></div>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Drag a disc, or tap a peg then tap where it should go. On a touchpad, Touchpad mode in the top bar lets you click a disc, glide, and click to drop. Keyboard: <span class="c-kbd">1</span> to <span class="c-kbd">4</span> pick up and drop, or <span class="c-kbd">←</span> <span class="c-kbd">→</span> and <span class="c-kbd">Space</span>. <span class="c-kbd">Z</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">R</span> restart.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

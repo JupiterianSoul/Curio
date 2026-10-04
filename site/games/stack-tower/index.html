@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stack · Curio</title>
+  <meta name="description" content="Drop sliding blocks to build an isometric tower up through the clouds into space. Three modes, five unlockable block themes, badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="stack-tower" class="arc" style="--arc-hue: #29b6f6">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Height</span></div>
+      <div class="c-stat"><b data-hud="combo">0</b><span>Perfect</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Isometric tower of stacked blocks"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 120" aria-hidden="true"><defs><linearGradient id="stS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3e5fc"/><stop offset="1" stop-color="#ffe0b2"/></linearGradient></defs><rect width="300" height="120" rx="18" fill="url(#stS)"/><g fill="#fff" opacity=".85"><ellipse cx="60" cy="30" rx="26" ry="9"/><ellipse cx="74" cy="24" rx="15" ry="9"/><ellipse cx="240" cy="44" rx="22" ry="8"/></g><g transform="translate(150 104)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(200,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(200,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(200,55%,40%)"/></g><g transform="translate(150 91)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(212,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(212,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(212,55%,40%)"/></g><g transform="translate(150 78)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(224,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(224,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(224,55%,40%)"/></g><g transform="translate(150 65)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(236,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(236,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(236,55%,40%)"/></g><g transform="translate(150 52)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(248,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(248,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(248,55%,40%)"/></g><g transform="translate(150 39)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(260,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(260,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(260,55%,40%)"/></g><g class="drift"><g transform="translate(150 22)"><path d="M-40 0l40 -12 40 12 -40 12z" fill="hsl(284,68%,66%)"/><path d="M-40 0v8l40 12v-8z" fill="hsl(284,58%,50%)"/><path d="M40 0v8l-40 12v-8z" fill="hsl(284,55%,40%)"/></g></g></svg>
+          <h1 class="c-title">Stack</h1>
+          <p class="c-sub">Tap to drop the block. Whatever hangs over the edge gets chopped off. Perfect drops grow it back. Build past the clouds into space.</p>
+          <div class="arc-opts"><div class="arc-label">Mode</div><div class="arc-seg" role="group" aria-label="Mode" data-opt="mode" data-def="classic"><button type="button" data-val="classic">🏗️ Classic</button><button type="button" data-val="zen">🧘 Zen</button><button type="button" data-val="hardcore">🔥 Hardcore</button></div>
+<p class="arc-small" style="margin:0">Zen: slower, three lives. Hardcore: faster, tighter, no regrowth.</p>
+<div class="arc-label">Block theme</div><div class="st-themes" id="themes" role="group" aria-label="Block theme"></div></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help">Click, tap or press <span class="c-kbd">Space</span> to drop · <span class="c-kbd">P</span> pause</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The block is hovering in mid-air.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Connect Four · Curio</title>
+  <meta name="description" content="Drop chunky discs into a real-looking board. Four AI rivals, Pop Out, Five in a Row, a daily challenge, badges and replays.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="connect-four">
+  <main class="c-wrap c4" id="app">
+    <header class="c4-head">
+      <h1 class="c-title">Connect Four</h1>
+      <p class="c-sub">Drop discs, stack them up, line up four. Four robot rivals, four rule sets and one very satisfying clunk.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero" aria-hidden="true">
+        <svg viewBox="0 0 640 220" class="hero-svg" id="hero"></svg>
+      </div>
+
+      <div class="daily c-card" id="daily-card">
+        <div class="daily-ico" aria-hidden="true">📅</div>
+        <div class="daily-txt"><b>Daily challenge</b><span id="daily-sub">A fresh opening every day against Vega.</span></div>
+        <button type="button" class="c-btn" id="daily-go">Play today</button>
+      </div>
+
+      <div class="pick-grid">
+        <section class="c-card pick">
+          <h2>Opponent</h2>
+          <div class="opps" id="opps" role="radiogroup" aria-label="Opponent"></div>
+        </section>
+        <section class="c-card pick">
+          <h2>Rules</h2>
+          <div class="variants" id="variants" role="radiogroup" aria-label="Rule variant"></div>
+        </section>
+        <section class="c-card pick">
+          <h2>Look and feel</h2>
+          <div class="skins" id="skins" role="radiogroup" aria-label="Disc colours"></div>
+          <div class="toggles">
+            <label class="tog"><input type="checkbox" id="opt-clock"> <span>Shot clock (8 seconds a move)</span></label>
+            <div class="seg" id="first" role="radiogroup" aria-label="Who goes first">
+              <button type="button" data-first="you">You first</button>
+              <button type="button" data-first="alt">Take turns</button>
+              <button type="button" data-first="ai">Rival first</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Drop in <span aria-hidden="true">↓</span></button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Game">
+      <div class="hud">
+        <div class="pchip" id="chip-1"><span class="ring"></span><span class="ava" id="ava-1"></span><span class="pmeta"><b id="name-1">You</b><small id="sub-1"></small></span><b class="pscore" id="score-1">0</b></div>
+        <div class="vs"><span id="variant-tag">Classic</span><span class="c-muted" id="draws">0 draws</span></div>
+        <div class="pchip right" id="chip-2"><b class="pscore" id="score-2">0</b><span class="pmeta"><b id="name-2">Gizmo</b><small id="sub-2"></small></span><span class="ava" id="ava-2"></span><span class="ring"></span></div>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+
+      <div class="stage" id="stage">
+        <div class="preview" id="preview" aria-hidden="true"><div class="disc ghost" id="ghost"><i></i></div><div class="hint-arrow" id="hint-arrow">▼</div></div>
+        <div class="board-shell" id="shell">
+          <div class="board" id="board">
+            <div class="back"></div>
+            <div class="discs" id="discs"></div>
+            <svg class="front" id="front" aria-hidden="true"></svg>
+            <svg class="fx" id="fx" aria-hidden="true"></svg>
+            <div class="cols" id="cols" role="group" aria-label="Columns"></div>
+          </div>
+          <svg class="legs" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 0 L10 0 L7 20 L0 20 Z M90 0 L98 0 L100 20 L93 20 Z" /></svg>
+        </div>
+        <div class="pops" id="pops" role="group" aria-label="Pop out a disc"></div>
+        <div class="result" id="result" hidden></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="c-btn c-btn--ghost" id="undo"><span aria-hidden="true">↶</span> Undo</button>
+        <button type="button" class="c-btn c-btn--ghost" id="hint"><span aria-hidden="true">💡</span> Hint</button>
+        <button type="button" class="c-btn c-btn--ghost" id="restart"><span aria-hidden="true">⟳</span> Restart</button>
+        <button type="button" class="c-btn c-btn--ghost" id="back"><span aria-hidden="true">☰</span> Menu</button>
+      </div>
+      <p class="keys c-muted">Tap a column, or press <span class="c-kbd">1</span> to <span class="c-kbd">9</span>. <span class="c-kbd">←</span><span class="c-kbd">→</span> aim, <span class="c-kbd">Enter</span> drop, <span class="c-kbd">P</span> pop, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">R</span> restart, <span class="c-kbd">Esc</span> menu.</p>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="logic.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

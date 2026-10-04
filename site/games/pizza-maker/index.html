@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pizza Maker · Curio</title>
+  <meta name="description" content="Pick a dough, ladle the sauce, sprinkle cheese, pile on toppings, bake, slice and race it across town. Fill orders, earn tips and collect badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="pizza-maker">
+  <main class="c-wrap">
+    <h1 class="c-title">Pizza Maker</h1>
+    <p class="c-sub">Stretch it, sauce it, cheese it, top it, bake it, slice it, deliver it. Take orders from picky regulars or freestyle your own masterpiece.</p>
+    <div class="pz-modebar"><div class="pz-seg" id="modes" role="group" aria-label="Game mode"></div><div class="pz-wallet" id="wallet" aria-label="Tips earned">💰 $0</div></div>
+    <div class="pz-ticket" id="ticket" hidden aria-live="polite"></div>
+    <nav class="pz-steps" id="steps" aria-label="Pizza steps"></nav>
+    <div class="pz">
+      <div class="pz-board"><canvas id="pz" role="img" aria-label="Your pizza. Drag on it to work with the current tool."></canvas></div>
+      <section class="pz-panel c-card" id="panel" aria-live="polite"></section>
+    </div>
+    <section class="c-card pz-career" aria-label="Career">
+      <h2>🏪 Your pizzeria</h2>
+      <div class="pz-stats" id="careerStats"></div>
+      <div class="pz-badges" id="badges"></div>
+    </section>
+    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">N</span> next step · <span class="c-kbd">T</span> toss · <span class="c-kbd">O</span> oven on/off · Touchpad mode: click to grab, click to let go. Everything here is drawn with code, including the anchovies.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="toppings.js"></script>
+  <script src="toppings2.js"></script>
+  <script src="orders.js"></script>
+  <script src="delivery.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

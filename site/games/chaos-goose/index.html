@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chaos Goose · Curio</title>
+  <meta name="description" content="A goose has entered your desktop. It steals your files, knocks over your coffee and honks. Shoo it, feed it, or give it a hat.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="chaos-goose">
+  <header class="cg-top">
+    <div>
+      <h1 class="c-title">Chaos Goose</h1>
+      <p class="c-sub">A goose has entered your desktop. It does not want anything. It just wants <i>everything</i>.</p>
+    </div>
+    <div class="cg-tools" role="toolbar" aria-label="Goose tools">
+      <button class="c-btn c-btn--ghost" id="bread" type="button" aria-pressed="false">🍞 Throw bread</button>
+      <button class="c-btn c-btn--ghost" id="hat" type="button">🎩 Hat</button>
+      <button class="c-btn c-btn--ghost" id="honk" type="button">📯 Honk back</button>
+      <button class="c-btn c-btn--ghost" id="tidy" type="button">🧽 Tidy up</button>
+      <button class="c-btn c-btn--ghost" id="addGoose" type="button">➕ Goose</button>
+      <button class="c-btn c-btn--ghost" id="remGoose" type="button">➖ Goose</button>
+      <button class="c-btn c-btn--ghost" id="wallBtn" type="button">🖼️ Wallpaper</button>
+      <button class="c-btn" id="defend" type="button">🛡️ Defend mode</button>
+    </div>
+  </header>
+  <main class="cg-main">
+    <section class="cg-desk" id="desk" aria-label="A fake desktop with a goose on it. Tap the goose to shoo it. Drag items to put them back.">
+      <div class="cg-wall" aria-hidden="true"><i class="cg-sun"></i><i class="cg-cloud c1"></i><i class="cg-cloud c2"></i><i class="cg-stars"></i></div>
+      <div class="cg-hud" id="hud" hidden aria-live="off"></div>
+      <div class="cg-window" aria-hidden="true">
+        <div class="cg-window__bar"><span>todo.txt</span><i></i><i></i><i></i></div>
+        <div class="cg-window__body">1. finish the report<br>2. reply to emails<br>3. do NOT feed the goose<br>4. why is there a goose<br>5. <span class="cg-caret">honk</span></div>
+      </div>
+      <div class="cg-puddle" id="puddle" aria-hidden="true"></div>
+      <canvas class="cg-prints" id="prints" aria-hidden="true"></canvas>
+      <div class="cg-taskbar" aria-hidden="true">
+        <span class="cg-start">⊞ Start</span>
+        <span class="cg-task">📄 todo.txt</span>
+        <span class="cg-tray"><span id="gooseCount">🪿 1</span><b id="clock">12:00</b></span>
+      </div>
+    </section>
+    <aside class="cg-log" aria-label="Mischief log">
+      <div class="cg-log__head">
+        <h2>📜 Mischief log</h2>
+        <div class="cg-chaos"><b id="chaos">0</b><span>chaos</span></div>
+      </div>
+      <div class="cg-stats" id="stats"></div>
+      <div class="cg-ach" id="ach" aria-label="Achievements"></div>
+      <ol class="cg-entries" id="log" aria-live="polite"></ol>
+    </aside>
+  </main>
+  <p class="c-muted cg-keys">Keys: <span class="c-kbd">S</span> shoo the nearest goose, <span class="c-kbd">R</span> put one thing back, <span class="c-kbd">B</span> bread, <span class="c-kbd">H</span> hat, <span class="c-kbd">O</span> honk, <span class="c-kbd">T</span> tidy, <span class="c-kbd">+</span>/<span class="c-kbd">-</span> geese, <span class="c-kbd">W</span> wallpaper, <span class="c-kbd">D</span> defend.</p>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

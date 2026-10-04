@@ -1,0 +1,75 @@
+.mi-head { text-align: center; }
+.mi-head .c-sub { margin-bottom: 14px; }
+.mi-modes { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.mi-mode {
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 14px; padding: 7px 12px 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; min-width: 96px; touch-action: manipulation;
+}
+.mi-mode b { font-size: 15px; }
+.mi-mode small { font-size: 11px; color: var(--ink-3); font-weight: 800; font-family: var(--mono); }
+.mi-mode[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.mi-desc { text-align: center; color: var(--ink-2); font-weight: 700; margin: 4px 0 12px; min-height: 1.4em; }
+.mi-shapes { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.mi-shape { width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface-2); cursor: pointer; display: grid; place-items: center; padding: 0; color: var(--ink-2); touch-action: manipulation; }
+.mi-shape svg { width: 30px; height: 30px; }
+.mi-shape[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--surface); }
+.mi-board {
+  position: relative; width: min(100%, 540px); aspect-ratio: 1; margin: 0 auto;
+  background: var(--paper, #fffdf7); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+  overflow: hidden; user-select: none; -webkit-user-select: none;
+}
+.mi-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.mi-board.is-mouse canvas { cursor: none; }
+.mi-tag { position: absolute; top: 10px; left: 12px; font-weight: 900; font-size: 13px; color: var(--ink-3); pointer-events: none; letter-spacing: .04em; }
+.mi-tag2 { position: absolute; top: 10px; right: 12px; font-weight: 900; font-size: 13px; color: var(--ink-3); pointer-events: none; font-family: var(--mono); }
+.mi-res {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: color-mix(in srgb, var(--paper, #fff) 55%, transparent);
+}
+.mi-res.is-on { opacity: 1; pointer-events: auto; }
+.mi-card { width: min(88%, 360px); text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px 16px 14px; box-shadow: var(--shadow); transform: scale(.9); transition: transform .35s cubic-bezier(.2, 1.5, .4, 1); }
+.mi-res.is-on .mi-card { transform: none; }
+.mi-big { font-family: var(--mono); font-size: clamp(38px, 9vw, 56px); font-weight: 900; line-height: 1; letter-spacing: -.03em; }
+.mi-msg { font-weight: 800; color: var(--ink-2); margin: 8px 0 8px; }
+.mi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
+.mi-grid .c-stat { min-width: 0; }
+.mi-grid .c-stat b { font-size: 20px; }
+.mi-new { display: inline-block; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 12px; padding: 2px 10px; border-radius: 999px; }
+.mi-card .c-row { margin-top: 10px; }
+.mi-card .c-btn { padding: 8px 15px; font-size: 15px; }
+.mi-stats { display: flex; justify-content: center; gap: 6px; margin: 14px auto 6px; flex-wrap: wrap; }
+.mi-stats .c-stat { min-width: 80px; }
+.mi-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.mi-actions .c-btn { padding: 9px 16px; font-size: 15px; }
+.mi-bests { margin: 30px auto 0; max-width: 540px; }
+.mi-bests h2 { margin: 0 0 10px; font-size: 20px; font-weight: 900; }
+.mi-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.mi-table th, .mi-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.mi-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.mi-table td:not(:first-child), .mi-table th:not(:first-child) { text-align: right; }
+.mi-note { font-size: 14px; margin-top: 14px; }
+@media (max-width: 520px) {
+  .mi-mode { min-width: 0; flex: 1 1 40%; }
+  .mi-stats .c-stat { min-width: 70px; }
+  .mi-stats .c-stat b { font-size: 21px; }
+}
+.mi-board { border: 0; padding: 0; background: var(--paper, #fffdf7); box-shadow: 0 0 0 6px #c9ced4, 0 0 0 8px #9aa1a8, 0 0 0 11px #e3e7ea, 0 24px 44px -18px rgba(30, 40, 60, .45); border-radius: 20px; }
+.mi-board::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(125deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 22%, rgba(255,255,255,0) 70%, rgba(255,255,255,.14) 78%, rgba(255,255,255,0) 86%); border-radius: inherit; }
+.mi-board.shake { animation: mi-shake .32s; }
+@keyframes mi-shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+.mi-mode { transition: transform .12s; }
+.mi-mode:hover, .mi-shape:hover { transform: translateY(-2px); }
+.mi-shape { transition: transform .12s; }
+.mi-res.is-on .mi-big { animation: mi-pop .5s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes mi-pop { from { transform: scale(.5); } }
+#dailyB[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, var(--surface)); }
+.mi-rec { max-width: 760px; margin: 22px auto 0; }
+.mi-rec h2 { margin: 0 0 10px; font-size: 20px; }
+.mi-stats2 { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.mi-stats2 .c-stat { background: var(--surface-2); border-radius: 12px; padding: 6px 12px; }
+.mi-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.mi-badge { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 14px; background: var(--surface-2); opacity: .5; filter: grayscale(1); }
+.mi-badge.got { opacity: 1; filter: none; background: color-mix(in srgb, var(--warn) 16%, var(--surface)); }
+.mi-badge i { font-style: normal; font-size: 24px; }
+.mi-badge b { display: block; font-size: 13px; }
+.mi-badge span { font-size: 12px; color: var(--ink-2); line-height: 1.25; display: block; }

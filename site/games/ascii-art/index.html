@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Text Art · Curio</title>
+  <meta name="description" content="Turn words into giant letters made of text, or a doodle or photo into ASCII art. Fourteen block fonts, frames, colour gradients, a gallery of hand-typed art and kaomoji, and one-click copy.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="ascii-art">
+  <main class="c-wrap">
+    <h1 class="c-title">Text Art</h1>
+    <p class="c-sub">Type something small, get something enormous. Doodle a picture and watch it turn into pure typing. Or raid the gallery.</p>
+    <div class="ta-tabs" role="tablist" aria-label="Mode">
+      <button type="button" role="tab" id="tabText" aria-controls="pText" aria-selected="true">🔠 Big letters</button>
+      <button type="button" role="tab" id="tabDraw" aria-controls="pDraw" aria-selected="false">🖍️ Picture to text</button>
+      <button type="button" role="tab" id="tabGal" aria-controls="pGal" aria-selected="false">🖼️ Gallery</button>
+    </div>
+
+    <section class="ta-panel c-card" id="pText" role="tabpanel" aria-labelledby="tabText">
+      <label class="ta-h" for="txt" style="display:block;margin-top:0">Your words</label>
+      <textarea class="c-input ta-input" id="txt" rows="1" maxlength="80" spellcheck="false">Hello!</textarea>
+      <div class="ta-h">Font</div>
+      <div class="ta-fonts" id="fonts" role="group" aria-label="Fonts"></div>
+      <div class="ta-opts">
+        <div><div class="ta-h">Frame</div><div class="ta-tools" id="frames" style="margin-top:0"></div></div>
+        <div><div class="ta-h">Twist</div><div class="ta-tools" id="twists" style="margin-top:0"></div></div>
+      </div>
+    </section>
+
+    <section class="ta-panel c-card" id="pGal" role="tabpanel" aria-labelledby="tabGal" hidden>
+      <div class="ta-h" style="margin-top:0">Hand-typed art</div>
+      <div class="ta-tools" id="galTags" style="margin-top:0"></div>
+      <div class="ta-gal" id="gal"></div>
+      <div class="ta-h">Kaomoji (tap to copy)</div>
+      <div class="ta-kao" id="kao"></div>
+    </section>
+
+    <section class="ta-panel c-card" id="pDraw" role="tabpanel" aria-labelledby="tabDraw" hidden>
+      <div class="ta-draw">
+        <div>
+          <canvas class="ta-canvas" id="pad" width="320" height="200" aria-label="Drawing pad. Draw with mouse or finger."></canvas>
+          <div class="ta-tools" id="brushes">
+            <button type="button" class="ta-tool" data-b="4">✏️ Fine</button>
+            <button type="button" class="ta-tool" data-b="10">🖊️ Marker</button>
+            <button type="button" class="ta-tool" data-b="24">🖌️ Fat</button>
+            <button type="button" class="ta-tool" data-b="-18">🧽 Eraser</button>
+          </div>
+          <div class="ta-tools">
+            <button type="button" class="ta-tool" id="sample">🎲 Sample doodle</button>
+            <label class="ta-tool" for="file" style="display:inline-block">📷 Use a photo</label>
+            <input class="ta-file" type="file" id="file" accept="image/*">
+            <button type="button" class="ta-tool" id="wipe">🗑️ Clear</button>
+            <button type="button" class="ta-tool" id="undoPad">↶ Undo</button>
+          </div>
+        </div>
+        <div>
+          <div class="ta-h" style="margin-top:0">Characters</div>
+          <div class="ta-tools" id="ramps" style="margin-top:0"></div>
+          <div class="ta-sl"><label for="cols">Width</label><input type="range" id="cols" min="24" max="120" value="64"><b id="colsV">64</b></div>
+          <div class="ta-sl"><label class="ta-check"><input type="checkbox" id="inv"> Invert (for dark backgrounds)</label></div>
+          <div class="ta-sl"><label class="ta-check"><input type="checkbox" id="tint"> Keep picture colours in the preview</label></div>
+          <div class="ta-tools" id="inks" style="margin-top:10px"></div>
+          <p class="c-muted" style="font-size:14px;margin:10px 0 0">Darker pixels get denser characters. Braille packs eight dots into every character, so it looks sharpest.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="c-card" style="margin-top:16px">
+      <div class="ta-h" style="margin-top:0">Colour preview <span style="text-transform:none;letter-spacing:0;font-weight:600">(copying gives plain text)</span></div>
+      <div class="ta-colors" id="colors" role="group" aria-label="Colour style"></div>
+      <div class="ta-stage" id="stage"><pre class="ta-out" id="out" aria-label="Text art output"></pre></div>
+      <div class="ta-meta c-muted" id="meta"></div>
+      <div class="ta-actions">
+        <button class="c-btn" id="copy" type="button">📋 Copy text</button>
+        <button class="c-btn c-btn--ghost" id="png" type="button">🖼️ Save PNG</button>
+        <button class="c-btn c-btn--ghost" id="dl" type="button">📄 Save .txt</button>
+        <button class="c-btn c-btn--ghost" id="fit" type="button" aria-pressed="true">🔍 Fit to box</button>
+        <button class="c-btn c-btn--ghost" id="reveal" type="button">✨ Reveal</button>
+      </div>
+    </div>
+    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px">Knows A to Z, 0 to 9 and <span class="c-kbd">. , ! ? ' " - + = / ( ) : ; _ # @ &amp; * $ % &lt; &gt; ♥</span>. Paste it into a code comment, a chat, or a very dramatic email. Keys: 1 2 3 switch tabs, C copies, F changes font.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fonts.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

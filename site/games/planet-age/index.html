@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Age on Other Planets · Curio</title>
+  <meta name="description" content="How old are you on Mars, Pluto or Proxima b? Replay your life on a live orrery, count your sunrises and plan your next birthday party anywhere in space.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="planet-age">
+  <main class="c-wrap pa">
+    <header class="pa-hero">
+      <h1 class="c-title">Age on Other Planets</h1>
+      <p class="c-sub">A "year" is just one trip around the Sun. Planets farther out take longer, so on some worlds you are a toddler and on others you have not even had your first birthday.</p>
+      <form class="pa-form" id="form">
+        <label for="dob">Your birthday</label>
+        <input class="c-input" type="date" id="dob" min="1800-01-01" required>
+        <button class="c-btn" type="submit">Launch</button>
+      </form>
+      <div class="pa-try" id="try"><span>Or try the birthday of</span></div>
+    </header>
+
+    <section class="pa-orrery c-card" aria-label="Orrery">
+      <canvas id="orrery" role="img" aria-label="The planets circling the Sun"></canvas>
+      <div class="pa-o-top">
+        <div class="pa-o-date"><small id="oLabel">Today</small><b id="oDate"></b></div>
+        <div class="pa-o-btns">
+          <button class="c-btn" type="button" id="replay" disabled>Replay my life</button>
+          <button class="c-btn c-btn--ghost" type="button" id="speed" aria-label="Replay speed">1×</button>
+        </div>
+      </div>
+      <div class="pa-laps" id="laps" aria-live="off"></div>
+      <p class="pa-o-hint" id="oHint">Enter your birthday and press Replay to watch every orbit you have lived through.</p>
+    </section>
+
+    <div id="out" hidden>
+      <div class="pa-next-any c-card" id="nextAny"></div>
+      <div class="pa-filter" role="group" aria-label="Which worlds" id="filter"></div>
+      <div class="pa-list" id="list"></div>
+
+      <section class="pa-sec">
+        <h2>Your birthday party calendar</h2>
+        <p class="c-muted">Every birthday you have coming up, anywhere in the solar system, over the next three years.</p>
+        <div class="c-card pa-cal">
+          <ol id="cal"></ol>
+          <div class="c-row" style="justify-content:flex-start">
+            <button class="c-btn" type="button" id="ics">Download calendar (.ics)</button>
+            <button class="c-btn c-btn--ghost" type="button" id="share">Copy my ages</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pa-sec">
+        <h2>Badges</h2>
+        <div class="pa-badges" id="badges"></div>
+      </section>
+    </div>
+
+    <p class="c-muted pa-foot">Orbital periods are sidereal, in Earth days (NASA planetary fact sheets); dwarf planet periods are rounded estimates. Birthdays assume each world's year starts on your Earth birthday. The orrery uses circular orbits with planet positions from their J2000 mean longitudes, so it is close but not exact. Keys: <span class="c-kbd">R</span> replay, <span class="c-kbd">Space</span> pause.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="planets.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

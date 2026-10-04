@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sky Hopper · Curio</title>
+  <meta name="description" content="Bounce ever upward from blue sky to outer space. Jetpacks, propellers, shields, stars to collect, UFOs to stomp and five hoppers to unlock.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="sky-hopper" class="arc" style="--arc-hue: #5c6bc0">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Height</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Platforms floating in the sky"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 120" aria-hidden="true"><defs><linearGradient id="shS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5c6bc0"/><stop offset=".55" stop-color="#ffccbc"/><stop offset="1" stop-color="#e3f2fd"/></linearGradient></defs><rect width="300" height="120" rx="18" fill="url(#shS)"/><g fill="#fff"><rect x="30" y="12" width="2" height="2"/><rect x="200" y="8" width="2" height="2"/><rect x="260" y="22" width="2" height="2"/><rect x="120" y="18" width="2" height="2"/></g><g fill="#fff" opacity=".85"><circle cx="230" cy="80" r="12"/><circle cx="246" cy="84" r="9"/><circle cx="216" cy="85" r="8"/></g><rect x="40" y="96" width="64" height="12" rx="6" fill="#66bb6a"/><rect x="40" y="102" width="64" height="6" rx="3" fill="#388e3c"/><rect x="180" y="60" width="64" height="12" rx="6" fill="#42a5f5"/><rect x="118" y="30" width="64" height="12" rx="6" fill="#a1887f"/><path d="M262 40l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#ffd54f"/><g class="bob" transform="translate(150 66)"><rect x="-9" y="-8" width="4" height="6" fill="#2e7d32"/><rect x="5" y="-8" width="4" height="6" fill="#2e7d32"/><rect x="-16" y="-38" width="32" height="32" rx="14" fill="#8bc34a"/><rect x="10" y="-28" width="14" height="9" rx="4" fill="#9ccc65"/><circle cx="4" cy="-29" r="6" fill="#fff"/><circle cx="6" cy="-29" r="2.6" fill="#212121"/><path d="M-4-38l4-8 4 8z" fill="#ff7043"/></g></svg>
+          <h1 class="c-title">Sky Hopper</h1>
+          <p class="c-sub">Bounce up, up, up. Through the sunset, past the moon, into space. Do not look down.</p>
+          <div class="arc-opts"><div class="arc-label">Hopper</div><div class="sh-skins" id="skins" role="group" aria-label="Hopper"></div>
+<p class="arc-small" style="margin:0"><b style="color:#43a047">Green</b> is solid · <b style="color:#1e88e5">blue</b> slides · <b style="color:#8d6e63">brown</b> crumbles · springs launch · stomp the monsters<br>Grab <b style="color:#e64a19">🎒 jetpacks</b>, <b style="color:#0288d1">🚁 propellers</b>, <b style="color:#00acc1">🫧 shields</b> and <b style="color:#e6a100">⭐ stars</b>.</p></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><span class="c-kbd">←</span> <span class="c-kbd">→</span> or <span class="c-kbd">A</span> <span class="c-kbd">D</span> to steer · <span class="c-kbd">P</span> pause<br>Mouse or touchpad: just move the pointer left or right of your hopper. On a phone: hold the left or right half of the screen.</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Floating in mid-air, defying physics.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

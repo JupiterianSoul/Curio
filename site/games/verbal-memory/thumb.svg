@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#6a1b9a"/>
+  <circle cx="350" cy="40" r="80" fill="#7b2cb0"/>
+  <circle cx="30" cy="290" r="90" fill="#5a1386"/>
+  <g transform="rotate(-8 90 70)" opacity=".55">
+    <rect x="40" y="50" width="100" height="36" rx="18" fill="#9c4dcc"/>
+    <text x="90" y="75" fill="#fff" font-family="sans-serif" font-weight="800" font-size="17" text-anchor="middle">otter</text>
+  </g>
+  <g transform="rotate(7 320 120)" opacity=".55">
+    <rect x="272" y="104" width="100" height="36" rx="18" fill="#9c4dcc"/>
+    <text x="322" y="129" fill="#fff" font-family="sans-serif" font-weight="800" font-size="17" text-anchor="middle">comet</text>
+  </g>
+  <path d="M90 92 H310 a20 20 0 0 1 20 20 V170 a20 20 0 0 1 -20 20 H222 L200 214 L178 190 H90 a20 20 0 0 1 -20 -20 V112 a20 20 0 0 1 20 -20 Z" fill="#fff"/>
+  <text x="200" y="155" fill="#4a1070" font-family="sans-serif" font-weight="900" font-size="40" text-anchor="middle">walrus</text>
+  <rect x="86" y="226" width="106" height="44" rx="22" fill="#fff"/>
+  <text x="139" y="255" fill="#4a1070" font-family="sans-serif" font-weight="900" font-size="20" text-anchor="middle">SEEN</text>
+  <rect x="208" y="226" width="106" height="44" rx="22" fill="#ffc233"/>
+  <text x="261" y="255" fill="#3b2400" font-family="sans-serif" font-weight="900" font-size="20" text-anchor="middle">NEW</text>
+  <text x="352" y="250" fill="#ffc233" font-family="sans-serif" font-weight="900" font-size="46" text-anchor="middle">?</text>
+</svg>

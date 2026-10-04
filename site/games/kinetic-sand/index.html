@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kinetic Sand · Curio</title>
+  <meta name="description" content="Slice a block of layered kinetic sand and watch the slices flop over to reveal the colours inside. Stamp moulds, make a new block, repeat forever.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 12px; padding-bottom: 16px; }
+    .ks-head { text-align: center; }
+    .ks-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .ks-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .ks-stage { position: relative; height: max(340px, calc(100dvh - var(--bar-h) - 220px)); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+    #sand { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+    .ks-count { position: absolute; top: 10px; left: 14px; font-weight: 800; font-size: 13px; color: rgba(60, 40, 30, .55); pointer-events: none; }
+    .ks-tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center; margin-top: 12px; }
+    .ks-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+    .seg button { border: 0; background: transparent; padding: 7px 13px; border-radius: 999px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .mould { width: 38px; height: 38px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; display: grid; place-items: center; padding: 0; touch-action: manipulation; }
+    .mould svg { width: 24px; height: 24px; }
+    .mould[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+    .ks-tools .c-btn { padding: 8px 16px; font-size: 15px; }
+    .c-btn.pulse { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(1.08); } }
+    @media (max-width: 560px) {
+      .ks-head .c-sub { font-size: 13px; }
+      .ks-stage { height: max(330px, calc(100dvh - var(--bar-h) - 300px)); }
+    }
+  </style>
+</head>
+<body data-game="kinetic-sand">
+  <main class="c-wrap">
+    <div class="ks-head">
+      <h1 class="c-title">Kinetic Sand</h1>
+      <p class="c-sub">Press the knife into the block and drag down. Every slice shows what is hiding inside.</p>
+    </div>
+    <div class="ks-stage" id="stage">
+      <canvas id="sand" role="img" aria-label="A block of layered kinetic sand on a tray. Drag down on the block to slice it, or use the mould tool to stamp shapes."></canvas>
+      <div class="ks-count" id="count">0 slices</div>
+    </div>
+    <div class="ks-tools">
+      <div class="seg" role="group" aria-label="Tool">
+        <button type="button" data-tool="knife" aria-pressed="true" title="Knife (K)">🔪 Knife</button>
+        <button type="button" data-tool="mould" aria-pressed="false" title="Mould (M, or 1 to 5 for a shape)">⭐ Mould</button>
+      </div>
+      <div class="ks-group" id="moulds" role="group" aria-label="Mould shape"></div>
+      <div class="ks-group">
+        <button type="button" class="c-btn c-btn--ghost" id="auto" title="Auto slice (Space or S)">✂️ Auto slice</button>
+        <button type="button" class="c-btn" id="reset" title="New block (N)">🧱 New block</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const SANDS = ['#f4a6c1', '#c9a7eb', '#9fe3c7', '#8ecdf2', '#f7e08a', '#f8b98d', '#f28b82', '#e8cfa6', '#5fc9c2', '#9b7fd9', '#ffffff', '#7fb3f5', '#b6e388', '#ff9fd2'];
+    const MOULDS = {
+      star: { name: 'Star', d: (p) => { for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, r = k % 2 ? 0.45 : 1; p.lineTo(Math.cos(a) * r, Math.sin(a) * r); } p.closePath(); } },
+      heart: { name: 'Heart', d: (p) => { p.moveTo(0, 0.9); p.bezierCurveTo(-1.3, 0, -0.9, -1.1, 0, -0.45); p.bezierCurveTo(0.9, -1.1, 1.3, 0, 0, 0.9); p.closePath(); } },
+      flower: { name: 'Flower', d: (p) => { for (let k = 0; k <= 120; k++) { const a = k / 120 * Math.PI * 2, r = 0.72 + 0.28 * Math.cos(a * 6); p.lineTo(Math.cos(a) * r, Math.sin(a) * r); } p.closePath(); } },
+      shell: { name: 'Shell', d: (p) => { p.moveTo(0, 0.85); for (let k = 0; k <= 7; k++) { const a = Math.PI + k / 7 * Math.PI; const x = Math.cos(a), y = Math.sin(a) * 0.95; p.lineTo(x * 0.98, y * 0.98 + 0.1); } p.closePath(); } },
+      circle: { name: 'Circle', d: (p) => { p.arc(0, 0, 0.92, 0, Math.PI * 2); } }
+    };
+
+    const canvas = document.getElementById('sand');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('stage');
+    const countEl = document.getElementById('count');
+    const resetBtn = document.getElementById('reset');
+    let W = 0, H = 0, dpr = 1;
+    const kx = 0.36, ky = 0.42;
+    let bw = 300, bh = 165, bd = 285, X0 = 0, Y0 = 0, TS = 1;
+    let zf = 0, slices = 0, total = Curio.store.get('kinetic-sand:total', 0);
+    let block = null, frontTex = null, topTex = null, sideTex = null;
+    const lying = [], falling = [], grains = [];
+    let knife = null, hover = null, tool = 'knife', mould = 'star', stamps = [], drop = 0;
+
+    const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const hash = (x, y) => { let h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; };
+
+    function makeBlock() {
+      const pal = Curio.shuffle(SANDS);
+      const n = Curio.randInt(4, 7);
+      const layers = [];
+      let sum = 0;
+      for (let i = 0; i < n; i++) {
+        const h = Curio.rand(0.6, 1.4); sum += h;
+        layers.push({ c: rgb(pal[i]), h, marble: Math.random() < 0.18 ? rgb(pal[(i + n) % pal.length]) : null, a1: Curio.rand(0.01, 0.05), f1: Curio.randInt(1, 3), p1: Math.random() * 6, a2: Curio.rand(0.01, 0.05), f2: Curio.randInt(1, 3), p2: Math.random() * 6 });
+      }
+      let acc = 0;
+      layers.forEach((l) => { acc += l.h / sum; l.top = acc; });
+      const balls = [];
+      const nb = Curio.randInt(0, 2);
+      for (let i = 0; i < nb; i++) {
+        const rings = [];
+        const nr = Curio.randInt(2, 4);
+        for (let k = 0; k < nr; k++) rings.push(rgb(pal[(n + 2 + i * 3 + k) % pal.length]));
+        balls.push({ x: Curio.rand(0.2, 0.8), y: Curio.rand(0.3, 0.7), z: Curio.rand(0.25, 0.8), r: Curio.rand(0.16, 0.3), rings });
+      }
+      return { layers, balls, sparkle: Math.random() < 0.5 };
+    }
+
+    function colorAt(x, y, z, col) {
+      const u = x / bw, v = y / bh, w = z / bd;
+      for (const b of block.balls) {
+        const dx = (u - b.x) * bw, dy = (v - b.y) * bh, dz = (w - b.z) * bd, d = Math.sqrt(dx * dx + dy * dy + dz * dz) / (b.r * bh);
+        if (d < 1) { const c = b.rings[Math.min(b.rings.length - 1, Math.floor(d * b.rings.length))]; col[0] = c[0]; col[1] = c[1]; col[2] = c[2]; return; }
+      }
+      const L = block.layers;
+      for (let i = 0; i < L.length; i++) {
+        const l = L[i];
+        const top = i === L.length - 1 ? 2 : l.top + l.a1 * Math.sin(u * l.f1 * 6.283 + l.p1) + l.a2 * Math.sin(w * l.f2 * 6.283 + l.p2);
+        if (v <= top) {
+          let c = l.c;
+          if (l.marble && Math.sin(u * 22 + v * 30 + Math.sin(w * 9 + u * 4) * 2.4) > 0.35) c = l.marble;
+          col[0] = c[0]; col[1] = c[1]; col[2] = c[2]; return;
+        }
+      }
+    }
+
+    function texture(wpx, hpx, fn, rough, shade) {
+      const c = document.createElement('canvas');
+      const tw = Math.max(1, Math.round(wpx * TS)), th = Math.max(1, Math.round(hpx * TS));
+      c.width = tw; c.height = th;
+      const g = c.getContext('2d'), img = g.createImageData(tw, th), d = img.data;
+      const col = [0, 0, 0];
+      const seed = (Math.random() * 1e6) | 0;
+      for (let j = 0; j < th; j++) for (let i = 0; i < tw; i++) {
+        fn(i / TS, j / TS, col);
+        const gx = (i / (1.6 * TS)) | 0, gy = (j / (1.6 * TS)) | 0;
+        const h = hash(gx + seed, gy), h2 = hash(gy + 7 * seed, gx + 3);
+        let k = shade * (1 + (h - 0.5) * rough);
+        if (h2 > 0.985) k *= 0.82;
+        const o = (j * tw + i) * 4;
+        let r = col[0] * k, gg = col[1] * k, b = col[2] * k;
+        if (block.sparkle && h2 < 0.004) { r = gg = b = 255; }
+        d[o] = r; d[o + 1] = gg; d[o + 2] = b; d[o + 3] = 255;
+      }
+      g.putImageData(img, 0, 0);
+      return c;
+    }
+    const faceTex = (z) => texture(bw, bh, (x, y, col) => colorAt(Math.min(bw - 0.01, x), bh - y, z, col), 0.12, 1);
+    function buildTextures() {
+      topTex = texture(bw, bd, (x, z, col) => colorAt(Math.min(bw - 0.01, x), bh - 0.5, z, col), 0.3, 1.06);
+      sideTex = texture(bd, bh, (z, y, col) => colorAt(bw - 0.01, bh - y, z, col), 0.2, 0.8);
+      const tg = topTex.getContext('2d');
+      tg.globalAlpha = 0.25;
+      for (let i = 0; i < 40; i++) {
+        tg.strokeStyle = Math.random() < 0.5 ? '#fff' : '#000';
+        tg.lineWidth = Curio.rand(0.5, 1.5) * TS;
+        tg.beginPath();
+        const x = Math.random() * topTex.width, y = Math.random() * topTex.height;
+        tg.moveTo(x, y); tg.lineTo(x + Curio.rand(-30, 30) * TS, y + Curio.rand(-6, 6) * TS); tg.stroke();
+      }
+      tg.globalAlpha = 1;
+      frontTex = faceTex(zf);
+    }
+
+    function layout() {
+      const r = stage.getBoundingClientRect();
+      W = r.width; H = r.height;
+      dpr = Math.min(2, devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      const nbw = Math.min((W - 30) / 1.6, (H - 56) / 1.24, 440);
+      const changed = Math.abs(nbw - bw) > 1;
+      bw = nbw; bh = bw * 0.55; bd = bw * 0.95;
+      TS = Math.min(1.5, dpr);
+      X0 = (W - bw * (1 + 0.95 * kx + 0.55 * kx)) / 2 + bw * 0.55 * kx;
+      Y0 = (H - bw * (0.95 * ky + 0.55 + 0.55 * ky)) / 2 + bd * ky + bh + 6;
+      return changed;
+    }
+
+    const proj = (x, y, z) => ({ x: X0 + x + z * kx, y: Y0 - y - z * ky });
+
+    function drawSlab(sl, th, ox = 0, oy = 0, xa = 0, xb = bw, side = true) {
+      const t = sl.z1 - sl.z0;
+      const s = Math.sin(th), c = Math.cos(th);
+      const up = { x: -kx * s, y: -c + ky * s };
+      const back = { x: kx * c, y: -s - ky * c };
+      const h0 = proj(0, 0, sl.z0);
+      h0.x += ox; h0.y += oy;
+      const g = ctx;
+      const T = (a, b, cc, d, e, f) => g.setTransform(dpr * a, dpr * b, dpr * cc, dpr * d, dpr * e, dpr * f);
+      const frontVisible = -c + ky * s < 0;
+      if (side && xb >= bw - 0.5) {
+        T(back.x, back.y, -up.x, -up.y, h0.x + bw + bh * up.x, h0.y + bh * up.y);
+        g.drawImage(sideTex, sl.z0 * TS, 0, t * TS, bh * TS, 0, 0, t, bh);
+      }
+      const face = frontVisible ? sl.front : sl.back;
+      const off = frontVisible ? { x: 0, y: 0 } : { x: back.x * t, y: back.y * t };
+      T(1, 0, -up.x, -up.y, h0.x + off.x + bh * up.x, h0.y + off.y + bh * up.y);
+      g.drawImage(face, xa * TS, 0, (xb - xa) * TS, bh * TS, xa, 0, xb - xa, bh);
+      if (sl.shade) { g.fillStyle = `rgba(0,0,0,${sl.shade})`; g.fillRect(xa, 0, xb - xa, bh); }
+      T(1, 0, back.x, back.y, h0.x + bh * up.x, h0.y + bh * up.y);
+      g.drawImage(topTex, xa * TS, sl.z0 * TS, (xb - xa) * TS, Math.max(0.5, t * TS), xa, 0, xb - xa, t);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function drawKnife(k) {
+      const zc = k.zc;
+      const yb = bh * (1 - k.p);
+      const bl = proj(-bw * 0.06, yb, zc), br = proj(bw * 1.04, yb, zc);
+      const hgt = bh * 0.78;
+      const g = ctx.createLinearGradient(0, bl.y - hgt, 0, bl.y);
+      g.addColorStop(0, '#9aa3ad'); g.addColorStop(0.45, '#eef2f6'); g.addColorStop(0.8, '#c3cad2'); g.addColorStop(1, '#f9fbfd');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(bl.x, bl.y); ctx.lineTo(br.x, br.y); ctx.lineTo(br.x, br.y - hgt); ctx.lineTo(bl.x + 14, bl.y - hgt); ctx.quadraticCurveTo(bl.x - 6, bl.y - hgt * 0.4, bl.x, bl.y);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(60,70,80,.35)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#5b3a29';
+      const hw = bw * 0.32;
+      ctx.beginPath(); ctx.roundRect(br.x - 2, br.y - hgt * 0.78, hw, hgt * 0.42, 10); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(br.x + 4, br.y - hgt * 0.74, hw - 14, 4);
+      ctx.fillStyle = '#d8dde3';
+      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(br.x + 18 + i * hw * 0.3, br.y - hgt * 0.57, 3, 0, 7); ctx.fill(); }
+    }
+
+    function tray() {
+      const dark = Curio.isDark();
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, dark ? '#2a2420' : '#f6ece2'); g.addColorStop(1, dark ? '#1f1a17' : '#ecdccd');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = dark ? 'rgba(255,255,255,.035)' : 'rgba(120,80,50,.05)';
+      for (let y = 18; y < H; y += 22) ctx.fillRect(0, y, W, 1);
+      const sh = ctx.createRadialGradient(X0 + bw * 0.6, Y0 + 4, 10, X0 + bw * 0.6, Y0 + 4, bw * 0.9);
+      sh.addColorStop(0, dark ? 'rgba(0,0,0,.45)' : 'rgba(90,50,20,.22)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = sh; ctx.beginPath(); ctx.ellipse(X0 + bw * 0.55, Y0 - 10, bw * 0.95, bh * 0.75, 0, 0, 7); ctx.fill();
+      countEl.style.color = dark ? 'rgba(255,240,220,.5)' : 'rgba(60,40,30,.55)';
+    }
+
+    function draw() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      tray();
+      ctx.save();
+      ctx.translate(0, -drop);
+      if (zf < bd - 0.5) {
+        const main = { z0: zf, z1: bd, front: frontTex, back: frontTex };
+        drawSlab(main, 0, 0, 0);
+        const e1 = proj(0, bh, zf), e2 = proj(bw, bh, zf), e3 = proj(bw, bh, bd), e4 = proj(bw, 0, zf);
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(e1.x, e1.y); ctx.lineTo(e2.x, e2.y); ctx.lineTo(e3.x, e3.y); ctx.stroke();
+        ctx.strokeStyle = 'rgba(60,30,20,.12)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(e2.x, e2.y); ctx.lineTo(e4.x, e4.y); ctx.stroke();
+        ctx.restore(); ctx.save(); ctx.translate(0, -drop);
+        if (hover && !knife && tool === 'knife') {
+          const a = proj(0, bh, hover.zc), b = proj(bw, bh, hover.zc);
+          ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+        }
+        if (hover && tool === 'mould' && hover.onTop) {
+          const p = proj(hover.x, bh, hover.z);
+          const path = new Path2D(); MOULDS[mould].d(path);
+          ctx.save(); ctx.translate(p.x, p.y); ctx.transform(1, 0, kx, -ky, 0, 0); ctx.scale(bw * 0.09, -bw * 0.09);
+          ctx.setLineDash([0.15, 0.12]); ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 0.06; ctx.stroke(path); ctx.restore();
+        }
+        if (knife) {
+          drawKnife(knife);
+          if (knife.zc > zf) {
+            const fr = { z0: zf, z1: knife.zc, front: frontTex, back: frontTex };
+            drawSlab(fr, 0, 0, 0);
+            const a = proj(0, bh, knife.zc), b = proj(bw, bh, knife.zc);
+            ctx.strokeStyle = 'rgba(40,30,30,.35)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            const sb = proj(bw, bh * (1 - knife.p), knife.zc); ctx.lineTo(sb.x, sb.y); ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+      for (const sl of lying) {
+        ctx.globalAlpha = sl.alpha;
+        for (const ch of sl.chunks) drawSlab(sl, Math.PI / 2, ch.ox + sl.sx, ch.oy + sl.sy, ch.a, ch.b, ch.b >= bw - 0.5);
+        ctx.globalAlpha = 1;
+      }
+      for (const sl of falling) drawSlab(sl, sl.th, 0, 0);
+      for (const p of grains) {
+        ctx.fillStyle = p.c; ctx.globalAlpha = Math.min(1, p.life);
+        ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+      }
+      ctx.globalAlpha = 1;
+      for (const s of stamps) {
+        const p = s.onFront ? proj(s.x, s.y, zf) : proj(s.x, bh, s.z);
+        const lift = s.t < 0.25 ? (1 - s.t / 0.25) : s.t < 0.5 ? 0 : (s.t - 0.5) * 2.5;
+        const a = Math.max(0, Math.min(1, s.t * 8, 1.6 - s.t * 1.8));
+        const sc = bw * 0.09, hgt = bw * 0.06;
+        const path = new Path2D(); MOULDS[s.shape].d(path);
+        ctx.save();
+        ctx.globalAlpha = a;
+        if (s.onFront) {
+          ctx.translate(p.x, p.y - drop);
+          const k = 1 + lift * 0.6;
+          ctx.scale(sc * k, sc * k);
+          ctx.fillStyle = s.color; ctx.fill(path);
+          ctx.lineWidth = 0.08; ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.stroke(path);
+        } else {
+          const base = p.y - drop - lift * bw * 0.35;
+          for (let i = 0; i <= 6; i++) {
+            ctx.save();
+            ctx.translate(p.x, base - (hgt * i) / 6);
+            ctx.transform(1, 0, kx, -ky, 0, 0); ctx.scale(sc, -sc);
+            ctx.fillStyle = i === 6 ? 'rgba(255,255,255,.35)' : s.color;
+            ctx.fill(path);
+            if (i === 6) { ctx.fillStyle = s.color; ctx.globalAlpha = a * 0.75; ctx.fill(path); }
+            if (i === 0) { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fill(path); }
+            ctx.restore();
+          }
+        }
+        ctx.restore();
+      }
+    }
+
+    let noiseBuf = null;
+    function ac() { return Curio.muted ? null : Curio.audioContext(); }
+    function nbuf(a) {
+      if (!noiseBuf) { noiseBuf = a.createBuffer(1, a.sampleRate, a.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+      return noiseBuf;
+    }
+    function grainSound(n, spread, lo = 1600, hi = 5000, vol = 0.08) {
+      const a = ac(); if (!a) return;
+      const t = a.currentTime, buf = nbuf(a);
+      for (let k = 0; k < n; k++) {
+        const st = t + Math.random() * spread, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+        s.buffer = buf; f.type = 'bandpass'; f.frequency.value = Curio.rand(lo, hi); f.Q.value = 1.2;
+        const dur = Curio.rand(0.006, 0.02);
+        g.gain.setValueAtTime(Curio.rand(0.3, 1) * vol, st); g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+        s.connect(f); f.connect(g); g.connect(a.destination); s.start(st, Math.random() * 0.9); s.stop(st + dur + 0.01);
+      }
+    }
+    function thud(power = 1) {
+      const a = ac(); if (!a) return;
+      const t = a.currentTime, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      s.buffer = nbuf(a); f.type = 'lowpass'; f.frequency.setValueAtTime(900, t); f.frequency.exponentialRampToValueAtTime(120, t + 0.25);
+      g.gain.setValueAtTime(0.5 * power, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      s.connect(f); f.connect(g); g.connect(a.destination); s.start(t); s.stop(t + 0.35);
+      const o = a.createOscillator(), og = a.createGain();
+      o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+      og.gain.setValueAtTime(0.25 * power, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.connect(og); og.connect(a.destination); o.start(t); o.stop(t + 0.25);
+      grainSound(30, 0.35, 1200, 4200, 0.06 * power);
+    }
+    let cutSnd = null;
+    function cutHiss(level) {
+      const a = Curio.muted ? null : (cutSnd ? cutSnd.a : (level > 0 ? Curio.audioContext() : null));
+      if (!a) { if (cutSnd) cutSnd.g.gain.setTargetAtTime(0, cutSnd.a.currentTime, 0.03); return; }
+      if (!cutSnd) {
+        const s = a.createBufferSource(); s.buffer = nbuf(a); s.loop = true;
+        const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 0.8;
+        const g = a.createGain(); g.gain.value = 0;
+        s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+        cutSnd = { a, g, f };
+      }
+      cutSnd.g.gain.setTargetAtTime(Math.min(0.1, level * 0.1), a.currentTime, 0.04);
+      cutSnd.f.frequency.setTargetAtTime(1500 + level * 1800, a.currentTime, 0.05);
+    }
+
+    function spray(x, y, n, colors, spread = 1, ground) {
+      for (let i = 0; i < n; i++) {
+        grains.push({ x: x + Curio.rand(-bw * 0.5, bw * 0.5) * spread, y: y + Curio.rand(-4, 4), vx: Curio.rand(-80, 80), vy: Curio.rand(-160, -20), s: Curio.rand(1.5, 3.4), c: Curio.pick(colors), life: Curio.rand(2, 5), ground: ground ?? y + Curio.rand(4, bh * ky), rest: false });
+      }
+      if (grains.length > 900) grains.splice(0, grains.length - 900);
+    }
+    function faceColors(z, n = 12) {
+      const out = [], col = [0, 0, 0];
+      for (let i = 0; i < n; i++) { colorAt(Math.random() * bw, Math.random() * bh, z, col); out.push(`rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`); }
+      return out;
+    }
+
+    function finishCut() {
+      const z1 = knife.zc;
+      const back = faceTex(z1);
+      falling.push({ z0: zf, z1, front: frontTex, back, th: 0, w: 0.4, bounced: 0 });
+      frontTex = back; zf = z1;
+      slices++; total++; Curio.store.set('kinetic-sand:total', total);
+      countEl.textContent = `${slices} slice${slices === 1 ? '' : 's'} · ${total} all time`;
+      knife = null; cutHiss(0);
+      grainSound(14, 0.2, 2500, 6000, 0.05);
+      if (bd - zf < bd * 0.04) {
+        resetBtn.classList.add('pulse');
+        setTimeout(() => Curio.toast('Every last grain sliced. Fresh block?'), 900);
+      }
+    }
+
+    function stamp(x, z, onFront, y) {
+      const colors = ['#ff6f91', '#ffc75f', '#4fc3f7', '#7ed957', '#b388ff'];
+      stamps.push({ x, z, t: 0, shape: mould, color: Curio.pick(colors), done: false, onFront, y });
+    }
+    function applyStamp(s) {
+      const sc = bw * 0.09;
+      const path = new Path2D(); MOULDS[s.shape].d(path);
+      const tex = s.onFront ? frontTex : topTex;
+      const g = tex.getContext('2d');
+      const cx = s.x * TS, cy = (s.onFront ? (bh - s.y) : s.z) * TS;
+      const dir = s.onFront ? 1 : -1;
+      g.save(); g.translate(cx, cy); g.scale(sc * TS, sc * TS * (s.onFront ? 1 : -1));
+      g.lineWidth = 0.16;
+      g.save(); g.translate(0.05, 0.07 * -dir); g.strokeStyle = 'rgba(255,255,255,.35)'; g.stroke(path); g.restore();
+      g.fillStyle = 'rgba(40,20,10,.16)'; g.fill(path);
+      g.save(); g.clip(path); g.translate(0.08, 0.1 * dir); g.lineWidth = 0.24; g.strokeStyle = 'rgba(40,20,10,.28)'; g.stroke(path); g.restore();
+      g.restore();
+      const p = s.onFront ? proj(s.x, s.y, zf) : proj(s.x, bh, s.z);
+      const col = [0, 0, 0]; colorAt(Math.min(bw - 0.01, s.x), s.onFront ? s.y : bh - 0.5, s.onFront ? zf : s.z, col);
+      const cs = [`rgb(${col[0]},${col[1]},${col[2]})`, `rgb(${col[0] * 0.85 | 0},${col[1] * 0.85 | 0},${col[2] * 0.85 | 0})`];
+      spray(p.x, p.y, 28, cs, 0.12, p.y + Curio.rand(10, 40));
+      grainSound(24, 0.25, 900, 3200, 0.07);
+      thud(0.25);
+    }
+
+    function toLocal(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top + drop }; }
+    function hit(px, py) {
+      const z = (Y0 - bh - py) / ky, x = px - X0 - z * kx;
+      if (z >= zf && z <= bd && x >= 0 && x <= bw) return { onTop: true, x, z };
+      const fx = px - X0 - zf * kx, fy = Y0 - zf * ky - py;
+      if (fx >= 0 && fx <= bw && fy >= 0 && fy <= bh) return { onFront: true, x: fx, y: fy };
+      if (z >= zf - bh * 0.4 && z <= bd && x >= -bw * 0.1 && x <= bw * 1.1) return { above: true, x, z };
+      return null;
+    }
+    const clampCut = (z) => Math.max(zf + bd * 0.035, Math.min(zf + bd * 0.16, Math.min(bd, z)));
+
+    let held = false;
+    function knifeIn(p) {
+      if (knife || zf >= bd - 0.5 || drop > 1) return false;
+      const h = hit(p.x, p.y);
+      if (!h) return false;
+      const zc = h.onTop || h.above ? clampCut(h.z) : Math.min(bd, zf + bd * 0.075);
+      knife = { id: 'drag', zc, p: 0, sy: p.y, sx: p.x, lx: p.x, ly: p.y, auto: false, speed: 0 };
+      hover = null;
+      grainSound(6, 0.08);
+      return true;
+    }
+    canvas.addEventListener('pointerdown', (e) => {
+      if (held) return;
+      if (e.button === 0) e.preventDefault();
+      if (tool !== 'mould' || e.button !== 0) return;
+      e.stopImmediatePropagation();
+      if (zf >= bd - 0.5 || drop > 1) return;
+      const p = toLocal(e), h = hit(p.x, p.y);
+      if (!h) return;
+      e.preventDefault();
+      if (h.onTop) stamp(h.x, h.z, false);
+      else if (h.onFront) stamp(h.x, h.z, true, h.y);
+    });
+    Curio.drag(canvas, {
+      start: (q) => { held = true; knifeIn({ x: q.x, y: q.y + drop }); },
+      move: (q) => {
+        const p = { x: q.x, y: q.y + drop };
+        if (held && !knife && Curio.touchpad && tool === 'knife') { knifeIn(p); return; }
+        if (!knife || knife.id !== 'drag' || knife.auto) return;
+        const dy = p.y - knife.ly, dx = p.x - knife.lx;
+        const gain = Math.max(0, dy) / (bh * 0.85) + Math.abs(dx) / (bw * 2.5);
+        knife.p = Math.min(1, knife.p + gain);
+        knife.speed += gain * 12;
+        knife.lx = p.x; knife.ly = p.y;
+        if (gain > 0.002) {
+          const s = proj(bw, bh * (1 - knife.p), knife.zc);
+          if (Math.random() < 0.6) spray(s.x, s.y, 2, faceColors(knife.zc, 4), 0.02, s.y + Curio.rand(20, bh * (1 - knife.p) + 20));
+          grainSound(Math.min(8, 1 + gain * 120), 0.06);
+        }
+        if (knife.p >= 1) finishCut();
+      },
+      end: () => {
+        held = false;
+        if (!knife || knife.id !== 'drag' || knife.auto) return;
+        if (knife.p > 0.3) knife.auto = true;
+        else { knife.retract = true; knife.auto = true; }
+      }
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (held || knife || e.pointerType !== 'mouse') return;
+      const p = toLocal(e), h = hit(p.x, p.y);
+      hover = h ? { ...h, zc: h.onTop || h.above ? clampCut(h.z) : Math.min(bd, zf + bd * 0.075) } : null;
+    });
+    canvas.addEventListener('pointerleave', () => { hover = null; });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click the block to press the knife in, move down to slice, click again to lift it', 3800); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-kinetic-sand', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-kinetic-sand', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to press the knife in, move down, click to lift', 4200), 1800); }
+
+    function autoSlice() {
+      if (knife || zf >= bd - 0.5 || drop > 1) return;
+      knife = { id: -1, zc: Math.min(bd, zf + bd * Curio.rand(0.06, 0.1)), p: 0, auto: true, speed: 0 };
+      if (bd - knife.zc < bd * 0.04) knife.zc = bd;
+    }
+
+    function newBlock() {
+      resetBtn.classList.remove('pulse');
+      for (const sl of lying) sl.fade = true;
+      falling.length = 0; stamps = [];
+      block = makeBlock(); zf = 0; slices = 0; knife = null;
+      buildTextures();
+      countEl.textContent = `0 slices · ${total} all time`;
+      drop = H;
+      const a = ac();
+      if (a) {
+        const t = a.currentTime, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+        s.buffer = nbuf(a); f.type = 'bandpass'; f.Q.value = 0.7; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(2400, t + 0.35);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.08, t + 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+        s.connect(f); f.connect(g); g.connect(a.destination); s.start(t); s.stop(t + 0.45);
+      }
+    }
+
+    let raf = 0, last = 0, dropV = 0;
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.04, (now - (last || now)) / 1000); last = now;
+      if (drop > 0 || dropV !== 0) {
+        dropV -= 2600 * dt; drop += dropV * dt;
+        if (drop <= 0) {
+          drop = 0;
+          if (dropV < -300) { thud(0.8); spray(X0 + bw / 2, Y0, 40, faceColors(0), 0.9, undefined); dropV = -dropV * 0.22; }
+          else dropV = 0;
+        }
+      }
+      if (knife) {
+        knife.speed *= Math.pow(0.02, dt);
+        if (knife.auto) {
+          if (knife.retract) { knife.p -= dt * 3; if (knife.p <= 0) knife = null; }
+          else {
+            knife.p = Math.min(1, knife.p + dt * 1.25); knife.speed = 1;
+            if (Math.random() < 0.5) { const s = proj(bw, bh * (1 - knife.p), knife.zc); spray(s.x, s.y, 1, faceColors(knife.zc, 3), 0.02, s.y + 30); }
+            if (Math.random() < dt * 30) grainSound(3, 0.05);
+            if (knife.p >= 1) finishCut();
+          }
+        }
+      }
+      cutHiss(knife ? Math.min(1, knife.speed) : 0);
+      for (let i = falling.length - 1; i >= 0; i--) {
+        const f = falling[i];
+        f.w += (2 + 9 * Math.sin(f.th)) * dt * 2.2; f.th += f.w * dt;
+        if (f.th >= Math.PI / 2) {
+          f.th = Math.PI / 2;
+          if (f.w > 1.2 && f.bounced < 1) {
+            f.bounced++;
+            const p = proj(bw / 2, 0, f.z0 - bh);
+            thud(Math.min(1.2, (f.z1 - f.z0) / (bd * 0.08)));
+            spray(p.x, p.y, 70, faceColors(f.z1, 16), 0.85);
+            stage.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(0,3px)' }, { transform: 'translate(0,0)' }], { duration: 140 });
+            f.w = -f.w * 0.12;
+          } else {
+            falling.splice(i, 1);
+            const chunks = [];
+            let a = 0;
+            const cuts = [];
+            const nc = Curio.randInt(1, 3);
+            for (let k = 0; k < nc; k++) cuts.push(Curio.rand(0.15, 0.85) * bw);
+            cuts.sort((x, y) => x - y);
+            for (const cx of [...cuts, bw]) { chunks.push({ a, b: cx, ox: 0, oy: 0, tx: Curio.rand(-5, 5), ty: Curio.rand(-2, 5) }); a = cx; }
+            f.chunks = chunks; f.alpha = 1; f.sx = 0; f.sy = 0; f.age = 0;
+            lying.push(f);
+          }
+        }
+      }
+      for (let i = lying.length - 1; i >= 0; i--) {
+        const sl = lying[i];
+        sl.age += dt;
+        for (const ch of sl.chunks) { ch.ox += (ch.tx - ch.ox) * Math.min(1, dt * 6); ch.oy += (ch.ty - ch.oy) * Math.min(1, dt * 6); }
+        if (sl.fade) { sl.alpha -= dt * 2.5; sl.sy += dt * 240; if (sl.alpha <= 0) lying.splice(i, 1); }
+      }
+      if (lying.length > 9) lying[0].fade = true;
+      for (let i = grains.length - 1; i >= 0; i--) {
+        const p = grains[i];
+        if (!p.rest) {
+          p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+          if (p.y >= p.ground) { p.y = p.ground; if (Math.abs(p.vy) > 120) { p.vy *= -0.25; p.vx *= 0.5; } else p.rest = true; }
+        } else p.life -= dt;
+        if (p.life <= 0) grains.splice(i, 1);
+      }
+      for (let i = stamps.length - 1; i >= 0; i--) {
+        const s = stamps[i];
+        s.t += dt * 1.6;
+        if (!s.done && s.t >= 0.25) { s.done = true; applyStamp(s); }
+        if (s.t > 0.9) stamps.splice(i, 1);
+      }
+      draw();
+    }
+    const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; cutHiss(0); };
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => {
+      tool = b.dataset.tool;
+      document.querySelectorAll('[data-tool]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      canvas.style.cursor = tool === 'mould' ? 'copy' : 'crosshair';
+    }));
+    const mouldsEl = document.getElementById('moulds');
+    for (const k in MOULDS) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mould'; b.dataset.m = k; b.setAttribute('aria-label', `${MOULDS[k].name} mould`); b.title = MOULDS[k].name;
+      const c = document.createElement('canvas'); c.width = 48; c.height = 48; c.style.width = '24px'; c.style.height = '24px';
+      const g = c.getContext('2d'); g.translate(24, 24); g.scale(19, 19);
+      const p = new Path2D(); MOULDS[k].d(p); g.fillStyle = '#ff7aa8'; g.fill(p);
+      b.append(c);
+      b.addEventListener('click', () => {
+        mould = k;
+        mouldsEl.querySelectorAll('.mould').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        document.querySelector('[data-tool="mould"]').click();
+      });
+      mouldsEl.append(b);
+    }
+    mouldsEl.querySelector('[data-m="star"]').setAttribute('aria-pressed', 'true');
+    document.getElementById('auto').addEventListener('click', autoSlice);
+    resetBtn.addEventListener('click', newBlock);
+    addEventListener('keydown', (e) => {
+      if (e.target.closest && e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
+      if (e.key === ' ' || e.key === 's' || e.key === 'S') { e.preventDefault(); autoSlice(); }
+      else if (e.key === 'n' || e.key === 'N') newBlock();
+      else if (e.ctrlKey || e.metaKey || e.altKey) return;
+      else if (e.key === 'k' || e.key === 'K') document.querySelector('[data-tool="knife"]').click();
+      else if (e.key === 'm' || e.key === 'M') document.querySelector('[data-tool="mould"]').click();
+      else if (/^[1-5]$/.test(e.key)) mouldsEl.querySelectorAll('.mould')[+e.key - 1].click();
+    });
+    addEventListener('resize', () => { const z = zf / bd; const ch = layout(); if (ch) { zf = z * bd; lying.length = 0; falling.length = 0; grains.length = 0; buildTextures(); } });
+
+    layout();
+    block = makeBlock();
+    buildTextures();
+    countEl.textContent = `0 slices · ${total} all time`;
+    start();
+    window.__ks = { autoSlice, newBlock, stamp: (x, z) => stamp(x * bw, zf + z * (bd - zf), false), setTool: (t) => document.querySelector(`[data-tool="${t}"]`).click() };
+  })();
+  </script>
+</body>
+</html>

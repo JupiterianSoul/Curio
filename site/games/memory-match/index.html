@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Memory Match · Curio</title>
+  <meta name="description" content="Flip the cards, find the pairs. Eleven themes including capitals, elements and times tables, five sizes, a robot rival, countdown and a daily deck.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="memory-match">
+  <main class="c-wrap" id="wrap">
+    <header class="g-head">
+      <svg class="hero" viewBox="0 0 180 70" aria-hidden="true">
+        <defs><linearGradient id="hb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d81b60"/><stop offset="1" stop-color="#ad1457"/></linearGradient><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8e8"/><stop offset="1" stop-color="#ffd8a0"/></linearGradient></defs>
+        <g class="hc"><rect x="22" y="8" width="40" height="54" rx="7" fill="url(#hf)" stroke="#e8c48f" stroke-width="2"/><text x="42" y="44" font-size="24" text-anchor="middle">🦊</text></g>
+        <g class="hc"><rect x="70" y="8" width="40" height="54" rx="7" fill="url(#hb)"/><rect x="75" y="13" width="30" height="44" rx="4" fill="none" stroke="#fff" stroke-opacity=".4" stroke-dasharray="3 3"/><text x="90" y="42" font-size="18" text-anchor="middle" fill="#fff">?</text></g>
+        <g class="hc"><rect x="118" y="8" width="40" height="54" rx="7" fill="url(#hf)" stroke="#e8c48f" stroke-width="2"/><text x="138" y="44" font-size="24" text-anchor="middle">🦊</text></g>
+      </svg>
+      <h1 class="c-title">Memory Match</h1>
+      <p class="c-sub">Flip two cards. Same picture? Keep them. Different? Remember where they were, you will need that.</p>
+    </header>
+    <div class="opts">
+      <div class="seg" role="group" aria-label="Board size" id="sizes"></div>
+      <div class="seg" role="group" aria-label="Mode" id="modes">
+        <button type="button" data-mode="solo">🧍 Solo</button>
+        <button type="button" data-mode="clock">⏳ Countdown</button>
+        <button type="button" data-mode="bot">🤖 vs Robot</button>
+        <button type="button" data-mode="duo">🧑‍🤝‍🧑 Two players</button>
+      </div>
+      <div class="seg" role="group" aria-label="Robot skill" id="bots"></div>
+      <div class="seg themes" role="group" aria-label="Theme" id="themes"></div>
+    </div>
+    <div class="hud">
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat" id="time-stat"><b id="time">0:00</b><span id="time-l">Time</span></div>
+      <div class="c-stat"><b id="pairs">0/6</b><span>Pairs</span></div>
+      <div class="c-stat"><b id="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b class="stars" id="stars" aria-label="Rating"><i>★</i><i>★</i><i>★</i></b><span>Rating</span></div>
+    </div>
+    <div class="players" aria-live="polite">
+      <div class="pl" id="pl1" style="--pc:#3b82f6"><span class="dot"></span><span id="n1">Player 1</span> <b id="s1">0</b></div>
+      <div class="pl" id="pl2" style="--pc:#f97316"><span class="dot"></span><span id="n2">Player 2</span> <b id="s2">0</b></div>
+    </div>
+    <div class="stage"><div class="board" id="board" role="grid" aria-label="Memory cards"></div></div>
+    <div class="c-row g-row">
+      <button class="c-btn" type="button" id="new">New game</button>
+      <button class="c-btn c-btn--ghost" type="button" id="daily">📅 Daily deck</button>
+      <label class="toggle"><input type="checkbox" id="peek"> Peek at the start</label>
+    </div>
+    <p class="bests c-muted" id="bests"></p>
+    <p class="g-help c-muted">Click or tap to flip. Arrow keys move between cards, <span class="c-kbd">Enter</span> flips, <span class="c-kbd">N</span> new game. Back-to-back matches build a combo.</p>
+    <div class="panels">
+      <details class="c-card">
+        <summary>📖 How to play</summary>
+        <ul class="rules">
+          <li>Flip two cards per turn. A match stays face up.</li>
+          <li>Pair themes (Capitals, Elements, Times tables, Spanish) match two different cards that belong together: France with Paris, Fe with Iron, 6 × 7 with 42.</li>
+          <li>Countdown: find every pair before time runs out. Each match adds two seconds.</li>
+          <li>vs Robot: take turns with a robot whose memory depends on its skill. A match earns another turn.</li>
+          <li>Stars: three for at most 1.6 moves per pair, two for 2.3.</li>
+        </ul>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs" style="margin-top:10px"></div>
+      </details>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

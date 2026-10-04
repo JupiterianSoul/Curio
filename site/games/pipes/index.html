@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pipes · Curio</title>
+  <meta name="description" content="Rotate pipe tiles until water from the pump reaches every thirsty plant. Sixty campaign levels, a daily puzzle, a three-minute rush and endless free play.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="pipes">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Pipes</h1>
+      <p class="c-sub">The plumbing is all there, just spun around. Rotate tiles until water from the pump reaches every thirsty plant, with no leaks and no loops.</p>
+    </header>
+    <div class="modes"><div class="seg" role="group" aria-label="Mode" id="modes">
+      <button type="button" data-mode="campaign">Campaign</button>
+      <button type="button" data-mode="free">Free play</button>
+      <button type="button" data-mode="daily">Daily</button>
+      <button type="button" data-mode="rush">Rush</button>
+    </div></div>
+    <div class="opts" id="freeOpts">
+      <div class="seg seg--small" role="group" aria-label="Grid size" id="seg"></div>
+      <div class="seg seg--small" role="group" aria-label="Edges"><button type="button" id="mWall" aria-pressed="true">Walls</button><button type="button" id="mWrap" aria-pressed="false">Wrap-around</button></div>
+    </div>
+    <div class="opts" id="campOpts">
+      <div class="lvl">
+        <button type="button" class="arrow" id="prev" aria-label="Previous level">‹</button>
+        <button type="button" class="name" id="lvlName" aria-expanded="false" aria-controls="picker">Level 1</button>
+        <button type="button" class="arrow" id="nextL" aria-label="Next level">›</button>
+      </div>
+      <div class="picker" id="picker"></div>
+    </div>
+    <div class="hud">
+      <div class="c-stat"><b id="moves">0</b><span>Turns</span></div>
+      <div class="c-stat"><b id="taps">0/0</b><span>Plants</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span id="timeLbl">Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span id="bestLbl">Best</span></div>
+    </div>
+    <div class="play">
+      <div class="board-wrap" id="wrapEl">
+        <svg class="board" id="board" tabindex="0" role="application" aria-label="Pipe grid. Arrow keys to move, space to rotate."></svg>
+        <div class="result" id="result" hidden>
+          <div class="result-card">
+            <div class="stars" id="rStars" aria-hidden="true"></div>
+            <h2 id="rTitle">Water works!</h2>
+            <p id="rBody"></p>
+            <div class="badges" id="rBadges"></div>
+            <div class="c-row">
+              <button class="c-btn" type="button" id="rNext">Next</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rAgain">Admire it</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="tools">
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="revMode" aria-pressed="false"><i>↺</i>Turn back</button>
+        <button class="tool" type="button" id="lockMode" aria-pressed="false"><i>🔒</i>Lock mode</button>
+        <button class="tool" type="button" id="new"><i>✦</i>New</button>
+      </div>
+      <div class="themes"><span class="lbl">Theme</span><div class="seg seg--small" role="group" aria-label="Theme" id="themes">
+        <button type="button" data-theme-pick="garden">🌱 Garden</button>
+        <button type="button" data-theme-pick="lab">🧪 Lab</button>
+        <button type="button" data-theme-pick="copper">🔧 Copper</button>
+      </div></div>
+    </div>
+    <details class="c-card prog">
+      <summary>Stats and badges <span id="badgeCount"></span></summary>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Tap a tile to turn it clockwise. Switch on Turn back (or right-click, or press Q) to turn tiles the other way. Long-press or use lock mode to pin tiles you are sure of. Leaky open ends drip. In wrap-around mode pipes can leave one edge and come back on the other. Keyboard: arrows, <span class="c-kbd">Space</span> rotate, <span class="c-kbd">Q</span> rotate back, <span class="c-kbd">L</span> lock, <span class="c-kbd">Z</span> undo, <span class="c-kbd">H</span> hint.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

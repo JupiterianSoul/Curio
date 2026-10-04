@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Your Birthday · Curio</title>
+  <meta name="description" content="Enter your birthday to find the day you were born, your star sign, Chinese zodiac animal, birthstone and what was happening in the world that year.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="your-birthday">
+  <main class="c-wrap">
+    <div class="bd-hero">
+      <svg class="bd-scene" viewBox="0 0 560 210" role="img" aria-label="A birthday cake with candles, balloons and bunting">
+        <defs>
+          <linearGradient id="bdCake" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffd1dc"/><stop offset="1" stop-color="#f48fb1"/></linearGradient>
+          <linearGradient id="bdCake2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3e0"/><stop offset="1" stop-color="#ffcc80"/></linearGradient>
+          <radialGradient id="bdGlow"><stop offset="0" stop-color="#fff59d" stop-opacity=".9"/><stop offset="1" stop-color="#fff59d" stop-opacity="0"/></radialGradient>
+        </defs>
+        <path class="bd-bunt" d="M0 14 Q140 60 280 22 Q420 60 560 14" fill="none" stroke="#a1887f" stroke-width="2"/>
+        <g class="bd-flags"><path d="M30 24l14 26 12-22z" fill="#ff7a59"/><path d="M80 36l12 26 14-22z" fill="#ffd54f"/><path d="M132 42l12 26 14-24z" fill="#4fc3f7"/><path d="M186 40l12 26 14-26z" fill="#81c784"/><path d="M240 30l12 26 14-26z" fill="#ba68c8"/><path d="M300 30l12 26 14-24z" fill="#ff7a59"/><path d="M354 40l12 26 14-24z" fill="#ffd54f"/><path d="M408 42l12 26 14-26z" fill="#4fc3f7"/><path d="M460 36l12 26 14-24z" fill="#81c784"/><path d="M510 24l12 26 14-24z" fill="#ba68c8"/></g>
+        <g class="bd-bal bd-bal1"><path d="M66 170 q6 -30 -4 -60" stroke="#9e9e9e" fill="none"/><ellipse cx="62" cy="94" rx="24" ry="30" fill="#ef5350"/><ellipse cx="54" cy="84" rx="6" ry="10" fill="#fff" opacity=".35"/><path d="M58 123l4 -4 4 4z" fill="#ef5350"/></g>
+        <g class="bd-bal bd-bal2"><path d="M110 176 q-8 -26 2 -54" stroke="#9e9e9e" fill="none"/><ellipse cx="112" cy="106" rx="21" ry="26" fill="#42a5f5"/><ellipse cx="105" cy="98" rx="5" ry="8" fill="#fff" opacity=".35"/><path d="M108 131l4 -4 4 4z" fill="#42a5f5"/></g>
+        <g class="bd-bal bd-bal3"><path d="M492 172 q-6 -28 4 -58" stroke="#9e9e9e" fill="none"/><ellipse cx="496" cy="96" rx="24" ry="30" fill="#ffca28"/><ellipse cx="488" cy="86" rx="6" ry="10" fill="#fff" opacity=".4"/><path d="M492 125l4 -4 4 4z" fill="#ffca28"/></g>
+        <g class="bd-bal bd-bal4"><path d="M448 178 q8 -26 -2 -52" stroke="#9e9e9e" fill="none"/><ellipse cx="446" cy="112" rx="20" ry="25" fill="#66bb6a"/><ellipse cx="440" cy="104" rx="5" ry="8" fill="#fff" opacity=".35"/><path d="M442 136l4 -4 4 4z" fill="#66bb6a"/></g>
+        <ellipse cx="280" cy="198" rx="120" ry="10" fill="#000" opacity=".08"/>
+        <rect x="190" y="150" width="180" height="46" rx="10" fill="url(#bdCake)"/>
+        <rect x="214" y="116" width="132" height="40" rx="10" fill="url(#bdCake2)"/>
+        <path d="M190 160 q15 14 30 0 q15 14 30 0 q15 14 30 0 q15 14 30 0 q15 14 30 0 q15 14 30 0" fill="#fff" opacity=".85"/>
+        <path d="M214 124 q11 10 22 0 q11 10 22 0 q11 10 22 0 q11 10 22 0 q11 10 22 0 q11 10 22 0" fill="#ec407a" opacity=".8"/>
+        <g fill="#ff7043"><circle cx="210" cy="180" r="3"/><circle cx="250" cy="186" r="3" fill="#29b6f6"/><circle cx="292" cy="180" r="3" fill="#66bb6a"/><circle cx="330" cy="186" r="3"/><circle cx="352" cy="176" r="3" fill="#ab47bc"/></g>
+        <g class="bd-cand"><rect x="244" y="88" width="8" height="30" rx="3" fill="#4fc3f7"/><rect x="276" y="84" width="8" height="34" rx="3" fill="#ffca28"/><rect x="308" y="88" width="8" height="30" rx="3" fill="#ef5350"/>
+          <circle cx="248" cy="80" r="12" fill="url(#bdGlow)"/><circle cx="280" cy="76" r="12" fill="url(#bdGlow)"/><circle cx="312" cy="80" r="12" fill="url(#bdGlow)"/>
+          <path class="bd-fl" d="M248 72 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/><path class="bd-fl" d="M280 68 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/><path class="bd-fl" d="M312 72 q6 8 0 14 q-6 -6 0 -14z" fill="#ff9800"/></g>
+      </svg>
+      <h1 class="c-title">Your Birthday</h1>
+      <p class="c-sub">Tell us when you arrived and we'll tell you what kind of day it was, what the stars (allegedly) think, how old you are on Jupiter, who shares your birthday, and what the world was up to.</p>
+      <form class="bd-form" id="form">
+        <label for="dob">Your birthday</label>
+        <input class="c-input" type="date" id="dob" min="1900-01-01" required>
+        <button class="c-btn" type="submit">Reveal 🎉</button>
+      </form>
+    </div>
+    <div id="empty">
+      <div class="bd-teasers" aria-hidden="true"><span>🌙 Moon phase</span><span>🪐 Planet ages</span><span>🎂 Blow the candles</span><span>🌟 Famous twins</span><span>👯 Compare a friend</span><span>🗞️ Your year</span></div>
+      <p class="c-muted" style="text-align:center">Pick a date to begin. It's only stored on this device.</p>
+    </div>
+
+    <div id="out" hidden>
+      <div class="bd-big">
+        <svg class="bd-big-deco" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><g fill="#fff" opacity=".18"><circle cx="20" cy="20" r="6"/><rect x="60" y="80" width="10" height="10" transform="rotate(20 65 85)"/><circle cx="120" cy="100" r="4"/><path d="M180 10l6 12 12 2-9 8 2 12-11-6-11 6 2-12-9-8 12-2z"/><circle cx="260" cy="30" r="5"/><rect x="300" y="70" width="12" height="6" transform="rotate(-30 306 73)"/><circle cx="360" cy="100" r="7"/><path d="M370 14l4 8 8 1-6 6 1 8-7-4-7 4 1-8-6-6 8-1z"/></g></svg>
+        <small>You were born on a</small>
+        <b id="dow"></b>
+        <p id="rhyme"></p>
+        <div class="bd-big-row"><span id="bigDate"></span><button class="bd-share" id="share" type="button">📋 Copy my birthday card</button></div>
+      </div>
+      <div class="bd-grid" id="cards"></div>
+
+      <h2 class="bd-h">🎂 Make a wish</h2>
+      <div class="c-card bd-cakebox">
+        <svg id="cake" class="bd-cake" viewBox="0 0 400 260" role="img" aria-label="Your birthday cake with one candle for every year"></svg>
+        <div class="bd-cake-ui">
+          <p id="cakeText">Press and hold the button (or the cake, or Space) to blow out your candles.</p>
+          <button class="c-btn" id="blow" type="button">💨 Hold to blow</button>
+          <button class="c-btn c-btn--ghost" id="relight" type="button">🕯️ Relight</button>
+          <p class="c-muted bd-cake-best" id="cakeBest"></p>
+        </div>
+      </div>
+
+      <h2 class="bd-h">Your next birthday</h2>
+      <div class="c-card bd-next">
+        <div class="bd-days" id="nextDays">0</div>
+        <p id="nextText"></p>
+        <div class="bd-bar" aria-hidden="true"><i id="nextBar"></i></div>
+        <p class="c-muted" id="nextPct" style="font-size:13px"></p>
+        <div class="bd-weekdays" id="weekdays"></div>
+      </div>
+
+      <h2 class="bd-h">How old are you, exactly?</h2>
+      <div class="bd-ages" id="ages"></div>
+
+      <h2 class="bd-h">🪐 Your age on other worlds</h2>
+      <div class="c-card bd-planets">
+        <svg id="orbits" class="bd-orbits" viewBox="0 0 400 400" role="img" aria-label="The planets on their orbits, with your age on each"></svg>
+        <div class="bd-plist" id="plist"></div>
+      </div>
+
+      <h2 class="bd-h">📊 Your life in numbers</h2>
+      <div class="bd-life" id="life"></div>
+      <p class="c-muted bd-note">Rough estimates using typical adult averages, so treat them as fun, not medical.</p>
+
+      <h2 class="bd-h">🌟 Famous birthday twins</h2>
+      <div class="bd-twins" id="twins"></div>
+
+      <h2 class="bd-h">Strange birthdays to look forward to</h2>
+      <ul class="bd-miles" id="miles"></ul>
+
+      <h2 class="bd-h">👯 Compare with a friend</h2>
+      <div class="c-card bd-friend">
+        <form class="bd-form" id="fform">
+          <label for="fname">Name</label><input class="c-input" id="fname" maxlength="24" placeholder="Sam" autocomplete="off">
+          <label for="fdob">Birthday</label><input class="c-input" type="date" id="fdob" min="1900-01-01">
+          <button class="c-btn" type="submit">Compare</button>
+        </form>
+        <div id="fout"></div>
+      </div>
+
+      <h2 class="bd-h">The world in your year</h2>
+      <div class="bd-year" id="yearCard"></div>
+      <div class="bd-tablewrap" id="tableWrap">
+        <table class="bd-table"><tbody id="table"></tbody></table>
+      </div>
+      <p class="c-muted bd-foot">Chinese zodiac years start at Chinese New Year, not 1 January, so early-year birthdays may belong to the previous animal. Star signs use the usual tropical dates, which can shift by a day from year to year. Birthstones follow the modern list. Moon phases are calculated, so they can be off by a few hours.</p>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

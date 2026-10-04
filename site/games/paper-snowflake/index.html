@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Paper Snowflake · Curio</title>
+  <meta name="description" content="Fold a sheet of paper, snip shapes out of the wedge, then unfold it to reveal your own one of a kind snowflake. Hang them in a snowy window.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 10px; padding-bottom: 24px; }
+    .ps-head { text-align: center; }
+    .ps-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .ps-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .ps-stage { position: relative; height: max(380px, calc(100dvh - var(--bar-h) - 250px)); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); background: #2b3e63; }
+    #cv { display: block; width: 100%; height: 100%; touch-action: none; -webkit-user-select: none; user-select: none; }
+    .ps-hint { position: absolute; left: 12px; right: 12px; bottom: 10px; width: fit-content; margin: 0 auto; text-align: center; font-size: 13px; font-weight: 800; color: #fff; pointer-events: none; padding: 4px 12px; border-radius: 999px; background: rgba(10,20,45,.45); }
+    .ps-hint:empty { display: none; }
+    .ps-panel { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: center; margin-top: 12px; min-height: 44px; }
+    .ps-panel[hidden] { display: none; }
+    .ps-panel .c-btn { padding: 8px 14px; font-size: 14px; }
+    .ps-panel label { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink-2); font-size: 14px; }
+    .ps-panel input[type=range] { width: 90px; accent-color: var(--accent); }
+    .tools { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+    .tools button { border: 0; background: transparent; width: 38px; height: 34px; border-radius: 999px; cursor: pointer; font-size: 17px; touch-action: manipulation; color: var(--ink); }
+    .tools button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+    .sws { display: flex; gap: 5px; }
+    .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); cursor: pointer; padding: 0; touch-action: manipulation; }
+    .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+    .ps-gal { margin-top: 18px; }
+    .ps-gal h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 0 0 8px; text-align: center; }
+    .ps-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .gi { position: relative; }
+    .gi > button:first-child { border: 1.5px solid var(--line); background: #2b3e63; border-radius: 14px; padding: 4px; cursor: pointer; display: block; }
+    .gi canvas { width: 64px; height: 64px; display: block; }
+    .gi .del { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 900; cursor: pointer; line-height: 1; }
+    .ps-empty { color: var(--ink-3); font-size: 14px; text-align: center; }
+    @media (max-width: 560px) {
+      .ps-stage { height: max(340px, calc(100dvh - var(--bar-h) - 330px)); }
+      .tools button { width: 34px; }
+      .ps-panel .c-btn { padding: 8px 11px; font-size: 13px; }
+      .ps-panel input[type=range] { width: 72px; }
+    }
+  </style>
+</head>
+<body data-game="paper-snowflake">
+  <main class="c-wrap">
+    <div class="ps-head">
+      <h1 class="c-title">Paper Snowflake</h1>
+      <p class="c-sub">Fold, snip, unfold. Cuts that touch the folded edges make the prettiest holes.</p>
+    </div>
+    <div class="ps-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="A folded paper wedge you can cut with scissors, which unfolds into a six-sided snowflake."></canvas>
+      <div class="ps-hint" id="hint"></div>
+    </div>
+    <div class="ps-panel" id="pCut" hidden>
+      <div class="tools" id="tools" role="group" aria-label="Cutting tool">
+        <button type="button" data-t="free" title="Scissors: drag to cut any shape (1)" aria-label="Scissors">✂️</button>
+        <button type="button" data-t="circle" title="Circle punch (2)" aria-label="Circle punch">🔵</button>
+        <button type="button" data-t="heart" title="Heart punch (3)" aria-label="Heart punch">🤍</button>
+        <button type="button" data-t="star" title="Star punch (4)" aria-label="Star punch">⭐</button>
+        <button type="button" data-t="diamond" title="Diamond punch (5)" aria-label="Diamond punch">🔷</button>
+        <button type="button" data-t="tri" title="Triangle punch (6)" aria-label="Triangle punch">🔺</button>
+      </div>
+      <label>Punch <input type="range" id="psize" min="8" max="60" value="24" aria-label="Punch size"></label>
+      <div class="sws" id="papers" role="group" aria-label="Paper colour"></div>
+      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo cut">↶ Undo</button>
+      <button class="c-btn c-btn--ghost" type="button" id="fresh">📄 New paper</button>
+      <button class="c-btn" type="button" id="unfold" title="Unfold (U)">❄️ Unfold!</button>
+    </div>
+    <div class="ps-panel" id="pView" hidden>
+      <button class="c-btn" type="button" id="hang">🪟 Hang in window</button>
+      <button class="c-btn c-btn--ghost" type="button" id="refold">✂️ Fold back &amp; keep cutting</button>
+      <button class="c-btn c-btn--ghost" type="button" id="fresh2">📄 New paper</button>
+      <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+    </div>
+    <div class="ps-panel" id="pWin" hidden>
+      <button class="c-btn" type="button" id="another">✂️ Make another</button>
+      <button class="c-btn c-btn--ghost" type="button" id="png2">📷 Save PNG</button>
+    </div>
+    <div class="ps-gal">
+      <h2>Your snowflakes</h2>
+      <div class="ps-list" id="gal"></div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const cv = document.getElementById('cv'), g = cv.getContext('2d');
+    const stage = document.getElementById('stage');
+    const S = 720, C = S / 2, RAD = S * 0.47;
+    const PAPERS = [['#fbfcff', 'White'], ['#d6ecff', 'Ice'], ['#ffd9e6', 'Pink'], ['#fff2b3', 'Lemon'], ['#e3d7ff', 'Lilac'], ['#d4f5e2', 'Mint']];
+    let W = 0, Hc = 0, dpr = 1, t = 0;
+    let phase = 'fold', cuts = [], paper = 0, tool = 'free', psize = 24;
+    let gallery = [], undo = [];
+    let anim = null, foldT = 0, unfoldE = 0, viewRot = 0;
+    let path = null, pieces = [], pointer = null, spinV = 0;
+    const mask = document.createElement('canvas'); mask.width = mask.height = S;
+    const prev = document.createElement('canvas');
+    const off = document.createElement('canvas'), octx = off.getContext('2d');
+    let M = new DOMMatrix(), MI = new DOMMatrix();
+    const flakes = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 2.2, v: 0.02 + Math.random() * 0.05, ph: Math.random() * 6 }));
+    let hung = [];
+
+    function wedge(x) {
+      const p0 = [C, C - RAD], p1 = [C + Math.cos(-Math.PI / 3) * RAD, C + Math.sin(-Math.PI / 3) * RAD];
+      const e = 0.02;
+      x.beginPath(); x.moveTo(C, C);
+      x.lineTo(p0[0] + (p0[0] - p1[0]) * e, p0[1] + (p0[1] - p1[1]) * e);
+      x.lineTo(p1[0] + (p1[0] - p0[0]) * e, p1[1] + (p1[1] - p0[1]) * e);
+      x.closePath();
+    }
+    function shapePath(x, kind, cx, cy, r, rot) {
+      x.save(); x.translate(cx, cy); x.rotate(rot);
+      x.beginPath();
+      if (kind === 'circle') x.arc(0, 0, r, 0, Math.PI * 2);
+      else if (kind === 'heart') {
+        x.moveTo(0, r * 0.9);
+        x.bezierCurveTo(-r * 1.3, -r * 0.1, -r * 0.7, -r * 1.1, 0, -r * 0.45);
+        x.bezierCurveTo(r * 0.7, -r * 1.1, r * 1.3, -r * 0.1, 0, r * 0.9);
+      } else if (kind === 'star') {
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; x.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+      } else if (kind === 'diamond') { x.moveTo(0, -r); x.lineTo(r * 0.6, 0); x.lineTo(0, r); x.lineTo(-r * 0.6, 0); }
+      else if (kind === 'tri') { for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + i * Math.PI * 2 / 3; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); } }
+      x.closePath(); x.restore();
+    }
+    function renderMask(m, size, cs, pi) {
+      m.width = m.height = size;
+      const x = m.getContext('2d');
+      x.setTransform(size / S, 0, 0, size / S, 0, 0);
+      x.fillStyle = PAPERS[pi][0];
+      wedge(x); x.fill();
+      x.save(); wedge(x); x.clip();
+      let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+      x.fillStyle = 'rgba(120,130,160,.06)';
+      for (let i = 0; i < 260; i++) x.fillRect(C + rnd() * RAD * 0.6 - 10, C - rnd() * RAD, 1 + rnd() * 3, 1);
+      x.restore();
+      x.globalCompositeOperation = 'destination-out';
+      x.fillStyle = '#000';
+      for (const c of cs) {
+        if (c.p) {
+          x.beginPath();
+          for (let i = 0; i < c.p.length; i += 2) x.lineTo(c.p[i] * S, c.p[i + 1] * S);
+          x.closePath(); x.fill();
+        } else { shapePath(x, c.k, c.x * S, c.y * S, c.r * S, c.a); x.fill(); }
+      }
+      x.globalCompositeOperation = 'source-over';
+    }
+    function compose(x, m, cx, cy, scale, rot, e = 1, shadow = 0) {
+      for (let k = 0; k < 6; k++) for (let mi = 0; mi < 2; mi++) {
+        const st = Math.max(0, Math.min(1, e * 1.5 - (k * 2 + mi) * 0.045));
+        const ee = st < 0.5 ? 2 * st * st : 1 - Math.pow(-2 * st + 2, 2) / 2;
+        x.save(); x.translate(cx, cy); x.rotate(rot + k * Math.PI / 3 * ee);
+        if (mi) x.scale(Math.cos(Math.PI * ee), 1);
+        x.scale(scale, scale);
+        if (shadow) { x.shadowColor = 'rgba(0,0,20,.35)'; x.shadowBlur = shadow; x.shadowOffsetY = shadow * 0.4; }
+        x.drawImage(m, -C, -C, S, S);
+        if (ee >= 1) { x.rotate(0.006); x.drawImage(m, -C, -C, S, S); }
+        x.restore();
+      }
+    }
+    function flakeCanvas(cs, pi, size) {
+      const m = document.createElement('canvas'); renderMask(m, Math.min(S, size * 2), cs, pi);
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      compose(c.getContext('2d'), m, size / 2, size / 2, size / S * 1.02, 0);
+      return c;
+    }
+    function refresh() {
+      renderMask(mask, S, cuts, paper);
+      prev.width = prev.height = 240;
+      const x = prev.getContext('2d');
+      compose(x, mask, 120, 120, 240 / S * 1.02, 0);
+    }
+
+    function cutView() {
+      const k = Math.min((Hc * 0.84) / RAD, (W * 0.86) / (RAD * 0.56));
+      return new DOMMatrix().translate(W / 2, Hc * 0.07).rotate(165).scale(k).translate(-C, -C);
+    }
+    function setM(m) { M = m; MI = m.inverse(); }
+    const toMask = (p) => { const q = MI.transformPoint(new DOMPoint(p[0], p[1])); return [q.x, q.y]; };
+
+    function bgDesk() {
+      const gr = g.createLinearGradient(0, 0, 0, Hc);
+      gr.addColorStop(0, '#3a5a8c'); gr.addColorStop(1, '#22355a');
+      g.fillStyle = gr; g.fillRect(0, 0, W, Hc);
+      g.fillStyle = 'rgba(255,255,255,.05)';
+      for (let i = 0; i < 12; i++) { const x = (i * 97) % W, y = (i * 61) % Hc; g.beginPath(); g.arc(x, y, 40 + (i % 3) * 20, 0, 7); g.fill(); }
+    }
+    function bgNight(snowAmt = 1) {
+      const gr = g.createLinearGradient(0, 0, 0, Hc);
+      gr.addColorStop(0, '#0f1b3a'); gr.addColorStop(1, '#2c4a7a');
+      g.fillStyle = gr; g.fillRect(0, 0, W, Hc);
+      g.fillStyle = 'rgba(255,255,255,.9)';
+      for (const f of flakes) {
+        f.y += f.v / 60 * snowAmt; f.x += Math.sin(t * 0.6 + f.ph) * 0.0004;
+        if (f.y > 1.02) { f.y = -0.02; f.x = Math.random(); }
+        g.globalAlpha = 0.35 + f.r / 4;
+        g.beginPath(); g.arc(f.x * W, f.y * Hc, f.r, 0, 7); g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+
+    const FOLDS = [
+      { a: 0, keep: Math.PI / 2 },
+      { a: Math.PI / 3, keep: Math.PI / 2 },
+      { a: 2 * Math.PI / 3, keep: Math.PI / 2 },
+      { a: Math.PI / 2, keep: 7 * Math.PI / 12 }
+    ];
+    function halfPlane(x, a, keepAng, keepSide) {
+      const dx = Math.cos(a), dy = Math.sin(a), nx = -dy, ny = dx;
+      let sgn = Math.sign(Math.cos(keepAng) * nx + Math.sin(keepAng) * ny) || 1;
+      if (!keepSide) sgn = -sgn;
+      const B = 50;
+      x.beginPath();
+      x.moveTo(-dx * B, -dy * B); x.lineTo(dx * B, dy * B);
+      x.lineTo(dx * B + nx * B * sgn, dy * B + ny * B * sgn); x.lineTo(-dx * B + nx * B * sgn, -dy * B + ny * B * sgn);
+      x.closePath();
+    }
+    function reflectM(a, c) {
+      const ca = Math.cos(a), sa = Math.sin(a);
+      return new DOMMatrix([ca, sa, -sa, ca, 0, 0]).multiply(new DOMMatrix([1, 0, 0, c, 0, 0])).multiply(new DOMMatrix([ca, -sa, sa, ca, 0, 0]));
+    }
+    function drawLevel(x, lvl, col, back) {
+      if (lvl === 0) {
+        x.beginPath(); x.moveTo(0, -1.41); x.lineTo(1.41, 0); x.lineTo(0, 1.41); x.lineTo(-1.41, 0); x.closePath();
+        x.fillStyle = col; x.fill();
+        if (back) { x.fillStyle = 'rgba(40,60,110,.12)'; x.fill(); }
+        x.strokeStyle = 'rgba(60,80,130,.25)'; x.lineWidth = 0.008; x.stroke();
+        return;
+      }
+      const f = FOLDS[lvl - 1];
+      x.save(); halfPlane(x, f.a, f.keep, true); x.clip(); drawLevel(x, lvl - 1, col, back); x.restore();
+      x.save(); x.transform(...m6(reflectM(f.a, -1))); halfPlane(x, f.a, f.keep, false); x.clip(); drawLevel(x, lvl - 1, col, !back); x.restore();
+    }
+    const m6 = (m) => [m.a, m.b, m.c, m.d, m.e, m.f];
+    function drawFolding(p) {
+      bgDesk();
+      const step = Math.min(FOLDS.length, Math.floor(p)), q = p - step;
+      const base = Math.min(W, Hc) * 0.3;
+      const col = PAPERS[paper][0];
+      const toCut = p > FOLDS.length ? Math.min(1, p - FOLDS.length) : 0;
+      g.save();
+      g.translate(W / 2, Hc * (0.42 - 0.08 * Math.min(step, 3) / 3) * (1 - toCut) + Hc * 0.07 * toCut);
+      const sc = base * (1 + step * 0.18) * (1 - toCut) + toCut * Math.min((Hc * 0.84) / 1.41, (W * 0.86) / (1.41 * 0.56)) * 0.98;
+      g.scale(sc, sc);
+      g.rotate(-Math.PI / 12 * Math.min(1, toCut + (step >= 4 ? 0 : 0)));
+      g.shadowColor = 'rgba(0,0,30,.35)'; g.shadowBlur = 18; g.shadowOffsetY = 6;
+      if (step < FOLDS.length) {
+        const f = FOLDS[step];
+        const e = q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2;
+        const c = Math.cos(Math.PI * e);
+        g.save(); halfPlane(g, f.a, f.keep, true); g.clip(); drawLevel(g, step, col, false); g.restore();
+        g.shadowColor = 'transparent';
+        g.save(); g.transform(...m6(reflectM(f.a, c))); halfPlane(g, f.a, f.keep, false); g.clip(); drawLevel(g, step, col, c < 0);
+        g.fillStyle = `rgba(30,40,80,${0.18 * Math.sin(Math.PI * e)})`; g.fill();
+        g.restore();
+      } else {
+        g.globalAlpha = 1 - toCut;
+        drawLevel(g, FOLDS.length, col, false);
+        g.globalAlpha = 1;
+      }
+      g.restore();
+      if (toCut > 0) { g.globalAlpha = toCut; drawCutScene(true); g.globalAlpha = 1; }
+    }
+    function drawCutScene(noBg) {
+      if (!noBg) bgDesk();
+      setM(cutView());
+      g.save(); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.transform(...m6(M));
+      g.shadowColor = 'rgba(0,0,30,.4)'; g.shadowBlur = 16; g.shadowOffsetY = 5;
+      g.drawImage(mask, 0, 0);
+      g.shadowColor = 'transparent';
+      const kk = Math.hypot(M.a, M.b); g.setLineDash([8 / kk, 6 / kk]);
+      g.strokeStyle = 'rgba(70,100,170,.45)'; g.lineWidth = 2 / Math.hypot(M.a, M.b);
+      g.beginPath();
+      g.moveTo(C, C); g.lineTo(C + Math.cos(-Math.PI / 2) * RAD, C + Math.sin(-Math.PI / 2) * RAD);
+      g.moveTo(C, C); g.lineTo(C + Math.cos(-Math.PI / 3) * RAD, C + Math.sin(-Math.PI / 3) * RAD);
+      g.stroke(); g.setLineDash([]);
+      g.restore();
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!noBg) {
+        const pr = Math.min(W, Hc) * 0.13, px = W - pr - 14, py = pr + 14;
+        g.fillStyle = 'rgba(15,27,58,.55)'; g.beginPath(); g.arc(px, py, pr + 6, 0, 7); g.fill();
+        g.drawImage(prev, px - pr, py - pr, pr * 2, pr * 2);
+        g.fillStyle = 'rgba(255,255,255,.75)'; g.font = '800 11px system-ui, sans-serif'; g.textAlign = 'center';
+        g.fillText('PREVIEW', px, py + pr + 18);
+      }
+    }
+    function drawPath() {
+      if (path && path.length > 1) {
+        g.strokeStyle = '#ff5a36'; g.lineWidth = 2.5; g.setLineDash([7, 5]); g.lineDashOffset = -t * 30;
+        g.beginPath(); path.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
+        g.setLineDash([]);
+        g.strokeStyle = 'rgba(255,90,54,.35)';
+        g.beginPath(); g.moveTo(path[path.length - 1][0], path[path.length - 1][1]); g.lineTo(path[0][0], path[0][1]); g.stroke();
+      }
+      if (pointer && phase === 'cut') {
+        if (tool === 'free') {
+          g.save(); g.translate(pointer[0], pointer[1]);
+          const a = path && path.length > 2 ? Math.atan2(pointer[1] - path[path.length - 3][1], pointer[0] - path[path.length - 3][0]) : -0.6;
+          g.rotate(a + Math.PI / 4 + Math.sin(t * 20) * (path ? 0.12 : 0));
+          g.font = '26px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('✂️', 0, 0);
+          g.restore();
+        } else {
+          const k = Math.hypot(M.a, M.b);
+          g.save(); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+          shapePath(g, tool, pointer[0], pointer[1], psize / 720 * S * k * 0.5, punchRot());
+          g.strokeStyle = '#ff5a36'; g.lineWidth = 2; g.setLineDash([5, 4]); g.stroke(); g.setLineDash([]);
+          g.restore();
+        }
+      }
+    }
+    const punchRot = () => 0;
+    function drawPieces(dt) {
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        const p = pieces[i];
+        p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt; p.life -= dt;
+        if (p.life <= 0 || p.y > Hc + 200) { pieces.splice(i, 1); continue; }
+        g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.globalAlpha = Math.min(1, p.life * 2);
+        g.fillStyle = PAPERS[paper][0]; g.strokeStyle = 'rgba(60,80,130,.3)'; g.lineWidth = 1;
+        g.beginPath(); p.pts.forEach((q, j) => j ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.fill(); g.stroke();
+        g.restore();
+      }
+      g.globalAlpha = 1;
+    }
+    function drawView(e) {
+      const cut = cutView();
+      const fin = Math.min(W, Hc) * 0.44 / RAD;
+      const k = Math.hypot(cut.a, cut.b);
+      const ee = e < 0.5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2;
+      bgDesk();
+      if (e > 0) { g.globalAlpha = Math.min(1, e * 1.4); bgNight(0.6); g.globalAlpha = 1; }
+      const cxp = W / 2 + 0 * ee;
+      const ax = W / 2, ay = Hc * 0.07;
+      const cx = ax + (cxp - ax) * ee, cy = ay + (Hc / 2 - ay) * ee;
+      const sc = k + (fin - k) * ee;
+      const rot = (165 * Math.PI / 180) * (1 - ee) + viewRot * ee;
+      if (e > 0.85) {
+        const gl = g.createRadialGradient(cx, cy, 0, cx, cy, RAD * sc * 1.2);
+        gl.addColorStop(0, `rgba(160,200,255,${0.25 * (e - 0.85) / 0.15})`); gl.addColorStop(1, 'rgba(160,200,255,0)');
+        g.fillStyle = gl; g.beginPath(); g.arc(cx, cy, RAD * sc * 1.2, 0, 7); g.fill();
+      }
+      if (off.width !== cv.width || off.height !== cv.height) { off.width = cv.width; off.height = cv.height; }
+      octx.setTransform(1, 0, 0, 1, 0, 0); octx.clearRect(0, 0, off.width, off.height);
+      octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      compose(octx, mask, cx, cy, sc, rot, e, 0);
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+      g.shadowColor = 'rgba(0,0,20,.45)'; g.shadowBlur = 14 * dpr; g.shadowOffsetY = 5 * dpr;
+      g.drawImage(off, 0, 0); g.restore();
+      if (e >= 1) {
+        for (let i = 0; i < 8; i++) {
+          const a = t * 0.3 + i * 0.785, r = RAD * sc * (0.75 + 0.2 * Math.sin(t * 1.3 + i));
+          const tw = 0.5 + 0.5 * Math.sin(t * 3 + i * 2);
+          g.fillStyle = `rgba(255,255,255,${tw * 0.8})`;
+          g.beginPath(); const sx = cx + Math.cos(a) * r, sy = cy + Math.sin(a) * r; g.moveTo(sx, sy - 6); g.lineTo(sx + 1.5, sy - 1.5); g.lineTo(sx + 6, sy); g.lineTo(sx + 1.5, sy + 1.5); g.lineTo(sx, sy + 6); g.lineTo(sx - 1.5, sy + 1.5); g.lineTo(sx - 6, sy); g.lineTo(sx - 1.5, sy - 1.5); g.closePath(); g.fill();
+        }
+      }
+    }
+    function drawWindow() {
+      bgNight(1);
+      g.fillStyle = '#e9f1fb';
+      g.beginPath(); g.moveTo(0, Hc * 0.86);
+      for (let x = 0; x <= W; x += 10) g.lineTo(x, Hc * 0.86 - Math.sin(x / W * 5 + 1) * Hc * 0.04 - Math.sin(x / W * 13) * Hc * 0.01);
+      g.lineTo(W, Hc); g.lineTo(0, Hc); g.closePath(); g.fill();
+      for (let i = 0; i < 4; i++) {
+        const hx = W * (0.12 + i * 0.24), hy = Hc * 0.86 - Math.sin(hx / W * 5 + 1) * Hc * 0.04 - Hc * 0.04, hw = Math.min(W, Hc) * 0.08;
+        g.fillStyle = '#3b3550'; g.fillRect(hx - hw / 2, hy - hw * 0.6, hw, hw * 0.8);
+        g.fillStyle = '#f4f7fb'; g.beginPath(); g.moveTo(hx - hw * 0.62, hy - hw * 0.55); g.lineTo(hx, hy - hw * 1.05); g.lineTo(hx + hw * 0.62, hy - hw * 0.55); g.closePath(); g.fill();
+        g.fillStyle = `rgba(255,210,120,${0.85 + 0.15 * Math.sin(t * 2 + i)})`; g.fillRect(hx - hw * 0.28, hy - hw * 0.35, hw * 0.2, hw * 0.2); g.fillRect(hx + hw * 0.08, hy - hw * 0.35, hw * 0.2, hw * 0.2);
+      }
+      const fr = Math.max(14, Math.min(W, Hc) * 0.045);
+      for (const h of hung) {
+        h.ang += h.av / 60; h.av *= 0.985; h.av += Math.sin(t * 0.5 + h.ph) * 0.002;
+        const sway = Math.sin(t * 0.8 + h.ph) * 0.04;
+        const px = h.x * W, py = fr * 1.2, len = h.len * (Hc - fr * 4);
+        const fx = px + Math.sin(sway) * len, fy = py + Math.cos(sway) * len;
+        h.sx = fx; h.sy = fy;
+        g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(px, py); g.lineTo(fx, fy - h.size * 0.42); g.stroke();
+        g.save(); g.translate(fx, fy); g.rotate(h.ang); g.scale(Math.cos(t * 0.35 + h.ph) * 0.15 + 0.85, 1);
+        g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 8; g.shadowOffsetY = 3;
+        g.drawImage(h.img, -h.size / 2, -h.size / 2, h.size, h.size);
+        g.restore();
+      }
+      const frameCol = '#f3e7d6', frameDark = '#d9c7ae';
+      g.fillStyle = frameCol;
+      g.fillRect(0, 0, W, fr); g.fillRect(0, Hc - fr * 1.6, W, fr * 1.6); g.fillRect(0, 0, fr, Hc); g.fillRect(W - fr, 0, fr, Hc);
+      g.fillRect(W / 2 - fr * 0.35, 0, fr * 0.7, Hc); g.fillRect(0, Hc * 0.48 - fr * 0.3, W, fr * 0.6);
+      g.fillStyle = frameDark; g.fillRect(0, Hc - fr * 1.6, W, fr * 0.25);
+      g.fillStyle = 'rgba(255,255,255,.07)';
+      g.beginPath(); g.moveTo(W * 0.1, fr); g.lineTo(W * 0.2, fr); g.lineTo(W * 0.08, Hc * 0.48); g.lineTo(fr, Hc * 0.48); g.closePath(); g.fill();
+      g.fillStyle = '#c96b4a'; g.fillRect(W * 0.08, Hc - fr * 1.6 - Hc * 0.05, Hc * 0.05, Hc * 0.05);
+      g.fillStyle = '#5aa35a'; g.beginPath(); g.arc(W * 0.08 + Hc * 0.025, Hc - fr * 1.6 - Hc * 0.06, Hc * 0.03, 0, 7); g.fill();
+      if (!hung.length) {
+        g.fillStyle = 'rgba(255,255,255,.8)'; g.font = '800 16px system-ui, sans-serif'; g.textAlign = 'center';
+        g.fillText('No snowflakes hung yet. Cut one!', W / 2, Hc * 0.3);
+      }
+    }
+
+    function tone(f, d = 0.2, type = 'sine', v = 0.05, slide = 0) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0);
+      if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t0 + d);
+      gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.05);
+    }
+    function noise(d, f, v, type = 'highpass', q = 0.7) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const len = Math.floor(ac.sampleRate * d), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2;
+      const src = ac.createBufferSource(), fl = ac.createBiquadFilter(), gn = ac.createGain();
+      src.buffer = buf; fl.type = type; fl.frequency.value = f; fl.Q.value = q; gn.gain.value = v;
+      src.connect(fl).connect(gn).connect(ac.destination); src.start();
+    }
+    const snip = () => { noise(0.035, 4200, 0.22); setTimeout(() => noise(0.03, 3600, 0.16), 55); };
+    const rustle = (d = 0.5) => noise(d, 1600, 0.06, 'bandpass', 0.6);
+
+    const hint = document.getElementById('hint');
+    const panels = { cut: document.getElementById('pCut'), view: document.getElementById('pView'), window: document.getElementById('pWin') };
+    function setPhase(p) {
+      phase = p;
+      for (const k in panels) panels[k].hidden = !(k === p || (p === 'fold' && k === 'cut') || (p === 'unfold' && k === 'view'));
+      hint.textContent = p === 'fold' ? 'Folding... fold, fold, fold, fold.' : p === 'cut' ? (tool === 'free' ? (Curio.touchpad ? 'Click to start cutting, move around a shape, click again to close the loop.' : 'Drag to cut out a shape. Your loop closes itself when you let go.') : 'Tap the paper to punch a hole.') : p === 'view' ? 'Ta-da! Every one is different.' : p === 'window' ? 'Tap a snowflake to give it a twirl.' : '';
+      cv.style.cursor = p === 'cut' ? (tool === 'free' ? 'none' : 'crosshair') : p === 'window' ? 'pointer' : 'default';
+    }
+    function startFold() {
+      cuts = []; refresh(); undo = [];
+      foldT = 0; anim = 'fold'; setPhase('fold'); save();
+    }
+    function startUnfold(back = false) {
+      anim = back ? 'refold' : 'unfold'; unfoldE = back ? 1 : 0;
+      if (!back) viewRot = Curio.rand(-0.3, 0.3);
+      setPhase(back ? 'unfold' : 'unfold');
+      rustle(1.1);
+      if (!back) [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => tone(f, 0.8, 'sine', 0.035), 250 + i * 140));
+    }
+
+    function addCut(c, ptsScreen) {
+      undo.push(cuts.slice());
+      cuts.push(c); refresh(); save();
+      if (ptsScreen && ptsScreen.length > 2) {
+        let cx = 0, cy = 0; for (const p of ptsScreen) { cx += p[0]; cy += p[1]; } cx /= ptsScreen.length; cy /= ptsScreen.length;
+        pieces.push({ pts: ptsScreen.map((p) => [p[0] - cx, p[1] - cy]), x: cx, y: cy, vx: Curio.rand(-60, 60), vy: -120, r: 0, vr: Curio.rand(-4, 4), life: 1.6 });
+      }
+    }
+    function simplify(pts, tol) {
+      const out = [pts[0]];
+      for (const p of pts) { const l = out[out.length - 1]; if (Math.hypot(p[0] - l[0], p[1] - l[1]) >= tol) out.push(p); }
+      return out;
+    }
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    let lastSnip = 0;
+    cv.addEventListener('pointerdown', (e) => {
+      if (path) return;
+      const p = pos(e); pointer = p;
+      if (phase === 'cut' && tool === 'free' && e.button === 0) return;
+      e.stopImmediatePropagation();
+      if (phase === 'window') {
+        for (const h of hung) if (Math.hypot(h.sx - p[0], h.sy - p[1]) < h.size * 0.55) { h.av += (Math.random() < 0.5 ? -1 : 1) * Curio.rand(4, 7); tone(Curio.pick([784, 880, 1047, 1175]), 0.6, 'sine', 0.04); rustle(0.25); return; }
+        return;
+      }
+      if (phase !== 'cut' || e.button !== 0) return;
+      const m = toMask(p), k = Math.hypot(M.a, M.b);
+      const r = psize / 720 * S * 0.5;
+      const ptsScreen = [];
+      for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; ptsScreen.push([p[0] + Math.cos(a) * r * k, p[1] + Math.sin(a) * r * k]); }
+      addCut({ k: tool, x: +(m[0] / S).toFixed(4), y: +(m[1] / S).toFixed(4), r: +(r / S).toFixed(4), a: +(punchRot() - 165 * Math.PI / 180).toFixed(3) }, ptsScreen);
+      noise(0.05, 900, 0.25, 'bandpass', 1.2); tone(1200, 0.06, 'square', 0.02);
+    });
+    const finishPath = () => {
+      if (!path) return;
+      const pts = simplify(path, 3);
+      path = null;
+      let area = 0;
+      for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; area += a[0] * b[1] - b[0] * a[1]; }
+      if (pts.length < 3 || Math.abs(area) < 60) { Curio.toast('Drag a loop to cut a shape ✂️'); return; }
+      const mp = [];
+      for (const q of pts) { const m = toMask(q); mp.push(+(m[0] / S).toFixed(4), +(m[1] / S).toFixed(4)); }
+      addCut({ p: mp }, pts);
+      noise(0.06, 3000, 0.25); tone(900, 0.08, 'triangle', 0.03, 1.4);
+    };
+    Curio.drag(cv, {
+      start: (q) => { const p = [q.x, q.y]; pointer = p; path = [p]; snip(); },
+      move: (q) => {
+        const p = [q.x, q.y]; pointer = p;
+        if (!path) return;
+        const l = path[path.length - 1];
+        if (Math.hypot(p[0] - l[0], p[1] - l[1]) > 2) path.push(p);
+        if (t - lastSnip > 0.11) { lastSnip = t; snip(); }
+      },
+      end: (q) => { if (phase === 'cut') finishPath(); else path = null; if (q && q.pointerType !== 'mouse') pointer = null; }
+    });
+    cv.addEventListener('pointermove', (e) => { if (!path) pointer = pos(e); });
+    cv.addEventListener('pointerleave', () => { if (!path) pointer = null; });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: with the scissors, click to start cutting, move around a shape, click again to close the loop', 3800); setPhase(phase); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-paper-snowflake', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-paper-snowflake', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to start a cut, click again to finish it', 4200), 1800); }
+
+    const toolsEl = document.getElementById('tools');
+    function paintTools() { toolsEl.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === tool))); }
+    toolsEl.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; tool = b.dataset.t; paintTools(); setPhase(phase); tone(700, 0.06); save(); });
+    const psizeIn = document.getElementById('psize');
+    psizeIn.addEventListener('input', () => { psize = +psizeIn.value; save(); });
+    const papersEl = document.getElementById('papers');
+    PAPERS.forEach(([c, n], i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.style.background = c; b.title = n; b.setAttribute('aria-label', n + ' paper');
+      b.addEventListener('click', () => { paper = i; paintPapers(); refresh(); save(); rustle(0.2); });
+      papersEl.append(b);
+    });
+    function paintPapers() { papersEl.querySelectorAll('.sw').forEach((b, i) => b.setAttribute('aria-pressed', String(i === paper))); }
+    document.getElementById('undo').addEventListener('click', () => {
+      if (!undo.length) { Curio.toast('No cuts to undo'); return; }
+      cuts = undo.pop(); refresh(); save(); tone(330, 0.12); rustle(0.15);
+    });
+    const freshFn = () => { if (cuts.length) undo.push(cuts.slice()); startFold(); rustle(0.6); };
+    document.getElementById('fresh').addEventListener('click', freshFn);
+    document.getElementById('fresh2').addEventListener('click', freshFn);
+    document.getElementById('unfold').addEventListener('click', () => {
+      if (!cuts.length) { Curio.toast('Make a few cuts first ✂️'); return; }
+      startUnfold();
+    });
+    document.getElementById('refold').addEventListener('click', () => startUnfold(true));
+    document.getElementById('hang').addEventListener('click', () => {
+      gallery.push({ c: cuts.slice(), p: paper });
+      if (gallery.length > 24) gallery.shift();
+      Curio.store.set('paper-snowflake-gallery', gallery);
+      buildHung(); paintGallery();
+      setPhase('window');
+      [784, 988, 1175].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'sine', 0.04), i * 110));
+      Curio.toast(gallery.length === 1 ? 'Your first snowflake! ❄️' : `${gallery.length} snowflakes in the window`);
+    });
+    document.getElementById('another').addEventListener('click', () => { freshFn(); });
+    const savePng = () => {
+      const p = pointer; pointer = null; draw(0); pointer = p;
+      cv.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = phase === 'window' ? 'snowy-window.png' : 'my-snowflake.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        Curio.toast('Saved');
+      });
+    };
+    document.getElementById('png').addEventListener('click', savePng);
+    document.getElementById('png2').addEventListener('click', savePng);
+    addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && phase === 'cut') { e.preventDefault(); document.getElementById('undo').click(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea'))) return;
+      const k = e.key.toLowerCase();
+      const tb = toolsEl.querySelectorAll('button')[+k - 1];
+      if (phase === 'cut' && /^[1-6]$/.test(k) && tb) tb.click();
+      else if (phase === 'cut' && (k === '[' || k === ']')) { psize = Math.max(8, Math.min(60, psize + (k === ']' ? 4 : -4))); psizeIn.value = psize; save(); }
+      else if (k === 'u' && phase === 'cut') document.getElementById('unfold').click();
+      else if (k === 'u' && phase === 'view') document.getElementById('refold').click();
+      else if (k === 'h' && phase === 'view') document.getElementById('hang').click();
+    });
+
+    const galEl = document.getElementById('gal');
+    function paintGallery() {
+      galEl.innerHTML = '';
+      if (!gallery.length) { const p = document.createElement('p'); p.className = 'ps-empty'; p.textContent = 'Snowflakes you hang in the window show up here.'; galEl.append(p); return; }
+      gallery.forEach((it, i) => {
+        const wrap = document.createElement('div'); wrap.className = 'gi';
+        const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', `Open snowflake ${i + 1}`);
+        b.append(flakeCanvas(it.c, it.p, 128));
+        b.addEventListener('click', () => { cuts = it.c.slice(); paper = it.p; paintPapers(); refresh(); undo = []; unfoldE = 1; anim = null; setPhase('view'); rustle(0.3); tone(880, 0.3); save(); stage.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+        const d = document.createElement('button'); d.type = 'button'; d.className = 'del'; d.textContent = '×'; d.setAttribute('aria-label', `Delete snowflake ${i + 1}`);
+        d.addEventListener('click', async () => {
+          const v = await Curio.modal({ emoji: '🫠', title: 'Melt this snowflake?', body: 'It will disappear from your window.', buttons: [{ label: 'Keep it', value: 'no' }, { label: 'Melt', value: 'yes' }] });
+          if (v !== 'yes') return;
+          gallery.splice(i, 1); Curio.store.set('paper-snowflake-gallery', gallery); buildHung(); paintGallery(); tone(400, 0.4, 'sine', 0.05, 0.5);
+        });
+        wrap.append(b, d); galEl.append(wrap);
+      });
+    }
+    function buildHung() {
+      const list = gallery.slice(-9);
+      const n = list.length;
+      hung = list.map((it, i) => {
+        const size = Math.min(W, Hc) * (0.2 + ((i * 37) % 10) / 70);
+        return { img: flakeCanvas(it.c, it.p, 220), x: n === 1 ? 0.5 : 0.1 + 0.8 * (i / Math.max(1, n - 1)), len: 0.25 + ((i * 53) % 10) / 22, size, ang: Math.random() * 6, av: 0, ph: Math.random() * 6 };
+      });
+      hung.forEach((h) => { if (Math.abs(h.x - 0.5) < 0.04) h.x += 0.06; });
+    }
+
+    let saveT = 0;
+    function save() { clearTimeout(saveT); saveT = setTimeout(() => Curio.store.set('paper-snowflake', { cuts, paper, tool, psize, phase: phase === 'window' ? 'window' : phase === 'view' ? 'view' : 'cut' }), 300); }
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1);
+      W = r.width; Hc = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(Hc * dpr);
+      if (gallery.length) buildHung();
+    }
+    function draw(dt) {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (phase === 'fold') drawFolding(foldT);
+      else if (phase === 'cut') { drawCutScene(false); drawPieces(dt); drawPath(); }
+      else if (phase === 'unfold' || phase === 'view') { drawView(phase === 'view' ? 1 : unfoldE); drawPieces(dt); }
+      else drawWindow();
+    }
+    let last = performance.now(), raf = 0;
+    function frame(now) {
+      raf = 0;
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
+      if (anim === 'fold') {
+        const before = Math.floor(foldT);
+        foldT += dt / 0.75;
+        if (Math.floor(foldT) !== before && foldT < FOLDS.length + 0.1) { rustle(0.35); tone(300 + Math.floor(foldT) * 60, 0.15, 'triangle', 0.03); }
+        if (foldT >= 0.02 && before === 0 && foldT < 0.05) rustle(0.35);
+        if (foldT >= FOLDS.length + 1) { anim = null; setPhase('cut'); }
+      } else if (anim === 'unfold') {
+        unfoldE = Math.min(1, unfoldE + dt / 1.9);
+        if (unfoldE >= 1) { anim = null; setPhase('view'); Curio.confetti(60); save(); }
+      } else if (anim === 'refold') {
+        unfoldE = Math.max(0, unfoldE - dt / 1.1);
+        if (unfoldE <= 0) { anim = null; setPhase('cut'); save(); }
+      }
+      if (phase === 'view') viewRot += dt * 0.08;
+      draw(dt);
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+    addEventListener('resize', resize);
+
+    resize();
+    gallery = Curio.store.get('paper-snowflake-gallery', []);
+    if (!Array.isArray(gallery)) gallery = [];
+    const sv = Curio.store.get('paper-snowflake', null);
+    if (sv && Array.isArray(sv.cuts)) {
+      cuts = sv.cuts; paper = Math.min(PAPERS.length - 1, sv.paper | 0); tool = sv.tool || 'free'; psize = sv.psize || 24;
+      refresh();
+      if (sv.phase === 'window') { buildHung(); setPhase('window'); }
+      else if (sv.phase === 'view' && cuts.length) { unfoldE = 1; setPhase('view'); }
+      else setPhase('cut');
+    } else { refresh(); startFold(); }
+    buildHung();
+    psizeIn.value = psize; paintTools(); paintPapers(); paintGallery();
+    raf = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

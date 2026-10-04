@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>World Right Now · Curio</title>
+  <meta name="description" content="A spinning live globe and 73 estimated counters: births, lightning, emails, coffee, CO2, your own heartbeats and more, ticking since you arrived, today, this year or since you were born.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="world-counter">
+  <main class="c-wrap wc">
+    <header class="wc-hero">
+      <h1 class="c-title">World Right Now</h1>
+      <p class="c-sub">Everything here is happening while you read this. Spin the globe, fast-forward time, and watch the planet's numbers tick.</p>
+    </header>
+
+    <section class="wc-top">
+      <div class="wc-globe-card">
+        <canvas id="globe" role="img" aria-label="A spinning globe showing day and night, city lights, births, lightning and earthquakes. Drag to spin it."></canvas>
+        <div class="wc-legend" aria-hidden="true"><span><i style="background:#ff7eb6"></i>Births</span><span><i style="background:#ffe066"></i>Lightning</span><span><i style="background:#ff5a36"></i>Quakes</span><span><i style="background:#ffd27a;box-shadow:0 0 6px #ffd27a"></i>City lights</span></div>
+        <div class="wc-hint" id="hint">Drag, scroll or use arrow keys to spin · <span class="c-kbd">Space</span> pauses</div>
+      </div>
+      <div class="wc-side">
+        <div class="wc-pop">
+          <small>Estimated world population</small>
+          <b id="pop">8,200,000,000</b>
+          <small id="popSub">growing by about 2 people every second</small>
+        </div>
+        <div class="wc-pills">
+          <div class="wc-pill"><span class="wc-dot" aria-hidden="true"></span><span>Watching for <b id="clock">0:00</b></span></div>
+          <div class="wc-pill" id="warpPill" hidden>⏩ <b id="vclock">0</b> of world time</div>
+        </div>
+        <div class="wc-daynight" aria-label="Share of people in daylight and darkness">
+          <div class="wc-dn-bar"><i id="dayBar"></i></div>
+          <div class="wc-dn-lbl"><span>☀️ <b id="dayPct">50%</b> in daylight</span><span><b id="nightPct">50%</b> in darkness 🌙</span></div>
+        </div>
+        <div class="wc-ticker" id="ticker" aria-live="polite">👶 Somewhere, a baby is being born.</div>
+      </div>
+    </section>
+
+    <section class="c-card wc-controls" aria-label="Controls">
+      <div class="wc-ctl">
+        <span class="wc-ctl-l">Count</span>
+        <div class="wc-seg" id="frames" role="tablist"></div>
+      </div>
+      <div class="wc-ctl" id="birthRow" hidden>
+        <label class="wc-ctl-l" for="birth">Born on</label>
+        <input class="c-input" type="date" id="birth" min="1900-01-01">
+      </div>
+      <div class="wc-ctl">
+        <span class="wc-ctl-l">Time speed</span>
+        <div class="wc-seg" id="warps"></div>
+      </div>
+      <div class="wc-ctl">
+        <span class="wc-ctl-l">Sound</span>
+        <div class="wc-seg" id="chimes"></div>
+      </div>
+    </section>
+
+    <div class="wc-filters">
+      <div class="wc-chips" id="chips"></div>
+      <input class="c-input wc-search" id="search" type="search" placeholder="Search counters" aria-label="Search counters">
+    </div>
+    <div id="sections"></div>
+    <p class="c-muted wc-empty" id="empty" hidden>No counters match. Try another word.</p>
+
+    <section class="c-card wc-summary">
+      <h2>While you were here</h2>
+      <p id="summary"></p>
+      <div class="c-row"><button class="c-btn" type="button" id="share">📋 Copy this</button><button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 Badges</button></div>
+      <div class="wc-badges" id="badges" hidden></div>
+    </section>
+    <p class="c-muted wc-foot">These are estimates, not live feeds. Each counter takes a yearly or daily figure from public sources (UN, NASA, USGS, IEA, FAO, OICA, Global Carbon Project, company statements) and spreads it evenly over time. The real world is lumpier. The globe is simplified and the birth locations are illustrative. Nothing here connects to the internet. Keys: <span class="c-kbd">1</span>-<span class="c-kbd">4</span> count mode, <span class="c-kbd">W</span> time speed, <span class="c-kbd">/</span> search.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="icons.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

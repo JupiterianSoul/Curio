@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stop at 10 · Curio</title>
+  <meta name="description" content="Start a mechanical stopwatch and stop it at exactly 10.000 seconds, or any target you dare. Blind mode, gauntlets, a rhythm test and a daily target.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="fx.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="stop-the-clock">
+  <main class="c-wrap sc">
+    <header class="sc-head">
+      <h1 class="c-title">Stop at 10</h1>
+      <p class="c-sub">Start the stopwatch, then stop it at exactly the target. Your inner clock is about to be judged, to the millisecond.</p>
+    </header>
+    <div class="sc-modebar"><div id="modes"></div></div>
+    <div class="sc-main">
+      <div class="sc-watchwrap">
+        <div class="sc-watch" id="watch" role="button" tabindex="-1" aria-label="Stopwatch. Tap to start or stop."></div>
+      </div>
+      <section class="sc-panel c-card" id="panel" aria-live="polite"></section>
+    </div>
+    <div class="sc-options">
+      <div class="sc-opt"><span>Visibility</span><div id="vis"></div></div>
+      <div class="sc-opt"><span>Watch</span><div id="skin"></div></div>
+      <label class="fx-toggle sc-tick"><input type="checkbox" id="tick"> Ticking sound</label>
+    </div>
+    <div id="tabs"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fx.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fireworks · Curio</title>
+  <meta name="description" content="Light up the night: 22 kinds of fireworks over four scenes with water reflections, a show designer with a timeline, and a crowd-pleasing challenge mode.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="fireworks">
+  <main class="c-wrap fw-main" id="stage">
+    <canvas id="sky" role="img" aria-label="Night sky over a scene with water. Click or tap anywhere in the sky to launch a firework there."></canvas>
+    <div class="fw-intro" id="intro"><p>Tap the sky. Hold to keep them coming.</p></div>
+    <div class="fw-top">
+      <div class="fw-mode" id="modeLbl">Free play</div>
+      <div class="fw-topr">
+        <div class="fw-count"><b id="count">0</b> launched</div>
+        <button type="button" id="helpBtn" aria-label="How to play" title="How to play">?</button>
+        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
+      </div>
+    </div>
+
+    <div class="fw-crowdhud" aria-live="polite">
+      <div class="fw-chip"><span>Score</span><b id="cScore">0</b></div>
+      <div class="fw-meter"><span id="cMood">🙂</span><div><i id="cMeter"></i></div></div>
+      <div class="fw-chip"><span>Time</span><b id="cTime">60s</b></div>
+    </div>
+    <div class="fw-req" id="req"></div>
+
+    <div class="fw-dock" role="toolbar" aria-label="Firework controls">
+      <div class="fw-row fw-row--pick">
+        <button type="button" class="fw-pill" id="kindBtn" title="Shell type (K)"><i>🎲</i><span>Mix</span></button>
+        <button type="button" class="fw-pill" id="schemeBtn" title="Colors (C)"><i class="fw-sw"></i><span>Mix</span></button>
+        <button type="button" class="fw-pill fw-free" id="sceneBtn" title="Scenery (S)"><i>🌃</i><span>City harbor</span></button>
+        <button type="button" class="fw-pill fw-free" id="writeBtn" title="Write in the sky (W)"><i>✍️</i><span>Write</span></button>
+        <button type="button" class="fw-pill fw-free" id="autoBtn" aria-pressed="false" title="Auto show (A)"><i>✨</i><span>Auto show</span></button>
+        <div class="fw-ammo fw-crowdonly" id="cAmmo" aria-label="Loaded mortars"></div>
+      </div>
+      <div class="fw-design">
+        <div class="fw-row fw-transport">
+          <button type="button" class="fw-ic" id="rewBtn" aria-label="Back to start" title="Back to start">⏮</button>
+          <button type="button" class="fw-ic fw-play" id="playBtn" aria-label="Play" title="Play (P)">▶</button>
+          <button type="button" class="fw-ic fw-rec" id="recBtn" aria-pressed="false" aria-label="Record" title="Record live (R)">⏺</button>
+          <span class="fw-time" id="tlTime">0.0 / 30s</span>
+          <label class="fw-len"><span>Length</span><select id="lenSel" class="fw-sel"><option>15</option><option>20</option><option>24</option><option selected>30</option><option>45</option><option>60</option></select></label>
+          <button type="button" class="fw-ic" id="snapBtn" aria-pressed="true" aria-label="Snap to quarter seconds" title="Snap to 0.25s">🧲</button>
+          <button type="button" class="fw-ic" id="undoBtn" aria-label="Undo" title="Undo (Ctrl+Z)">↶</button>
+          <button type="button" class="fw-ic" id="clearShowBtn" aria-label="Clear all cues" title="Clear">🧹</button>
+          <button type="button" class="fw-pill" id="showsBtn"><i>🎬</i><span>Shows</span></button>
+        </div>
+        <canvas class="fw-tl" id="timeline" aria-label="Show timeline. Tap to move the playhead, drag a dot to retime a shell."></canvas>
+        <div class="fw-cue" id="cueEdit"></div>
+      </div>
+    </div>
+
+    <div class="fw-start" id="start" hidden>
+      <div class="fw-start__card">
+        <svg class="fw-start__art" viewBox="0 0 280 110" aria-hidden="true">
+          <g class="fw-burst fw-burst--a" stroke-linecap="round">
+            <g stroke="#ff7eb6" stroke-width="3"><path d="M70 40l0-24M70 40l17-17M70 40l24 0M70 40l17 17M70 40l0 24M70 40l-17 17M70 40l-24 0M70 40l-17-17"/></g>
+            <g fill="#ffd1e6"><circle cx="70" cy="13" r="3"/><circle cx="90" cy="20" r="3"/><circle cx="97" cy="40" r="3"/><circle cx="90" cy="60" r="3"/><circle cx="70" cy="67" r="3"/><circle cx="50" cy="60" r="3"/><circle cx="43" cy="40" r="3"/><circle cx="50" cy="20" r="3"/></g>
+          </g>
+          <g class="fw-burst fw-burst--b" stroke-linecap="round">
+            <g stroke="#ffd36a" stroke-width="2.5"><path d="M190 46l0-30M190 46l21-21M190 46l30 0M190 46l21 21M190 46l-21 21M190 46l-30 0M190 46l-21-21M190 46l11-28M190 46l28-11M190 46l-28-11M190 46l-11-28"/></g>
+            <g fill="#fff3c4"><circle cx="190" cy="13" r="3"/><circle cx="214" cy="22" r="3"/><circle cx="223" cy="46" r="3"/><circle cx="214" cy="70" r="3"/><circle cx="166" cy="70" r="3"/><circle cx="157" cy="46" r="3"/><circle cx="166" cy="22" r="3"/></g>
+          </g>
+          <g class="fw-burst fw-burst--c"><circle cx="134" cy="30" r="16" fill="none" stroke="#7ee0c3" stroke-width="2.5" stroke-dasharray="3 5"/><circle cx="134" cy="30" r="5" fill="#c8fff0"/></g>
+          <path d="M0 94h22v-18h12v-10h10v28h18v-22h14v22h20v-30h12v30h26v-14h14v14h22v-26h10v26h20v-18h16v18h18v-34h12v34h22v-12h10v12h20" fill="#140c26"/>
+          <rect y="94" width="280" height="16" fill="#0b0820"/>
+          <g fill="#ffd27a" opacity=".9"><rect x="104" y="70" width="3" height="4"/><rect x="236" y="66" width="3" height="4"/><rect x="52" y="74" width="3" height="4"/><rect x="186" y="80" width="3" height="4"/></g>
+          <g opacity=".45"><path d="M64 98h12M184 100h12M126 96h16" stroke="#ff9ad5" stroke-width="2"/></g>
+        </svg>
+        <h1>Fireworks</h1>
+        <p class="fw-start__sub">22 shells, 4 scenes, your own shows, and a crowd that is very hard to please.</p>
+        <div class="fw-start__modes">
+          <button type="button" class="fw-start__go" id="goFree"><i>🎆</i><b>Free play</b><small>Tap the sky</small></button>
+          <button type="button" id="goDesign"><i>🎬</i><b>Show designer</b><small>Timeline and sharing</small></button>
+          <button type="button" id="goCrowd"><i>👏</i><b>Crowd show</b><small id="stBest">Please the crowd</small></button>
+        </div>
+        <button type="button" class="fw-start__daily" id="goDaily"><span>📅</span><b>Daily crowd show</b><small id="stDaily">New today</small></button>
+        <div class="fw-start__scenes" role="group" aria-label="Scenery">
+          <button type="button" data-scene="harbor" aria-label="City harbor">🌃</button>
+          <button type="button" data-scene="lake" aria-label="Mountain lake">🏔️</button>
+          <button type="button" data-scene="beach" aria-label="Tropical beach">🏝️</button>
+          <button type="button" data-scene="village" aria-label="Snowy village">🏘️</button>
+        </div>
+        <p class="fw-start__line"><span id="stLine"></span> · <button type="button" class="fw-link" id="goHelp">How to play</button></p>
+      </div>
+    </div>
+
+    <div class="fw-result" id="result" hidden>
+      <div class="fw-result__card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+        <div class="fw-result__emoji" id="resEmoji"></div>
+        <h2 id="resTitle"></h2>
+        <div class="fw-result__big" id="resBig"></div>
+        <p id="resLine"></p>
+        <p class="fw-result__best" id="resBest"></p>
+        <div class="c-row fw-result__btns">
+          <button type="button" class="c-btn" id="resAgain">↺ Play again</button>
+          <button type="button" class="c-btn c-btn--ghost" id="resShare">📋 Share</button>
+          <button type="button" class="c-btn c-btn--ghost" id="resMenu">☰ Menu</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="fw-drawer" id="drawer" hidden>
+    <div class="fw-drawer__box" role="dialog" aria-modal="true" aria-labelledby="drawerT">
+      <header><h2 id="drawerT"></h2><button type="button" class="fw-drawer__x" aria-label="Close">✕</button></header>
+      <div class="fw-drawer__body" id="drawerBody"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

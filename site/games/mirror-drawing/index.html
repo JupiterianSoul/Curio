@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mirror Drawing · Curio</title>
+  <meta name="description" content="The classic mirror tracing test: follow the star while your controls are flipped, upside down or rotated. Your brain will hate it.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="mirror-drawing">
+  <main class="c-wrap">
+    <div class="mi-head">
+      <h1 class="c-title">Mirror Drawing</h1>
+      <p class="c-sub">Stay inside the track while your controls are flipped, rotated or slowly spinning. Twenty shapes, six brain-melting modes. It is much harder than it looks.</p>
+    </div>
+    <div class="mi-modes" id="modes" role="group" aria-label="Control mode"></div>
+    <div class="mi-desc" id="desc"></div>
+    <div class="mi-shapes" id="shapes" role="group" aria-label="Shape"></div>
+    <div class="mi-board" id="board">
+      <canvas id="cv" role="img" aria-label="Mirror tracing area. Start on the green dot and follow the track. Your movements are mirrored."></canvas>
+      <div class="mi-tag" id="tag"></div>
+      <div class="mi-tag2" id="tag2"></div>
+      <div class="mi-res" id="res" aria-live="polite">
+        <div class="mi-card">
+          <div class="mi-big" id="big">0</div>
+          <div class="mi-msg" id="msg"></div>
+          <div class="mi-grid">
+            <div class="c-stat"><b id="rTime">0</b><span>Seconds</span></div>
+            <div class="c-stat"><b id="rIn">0%</b><span>Inside</span></div>
+            <div class="c-stat"><b id="rErr">0</b><span>Slips</span></div>
+          </div>
+          <div id="rNew"></div>
+          <div class="c-row">
+            <button class="c-btn c-btn--ghost" id="retry" type="button">↺ Retry</button>
+            <button class="c-btn" id="nextMode" type="button">Next mode ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mi-stats">
+      <div class="c-stat"><b id="time">0.0</b><span>Seconds</span></div>
+      <div class="c-stat"><b id="prog">0%</b><span>Done</span></div>
+      <div class="c-stat"><b id="inside">-</b><span>Inside</span></div>
+      <div class="c-stat"><b id="errs">0</b><span>Slips</span></div>
+    </div>
+    <div class="mi-actions">
+      <button class="c-btn c-btn--ghost" id="restart" type="button">↺ Restart</button>
+      <button class="c-btn c-btn--ghost" id="dailyB" type="button" aria-pressed="false">📅 Daily mirror</button>
+      <button class="c-btn" id="finishB" type="button" disabled>✓ Score it</button>
+    </div>
+    <p class="c-muted" style="text-align:center;font-size:14px;margin:10px 0 0"><span class="c-kbd">←</span><span class="c-kbd">↑</span><span class="c-kbd">→</span><span class="c-kbd">↓</span> or <span class="c-kbd">WASD</span> steer the pen (flipped too!) · <span class="c-kbd">1</span>-<span class="c-kbd">6</span> modes · <span class="c-kbd">R</span> restart · <span class="c-kbd">Enter</span> score · Touchpad mode: click the green dot to start, click again to pause</p>
+    <section class="c-card mi-rec" aria-label="Stats and badges">
+      <h2>🏅 Reflections</h2>
+      <div class="mi-stats2" id="stats2"></div>
+      <div class="mi-badges" id="badges"></div>
+    </section>
+    <section class="mi-bests">
+      <h2>Personal bests</h2>
+      <table class="mi-table">
+        <thead><tr><th>Mode</th><th>Score</th><th>Time</th></tr></thead>
+        <tbody id="bests"></tbody>
+      </table>
+      <p class="mi-note c-muted">The mirror tracing test has been used by psychologists since the 1900s to study how we learn new motor skills. Try the same mode a few times in a row: you will feel your brain rewire.</p>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

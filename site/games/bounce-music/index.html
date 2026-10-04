@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bounce Music · Curio</title>
+  <meta name="description" content="Draw lines, drop balls, make music. Every bounce plays a note: short lines sing high, long lines hum low.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 12px; padding-bottom: 16px; }
+    .bm-head { text-align: center; }
+    .bm-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .bm-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .bm-stage { position: relative; height: max(330px, calc(100dvh - var(--bar-h) - 250px)); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+    #board { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+    .bm-tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center; margin-top: 12px; }
+    .bm-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+    .seg button { border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 13px; cursor: pointer; touch-action: manipulation; }
+    .chip[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+    .bm-tools label { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+    .bm-tools input[type=range] { width: 120px; accent-color: var(--accent); }
+    .bm-tools select { padding: 6px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 700; }
+    .bm-tools .c-btn { padding: 8px 14px; font-size: 14px; }
+    .bm-keys { text-align: center; font-size: 13px; margin: 10px 0 0; }
+    @media (hover: none) and (pointer: coarse) { .bm-keys { display: none; } }
+    .lbl { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    .bm-legend { position: absolute; right: 12px; top: 10px; display: flex; gap: 3px; align-items: flex-end; pointer-events: none; opacity: .85; }
+    .bm-legend i { display: block; width: 6px; border-radius: 3px; }
+    .bm-tip { position: absolute; left: 14px; top: 10px; font-size: 12px; font-weight: 700; pointer-events: none; opacity: .6; }
+    @media (max-width: 560px) {
+      .bm-head .c-sub { font-size: 13px; }
+      .bm-stage { height: max(330px, calc(100dvh - var(--bar-h) - 330px)); }
+      .bm-legend { display: none; }
+    }
+  </style>
+</head>
+<body data-game="bounce-music">
+  <main class="c-wrap">
+    <div class="bm-head">
+      <h1 class="c-title">Bounce Music</h1>
+      <p class="c-sub">Draw lines, drop balls, make music. Short lines sing high, long lines hum low.</p>
+    </div>
+    <div class="bm-stage" id="stage">
+      <canvas id="board" role="img" aria-label="A music board. Draw lines with the pointer; balls fall from droppers and play a note on every bounce."></canvas>
+      <div class="bm-tip" id="tip">Drag to draw a line</div>
+      <div class="bm-legend" id="legend" aria-hidden="true"></div>
+    </div>
+    <div class="bm-tools">
+      <div class="bm-group">
+        <div class="seg" role="group" aria-label="Tool">
+          <button type="button" data-tool="line" aria-pressed="true" title="Line (1 or L)">✏️ Line</button>
+          <button type="button" data-tool="drop" aria-pressed="false" title="Dropper (2 or D)">💧 Dropper</button>
+          <button type="button" data-tool="erase" aria-pressed="false" title="Erase (3 or E)">🧽 Erase</button>
+        </div>
+        <button type="button" class="c-btn c-btn--ghost" id="play">❚❚ Pause</button>
+        <button type="button" class="c-btn c-btn--ghost" id="undo" title="Undo (U)">↶ Undo</button>
+        <button type="button" class="c-btn c-btn--ghost" id="clear">Clear</button>
+      </div>
+      <div class="bm-group">
+        <label>Tempo <input type="range" id="tempo" min="50" max="160" value="100" aria-label="Tempo"><b id="bpm">100</b></label>
+        <label>Drop every <select id="every" aria-label="Drop every"><option value="1">1 beat</option><option value="2" selected>2 beats</option><option value="4">4 beats</option><option value="8">8 beats</option></select></label>
+      </div>
+      <div class="bm-group" id="presets" role="group" aria-label="Presets"><span class="lbl">Songs</span></div>
+    </div>
+    <p class="c-muted bm-keys"><span class="c-kbd">1</span> <span class="c-kbd">2</span> <span class="c-kbd">3</span> tools, <span class="c-kbd">U</span> undo, <span class="c-kbd">Space</span> pause. On a touchpad, turn on Touchpad mode in the top bar: click to start a line, click again to finish.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const WW = 900, WH = 700, G = 900, E = 0.9, BR = 8, HZ = 240, DT = 1 / HZ, BEAT = 0.6, BEAT_STEPS = Math.round(BEAT * HZ);
+    const MINL = 26, MAXL = 250, NOTES = 15;
+    const SCALE = [0, 2, 4, 7, 9], NAMES = ['G', 'A', 'B', 'D', 'E'];
+    const midi = (i) => 55 + SCALE[i % 5] + 12 * Math.floor(i / 5);
+    const freq = (i) => 440 * Math.pow(2, (midi(i) - 69) / 12);
+    const noteName = (i) => NAMES[i % 5] + (Math.floor(midi(i) / 12) - 1);
+    const noteFor = (len) => Math.max(0, Math.min(NOTES - 1, Math.round((1 - (len - MINL) / (MAXL - MINL)) * (NOTES - 1))));
+    const lenFor = (i) => MINL + (1 - i / (NOTES - 1)) * (MAXL - MINL);
+    const HUES = [345, 28, 52, 150, 205];
+    const col = (i, l = 60, a = 1) => `hsla(${HUES[i % 5]}, ${92 - Math.floor(i / 5) * 6}%, ${l - 14 + Math.floor(i / 5) * 12}%, ${a})`;
+
+    const canvas = document.getElementById('board');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('stage');
+    const tip = document.getElementById('tip');
+    let W = 0, H = 0, dpr = 1, S = 1, OX = 0, OY = 0;
+    let lines = [], emitters = [], balls = [], fx = [], history = [];
+    let tool = 'line', playing = true, rate = 1, step = 0, acc = 0, drawing = null, hoverW = null;
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      W = r.width; H = r.height; dpr = Math.min(2, devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      S = Math.min(W / WW, H / WH); OX = (W - WW * S) / 2; OY = (H - WH * S) / 2;
+    }
+    const toW = (e) => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left - OX) / S, y: (e.clientY - r.top - OY) / S }; };
+
+    function mkLine(x1, y1, x2, y2) {
+      const len = Math.hypot(x2 - x1, y2 - y1);
+      return { x1, y1, x2, y2, len, note: noteFor(len), flash: 0, amp: 0, cool: 0 };
+    }
+
+    function collide(b, ls, onHit) {
+      for (let li = 0; li < ls.length; li++) {
+        const l = ls[li];
+        const dx = l.x2 - l.x1, dy = l.y2 - l.y1, L2 = dx * dx + dy * dy;
+        let t = ((b.x - l.x1) * dx + (b.y - l.y1) * dy) / L2;
+        t = t < 0 ? 0 : t > 1 ? 1 : t;
+        const qx = l.x1 + dx * t, qy = l.y1 + dy * t;
+        let nx = b.x - qx, ny = b.y - qy;
+        const d = Math.hypot(nx, ny);
+        if (d >= BR || d < 1e-6) continue;
+        nx /= d; ny /= d;
+        const vn = b.vx * nx + b.vy * ny;
+        if (vn >= 0) continue;
+        b.vx -= (1 + E) * vn * nx; b.vy -= (1 + E) * vn * ny;
+        b.x = qx + nx * BR; b.y = qy + ny * BR;
+        if (b.last !== li || b.since > 10) onHit(li, l, -vn, qx, qy, t);
+        b.last = li; b.since = 0;
+      }
+    }
+    function phys(b, ls, onHit) {
+      b.vy += G * DT;
+      const sp = Math.hypot(b.vx, b.vy);
+      if (sp > 1700) { b.vx *= 1700 / sp; b.vy *= 1700 / sp; }
+      b.x += b.vx * DT; b.y += b.vy * DT;
+      b.since++;
+      collide(b, ls, onHit);
+    }
+
+    function buildSong(notes, ex, ey, lead = 0.9) {
+      const ls = [], path = [];
+      const inBox = (x, y) => x > 40 && x < WW - 40 && y > 30 && y < WH - 30;
+      const b0 = { x: ex, y: ey + 14, vx: 0, vy: 0, last: -1, since: 99 };
+      const leadSteps = Math.round(lead * BEAT_STEPS);
+      for (let s = 0; s < leadSteps; s++) { phys(b0, ls, () => {}); path.push(b0.x, b0.y); }
+      let budget = 900;
+      const pd = (px, py, l) => { const dx = l.x2 - l.x1, dy = l.y2 - l.y1; let t = ((px - l.x1) * dx + (py - l.y1) * dy) / (dx * dx + dy * dy); t = t < 0 ? 0 : t > 1 ? 1 : t; return Math.hypot(px - l.x1 - dx * t, py - l.y1 - dy * t); };
+      function cands(k, b) {
+        const out = [];
+        const idx = notes[k][0], L = lenFor(idx) * 0.999;
+        const sp = Math.hypot(b.vx, b.vy) || 1, vx = b.vx / sp, vy = b.vy / sp;
+        const last = k === notes.length - 1;
+        const horizon = last ? HZ * 2 : Math.round(notes[k][1] * BEAT_STEPS);
+        const side = k % 2 ? 1 : -1;
+        for (let a = 0; a < 40; a++) {
+          const ang = -Math.PI / 2 + (a - 20 + Math.random() * 0.8) * (Math.PI / 40) * 1.7;
+          const Dx = Math.cos(ang), Dy = Math.sin(ang);
+          let nx = Dx - vx, ny = Dy - vy; const nl = Math.hypot(nx, ny); if (nl < 0.25) continue;
+          nx /= nl; ny /= nl;
+          const px = b.x + b.vx * DT, py = b.y + (b.vy + G * DT) * DT, cx = px - nx * (BR - 0.6), cy = py - ny * (BR - 0.6), tx = -ny, ty = nx;
+          const ln = mkLine(cx - tx * L / 2, cy - ty * L / 2, cx + tx * L / 2, cy + ty * L / 2);
+          if (!inBox(ln.x1, ln.y1) || !inBox(ln.x2, ln.y2)) continue;
+          let bad = false;
+          for (const o of ls) if (segDist(ln, o) < 16) { bad = true; break; }
+          if (bad) continue;
+          for (let i = 0; i < path.length; i += 2) {
+            const near = i > path.length - 60;
+            if (!near && i % 4) continue;
+            if (pd(path[i], path[i + 1], ln) < (near ? BR + 0.05 : BR + 4)) { bad = true; break; }
+          }
+          if (bad) continue;
+          const tb = { ...b }, trial = ls.concat([ln]), traj = [];
+          let hits = 0, first = -1;
+          for (let s = 0; s < horizon; s++) {
+            phys(tb, trial, (li) => { hits++; if (first < 0) first = li === trial.length - 1 ? s : 99; });
+            traj.push(tb.x, tb.y);
+            if (!last && !inBox(tb.x, tb.y)) { bad = true; break; }
+          }
+          if (bad || hits !== 1 || first > 3) continue;
+          if (!last) {
+            const m = lenFor(notes[k + 1][0]) * 0.45 + 30;
+            if (tb.x < m || tb.x > WW - m || tb.y < 90 || tb.y > WH - 90) continue;
+          }
+          const spd = Math.hypot(tb.vx, tb.vy);
+          const score = Math.abs(tb.x - WW / 2) * 0.4 + Math.abs(tb.y - WH * 0.5) * 0.3 + Math.max(0, 380 - spd) * 1.2 + (Math.sign(Dx) === side ? 0 : 40) + Math.random() * 90;
+          out.push({ score, ln, tb, traj });
+        }
+        out.sort((p, q) => p.score - q.score);
+        return out.slice(0, 4);
+      }
+      function rec(k, b) {
+        if (budget-- <= 0) return false;
+        for (const c of cands(k, b)) {
+          ls.push(c.ln);
+          const pl = path.length;
+          for (let i = 0; i < c.traj.length; i++) path.push(c.traj[i]);
+          if (k === notes.length - 1 || rec(k + 1, c.tb)) return true;
+          ls.pop(); path.length = pl;
+          if (budget <= 0) return false;
+        }
+        return false;
+      }
+      return rec(0, b0) ? ls : null;
+    }
+    function segDist(a, b) {
+      const pd = (px, py, l) => { const dx = l.x2 - l.x1, dy = l.y2 - l.y1; let t = ((px - l.x1) * dx + (py - l.y1) * dy) / (dx * dx + dy * dy); t = Math.max(0, Math.min(1, t)); return Math.hypot(px - l.x1 - dx * t, py - l.y1 - dy * t); };
+      const cross = (ax, ay, bx, by, cx, cy) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+      const d1 = cross(a.x1, a.y1, a.x2, a.y2, b.x1, b.y1), d2 = cross(a.x1, a.y1, a.x2, a.y2, b.x2, b.y2), d3 = cross(b.x1, b.y1, b.x2, b.y2, a.x1, a.y1), d4 = cross(b.x1, b.y1, b.x2, b.y2, a.x2, a.y2);
+      if (d1 * d2 < 0 && d3 * d4 < 0) return 0;
+      return Math.min(pd(a.x1, a.y1, b), pd(a.x2, a.y2, b), pd(b.x1, b.y1, a), pd(b.x2, b.y2, a));
+    }
+
+    const SONGS = {
+      mary: { name: 'Mary’s Lamb', ex: 450, fixed: { ex: 450, lines: [[390.9912279496052,225.48341312161386,515.3882505048858,166.0585713180298],[219.4188067060609,114.19536702811105,229.65822765190407,267.7002398325072],[377.1275555265114,535.9027058065509,524.721134061372,451.88863272784636],[124.85796241531668,230.61417230506567,241.04642477518772,331.45480365200257],[85.32849136810313,129.69492405835314,85.8237780854272,267.55603436531254],[112.40137946609882,429.5146473956817,242.35433876503242,475.53811329569527],[437.5557952384169,422.05704382736786,554.1333598324302,348.4662667059875],[570.7809442854414,489.27753691176514,670.1868637256825,371.85924661489406],[232.84386406870274,543.7332470117092,321.279734599215,669.6208497353709],[615.202863393917,642.9326906037032,744.3413825570682,559.3154998810509],[710.7575735156157,515.6331582727275,806.0098091568321,415.9690090045469],[461.4069408359095,572.7472375876816,547.9926088741963,658.5211787024725],[743.7188523154742,593.9079473398434,847.0159427817881,529.2244255959391]] }, notes: [[7, 1], [6, 1], [5, 1], [6, 1], [7, 1], [7, 1], [7, 2], [6, 1], [6, 1], [6, 2], [7, 1], [8, 1], [8, 2]] },
+      grace: { name: 'Amazing Grace', ex: 420, fixed: { ex: 420, lines: [[329.1753032103946,233.66103232769237,516.3550726926319,158.2543568899268],[152.19698614958565,121.3726438719076,290.5572344173658,219.85447264898835],[264.45315603348564,377.2952118170428,393.67549420856943,425.3318474253395],[573.2910369998482,302.95343082446595,403.83864202174834,291.6346527903305],[575.4238352802992,442.33648494633815,703.4890127720192,391.2949199427625],[653.037641522201,363.6530668518292,754.8015369848547,248.27238694281618],[357.44486921091357,474.6160403583579,525.3756760050574,499.94335820822045],[88.41498427188989,328.13239331162504,187.03333266706878,485.6165638044308],[341.1628252079229,574.2771941549008,542.8336507911071,581.4403577434923]] }, notes: [[3, 1], [5, 2], [7, 0.5], [5, 0.5], [7, 2], [6, 1], [5, 2], [4, 1], [3, 3]] },
+      stairs: { name: 'Staircase', ex: 450, fixed: { ex: 450, lines: [[444.2802464715712,202.90340562836474,464.79626266714797,186.97413208991264],[159.32325245557206,285.5763445198146,185.9382033492392,318.01271535453793],[463.0277638232986,300.2181747376714,483.85670734761715,246.1494178103964],[163.4143117816297,326.89738213774785,208.52770033986104,385.46218085501516],[460.64374074774815,378.4759316552045,488.54995851712243,293.0063399292096],[148.06664823141244,425.09605865264916,220.00936597263757,502.7992413416897],[411.27113583480525,418.18059520401806,528.2795094204117,384.07359599782666],[651.0840955205118,411.5899309192564,673.1195086307738,275.50035889751746],[394.9967662839853,514.9459179068214,520.0794233368356,604.5166755266999],[674.7170516378178,514.1058726095579,793.0681012371379,392.3057988873334]] }, notes: [[14, 1], [13, 1], [12, 1], [11, 1], [10, 1], [9, 1], [8, 1], [7, 1], [6, 1], [5, 2]] },
+      rain: { name: 'Raindrops', random: true },
+      tune: { name: '🎲 New tune', ex: 450, compose: true }
+    };
+    function loadSong(key) {
+      const s = SONGS[key];
+      if (s.compose) {
+        const n = Curio.randInt(7, 10), notes = [];
+        let cur = Curio.randInt(4, 9);
+        for (let i = 0; i < n; i++) { cur = Math.max(2, Math.min(12, cur + Curio.pick([-2, -1, -1, 0, 1, 1, 2, 3, -3]))); notes.push([cur, Curio.pick([1, 1, 1, 0.5, 2])]); }
+        notes[n - 1][1] = 2;
+        s.notes = notes;
+      }
+      pushHistory();
+      balls = []; fx = [];
+      if (s.random) {
+        lines = []; emitters = [];
+        for (let i = 0; i < 3; i++) emitters.push({ x: 180 + i * 270 + Curio.rand(-40, 40), y: 50, every: [2, 3, 4][i], off: 1 + i * BEAT_STEPS, pulse: 0 });
+        let tries = 0;
+        while (lines.length < 14 && tries++ < 400) {
+          const cx = Curio.rand(80, WW - 80), cy = Curio.rand(170, WH - 70), L = lenFor(Curio.randInt(2, 13)), a = Curio.rand(-0.6, 0.6) + (Math.random() < 0.5 ? 0 : Math.PI);
+          const ln = mkLine(cx - Math.cos(a) * L / 2, cy - Math.sin(a) * L / 2, cx + Math.cos(a) * L / 2, cy + Math.sin(a) * L / 2);
+          if (lines.every((o) => segDist(ln, o) > 30)) lines.push(ln);
+        }
+      } else if (s.fixed) {
+        lines = s.fixed.lines.map((l) => mkLine(...l));
+        const len = s.notes.reduce((a, n) => a + n[1], 0);
+        emitters = [{ x: s.fixed.ex, y: 40, every: Math.ceil(len + 3), off: 1, pulse: 0 }];
+      } else {
+        let ls = null, ex = s.ex;
+        for (let t = 0; t < 12 && !ls; t++) { ex = s.ex + (t ? Curio.rand(-150, 150) : 0); ls = buildSong(s.notes, ex, 40); }
+        if (!ls) { Curio.toast('That song got tangled. Try again'); return; }
+        lines = ls;
+        const len = s.notes.reduce((a, n) => a + n[1], 0);
+        emitters = [{ x: ex, y: 40, every: Math.ceil(len + 3), off: 1, pulse: 0 }];
+      }
+      step = 0; acc = 0;
+      Curio.toast(s.compose ? '♪ A brand new tune, just for you' : `♪ ${s.name}`);
+      save();
+    }
+
+    let master = null;
+    function audio() {
+      if (Curio.muted) return null;
+      const a = Curio.audioContext(); if (!a) return null;
+      if (!master) {
+        const comp = a.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4;
+        const out = a.createGain(); out.gain.value = 0.8;
+        const dl = a.createDelay(1); dl.delayTime.value = 0.28;
+        const fb = a.createGain(); fb.gain.value = 0.28;
+        const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+        const wet = a.createGain(); wet.gain.value = 0.25;
+        const inp = a.createGain();
+        inp.connect(comp); inp.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(comp);
+        comp.connect(out); out.connect(a.destination);
+        master = inp;
+      }
+      return a;
+    }
+    let voices = 0;
+    function pluck(i, vel) {
+      const a = audio(); if (!a || voices > 14) return;
+      const t = a.currentTime, f = freq(i), v = Math.min(1, 0.25 + vel / 900) * 0.22;
+      const o1 = a.createOscillator(), o2 = a.createOscillator(), g1 = a.createGain(), g2 = a.createGain();
+      o1.type = 'sine'; o1.frequency.value = f;
+      o2.type = 'sine'; o2.frequency.value = f * 4.01;
+      g1.gain.setValueAtTime(0.0001, t); g1.gain.exponentialRampToValueAtTime(v, t + 0.006); g1.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+      g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(v * 0.35, t + 0.003); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      const o3 = a.createOscillator(), g3 = a.createGain();
+      o3.type = 'triangle'; o3.frequency.value = f * 2; g3.gain.setValueAtTime(0.0001, t); g3.gain.exponentialRampToValueAtTime(v * 0.18, t + 0.005); g3.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      o1.connect(g1); o2.connect(g2); o3.connect(g3); g1.connect(master); g2.connect(master); g3.connect(master);
+      o1.start(t); o2.start(t); o3.start(t); o1.stop(t + 1.15); o2.stop(t + 0.15); o3.stop(t + 0.45);
+      voices++; setTimeout(() => voices--, 300);
+    }
+
+    function hit(li, l, vn, qx, qy, t) {
+      l.flash = 1; l.amp = Math.min(9, 2 + vn / 120); l.at = t;
+      if (vn > 25) {
+        pluck(l.note, vn);
+        fx.push({ x: qx, y: qy, t: 0, c: l.note });
+        if (fx.length > 80) fx.shift();
+      }
+    }
+
+    function tick() {
+      step++;
+      for (const em of emitters) {
+        const per = em.every * BEAT_STEPS;
+        if (step % per === em.off % per && balls.length < 90) {
+          balls.push({ x: em.x, y: em.y + 14, vx: 0, vy: 0, last: -1, since: 99, trail: [], hue: Math.random() * 360, age: 0 });
+          em.pulse = 1;
+        }
+      }
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
+        phys(b, lines, hit);
+        b.age += DT;
+        if (b.y > (H - OY) / S + 40 || b.age > 40 || b.x < -OX / S - 60 || b.x > (W - OX) / S + 60) balls.splice(i, 1);
+      }
+    }
+
+    function draw(time) {
+      const dark = Curio.isDark();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, dark ? '#120f24' : '#f7f3ff'); g.addColorStop(1, dark ? '#1c1638' : '#ece6fb');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = dark ? 'rgba(255,255,255,.06)' : 'rgba(80,60,140,.09)';
+      for (let x = OX % (40 * S); x < W; x += 40 * S) for (let y = OY % (40 * S); y < H; y += 40 * S) ctx.fillRect(x - 1, y - 1, 2, 2);
+      ctx.setTransform(dpr * S, 0, 0, dpr * S, dpr * OX, dpr * OY);
+
+      for (const f of fx) {
+        const k = f.t;
+        ctx.strokeStyle = col(f.c, dark ? 65 : 55, 0.6 * (1 - k)); ctx.lineWidth = 2.5 * (1 - k);
+        ctx.beginPath(); ctx.arc(f.x, f.y, 6 + k * 40, 0, 7); ctx.stroke();
+        ctx.fillStyle = col(f.c, dark ? 70 : 45, 1 - k);
+        ctx.font = '700 16px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('♪', f.x + Math.sin(k * 6 + f.c) * 6, f.y - 14 - k * 40);
+      }
+
+      ctx.lineCap = 'round';
+      for (const l of lines) {
+        const dx = l.x2 - l.x1, dy = l.y2 - l.y1, nx = -dy / l.len, ny = dx / l.len;
+        const wob = l.amp * Math.cos(time * 0.05 * (12 + (NOTES - l.note) * 0.6));
+        ctx.beginPath();
+        const seg = 16;
+        for (let s = 0; s <= seg; s++) {
+          const u = s / seg, d = Math.sin(Math.PI * u) * wob;
+          const x = l.x1 + dx * u + nx * d, y = l.y1 + dy * u + ny * d;
+          s ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        if (l.flash > 0.02) { ctx.shadowColor = col(l.note, 60); ctx.shadowBlur = 24 * l.flash; }
+        ctx.strokeStyle = col(l.note, dark ? 62 + l.flash * 20 : 52 + l.flash * 15);
+        ctx.lineWidth = 7 + l.flash * 3;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `rgba(255,255,255,${0.35 + l.flash * 0.5})`; ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      if (drawing && drawing.drop) {
+        ctx.globalAlpha = 0.55; ctx.fillStyle = dark ? '#2b2450' : '#ffffff'; ctx.strokeStyle = dark ? '#a99cff' : '#6b4dff'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(drawing.x - 16, drawing.y - 14); ctx.lineTo(drawing.x + 16, drawing.y - 14); ctx.lineTo(drawing.x + 5, drawing.y + 4); ctx.lineTo(drawing.x + 5, drawing.y + 10); ctx.lineTo(drawing.x - 5, drawing.y + 10); ctx.lineTo(drawing.x - 5, drawing.y + 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      if (hoverW && tool === 'erase') {
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,.4)' : 'rgba(60,40,120,.35)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(hoverW.x, hoverW.y, 16, 0, 7); ctx.stroke();
+      }
+
+      for (const b of balls) {
+        for (let i = 0; i < b.trail.length; i++) {
+          const p = b.trail[i], k = i / b.trail.length;
+          ctx.fillStyle = dark ? `rgba(255,255,255,${k * 0.25})` : `rgba(90,60,170,${k * 0.2})`;
+          ctx.beginPath(); ctx.arc(p.x, p.y, BR * (0.3 + k * 0.6), 0, 7); ctx.fill();
+        }
+        const rg = ctx.createRadialGradient(b.x - 3, b.y - 3, 1, b.x, b.y, BR);
+        rg.addColorStop(0, '#ffffff'); rg.addColorStop(1, dark ? '#c9c2ff' : '#7a5cff');
+        ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(b.x, b.y, BR, 0, 7); ctx.fill();
+      }
+
+      for (const em of emitters) {
+        const p = em.pulse;
+        ctx.fillStyle = dark ? '#2b2450' : '#ffffff';
+        ctx.strokeStyle = dark ? '#a99cff' : '#6b4dff'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(em.x - 16 - p * 3, em.y - 14); ctx.lineTo(em.x + 16 + p * 3, em.y - 14); ctx.lineTo(em.x + 5, em.y + 4); ctx.lineTo(em.x + 5, em.y + 10); ctx.lineTo(em.x - 5, em.y + 10); ctx.lineTo(em.x - 5, em.y + 4); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        const per = em.every * BEAT_STEPS, k = (((step - em.off) % per) + per) % per / per;
+        ctx.strokeStyle = dark ? 'rgba(169,156,255,.5)' : 'rgba(107,77,255,.45)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(em.x, em.y - 26, 6, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = dark ? '#a99cff' : '#6b4dff'; ctx.font = '800 10px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(em.every, em.x, em.y - 4);
+      }
+
+      if (drawing && !drawing.drop && !drawing.erase) {
+        const d = drawing;
+        let ex = d.x2, ey = d.y2;
+        const len = Math.hypot(ex - d.x1, ey - d.y1);
+        const ok = len >= MINL;
+        const n = noteFor(Math.min(MAXL, Math.max(MINL, len)));
+        ctx.setLineDash([10, 8]); ctx.strokeStyle = ok ? col(n, 60) : 'rgba(150,150,150,.6)'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(d.x1, d.y1); ctx.lineTo(ex, ey); ctx.stroke(); ctx.setLineDash([]);
+        if (ok) {
+          ctx.font = '800 15px system-ui, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillStyle = dark ? '#fff' : '#2b1f5c';
+          ctx.fillText(noteName(n), (d.x1 + ex) / 2, (d.y1 + ey) / 2 - 14);
+        }
+      }
+    }
+
+    let raf = 0, last = 0, frameT = 0;
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;
+      frameT += dt * 60;
+      if (playing) {
+        acc += dt * rate;
+        let n = 0;
+        while (acc >= DT && n < 40) { tick(); acc -= DT; n++; }
+        for (const b of balls) { b.trail.push({ x: b.x, y: b.y }); if (b.trail.length > 10) b.trail.shift(); }
+      }
+      for (const l of lines) { l.flash *= Math.pow(0.02, dt); l.amp *= Math.pow(0.004, dt); }
+      for (const em of emitters) em.pulse *= Math.pow(0.01, dt);
+      for (let i = fx.length - 1; i >= 0; i--) { fx[i].t += dt * 1.4; if (fx[i].t >= 1) fx.splice(i, 1); }
+      draw(frameT);
+    }
+    const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; };
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    function snapshot() { return JSON.stringify({ lines: lines.map((l) => [l.x1, l.y1, l.x2, l.y2].map((v) => Math.round(v * 10) / 10)), emitters: emitters.map((e) => [Math.round(e.x), Math.round(e.y), e.every, e.off]) }); }
+    function restore(json) {
+      const o = JSON.parse(json);
+      lines = o.lines.map((a) => mkLine(...a));
+      emitters = o.emitters.map(([x, y, every, off]) => ({ x, y, every, off: off || 1, pulse: 0 }));
+    }
+    function pushHistory() { history.push(snapshot()); if (history.length > 60) history.shift(); }
+    function save() { Curio.store.set('bounce-music:layout', snapshot()); }
+
+    function eraseAt(p) {
+      let removed = false;
+      for (let i = emitters.length - 1; i >= 0; i--) if (Math.hypot(emitters[i].x - p.x, emitters[i].y - p.y) < 22) { emitters.splice(i, 1); removed = true; }
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const l = lines[i];
+        if (segDist(l, { x1: p.x, y1: p.y, x2: p.x + 0.01, y2: p.y }) < 16) { lines.splice(i, 1); removed = true; }
+      }
+      if (removed) { Curio.beep(220, 0.06, 'triangle', 0.05); save(); }
+      return removed;
+    }
+
+    const toWp = (p) => ({ x: (p.x - OX) / S, y: (p.y - OY) / S });
+    const placeDropper = (p) => {
+      pushHistory();
+      const ev = +document.getElementById('every').value;
+      emitters.push({ x: p.x, y: p.y, every: ev, off: (Math.ceil((step + 1) / BEAT_STEPS) * BEAT_STEPS) % (ev * BEAT_STEPS), pulse: 1 });
+      Curio.beep(880, 0.05, 'sine', 0.04);
+      save();
+    };
+    function dragMove(p) {
+      hoverW = p;
+      if (!drawing) return;
+      if (drawing.drop) { drawing.x = p.x; drawing.y = p.y; return; }
+      if (drawing.erase) { eraseAt(p); return; }
+      let dx = p.x - drawing.x1, dy = p.y - drawing.y1;
+      let len = Math.hypot(dx, dy);
+      if (len > MAXL) { dx *= MAXL / len; dy *= MAXL / len; len = MAXL; }
+      let a = Math.atan2(dy, dx);
+      const snap = Math.PI / 36;
+      a = Math.round(a / snap) * snap;
+      drawing.x2 = drawing.x1 + Math.cos(a) * len; drawing.y2 = drawing.y1 + Math.sin(a) * len;
+      const n = noteFor(Math.max(MINL, len));
+      if (len >= MINL && n !== drawing.n) { drawing.n = n; pluck(n, 80); }
+    }
+    function endDraw(p) {
+      if (drawing && drawing.drop) { if (p) placeDropper(toWp(p)); }
+      else if (drawing && !drawing.erase && p) {
+        const len = Math.hypot(drawing.x2 - drawing.x1, drawing.y2 - drawing.y1);
+        if (len >= MINL) { pushHistory(); const l = mkLine(drawing.x1, drawing.y1, drawing.x2, drawing.y2); l.flash = 1; lines.push(l); save(); }
+      }
+      drawing = null;
+    }
+    Curio.drag(canvas, {
+      start(q) {
+        q.event.preventDefault();
+        audio();
+        tip.style.opacity = 0;
+        const p = toWp(q);
+        if (tool === 'drop') drawing = { drop: true, x: p.x, y: p.y };
+        else if (tool === 'erase') {
+          pushHistory();
+          if (!eraseAt(p)) history.pop();
+          drawing = { erase: true };
+        } else drawing = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+      },
+      move(q) { dragMove(toWp(q)); },
+      end(q) { endDraw(q && q.event.type !== 'pointercancel' ? q : null); }
+    });
+    canvas.addEventListener('pointermove', (e) => { if (!drawing) hoverW = toW(e); });
+    canvas.addEventListener('pointerleave', () => { hoverW = null; });
+
+    const tipText = () => Curio.touchpad
+      ? (tool === 'line' ? 'Click to start a line, click again to finish' : tool === 'drop' ? 'Click, move, click to place a dropper' : 'Click to start erasing, click again to stop')
+      : (tool === 'line' ? 'Drag to draw a line' : tool === 'drop' ? 'Tap to place a dropper' : 'Tap or drag over things to erase');
+    addEventListener('curio:touchpad', () => { tip.textContent = tipText(); tip.style.opacity = 1; });
+    document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => {
+      tool = b.dataset.tool;
+      document.querySelectorAll('[data-tool]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      tip.textContent = tipText();
+      tip.style.opacity = 1;
+      canvas.style.cursor = tool === 'erase' ? 'cell' : tool === 'drop' ? 'copy' : 'crosshair';
+    }));
+    const playBtn = document.getElementById('play');
+    function setPlaying(v) { playing = v; playBtn.textContent = v ? '❚❚ Pause' : '▶ Play'; }
+    playBtn.addEventListener('click', () => setPlaying(!playing));
+    document.getElementById('undo').addEventListener('click', () => { const s = history.pop(); if (s) { restore(s); save(); } else Curio.toast('Nothing to undo'); });
+    document.getElementById('clear').addEventListener('click', () => { pushHistory(); lines = []; emitters = []; balls = []; save(); Curio.toast('Blank canvas. Place a dropper 💧'); });
+    const tempo = document.getElementById('tempo'), bpm = document.getElementById('bpm');
+    tempo.value = Curio.store.get('bounce-music:tempo', 100);
+    const readTempo = () => { rate = tempo.value / 100; bpm.textContent = Math.round(tempo.value * 1.2); };
+    tempo.addEventListener('input', () => { readTempo(); Curio.store.set('bounce-music:tempo', +tempo.value); });
+    readTempo();
+    const presetsEl = document.getElementById('presets');
+    for (const k in SONGS) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = SONGS[k].name;
+      b.addEventListener('click', () => { audio(); loadSong(k); });
+      presetsEl.append(b);
+    }
+    const legend = document.getElementById('legend');
+    for (let i = 0; i < NOTES; i++) { const s = document.createElement('i'); s.style.background = col(i, 60); s.style.height = `${8 + (NOTES - i) * 1.6}px`; legend.append(s); }
+
+    addEventListener('keydown', (e) => {
+      if (e.target.closest && e.target.closest('button, input, select') && (e.key === ' ' || e.key === 'Enter')) return;
+      if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); document.getElementById('undo').click(); }
+      else if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, select')) return;
+      else if (/^[1-3]$/.test(e.key) || /^[lde]$/i.test(e.key)) { const t = { 1: 'line', 2: 'drop', 3: 'erase', l: 'line', d: 'drop', e: 'erase' }[e.key.toLowerCase()]; document.querySelector(`[data-tool="${t}"]`).click(); }
+      else if (e.key === 'u' || e.key === 'U') document.getElementById('undo').click();
+    });
+    addEventListener('resize', resize);
+
+    resize();
+    const saved = Curio.store.get('bounce-music:layout', null);
+    if (saved) { try { restore(saved); } catch { lines = []; } }
+    if (!saved || (!lines.length && !emitters.length)) { loadSong('mary'); history = []; }
+    tip.textContent = tipText();
+    start();
+    if (!Curio.touchpad && matchMedia('(pointer: fine)').matches && !Curio.store.get('tp-hint-bounce-music', false)) { Curio.store.set('tp-hint-bounce-music', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to start a line, click again to finish', 4200), 1800); }
+    window.__bm = { loadSong, lines: () => lines, balls: () => balls, step: () => step, buildSong, phys, SONGS, BEAT_STEPS };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lights Out · Curio</title>
+  <meta name="description" content="Press a light and it flips, along with its neighbours. Switch every light off, try diagonal, wraparound and three-colour boards, or paint pixel pictures.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="lights-out">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Lights Out</h1>
+      <p class="c-sub">Pressing a light flips it and its neighbours. Turn the whole board dark. Every level is guaranteed solvable, and a little linear algebra tells us the fewest moves it takes.</p>
+    </header>
+    <div class="lo-controls">
+      <div class="seg" role="group" aria-label="Variant" id="vseg"></div>
+      <div class="seg seg--small" role="group" aria-label="Board size" id="seg"></div>
+    </div>
+    <div class="lo-levels" id="levels" aria-label="Levels"></div>
+    <div class="hud">
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="par">0</b><span id="parLbl">Optimal</span></div>
+      <div class="c-stat"><b id="lit">0</b><span id="litLbl">Lit</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <div class="play" id="play">
+      <div class="ambient" id="ambient" aria-hidden="true"></div>
+      <div class="device">
+        <div class="device-top"><span class="led" id="led" aria-hidden="true"></span><span class="brand" id="brand">LIGHTS·OUT</span><span class="screws" aria-hidden="true"></span></div>
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="Lights board"></div>
+          <div class="target" id="target" hidden><span>Make this</span><div class="tgrid" id="tgrid"></div><b id="tname"></b></div>
+        </div>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="tools">
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="restart"><i>⟲</i>Restart</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="show" aria-pressed="false"><i>🧮</i>Solution</button>
+      </div>
+      <div class="lo-row">
+        <button class="c-btn c-btn--ghost lo-small" type="button" id="daily">📅 Daily puzzle</button>
+        <button class="c-btn c-btn--ghost lo-small" type="button" id="howBtn" aria-expanded="false">How to play</button>
+      </div>
+      <div class="result" id="result" hidden>
+        <div class="result-card">
+          <div class="stars" id="rStars" aria-hidden="true"></div>
+          <h2 id="rTitle">All dark!</h2>
+          <p id="rBody"></p>
+          <div class="badges" id="rBadges"></div>
+          <div class="c-row">
+            <button class="c-btn" type="button" id="rNext">Next level</button>
+            <button class="c-btn c-btn--ghost" type="button" id="rAgain">Retry</button>
+            <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <section class="c-card how" id="how" hidden>
+      <h2>How to play</h2>
+      <div class="how-grid">
+        <figure><svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#d9d2c6"><rect x="2" y="2" width="16" height="16" rx="4"/><rect x="42" y="2" width="16" height="16" rx="4"/><rect x="2" y="42" width="16" height="16" rx="4"/><rect x="42" y="42" width="16" height="16" rx="4"/></g><g fill="#ffd54a"><rect x="22" y="2" width="16" height="16" rx="4"/><rect x="2" y="22" width="16" height="16" rx="4"/><rect x="22" y="22" width="16" height="16" rx="4"/><rect x="42" y="22" width="16" height="16" rx="4"/><rect x="22" y="42" width="16" height="16" rx="4"/></g></svg><figcaption><b>Classic</b> flips the light and the four next to it.</figcaption></figure>
+        <figure><svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#d9d2c6"><rect x="22" y="2" width="16" height="16" rx="4"/><rect x="2" y="22" width="16" height="16" rx="4"/><rect x="42" y="22" width="16" height="16" rx="4"/><rect x="22" y="42" width="16" height="16" rx="4"/></g><g fill="#ffd54a"><rect x="2" y="2" width="16" height="16" rx="4"/><rect x="42" y="2" width="16" height="16" rx="4"/><rect x="22" y="22" width="16" height="16" rx="4"/><rect x="2" y="42" width="16" height="16" rx="4"/><rect x="42" y="42" width="16" height="16" rx="4"/></g></svg><figcaption><b>Diagonal</b> flips the corners of an X instead.</figcaption></figure>
+        <figure><svg viewBox="0 0 60 60" aria-hidden="true"><rect x="2" y="2" width="56" height="56" rx="8" fill="none" stroke="#4fc3f7" stroke-width="3" stroke-dasharray="4 4"/><g fill="#ffd54a"><rect x="10" y="22" width="16" height="16" rx="4"/><rect x="34" y="22" width="16" height="16" rx="4"/></g><path d="M50 30h8M2 30h8" stroke="#4fc3f7" stroke-width="3"/></svg><figcaption><b>Wraparound</b> edges join up, like Pac-Man.</figcaption></figure>
+        <figure><svg viewBox="0 0 60 60" aria-hidden="true"><rect x="2" y="22" width="16" height="16" rx="4" fill="#d9d2c6"/><rect x="22" y="22" width="16" height="16" rx="4" fill="#ffd54a"/><rect x="42" y="22" width="16" height="16" rx="4" fill="#4fd8ff"/></svg><figcaption><b>Three-state</b> lights go off, yellow, blue, off.</figcaption></figure>
+      </div>
+      <p>In <b>Pictures</b>, start dark and switch lights on until the board matches the drawing. Pressing a light twice undoes it, and order never matters, so every solution is just a set of lights to press.</p>
+    </section>
+    <details class="c-card prog">
+      <summary>Stats and badges <span id="badgeCount"></span></summary>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Tap a light, or use arrows and <span class="c-kbd">Space</span>. <span class="c-kbd">Z</span> undo, <span class="c-kbd">R</span> restart, <span class="c-kbd">H</span> hint, <span class="c-kbd">N</span> next level.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>If the World Were 100 People · Curio</title>
+  <meta name="description" content="Shrink all 8.2 billion of us into a village of 100: 37 facts, villagers you can meet one by one, and a guess mode to test what you know about the world.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="hundred-people">
+  <main class="c-wrap">
+    <div class="hp-hero">
+      <h1 class="c-title">If the World Were 100 People</h1>
+      <p class="c-sub">Shrink all 8.2 billion of us into a village of 100. Scroll down and watch the villagers sort themselves out. Tap anyone to meet them.</p>
+      <div class="hp-tools">
+        <button class="c-btn" type="button" id="guessBtn" aria-pressed="false">🎯 Guess mode: off</button>
+        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+        <span class="hp-met">👋 <b id="metCount">0</b> villagers met</span>
+      </div>
+    </div>
+    <div class="hp-stage">
+      <div class="hp-village">
+        <div class="c-card">
+          <svg class="hp-svg" id="village" viewBox="0 0 220 300" role="img" aria-label="A village of 100 small people, coloured and grouped by the current fact. Tap a person to meet them."></svg>
+          <div class="hp-cap"><span id="capTitle">The village</span><span id="capNum">1 / 1</span></div>
+          <div class="hp-dots" id="dots"></div>
+          <div class="hp-gprog" id="gProg"></div>
+          <div class="hp-profile" id="profile" hidden>
+            <div class="pf-head"><div class="pf-av"></div><b class="pf-name"></b><button type="button" id="pfClose" aria-label="Close">✕</button></div>
+            <ul class="pf-list"></ul>
+            <small class="c-muted">A made-up villager, built from the real odds.</small>
+          </div>
+        </div>
+      </div>
+      <div class="hp-facts" id="facts"></div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

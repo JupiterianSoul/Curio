@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fractal Zoom · Curio</title>
+  <meta name="description" content="Dive into the Mandelbrot set, the Burning Ship and four more fractals. Zoom forever, trace orbits, explore Julia sets and save a gallery of your finds.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="mandelbrot">
+  <main class="c-wrap mb-main">
+    <canvas id="cv" role="img" aria-label="The Mandelbrot set. Tap or scroll to zoom in, drag to pan, pinch to zoom on touch screens."></canvas>
+    <canvas id="ov" class="ov" aria-hidden="true"></canvas>
+    <div class="mb-progress" id="progress"></div>
+    <div class="mb-intro" id="intro">
+      <h1>Fractal Zoom</h1>
+      <p>One tiny formula, z² + c, repeated. Tap to dive in, pinch to zoom, drag or two-finger scroll to look around. Then try the Burning Ship.</p>
+    </div>
+    <div class="mb-preview" id="preview"><canvas id="pv" width="180" height="135" aria-hidden="true"></canvas><span id="pvLabel"></span></div>
+    <div class="mb-info" id="info" aria-live="off"></div>
+    <div class="panel" id="panel" hidden>
+      <h2>Fractal</h2>
+      <div class="kinds" id="kinds"></div>
+      <h2>Famous places</h2>
+      <div class="places" id="places"></div>
+      <h2>Palette</h2>
+      <div class="pals" id="pals" role="group" aria-label="Colour palettes"></div>
+      <label class="sl">Colour bands <output id="oDen"></output><input type="range" id="den" min="0.04" max="1.5" step="0.01" value="0.2"></label>
+      <label class="sl">Detail (iterations) <output id="oDet"></output><input type="range" id="det" min="0.25" max="4" step="0.05" value="1"></label>
+      <div class="row2">
+        <button type="button" class="chip" id="bCycle" aria-pressed="false">🌈 Cycle colours</button>
+        <button type="button" class="chip" id="bSave">💾 Save PNG</button>
+      </div>
+      <h2>Your gallery</h2>
+      <button type="button" class="chip" id="bGal">⭐ Save view <span class="c-kbd">G</span></button>
+      <div class="gallery" id="gallery"></div>
+      <h2>Badges</h2>
+      <div class="badges" id="badges"></div>
+      <p class="keys">Keys: + and - zoom, arrows pan, F next fractal, J Julia, O orbits, A auto-zoom, G save view, R reset.</p>
+    </div>
+    <div class="dock" role="toolbar" aria-label="Fractal controls">
+      <button type="button" class="chip chip--icon" id="bIn" aria-label="Zoom in">＋</button>
+      <button type="button" class="chip chip--icon" id="bOut" aria-label="Zoom out">－</button>
+      <button type="button" class="chip" id="bHome">🏠 Reset</button>
+      <button type="button" class="chip" id="bAuto" aria-pressed="false">🚀 Auto-zoom</button>
+      <button type="button" class="chip" id="bKind">🔷 Mandelbrot</button>
+      <button type="button" class="chip" id="bJulia" aria-pressed="false">🎯 Julia</button>
+      <button type="button" class="chip" id="bOrbit" aria-pressed="false">🌀 Orbits</button>
+      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">📍 Places</button>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

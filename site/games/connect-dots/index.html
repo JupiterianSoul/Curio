@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Flow · Curio</title>
+  <meta name="description" content="Connect each pair of matching dots with a pipe and fill the whole board. 120 levels from 5×5 to 10×10, a daily puzzle and endless generated boards.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="connect-dots">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Flow</h1>
+      <p class="c-sub">Connect each pair of matching dots with a pipe. Pipes cannot cross, and a perfect solve fills every single square.</p>
+    </header>
+    <div class="modes"><div class="seg" role="group" aria-label="Mode" id="modes">
+      <button type="button" data-mode="levels">Levels</button>
+      <button type="button" data-mode="daily">Daily</button>
+      <button type="button" data-mode="endless">Endless</button>
+    </div></div>
+    <div class="c-row" style="margin-top:10px"><div class="seg seg--small" role="group" aria-label="Board size" id="seg"></div></div>
+    <div class="picker" id="picker" aria-label="Levels"></div>
+    <div class="hud">
+      <div class="c-stat"><b id="flows">0/0</b><span>Flows</span></div>
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <div class="play">
+      <div class="board-wrap" id="bw">
+        <svg class="board" id="board" tabindex="0" role="application" aria-label="Flow board. Arrow keys move, space picks up and drops a pipe."></svg>
+        <div class="result" id="result" hidden>
+          <div class="result-card">
+            <div class="stars" id="rStars" aria-hidden="true"></div>
+            <h2 id="rTitle">Level complete!</h2>
+            <p id="rBody"></p>
+            <div class="badges" id="rBadges"></div>
+            <div class="c-row">
+              <button class="c-btn" type="button" id="rNext">Next level</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rAgain">Replay</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="meter"><span>Pipe</span><div class="bar"><div id="bar"></div></div><span id="pct">0%</span></div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="tools">
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="restart"><i>⟲</i>Restart</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="next"><i>⏭</i>Next</button>
+      </div>
+      <div class="opts">
+        <label class="chk"><input type="checkbox" id="symbols"> Symbols on dots</label>
+        <label class="chk"><input type="checkbox" id="glow" checked> Neon glow</label>
+      </div>
+    </div>
+    <details class="c-card prog">
+      <summary>Stats and badges <span id="badgeCount"></span></summary>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Drag from a dot to draw. On a touchpad, switch on Touchpad mode in the top bar: click a dot, glide, click again to let go. Drag over another pipe to cut it, drag back to retract. Tap the middle of a pipe to continue from there. Keyboard: arrows move, <span class="c-kbd">Space</span> grabs and lets go, <span class="c-kbd">Z</span> undo, <span class="c-kbd">R</span> restart, <span class="c-kbd">H</span> hint. A move counts each time you switch to a different colour, so a perfect game uses one move per colour.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

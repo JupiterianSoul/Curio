@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pixel Art · Curio</title>
+  <meta name="description" content="A pixel art studio: 12 tools, layers, animation frames with onion skin, ten retro palettes, templates, a gallery, and PNG, sprite sheet and animated GIF export.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="pixel-art">
+  <main class="c-wrap pa-wrap">
+    <div class="pa-head">
+      <div>
+        <h1 class="c-title">Pixel Art</h1>
+        <p class="c-sub">Every masterpiece starts with one tiny square. <button type="button" class="pa-prompt" id="promptChip">💡 Daily prompt</button></p>
+      </div>
+      <div class="pa-icons">
+        <button type="button" id="tplBtn" title="Templates">📐 <span>Templates</span></button>
+        <button type="button" id="galBtn" title="Gallery (Ctrl+S)">🏛️ <span>Gallery</span></button>
+        <button type="button" id="helpBtn" aria-label="How to draw" title="How to draw">?</button>
+        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu">☰</button>
+      </div>
+    </div>
+    <div class="pa">
+      <aside class="pa-left c-card">
+        <h2>Tools · <span id="toolName">Pencil</span></h2>
+        <div class="pa-tools" id="tools" role="toolbar" aria-label="Tools"></div>
+        <div class="pa-opts">
+          <div class="pa-opt"><span>Size</span><div class="pa-seg" id="sizeSeg" role="group" aria-label="Brush size"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button></div></div>
+          <div class="pa-opt" id="shadeOpt" hidden><span>Shade</span><div class="pa-seg" id="shadeSeg" role="group" aria-label="Shade direction"><button type="button" data-v="1">Lighter</button><button type="button" data-v="-1">Darker</button></div></div>
+          <div class="pa-toggles">
+            <button type="button" class="pa-tg" id="filledBtn" aria-pressed="false" title="Filled shapes (F)">◼ <span>Filled</span></button>
+            <button type="button" class="pa-tg" id="mirXBtn" aria-pressed="false" title="Mirror left and right (X)">⇆ <span>Mirror X</span></button>
+            <button type="button" class="pa-tg" id="mirYBtn" aria-pressed="false" title="Mirror top and bottom (Y)">⇅ <span>Mirror Y</span></button>
+            <button type="button" class="pa-tg" id="gridBtn" aria-pressed="true" title="Grid (T)"># <span>Grid</span></button>
+            <button type="button" class="pa-tg" id="onionBtn" aria-pressed="false" title="Onion skin (Q)">🧅 <span>Onion</span></button>
+          </div>
+          <span hidden id="fillOpt"></span>
+        </div>
+      </aside>
+
+      <section class="pa-center">
+        <div class="pa-bar">
+          <select id="sizeSel" class="pa-select" aria-label="Canvas size"><option value="8">8×8</option><option value="16">16×16</option><option value="24">24×24</option><option value="32">32×32</option><option value="48">48×48</option><option value="64">64×64</option></select>
+          <button type="button" class="pa-ib" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)">↶</button>
+          <button type="button" class="pa-ib" id="redo" aria-label="Redo" title="Redo (Ctrl+Y)">↷</button>
+          <button type="button" class="pa-ib" id="flipH" aria-label="Flip layer horizontally" title="Flip horizontally">⇋</button>
+          <button type="button" class="pa-ib" id="flipV" aria-label="Flip layer vertically" title="Flip vertically">⥮</button>
+          <button type="button" class="pa-ib" id="rot" aria-label="Rotate layer 90 degrees" title="Rotate 90°">⟳</button>
+          <button type="button" class="pa-ib" id="clear" aria-label="Clear layer" title="Clear layer">🗑</button>
+          <span class="pa-zoom"><button type="button" class="pa-ib" id="zout" aria-label="Zoom out" title="Zoom out (-)">−</button><button type="button" class="pa-zl" id="zfit" title="Fit (0)"><span id="zoomLbl">100%</span></button><button type="button" class="pa-ib" id="zin" aria-label="Zoom in" title="Zoom in (+)">+</button></span>
+        </div>
+        <div class="pa-box" id="box">
+          <div class="pa-view" id="view"><canvas id="art" role="img" aria-label="Pixel art canvas"></canvas></div>
+          <canvas id="over" aria-label="Drawing surface. Click or drag to use the current tool."></canvas>
+        </div>
+        <div class="pa-anim c-card">
+          <div class="pa-anim__top">
+            <b id="frInfo">Frame 1 of 1</b>
+            <div class="pa-anim__btns">
+              <button type="button" class="pa-ib" id="frAdd" aria-label="Add blank frame" title="Add frame">＋</button>
+              <button type="button" class="pa-ib" id="frDup" aria-label="Duplicate frame" title="Duplicate frame">⧉</button>
+              <button type="button" class="pa-ib" id="frLeft" aria-label="Move frame left" title="Move left">◀</button>
+              <button type="button" class="pa-ib" id="frRight" aria-label="Move frame right" title="Move right">▶</button>
+              <button type="button" class="pa-ib" id="frDel" aria-label="Delete frame" title="Delete frame">🗑</button>
+            </div>
+            <label class="pa-fps"><span id="fpsLbl">8 fps</span><input type="range" id="fpsR" min="1" max="24" aria-label="Frames per second"></label>
+          </div>
+          <div class="pa-frames" id="frames"></div>
+        </div>
+      </section>
+
+      <aside class="pa-right">
+        <div class="c-card pa-colors">
+          <div class="pa-cur">
+            <span class="pa-cursw" id="curSw"></span>
+            <input type="color" id="picker" value="#ff5a36" aria-label="Custom color">
+            <span class="pa-hex" id="hex">#ff5a36</span>
+          </div>
+          <select id="palSel" class="pa-select" aria-label="Palette"></select>
+          <div class="pa-pal" id="pal"></div>
+          <div class="pa-recent" id="recent" aria-label="Recent colors"></div>
+        </div>
+        <div class="c-card pa-lay">
+          <div class="pa-lay__top"><h2>Layers</h2>
+            <div><button type="button" class="pa-ib" id="layAdd" aria-label="Add layer" title="Add layer">＋</button><button type="button" class="pa-ib" id="layUp" aria-label="Move layer up" title="Move up">↑</button><button type="button" class="pa-ib" id="layDown" aria-label="Move layer down" title="Move down">↓</button><button type="button" class="pa-ib" id="layMerge" aria-label="Merge down" title="Merge down">⤓</button><button type="button" class="pa-ib" id="layDel" aria-label="Delete layer" title="Delete layer">🗑</button></div>
+          </div>
+          <div class="pa-layers" id="layers"></div>
+          <label class="pa-opr">Opacity <input type="range" id="opR" min="10" max="100" aria-label="Layer opacity"></label>
+        </div>
+        <div class="c-card pa-out">
+          <div class="pa-prev"><canvas id="preview" aria-label="Animation preview"></canvas><button type="button" class="pa-ib" id="playBtn" aria-label="Pause preview">⏸</button></div>
+          <div class="pa-exp">
+            <label>Scale <select id="scaleSel" class="pa-select"><option value="1">1×</option><option value="4">4×</option><option value="8">8×</option><option value="16" selected>16×</option><option value="32">32×</option></select></label>
+            <button type="button" class="c-btn" id="expPng">PNG</button>
+            <button type="button" class="c-btn" id="expGif">GIF</button>
+            <button type="button" class="c-btn c-btn--ghost" id="expSheet">Sheet</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="pa-start" id="start" hidden>
+    <div class="pa-start__card">
+      <svg class="pa-start__art" viewBox="0 0 16 12" aria-hidden="true" shape-rendering="crispEdges">
+        <g class="pa-inv pa-inv--a" fill="#00e436"><path d="M4 1h1v1H4zM10 1h1v1h-1zM5 2h1v1H5zM9 2h1v1H9zM4 3h7v1H4zM3 4h2v1H3zM6 4h3v1H6zM10 4h2v1h-2zM2 5h11v1H2zM2 6h1v1H2zM4 6h7v1H4zM12 6h1v1h-1zM2 7h1v1H2zM4 7h1v1H4zM10 7h1v1h-1zM12 7h1v1h-1zM5 8h2v1H5zM8 8h2v1H8z"/></g>
+        <g class="pa-inv pa-inv--b" fill="#00e436"><path d="M4 1h1v1H4zM10 1h1v1h-1zM2 2h1v1H2zM5 2h1v1H5zM9 2h1v1H9zM12 2h1v1h-1zM2 3h1v1H2zM4 3h7v1H4zM12 3h1v1h-1zM2 4h3v1H2zM6 4h3v1H6zM10 4h3v1h-3zM2 5h11v1H2zM3 6h9v1H3zM4 7h1v1H4zM10 7h1v1h-1zM3 8h1v1H3zM11 8h1v1h-1z"/></g>
+        <path d="M0 11h16v1H0z" fill="#ff5a36"/><path d="M7 10h1v1H7z" fill="#ffec27"/>
+      </svg>
+      <h1>Pixel Art</h1>
+      <p class="pa-start__sub">Draw, layer, animate and export real GIFs. All in tiny squares.</p>
+      <div class="pa-start__btns">
+        <button type="button" class="c-btn" id="goContinue">▶ Continue drawing</button>
+        <span class="pa-start__new"><select id="stSize" class="pa-select" aria-label="New canvas size"><option value="16">16×16</option><option value="32" selected>32×32</option><option value="64">64×64</option></select><button type="button" class="c-btn c-btn--ghost" id="goNew">✨ New canvas</button></span>
+        <button type="button" class="c-btn c-btn--ghost" id="goTpl">📐 Templates</button>
+        <button type="button" class="c-btn c-btn--ghost" id="goGal">🏛️ Gallery</button>
+      </div>
+      <button type="button" class="pa-start__prompt" id="goPrompt"><span>💡</span><span><small>Today's prompt</small><b id="stPrompt"></b></span><em>Draw it →</em></button>
+      <p class="pa-start__line" id="stLine"></p>
+    </div>
+  </div>
+
+  <div class="pa-drawer" id="drawer" hidden>
+    <div class="pa-drawer__box" role="dialog" aria-modal="true" aria-labelledby="drawerT">
+      <header><h2 id="drawerT"></h2><button type="button" class="pa-drawer__x" aria-label="Close">✕</button></header>
+      <div class="pa-drawer__body" id="drawerBody"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

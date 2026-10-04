@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#ffccbc"/>
+  <circle cx="200" cy="150" r="140" fill="#ffab91"/>
+  <ellipse cx="200" cy="292" rx="170" ry="26" fill="#ff8a65"/>
+  <path d="M262 270C312 270 338 236 330 190C326 160 306 146 312 126" stroke="#e07b39" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M200 150C140 150 120 214 124 256C126 288 156 294 200 294S274 288 276 256C280 214 260 150 200 150Z" fill="#f39a52" stroke="#c9652a" stroke-width="3"/>
+  <ellipse cx="200" cy="240" rx="40" ry="48" fill="#ffe4c7"/>
+  <path d="M126 104L130 30L182 72ZM274 104L270 30L218 72Z" fill="#f08a3e" stroke="#c9652a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M136 92L138 48L168 72ZM264 92L262 48L232 72Z" fill="#ffb3b3"/>
+  <ellipse cx="200" cy="124" rx="86" ry="70" fill="#f39a52" stroke="#c9652a" stroke-width="3"/>
+  <path d="M200 60v20M186 62l3 18M214 62l-3 18" stroke="#d06a2b" stroke-width="6" stroke-linecap="round"/>
+  <path d="M200 140c-28 0-46 14-46 30s20 26 46 26 46-10 46-26-18-30-46-30z" fill="#ffe4c7"/>
+  <path d="M152 124q16-14 32 0M216 124q16-14 32 0" stroke="#5d3a1a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="146" cy="150" rx="14" ry="7" fill="#ff7aa2" opacity=".7"/><ellipse cx="254" cy="150" rx="14" ry="7" fill="#ff7aa2" opacity=".7"/>
+  <path d="M192 148h16l-8 9z" fill="#ff8fa3" stroke="#c2185b" stroke-width="2"/>
+  <path d="M186 162q7 8 14 0q7 8 14 0" stroke="#5d3a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M154 158l-50-8M154 166l-50 8M246 158l50-8M246 166l50 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <g transform="translate(250 40) rotate(-30)"><path d="M0 0c0-20 10-40 30-40 14 0 16 14 26 14 12 0 18 10 18 22 0 20-18 30-36 30H10C4 26 0 14 0 0z" fill="#fff4ec" stroke="#5d3a1a" stroke-width="3"/><path d="M20 -6v18M34 -14v24M48 -10v20" stroke="#e0b8a0" stroke-width="3" stroke-linecap="round"/></g>
+  <g fill="#ff4f86"><path d="M90 70c0-8 12-8 12 0 0-8 12-8 12 0 0 8-12 14-12 18 0-4-12-10-12-18z"/><path d="M320 120c0-6 9-6 9 0 0-6 9-6 9 0 0 6-9 10-9 13 0-3-9-7-9-13z"/><path d="M60 160c0-6 9-6 9 0 0-6 9-6 9 0 0 6-9 10-9 13 0-3-9-7-9-13z"/></g>
+  <text x="300" y="214" font-family="sans-serif" font-weight="900" font-size="24" fill="#5d3a1a" transform="rotate(-8 300 214)">purr</text>
+</svg>

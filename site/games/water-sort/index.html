@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Water Sort · Curio</title>
+  <meta name="description" content="Pour coloured liquids between test tubes until every tube holds a single colour. Endless solver-checked levels, a hidden-colour mode, ball and potion skins and a daily puzzle.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="water-sort">
+  <main class="c-wrap">
+    <header class="g-head">
+      <svg class="flask" viewBox="0 0 120 66" aria-hidden="true">
+        <path d="M48 4h24v4h-3v16l20 32c3 5 0 9-6 9H37c-6 0-9-4-6-9l20-32V8h-3z" fill="rgba(255,255,255,.6)" stroke="#9fb3c1" stroke-width="2.5"/>
+        <path d="M37 45h46l6 11c2 4 0 6-4 6H35c-4 0-6-2-4-6z" fill="#26c6da"/><path d="M41 38h38l4 7H37z" fill="#8e24aa"/>
+        <circle class="bub" cx="55" cy="52" r="2.5" fill="#fff"/><circle class="bub" cx="64" cy="55" r="2" fill="#fff"/><circle class="bub" cx="60" cy="50" r="1.6" fill="#fff"/>
+        <rect x="8" y="22" width="14" height="40" rx="7" fill="rgba(255,255,255,.6)" stroke="#9fb3c1" stroke-width="2"/><rect x="10" y="40" width="10" height="20" rx="5" fill="#e53935"/>
+        <rect x="98" y="22" width="14" height="40" rx="7" fill="rgba(255,255,255,.6)" stroke="#9fb3c1" stroke-width="2"/><rect x="100" y="34" width="10" height="26" rx="5" fill="#fdd835"/>
+      </svg>
+      <h1 class="c-title">Water Sort</h1>
+      <p class="c-sub">Pour the colours between tubes until each one holds a single shade. You can only pour onto a matching colour, or into an empty tube.</p>
+    </header>
+    <div class="modes">
+      <div class="segs" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-mode="classic">🧪 Classic</button>
+        <button type="button" data-mode="hidden">❓ Hidden</button>
+        <button type="button" data-mode="daily">📅 Daily</button>
+      </div>
+      <div class="segs" id="skins" role="group" aria-label="Look">
+        <button type="button" data-skin="liquid">💧 Liquid</button>
+        <button type="button" data-skin="balls">🔴 Balls</button>
+        <button type="button" data-skin="potion">✨ Potions</button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="lvl"><button type="button" id="prev" aria-label="Previous level">‹</button><div class="c-stat"><b id="level">1</b><span>Level</span></div><button type="button" id="next" aria-label="Next level">›</button></div>
+      <div class="c-stat"><b id="moves">0</b><span>Moves</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+      <div class="c-stat"><b id="stars">☆☆☆</b><span>Stars</span></div>
+    </div>
+    <div class="lab">
+      <div class="stage" id="stage">
+        <div class="rack" id="rack" role="group" aria-label="Test tubes"></div>
+      </div>
+    </div>
+    <div class="c-row g-row">
+      <button class="c-btn c-btn--ghost" type="button" id="undo">↶ Undo</button>
+      <button class="c-btn c-btn--ghost" type="button" id="add">＋ Tube</button>
+      <button class="c-btn c-btn--ghost" type="button" id="hint">💡 Hint</button>
+      <button class="c-btn" type="button" id="restart">Restart</button>
+      <label class="toggle"><input type="checkbox" id="sym"> Colour symbols</label>
+    </div>
+    <p class="g-help c-muted">Tap a tube to pick it up, then tap where to pour. Keys: <span class="c-kbd">1</span> to <span class="c-kbd">9</span> pick tubes, <span class="c-kbd">U</span> undo, <span class="c-kbd">H</span> hint, <span class="c-kbd">R</span> restart. Every level is checked by a solver before you see it. Three stars: no undo and no spare tube.</p>
+    <div class="panels">
+      <details class="c-card">
+        <summary>🧪 Levels <span id="lv-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="levels" id="levels"></div>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

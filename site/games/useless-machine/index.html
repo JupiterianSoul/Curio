@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Useless Machine · Curio</title>
+  <meta name="description" content="A box with one switch. Flip it on. The box flips it off. It has opinions about this.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="useless-machine">
+  <main class="c-wrap um">
+    <h1 class="c-title">Useless Machine</h1>
+    <p class="c-sub">It has one job: turning itself off. Flip the switch and see how it feels about you.</p>
+    <div class="um-stats">
+      <div class="c-stat"><b id="flips">0</b><span>Flips</span></div>
+      <div class="c-stat"><b id="met">0</b><span>Moods met</span></div>
+      <div class="c-stat"><b id="best">0</b><span>All-time flips</span></div>
+    </div>
+    <div class="um-moodrow">
+      <div class="um-mood" id="mood"><span>Mood:</span> 😌 Waiting patiently</div>
+      <div class="um-patience" title="How much patience the machine has left"><span>Patience</span><div class="um-pbar"><i id="pbar"></i></div></div>
+    </div>
+    <div class="um-room" id="room">
+      <svg class="um-bg" viewBox="0 0 640 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <pattern id="peg" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="#d9b98c"/><circle cx="11" cy="11" r="2.4" fill="#a8835a"/></pattern>
+          <linearGradient id="skyG" x1="0" x2="0" y1="0" y2="1"><stop id="sky1" offset="0" stop-color="#8fd3ff"/><stop id="sky2" offset="1" stop-color="#e6f6ff"/></linearGradient>
+          <linearGradient id="tableG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8d6e63"/><stop offset="1" stop-color="#5d4037"/></linearGradient>
+          <radialGradient id="lampG" cx=".5" cy="0"><stop offset="0" stop-color="#fff6c8" stop-opacity=".75"/><stop offset="1" stop-color="#fff6c8" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect class="um-wall" width="640" height="400"/>
+        <rect x="18" y="26" width="180" height="200" rx="8" fill="url(#peg)" stroke="#a8835a" stroke-width="3"/>
+        <g stroke-linecap="round">
+          <path d="M50 60v70" stroke="#795548" stroke-width="8"/><rect x="38" y="120" width="24" height="18" rx="3" fill="#90a4ae"/>
+          <path d="M100 56l14 70" stroke="#e53935" stroke-width="7"/><path d="M98 52l20 4" stroke="#bdbdbd" stroke-width="6"/>
+          <path d="M150 60c-12 16-12 40 0 56" stroke="#ffb300" stroke-width="6" fill="none"/><path d="M150 116v50" stroke="#ffb300" stroke-width="6"/>
+          <circle cx="62" cy="182" r="16" fill="none" stroke="#43a047" stroke-width="6"/><path d="M120 170h50M120 184h50M120 198h50" stroke="#78909c" stroke-width="4"/>
+        </g>
+        <g class="um-win"><rect x="430" y="34" width="170" height="130" rx="8" fill="url(#skyG)" stroke="#fff" stroke-width="8"/><path d="M515 34v130M430 99h170" stroke="#fff" stroke-width="6"/>
+          <circle id="sunMoon" cx="470" cy="70" r="14" fill="#ffe082"/><g id="winStars" opacity="0" fill="#fff"><circle cx="560" cy="58" r="1.6"/><circle cx="580" cy="90" r="1.2"/><circle cx="540" cy="130" r="1.4"/><circle cx="455" cy="128" r="1.2"/></g>
+          <path d="M440 150q30-20 60-6t50 -10t40 6v14h-150z" fill="#81c784" opacity=".8"/></g>
+        <g transform="translate(330 72)"><circle r="34" fill="#fff" stroke="#5d4037" stroke-width="6"/><g stroke="#5d4037" stroke-width="3"><path d="M0 -28v6M0 28v-6M-28 0h6M28 0h-6"/></g><path id="hourH" d="M0 0v-16" stroke="#3e2723" stroke-width="4" stroke-linecap="round"/><path id="minH" d="M0 0v-25" stroke="#3e2723" stroke-width="3" stroke-linecap="round"/><circle r="3" fill="#e53935"/></g>
+        <rect x="224" y="170" width="150" height="10" rx="3" fill="#8d6e63"/>
+        <rect x="236" y="138" width="22" height="32" rx="4" fill="#90caf9" opacity=".85"/><rect x="266" y="146" width="18" height="24" rx="4" fill="#ffcc80"/><path d="M330 170c-6-18 0-30 12-34c-2 12 4 22-2 34z M340 170c4-16 14-24 26-22c-8 8-12 16-18 22z" fill="#66bb6a"/><rect x="326" y="156" width="26" height="14" rx="3" fill="#ef6c00"/>
+        <path d="M560 210 l-30 -40 h-30 l-30 40z" fill="#ffca28" stroke="#c49000" stroke-width="3" class="um-lampshade"/><path d="M515 170v-30" stroke="#455a64" stroke-width="4"/>
+        <path class="um-lamplight" d="M470 210 L380 400 H660 L560 210z" fill="url(#lampG)"/>
+        <rect y="330" width="640" height="70" fill="url(#tableG)"/><rect y="326" width="640" height="10" fill="#a1887f"/>
+        <path d="M0 360q160 10 320 0t320 4M0 384q200 -8 400 2t240 -4" stroke="#4e342e" stroke-width="2" fill="none" opacity=".4"/>
+      </svg>
+    <div class="um-stage" id="stage">
+      <div class="um-bubble" id="bubble" role="status"></div>
+      <svg viewBox="0 0 400 330" aria-hidden="true">
+        <defs>
+          <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c98b4f"/><stop offset="1" stop-color="#a5672f"/></linearGradient>
+          <linearGradient id="woodTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e0a96d"/><stop offset="1" stop-color="#d39555"/></linearGradient>
+          <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8f9aa3"/><stop offset=".5" stop-color="#d6dde2"/><stop offset="1" stop-color="#8f9aa3"/></linearGradient>
+          <linearGradient id="poleMetal" gradientUnits="userSpaceOnUse" x1="144" x2="160" y1="0" y2="0"><stop offset="0" stop-color="#8f9aa3"/><stop offset=".5" stop-color="#e3e8ec"/><stop offset="1" stop-color="#8f9aa3"/></linearGradient>
+          <clipPath id="armClip"><path d="M-200 -400H600V138H-200z"/><rect x="110" y="120" width="82" height="30"/></clipPath>
+        </defs>
+        <ellipse cx="200" cy="312" rx="150" ry="12" fill="#000" opacity=".15" id="shadow"/>
+        <g id="box">
+          <path d="M70 150h260v140a16 16 0 0 1-16 16H86a16 16 0 0 1-16-16z" fill="url(#wood)" stroke="#7a4a1f" stroke-width="3"/>
+          <path d="M90 118h220l20 32H70z" fill="url(#woodTop)" stroke="#7a4a1f" stroke-width="3" stroke-linejoin="round"/>
+          <g stroke="#9b6232" stroke-width="2" fill="none" opacity=".55">
+            <path d="M84 180q60 -8 120 2t116 -4"/><path d="M80 214q70 10 140 0t104 6"/><path d="M84 252q50 -6 110 2t126 -2"/><path d="M90 282q70 6 120 -2t106 2"/>
+          </g>
+          <circle cx="86" cy="166" r="3.5" fill="#6b3f17"/><circle cx="314" cy="166" r="3.5" fill="#6b3f17"/><circle cx="86" cy="290" r="3.5" fill="#6b3f17"/><circle cx="314" cy="290" r="3.5" fill="#6b3f17"/>
+          <rect x="150" y="226" width="100" height="26" rx="5" fill="#f5e6c8" stroke="#7a4a1f" stroke-width="2"/>
+          <text x="200" y="244" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#5a3a1a" letter-spacing="1">DO NOT TOUCH</text>
+          <path d="M112 122h80l8 26h-94z" fill="#1d120a"/>
+          <g clip-path="url(#armClip)">
+            <g id="eyes" transform="translate(0 40)">
+              <ellipse cx="140" cy="128" rx="11" ry="13" fill="#fff" stroke="#222" stroke-width="2"/>
+              <ellipse cx="166" cy="128" rx="11" ry="13" fill="#fff" stroke="#222" stroke-width="2"/>
+              <circle id="pupL" cx="140" cy="130" r="5" fill="#111"/><circle id="pupR" cx="166" cy="130" r="5" fill="#111"/>
+              <path id="browL" d="M128 112l22 6" stroke="#222" stroke-width="3" stroke-linecap="round" opacity="0"/>
+              <path id="browR" d="M178 112l-22 6" stroke="#222" stroke-width="3" stroke-linecap="round" opacity="0"/>
+            </g>
+            <line id="pole" x1="152" y1="150" x2="152" y2="150" stroke="url(#poleMetal)" stroke-width="16" stroke-linecap="round"/>
+            <line id="poleStripe" x1="152" y1="150" x2="152" y2="150" stroke="#6f7a83" stroke-width="16" stroke-dasharray="2 14" opacity=".6"/>
+            <line id="fore" x1="152" y1="150" x2="152" y2="150" stroke="#b9c3cb" stroke-width="12" stroke-linecap="round"/>
+            <circle id="elbow" cx="152" cy="150" r="9" fill="#c33" stroke="#7a1d1d" stroke-width="2"/>
+            <g id="hand" transform="translate(152 170)">
+              <g id="poseFlag" opacity="0"><path d="M-28 0V-58" stroke="#7a4a1f" stroke-width="3"/><path d="M-28 -58h30l-6 10 6 10h-30z" fill="#fff" stroke="#999" stroke-width="1.5"/></g>
+              <rect x="-54" y="-11" width="10" height="22" rx="3" fill="#e9e9e9" stroke="#333" stroke-width="2"/>
+              <circle cx="-31" cy="0" r="15" fill="#fff" stroke="#333" stroke-width="2.2"/>
+              <g id="posePoint"><rect x="-24" y="-6" width="26" height="11" rx="5.5" fill="#fff" stroke="#333" stroke-width="2.2"/><path d="M-30 -14q6 -6 12 0" fill="#fff" stroke="#333" stroke-width="2.2"/></g>
+              <g id="poseThumb" opacity="0"><rect x="-36" y="-34" width="11" height="24" rx="5.5" fill="#fff" stroke="#333" stroke-width="2.2"/></g>
+              <path d="M-36 4q6 4 12 0M-36 -3q6 4 12 0" stroke="#bbb" stroke-width="1.5" fill="none"/>
+            </g>
+          </g>
+          <g id="lid"><path d="M112 120h80l8 28h-94z" fill="#cf9254" stroke="#7a4a1f" stroke-width="3" stroke-linejoin="round"/><path d="M118 132h70" stroke="#b67b42" stroke-width="2"/></g>
+          <g id="switch">
+            <ellipse cx="265" cy="140" rx="24" ry="9" fill="#555" stroke="#2c2c2c" stroke-width="2"/>
+            <rect x="249" y="128" width="32" height="14" rx="5" fill="#777" stroke="#2c2c2c" stroke-width="2"/>
+            <g id="lever" transform="rotate(28 265 134)"><rect x="261" y="96" width="8" height="40" rx="4" fill="url(#metal)" stroke="#444" stroke-width="1.5"/><circle cx="265" cy="96" r="7" fill="#e53935" stroke="#7a1d1d" stroke-width="2"/></g>
+            <text x="234" y="124" font-family="sans-serif" font-size="10" font-weight="800" fill="#7a4a1f">ON</text>
+            <text x="284" y="124" font-family="sans-serif" font-size="10" font-weight="800" fill="#7a4a1f">OFF</text>
+          </g>
+          <g id="cover" transform="translate(80 0)" opacity="0"><path d="M236 142q0-44 29-44t29 44z" fill="#90caf9" stroke="#1565c0" stroke-width="2.5" opacity=".95"/><path d="M248 128q4-18 16-22" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+        </g>
+      </svg>
+      <button class="um-switch" id="sw" type="button" aria-label="Flip the switch on" aria-pressed="false"></button>
+    </div>
+    </div>
+    <div class="um-skins" id="skins" role="group" aria-label="Box skins"></div>
+    <p class="c-muted um-hint">Tap the switch, or press <span class="c-kbd">Space</span>. There are many moods. Flip too fast and it loses patience. Leave it alone and it gets lonely.</p>
+    <h2 class="um-h">📔 Mood journal</h2>
+    <div class="um-dots" id="dots" aria-label="Moods you have met"></div>
+    <div class="um-ach" id="ach"></div>
+  </main>
+  <div class="um-dark" id="dark"></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

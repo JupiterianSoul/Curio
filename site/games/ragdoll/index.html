@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ragdoll Playground · Curio</title>
+  <meta name="description" content="Grab and fling floppy ragdolls around a room full of crates, beach balls and bouncy pads. Flip gravity, slow down time.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="ragdoll">
+  <main class="c-wrap rg-main">
+    <div class="rg-stage" id="stage">
+      <canvas id="room" role="img" aria-label="Playroom with floppy ragdolls. Drag anything to grab it, let go to fling it."></canvas>
+      <div class="rg-intro" id="intro">
+        <h1>Ragdoll Playground</h1>
+        <p>Grab a ragdoll and fling it. They are fine. Mostly.</p>
+      </div>
+      <div class="rg-count"><b id="nOuch">0</b> ouches</div>
+      <div class="rg-tag" id="tag"></div>
+    </div>
+    <div class="rg-tools">
+      <div class="rg-row" role="toolbar" aria-label="Tools">
+        <button type="button" class="rg-t" data-tool="grab" title="Grab (1)" aria-pressed="true"><span class="e">✋</span>Grab</button>
+        <button type="button" class="rg-t" data-tool="doll" title="Ragdoll (2)" aria-pressed="false"><span class="e">🧍</span>Ragdoll</button>
+        <button type="button" class="rg-t" data-tool="crate" title="Crate (3)" aria-pressed="false"><span class="e">📦</span>Crate</button>
+        <button type="button" class="rg-t" data-tool="ball" title="Ball (4)" aria-pressed="false"><span class="e">🏐</span>Ball</button>
+        <button type="button" class="rg-t" data-tool="pad" title="Bouncy pad (5)" aria-pressed="false"><span class="e">🟩</span>Bouncy</button>
+        <button type="button" class="rg-t" data-tool="erase" title="Erase (6)" aria-pressed="false"><span class="e">🧽</span>Erase</button>
+      </div>
+      <div class="rg-row">
+        <span class="rg-grav" role="group" aria-label="Gravity direction">
+          <button type="button" data-g="down" title="Gravity down (↓)" aria-label="Gravity down" aria-pressed="true">↓</button>
+          <button type="button" data-g="up" title="Gravity up (↑)" aria-label="Gravity up" aria-pressed="false">↑</button>
+          <button type="button" data-g="left" title="Gravity left (←)" aria-label="Gravity left" aria-pressed="false">←</button>
+          <button type="button" data-g="right" title="Gravity right (→)" aria-label="Gravity right" aria-pressed="false">→</button>
+          <button type="button" data-g="zero" title="Zero gravity (0)" aria-label="Zero gravity" aria-pressed="false">0</button>
+        </span>
+        <button type="button" class="rg-b" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
+        <button type="button" class="rg-b" id="shake" title="Shake (X)">🌀 Shake</button>
+        <button type="button" class="rg-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <button type="button" class="rg-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button type="button" class="rg-b" id="reset">↺ Reset room</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="verlet.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chimp Test · Curio</title>
+  <meta name="description" content="Remember where the numbers were, then click them in order. Six modes, a daily board and a chimp named Ayumu judging you.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="fx.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="chimp-test">
+  <main class="c-wrap ct">
+    <header class="ct-head">
+      <h1 class="c-title">Chimp Test</h1>
+      <p class="c-sub">Remember where the numbers are, then tap them in order. A chimpanzee called Ayumu famously does this better than most people.</p>
+    </header>
+    <div class="ct-arena">
+      <aside class="ct-ape" aria-label="Ayumu the chimp">
+        <div class="ct-bubble" id="bubble" aria-live="polite">Ook! Ready when you are.</div>
+        <div class="ct-ape-art" id="ape"></div>
+        <div class="ct-ape-name">Ayumu <small>your study partner</small></div>
+      </aside>
+      <section class="ct-board" id="board">
+        <div class="ct-jungle" aria-hidden="true"></div>
+        <div class="ct-hud">
+          <div class="ct-pill"><small>Level</small><b id="level">4</b></div>
+          <div class="ct-lives" id="lives" aria-label="Lives"></div>
+          <div class="ct-pill"><small id="modeLabel">Classic</small><b id="clock">0.0s</b></div>
+        </div>
+        <div class="ct-flashbar" id="flashbar"><i></i></div>
+        <div class="ct-grid" id="grid" role="group" aria-label="Number grid"></div>
+        <div class="ct-screen" id="screen"></div>
+      </section>
+    </div>
+    <div id="tabs"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fx.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

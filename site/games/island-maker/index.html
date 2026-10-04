@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Island Maker · Curio</title>
+  <meta name="description" content="Raise mountains, paint beaches and forests, flood the sea and sail little boats around an island you made.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 10px; padding-bottom: 16px; width: min(100%, 1180px); }
+    .im-head { text-align: center; }
+    .im-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .im-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .im-stage { position: relative; width: min(100%, calc((100dvh - var(--bar-h) - 250px) * 1.5)); min-width: min(100%, 520px); aspect-ratio: 3 / 2; margin: 0 auto; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); background: #1b4f8c; }
+    #cv { display: block; width: 100%; height: 100%; touch-action: none; cursor: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .im-tools { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+    .tool { border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 6px 9px; cursor: pointer; font-weight: 800; font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 5px; touch-action: manipulation; transition: transform .1s ease; }
+    .tool span { font-size: 17px; }
+    .tool:hover { transform: translateY(-1px); }
+    .tool[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+    .im-sep { width: 1px; background: var(--line); margin: 0 2px; }
+    .im-row2 { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: center; margin-top: 10px; }
+    .im-row2 label { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink-2); font-size: 14px; }
+    .im-row2 input[type=range] { width: 120px; accent-color: var(--accent); }
+    .im-row2 .c-btn { padding: 8px 14px; font-size: 14px; }
+    .im-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    @media (max-width: 560px) {
+      .im-stage { min-width: 0; width: 100%; }
+      .tool { padding: 5px 7px; font-size: 12px; }
+      .tool span { font-size: 15px; }
+      .im-sep { display: none; }
+      .im-row2 input[type=range] { width: 100px; }
+      .im-row2 .c-btn { padding: 8px 11px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body data-game="island-maker">
+  <main class="c-wrap">
+    <div class="im-head">
+      <h1 class="c-title">Island Maker</h1>
+      <p class="c-sub">Push up mountains, paint beaches and forests, then plonk down a village and set some boats sailing.</p>
+    </div>
+    <div class="im-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="A top-down island map. Drag to raise or lower land and paint terrain. The Remove tool, right-click or long-press removes villages, lighthouses and boats."></canvas>
+    </div>
+    <div class="im-tools" id="tools" role="toolbar" aria-label="Brushes"></div>
+    <div class="im-row2">
+      <label>Brush <input type="range" id="size" min="3" max="40" value="14" aria-label="Brush size"></label>
+      <label>Sea level <input type="range" id="water" min="-35" max="35" value="0" aria-label="Sea level"></label>
+      <div class="im-btns">
+        <button class="c-btn" type="button" id="gen">🎲 New island</button>
+        <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" type="button" id="flood">🌊 Flood</button>
+        <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const GW = 300, GH = 200, NC = GW * GH;
+    const TOOLS = [
+      { id: 'raise', icon: '⛰️', label: 'Raise' }, { id: 'lower', icon: '🕳️', label: 'Lower' }, { id: 'smooth', icon: '〰️', label: 'Smooth' }, null,
+      { id: 'sand', icon: '🏖️', label: 'Sand' }, { id: 'grass', icon: '🌱', label: 'Grass' }, { id: 'forest', icon: '🌲', label: 'Forest' }, { id: 'rock', icon: '🪨', label: 'Rock' }, { id: 'snow', icon: '❄️', label: 'Snow' }, null,
+      { id: 'village', icon: '🏘️', label: 'Village' }, { id: 'lighthouse', icon: '🗼', label: 'Lighthouse' }, { id: 'boat', icon: '⛵', label: 'Boat' }, { id: 'erase', icon: '🧹', label: 'Remove' }
+    ];
+    const KEYS = { raise: '1', lower: '2', smooth: '3', sand: '4', grass: '5', forest: '6', rock: '7', snow: '8', village: '9', lighthouse: '0', boat: 'B', erase: 'X' };
+    const isObjTool = () => tool === 'village' || tool === 'lighthouse' || tool === 'boat' || tool === 'erase';
+    const COVER = { sand: 1, grass: 2, forest: 3, snow: 4, rock: 5 };
+    const cv = document.getElementById('cv'), g = cv.getContext('2d');
+    const stage = document.getElementById('stage');
+    const RS = 2, BW = GW * RS, BH = GH * RS;
+    const base = document.createElement('canvas'); base.width = BW; base.height = BH;
+    const bctx = base.getContext('2d'); const bimg = bctx.createImageData(BW, BH);
+    const foam = document.createElement('canvas'); foam.width = GW; foam.height = GH;
+    const fctx = foam.getContext('2d'); const fimg = fctx.createImageData(GW, GH);
+    const deco = document.createElement('canvas'); const dctx = deco.getContext('2d');
+    let hgt = new Float32Array(NC), cover = new Uint8Array(NC), objs = [];
+    const tex = new Float32Array(NC), dist = new Uint8Array(NC), phase = new Float32Array(NC);
+    let band = [];
+    let wl = 0, tool = 'raise', size = 14;
+    let W = 0, Hc = 0, dpr = 1, k = 1, t = 0;
+    let undo = [], decoDirty = true, distDirty = true, morph = null;
+    let pointer = null, painting = false;
+
+    function mkNoise(seed) {
+      let s = seed >>> 0;
+      const rnd = () => { s = (s + 0x6D2B79F5) >>> 0; let x = s; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+      const P = 256, val = new Float32Array(P * P);
+      for (let i = 0; i < val.length; i++) val[i] = rnd() * 2 - 1;
+      const sm = (q) => q * q * (3 - 2 * q);
+      const n2 = (x, y) => {
+        const xi = Math.floor(x), yi = Math.floor(y), xf = sm(x - xi), yf = sm(y - yi);
+        const a = val[((yi & 255) * P) + (xi & 255)], b = val[((yi & 255) * P) + ((xi + 1) & 255)];
+        const c = val[(((yi + 1) & 255) * P) + (xi & 255)], d = val[(((yi + 1) & 255) * P) + ((xi + 1) & 255)];
+        return (a + (b - a) * xf) * (1 - yf) + (c + (d - c) * xf) * yf;
+      };
+      return (x, y, oct = 5) => { let a = 1, f = 1, sum = 0, norm = 0; for (let i = 0; i < oct; i++) { sum += n2(x * f, y * f) * a; norm += a; a *= 0.5; f *= 2.03; } return sum / norm; };
+    }
+    const texN = mkNoise(7);
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { tex[y * GW + x] = texN(x / 9, y / 9, 3); phase[y * GW + x] = texN(x / 23 + 50, y / 23 + 50, 2) * 6; }
+
+    function makeIsland(seed) {
+      const nz = mkNoise(seed), out = new Float32Array(NC);
+      const cx = GW / 2 + Curio.rand(-20, 20), cy = GH / 2 + Curio.rand(-12, 12);
+      const lobes = Array.from({ length: Curio.randInt(1, 3) }, () => [cx + Curio.rand(-70, 70), cy + Curio.rand(-40, 40), Curio.rand(0.5, 0.9)]);
+      for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+        const dx = (x - cx) / (GW * 0.42), dy = (y - cy) / (GH * 0.42);
+        let r = Math.sqrt(dx * dx + dy * dy);
+        for (const [lx, ly, s] of lobes) { const ex = (x - lx) / (GW * 0.3), ey = (y - ly) / (GH * 0.3); r = Math.min(r, Math.sqrt(ex * ex + ey * ey) / s); }
+        const n = nz(x / 55, y / 55, 6);
+        const ridge = 1 - Math.abs(nz(x / 30 + 9, y / 30 + 9, 4));
+        let h = 0.62 - r * 1.05 + n * 0.75 + (ridge - 0.6) * 0.25 * Math.max(0, 1 - r);
+        if (h > 0.3) h = 0.3 + (h - 0.3) * 1.45;
+        out[y * GW + x] = Math.max(-0.95, Math.min(1.1, h));
+      }
+      return out;
+    }
+
+    const lerp3 = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q, a[2] + (b[2] - a[2]) * q];
+    const SH = [126, 220, 214], MID = [52, 156, 208], DEEP = [22, 66, 132];
+    const SAND = [238, 214, 158], WET = [208, 186, 136], GRASS1 = [146, 200, 100], GRASS2 = [96, 152, 76], FOREST = [66, 124, 70], ROCK = [150, 138, 124], SNOW = [246, 248, 252];
+    function kindAt(i, e) {
+      const c = cover[i];
+      if (c) return c;
+      if (e < 0.03) return 1;
+      if (e > 0.68) return 4;
+      if (e > 0.52) return 5;
+      if (tex[i] > 0.12 && e > 0.09 && e < 0.44) return 3;
+      return 2;
+    }
+    function hAt(fx, fy) {
+      fx = Math.max(0, Math.min(GW - 1.001, fx)); fy = Math.max(0, Math.min(GH - 1.001, fy));
+      const x = fx | 0, y = fy | 0, ax = fx - x, ay = fy - y, i = y * GW + x;
+      return (hgt[i] * (1 - ax) + hgt[i + 1] * ax) * (1 - ay) + (hgt[i + GW] * (1 - ax) + hgt[i + GW + 1] * ax) * ay;
+    }
+    function renderBase(x0 = 0, y0 = 0, x1 = GW - 1, y1 = GH - 1) {
+      x0 = Math.max(0, x0 | 0); y0 = Math.max(0, y0 | 0); x1 = Math.min(GW - 1, x1 | 0); y1 = Math.min(GH - 1, y1 | 0);
+      const d = bimg.data;
+      const px0 = x0 * RS, py0 = y0 * RS, px1 = (x1 + 1) * RS - 1, py1 = (y1 + 1) * RS - 1;
+      for (let py = py0; py <= py1; py++) for (let px = px0; px <= px1; px++) {
+        const fx = (px + 0.5) / RS - 0.5, fy = (py + 0.5) / RS - 0.5;
+        const i = Math.min(GH - 1, Math.max(0, Math.round(fy))) * GW + Math.min(GW - 1, Math.max(0, Math.round(fx)));
+        const h = hAt(fx, fy), e = h - wl;
+        const diff = hAt(fx - 0.7, fy - 0.7) - hAt(fx + 0.7, fy + 0.7);
+        let c, f;
+        if (e < 0) {
+          const dep = -e;
+          c = dep < 0.18 ? lerp3(SH, MID, dep / 0.18) : lerp3(MID, DEEP, Math.min(1, (dep - 0.18) / 0.5));
+          f = 1 + Math.max(-0.12, Math.min(0.12, diff * 2.5)) + tex[i] * 0.03;
+        } else {
+          const kd = kindAt(i, e);
+          if (kd === 1) c = e < 0.007 ? WET : SAND;
+          else if (kd === 2) c = lerp3(GRASS1, GRASS2, Math.min(1, e / 0.5) * 0.8 + tex[i] * 0.25 + 0.1);
+          else if (kd === 3) c = lerp3(FOREST, GRASS2, 0.2 + tex[i] * 0.3);
+          else if (kd === 5) c = lerp3(ROCK, [120, 110, 100], 0.3 + tex[i] * 0.5);
+          else c = SNOW;
+          f = 1 + Math.max(-0.38, Math.min(0.38, diff * 7.5)) + tex[i] * 0.04;
+          if (kd === 4) f = 0.96 + (f - 1) * 0.6;
+        }
+        const o = (py * BW + px) * 4;
+        d[o] = Math.min(255, c[0] * f); d[o + 1] = Math.min(255, c[1] * f); d[o + 2] = Math.min(255, c[2] * f); d[o + 3] = 255;
+      }
+      bctx.putImageData(bimg, 0, 0, px0, py0, px1 - px0 + 1, py1 - py0 + 1);
+      decoDirty = true;
+    }
+    function computeDist() {
+      distDirty = false;
+      const q = new Int32Array(NC); let qh = 0, qt = 0;
+      dist.fill(255);
+      for (let i = 0; i < NC; i++) if (hgt[i] >= wl) { dist[i] = 0; q[qt++] = i; }
+      while (qh < qt) {
+        const i = q[qh++], dv = dist[i]; if (dv >= 12) continue;
+        const x = i % GW, y = (i / GW) | 0;
+        if (x > 0 && dist[i - 1] > dv + 1) { dist[i - 1] = dv + 1; q[qt++] = i - 1; }
+        if (x < GW - 1 && dist[i + 1] > dv + 1) { dist[i + 1] = dv + 1; q[qt++] = i + 1; }
+        if (y > 0 && dist[i - GW] > dv + 1) { dist[i - GW] = dv + 1; q[qt++] = i - GW; }
+        if (y < GH - 1 && dist[i + GW] > dv + 1) { dist[i + GW] = dv + 1; q[qt++] = i + GW; }
+      }
+      band = [];
+      const fd = fimg.data; fd.fill(0);
+      for (let i = 0; i < NC; i++) if (dist[i] >= 1 && dist[i] <= 11) band.push(i);
+    }
+    function renderFoam() {
+      const fd = fimg.data;
+      for (let n = 0; n < band.length; n++) {
+        const i = band[n], dv = dist[i];
+        const w = Math.sin(dv * 0.95 + t * 2.1 + phase[i]);
+        let a = Math.max(0, (w - 0.72) / 0.28) * (1 - dv / 12) * 0.85;
+        if (dv <= 1) a = Math.max(a, 0.45 + 0.3 * Math.sin(t * 2.6 + phase[i] * 2));
+        else if (dv === 2) a = Math.max(a, 0.18 + 0.15 * Math.sin(t * 2.6 + phase[i] * 2 - 1));
+        const o = i * 4;
+        fd[o] = 255; fd[o + 1] = 255; fd[o + 2] = 255; fd[o + 3] = a * 255;
+      }
+      fctx.putImageData(fimg, 0, 0);
+    }
+    const hsh = (x, y, s = 0) => { let h = Math.imul(x * 73856093 ^ y * 19349663 ^ s * 83492791, 2654435761); h ^= h >>> 15; return (h >>> 0) / 4294967296; };
+    function renderDeco() {
+      decoDirty = false;
+      dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dctx.clearRect(0, 0, W, Hc);
+      const trees = [];
+      const step = 3;
+      for (let gy = 0; gy < GH; gy += step) for (let gx = 0; gx < GW; gx += step) {
+        const x = Math.min(GW - 1, gx + Math.floor(hsh(gx, gy) * step)), y = Math.min(GH - 1, gy + Math.floor(hsh(gx, gy, 1) * step));
+        const i = y * GW + x, e = hgt[i] - wl;
+        if (e < 0.012) continue;
+        const kd = kindAt(i, e);
+        if (kd === 3 || (kd === 2 && hsh(gx, gy, 2) < 0.035) || (kd === 4 && cover[i] === 0 && e < 0.74 && hsh(gx, gy, 3) < 0.25)) trees.push([x + 0.5, y + 0.5, 0.8 + hsh(gx, gy, 4) * 0.7, kd === 4]);
+      }
+      trees.sort((a, b) => a[1] - b[1]);
+      const r = k * 1.25;
+      dctx.fillStyle = 'rgba(20,50,30,.28)';
+      for (const [x, y, s] of trees) { dctx.beginPath(); dctx.ellipse(x * k + r * s * 0.5, y * k + r * s * 0.45, r * s, r * s * 0.7, 0, 0, 7); dctx.fill(); }
+      for (const [x, y, s, snowy] of trees) {
+        const px = x * k, py = y * k, rr = r * s;
+        dctx.fillStyle = snowy ? '#3f6b55' : '#2f6b3c';
+        dctx.beginPath(); dctx.moveTo(px, py - rr * 1.5); dctx.lineTo(px + rr, py + rr * 0.6); dctx.lineTo(px - rr, py + rr * 0.6); dctx.closePath(); dctx.fill();
+        dctx.fillStyle = snowy ? '#f3f7fa' : '#4c9152';
+        dctx.beginPath(); dctx.moveTo(px, py - rr * 1.5); dctx.lineTo(px + rr * 0.15, py + rr * 0.55); dctx.lineTo(px - rr, py + rr * 0.6); dctx.closePath(); dctx.fill();
+      }
+    }
+
+    const clouds = Array.from({ length: 5 }, (_, i) => ({ x: Math.random() * GW, y: 15 + i * 38 + Math.random() * 10, s: 0.7 + Math.random() * 0.8, v: 1.2 + Math.random() * 1.5, seed: i * 7 }));
+    function drawClouds() {
+      for (const c of clouds) {
+        c.x += c.v * (1 / 60); if (c.x > GW + 40) c.x = -40;
+        for (const pass of [0, 1]) {
+          const ox = pass ? 0 : 10 * k, oy = pass ? 0 : 12 * k;
+          for (let j = 0; j < 5; j++) {
+            const px = (c.x + (j - 2) * 6 * c.s) * k + ox, py = (c.y + Math.sin(j * 1.7 + c.seed) * 2.5) * k + oy;
+            const rr = (7 + (j % 3) * 2.5) * c.s * k;
+            const gr = g.createRadialGradient(px, py, 0, px, py, rr);
+            gr.addColorStop(0, pass ? 'rgba(255,255,255,.5)' : 'rgba(10,30,60,.1)'); gr.addColorStop(0.6, pass ? 'rgba(255,255,255,.32)' : 'rgba(10,30,60,.06)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+            g.fillStyle = gr; g.beginPath(); g.arc(px, py, rr, 0, 7); g.fill();
+          }
+        }
+      }
+    }
+    function drawVillage(o) {
+      const px = o.x * k, py = o.y * k, u = k * 1.4;
+      g.fillStyle = 'rgba(214,190,140,.85)';
+      g.beginPath(); g.ellipse(px, py, 7.5 * u, 5.5 * u, 0, 0, 7); g.fill();
+      const n = 5 + Math.floor(hsh(o.seed, 1) * 3);
+      const hs = [];
+      for (let i = 0; i < n; i++) {
+        const a = hsh(o.seed, i + 2) * 6.28, rr = i === 0 ? 0 : 2.5 + hsh(o.seed, i + 20) * 3.6;
+        hs.push([px + Math.cos(a) * rr * u * 1.25, py + Math.sin(a) * rr * u * 0.9, i]);
+      }
+      hs.sort((a, b) => a[1] - b[1]);
+      const roofs = ['#d0583e', '#c4473c', '#b85d3d', '#5f7ea8', '#d9894a'];
+      for (const [hx, hy, i] of hs) {
+        const w = (2.6 + hsh(o.seed, i + 40) * 1.4) * u, hh = (2 + hsh(o.seed, i + 50) * 0.8) * u;
+        g.fillStyle = 'rgba(30,40,30,.3)'; g.fillRect(hx - w / 2 + u * 0.6, hy - hh / 2 + u * 0.8, w, hh + u * 0.6);
+        g.fillStyle = '#f6efe2'; g.fillRect(hx - w / 2, hy, w, hh * 0.55);
+        g.fillStyle = roofs[Math.floor(hsh(o.seed, i + 60) * roofs.length)];
+        g.fillRect(hx - w / 2 - u * 0.2, hy - hh / 2, w + u * 0.4, hh * 0.55);
+        g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(hx - w / 2 - u * 0.2, hy - hh / 2, w + u * 0.4, hh * 0.22);
+        g.fillStyle = '#4b6075'; g.fillRect(hx - u * 0.3, hy + hh * 0.12, u * 0.6, hh * 0.3);
+      }
+    }
+    function drawLighthouse(o) {
+      const px = o.x * k, py = o.y * k, u = k;
+      g.fillStyle = 'rgba(30,40,30,.3)'; g.beginPath(); g.ellipse(px + 3 * u, py + 1 * u, 5 * u, 1.6 * u, 0.3, 0, 7); g.fill();
+      const beamA = t * 1.3 + o.seed;
+      g.save(); g.translate(px, py - 9 * u);
+      const gr = g.createRadialGradient(0, 0, 0, 0, 0, 40 * u);
+      gr.addColorStop(0, 'rgba(255,240,170,.45)'); gr.addColorStop(1, 'rgba(255,240,170,0)');
+      g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 40 * u, beamA - 0.22, beamA + 0.22); g.closePath(); g.fill();
+      g.restore();
+      g.fillStyle = '#fbfaf6';
+      g.beginPath(); g.moveTo(px - 1.8 * u, py); g.lineTo(px + 1.8 * u, py); g.lineTo(px + 1.2 * u, py - 8 * u); g.lineTo(px - 1.2 * u, py - 8 * u); g.closePath(); g.fill();
+      g.fillStyle = '#d64545';
+      g.beginPath(); g.moveTo(px - 1.6 * u, py - 2 * u); g.lineTo(px + 1.6 * u, py - 2 * u); g.lineTo(px + 1.45 * u, py - 4 * u); g.lineTo(px - 1.45 * u, py - 4 * u); g.closePath(); g.fill();
+      g.beginPath(); g.moveTo(px - 1.35 * u, py - 5.5 * u); g.lineTo(px + 1.35 * u, py - 5.5 * u); g.lineTo(px + 1.25 * u, py - 7.2 * u); g.lineTo(px - 1.25 * u, py - 7.2 * u); g.closePath(); g.fill();
+      g.fillStyle = '#ffe58a'; g.fillRect(px - 1.1 * u, py - 10 * u, 2.2 * u, 2 * u);
+      g.fillStyle = '#d64545'; g.beginPath(); g.moveTo(px - 1.6 * u, py - 10 * u); g.lineTo(px + 1.6 * u, py - 10 * u); g.lineTo(px, py - 12 * u); g.closePath(); g.fill();
+      const gl = 0.5 + 0.5 * Math.sin(t * 3 + o.seed);
+      const gg = g.createRadialGradient(px, py - 9 * u, 0, px, py - 9 * u, 6 * u);
+      gg.addColorStop(0, `rgba(255,236,150,${0.5 + gl * 0.3})`); gg.addColorStop(1, 'rgba(255,236,150,0)');
+      g.fillStyle = gg; g.beginPath(); g.arc(px, py - 9 * u, 6 * u, 0, 7); g.fill();
+    }
+    function isWater(x, y) { if (x < 1 || y < 1 || x >= GW - 1 || y >= GH - 1) return false; return hgt[(y | 0) * GW + (x | 0)] < wl - 0.01; }
+    function stepBoat(o, dt) {
+      if (o.ang == null) o.ang = Math.random() * 6.28;
+      if (o.trail == null) o.trail = [];
+      o.turn = (o.turn || 0) * 0.98 + Curio.rand(-0.02, 0.02);
+      const look = 6;
+      const ahead = isWater(o.x + Math.cos(o.ang) * look, o.y + Math.sin(o.ang) * look);
+      if (!ahead) {
+        const l = isWater(o.x + Math.cos(o.ang - 0.7) * look, o.y + Math.sin(o.ang - 0.7) * look);
+        o.ang += (l ? -1 : 1) * 2.4 * dt;
+      } else o.ang += o.turn * dt * 20;
+      const sp = 4.2;
+      const nx = o.x + Math.cos(o.ang) * sp * dt, ny = o.y + Math.sin(o.ang) * sp * dt;
+      if (isWater(nx, ny)) { o.x = nx; o.y = ny; } else o.ang += 1.5 * dt;
+      o.tt = (o.tt || 0) + dt;
+      if (o.tt > 0.12) { o.tt = 0; o.trail.push([o.x, o.y]); if (o.trail.length > 14) o.trail.shift(); }
+    }
+    function drawBoat(o) {
+      const u = k;
+      if (o.trail) {
+        g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 1.2 * u; g.lineCap = 'round';
+        for (let i = 1; i < o.trail.length; i++) {
+          g.globalAlpha = i / o.trail.length * 0.6;
+          g.beginPath(); g.moveTo(o.trail[i - 1][0] * k, o.trail[i - 1][1] * k); g.lineTo(o.trail[i][0] * k, o.trail[i][1] * k); g.stroke();
+        }
+        g.globalAlpha = 1;
+      }
+      g.save(); g.translate(o.x * k, o.y * k); g.rotate(o.ang || 0);
+      g.fillStyle = 'rgba(10,30,60,.25)'; g.beginPath(); g.ellipse(1 * u, 1.2 * u, 4.2 * u, 1.8 * u, 0, 0, 7); g.fill();
+      g.fillStyle = '#8a5a3c';
+      g.beginPath(); g.moveTo(4.5 * u, 0); g.quadraticCurveTo(1 * u, -2.2 * u, -3.5 * u, -1.6 * u); g.lineTo(-3.5 * u, 1.6 * u); g.quadraticCurveTo(1 * u, 2.2 * u, 4.5 * u, 0); g.fill();
+      g.fillStyle = '#b27a52'; g.beginPath(); g.ellipse(0, 0, 2.8 * u, 1.1 * u, 0, 0, 7); g.fill();
+      g.restore();
+      g.save(); g.translate(o.x * k, o.y * k);
+      const sway = Math.sin(t * 2 + (o.seed || 0)) * 0.08;
+      g.rotate(sway);
+      g.fillStyle = '#fffdf6';
+      g.beginPath(); g.moveTo(0, -7.5 * u); g.lineTo(3.6 * u, -0.6 * u); g.lineTo(0, -0.6 * u); g.closePath(); g.fill();
+      g.fillStyle = o.sail || '#f2b6b6';
+      g.beginPath(); g.moveTo(-0.3 * u, -6.5 * u); g.lineTo(-2.8 * u, -0.8 * u); g.lineTo(-0.3 * u, -0.8 * u); g.closePath(); g.fill();
+      g.strokeStyle = '#5a3b28'; g.lineWidth = 0.6 * u; g.beginPath(); g.moveTo(0, -8 * u); g.lineTo(0, 0); g.stroke();
+      g.restore();
+    }
+
+    function render() {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(base, 0, 0, W, Hc);
+      g.drawImage(foam, 0, 0, W, Hc);
+      if (decoDirty) renderDeco();
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(deco, 0, 0); g.restore();
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const sorted = objs.slice().sort((a, b) => a.y - b.y);
+      for (const o of sorted) { if (o.type === 'village') drawVillage(o); else if (o.type === 'lighthouse') drawLighthouse(o); else drawBoat(o); }
+      drawClouds();
+      if (pointer) {
+        const isObj = isObjTool();
+        g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2;
+        g.beginPath(); g.arc(pointer[0], pointer[1], isObj ? 10 : size * k, 0, 7); g.stroke();
+        g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1;
+        g.beginPath(); g.arc(pointer[0], pointer[1], (isObj ? 10 : size * k) + 1.5, 0, 7); g.stroke();
+        if (isObj) { g.font = '18px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(TOOLS.find((q) => q && q.id === tool).icon, pointer[0], pointer[1]); }
+      }
+    }
+
+    let soundT = 0;
+    function tone(f, d = 0.15, type = 'sine', v = 0.06) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0);
+      gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.05);
+    }
+    function swish(d = 0.25, f = 900, v = 0.05) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const len = Math.floor(ac.sampleRate * d), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len);
+      const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), gn = ac.createGain();
+      src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 0.8; gn.gain.value = v;
+      src.connect(bp).connect(gn).connect(ac.destination); src.start();
+    }
+
+    function applyBrush(gx, gy, dt) {
+      const r = size, r2 = r * r;
+      const x0 = Math.floor(gx - r), x1 = Math.ceil(gx + r), y0 = Math.floor(gy - r), y1 = Math.ceil(gy + r);
+      const cvr = COVER[tool];
+      let src = null;
+      if (tool === 'smooth') src = hgt.slice();
+      for (let y = Math.max(1, y0); y <= Math.min(GH - 2, y1); y++) for (let x = Math.max(1, x0); x <= Math.min(GW - 2, x1); x++) {
+        const d2 = (x - gx) ** 2 + (y - gy) ** 2; if (d2 > r2) continue;
+        const fall = Math.pow(1 - d2 / r2, 1.6), i = y * GW + x;
+        if (tool === 'raise') hgt[i] = Math.min(1.2, hgt[i] + 0.75 * dt * fall);
+        else if (tool === 'lower') hgt[i] = Math.max(-1, hgt[i] - 0.75 * dt * fall);
+        else if (tool === 'smooth') {
+          const avg = (src[i - 1] + src[i + 1] + src[i - GW] + src[i + GW] + src[i - GW - 1] + src[i - GW + 1] + src[i + GW - 1] + src[i + GW + 1] + src[i] * 2) / 10;
+          hgt[i] += (avg - hgt[i]) * Math.min(1, dt * 14 * fall);
+        } else if (cvr) {
+          if (fall + tex[i] * 0.35 > 0.3) cover[i] = cvr;
+        }
+      }
+      renderBase(x0 - 2, y0 - 2, x1 + 2, y1 + 2);
+      if (!cvr) distDirty = true;
+      soundT -= dt;
+      if (soundT <= 0) {
+        soundT = 0.09;
+        const i = (gy | 0) * GW + (gx | 0), hh = hgt[Math.max(0, Math.min(NC - 1, i))];
+        if (tool === 'raise' || tool === 'lower') tone(260 + (hh + 1) * 260, 0.12, 'sine', 0.035);
+        else swish(0.12, cvr ? 1400 : 700, 0.035);
+      }
+    }
+
+    function snapshot() { undo.push({ h: hgt.slice(), c: cover.slice(), o: JSON.stringify(objs.map(cleanObj)), wl }); if (undo.length > 30) undo.shift(); }
+    const cleanObj = (o) => ({ type: o.type, x: +o.x.toFixed(2), y: +o.y.toFixed(2), seed: o.seed, sail: o.sail });
+    function restore(s) { hgt = s.h; cover = s.c; objs = JSON.parse(s.o); wl = s.wl; waterIn.value = Math.round(wl * 100); fullRefresh(); }
+    function fullRefresh() { renderBase(); computeDist(); decoDirty = true; save(); }
+
+    const b64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+    const unb64 = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+    let saveT = 0;
+    function save() {
+      clearTimeout(saveT);
+      saveT = setTimeout(() => {
+        const q = new Uint8Array(NC);
+        for (let i = 0; i < NC; i++) q[i] = Math.max(0, Math.min(255, Math.round((hgt[i] + 1) / 2.2 * 255)));
+        Curio.store.set('island-maker', { v: 1, h: b64(q), c: b64(cover), o: objs.map(cleanObj), wl, tool, size });
+      }, 600);
+    }
+    function load() {
+      const d = Curio.store.get('island-maker', null);
+      try {
+        if (d && d.v === 1) {
+          const q = unb64(d.h), c = unb64(d.c);
+          if (q.length === NC && c.length === NC) {
+            for (let i = 0; i < NC; i++) hgt[i] = q[i] / 255 * 2.2 - 1;
+            cover = c; objs = Array.isArray(d.o) ? d.o : []; wl = +d.wl || 0; tool = d.tool || tool; size = d.size || size;
+            return true;
+          }
+        }
+      } catch {}
+      return false;
+    }
+
+    function generate() {
+      snapshot();
+      morph = { from: hgt.slice(), to: makeIsland((Math.random() * 1e9) | 0), t: 0 };
+      cover = new Uint8Array(NC);
+      objs = [];
+      swish(0.9, 500, 0.08);
+      [392, 494, 587, 784].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'sine', 0.05), 120 + i * 110));
+    }
+    function autoDecorate() {
+      const land = [], coast = [], sea = [];
+      for (let y = 8; y < GH - 8; y += 4) for (let x = 8; x < GW - 8; x += 4) {
+        const i = y * GW + x, e = hgt[i] - wl;
+        if (e > 0.05 && e < 0.3) land.push([x, y]);
+        if (e > 0.02 && e < 0.12 && dist[i] === 0) { let wn = 0; for (const [dx, dy] of [[6, 0], [-6, 0], [0, 6], [0, -6]]) if (hgt[(y + dy) * GW + x + dx] < wl) wn++; if (wn) coast.push([x, y]); }
+        if (e < -0.05 && dist[i] > 3 && dist[i] < 12) sea.push([x, y]);
+      }
+      if (land.length) { const p = Curio.pick(land); objs.push({ type: 'village', x: p[0], y: p[1], seed: Curio.randInt(1, 9999) }); }
+      if (coast.length) { const p = Curio.pick(coast); objs.push({ type: 'lighthouse', x: p[0], y: p[1], seed: Curio.randInt(1, 9999) }); }
+      for (let i = 0; i < 2 && sea.length; i++) { const p = Curio.pick(sea); objs.push({ type: 'boat', x: p[0], y: p[1], seed: Curio.randInt(1, 9999), sail: Curio.pick(['#f2b6b6', '#ffd36b', '#9fd3f5']) }); }
+    }
+
+    const toolsEl = document.getElementById('tools');
+    const btns = {};
+    for (const tl of TOOLS) {
+      if (!tl) { const s = document.createElement('span'); s.className = 'im-sep'; toolsEl.append(s); continue; }
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool'; b.innerHTML = `<span aria-hidden="true">${tl.icon}</span>${tl.label}`; b.title = `${tl.label} (${KEYS[tl.id]})`;
+      b.addEventListener('click', () => pickTool(tl.id));
+      toolsEl.append(b); btns[tl.id] = b;
+    }
+    function pickTool(id) { tool = id; paintTools(); save(); tone(660, 0.08, 'sine', 0.04); }
+    function paintTools() { for (const id in btns) btns[id].setAttribute('aria-pressed', String(id === tool)); }
+    const sizeIn = document.getElementById('size'), waterIn = document.getElementById('water');
+    sizeIn.addEventListener('input', () => { size = +sizeIn.value; save(); });
+    let waterSnap = false;
+    waterIn.addEventListener('pointerdown', () => { if (!waterSnap) { snapshot(); waterSnap = true; } });
+    waterIn.addEventListener('input', () => {
+      wl = +waterIn.value / 100; renderBase(); computeDist();
+      soundT -= 0.03; if (soundT <= 0) { soundT = 0.1; swish(0.15, 500 + wl * 800, 0.03); }
+    });
+    waterIn.addEventListener('change', () => { waterSnap = false; save(); });
+    document.getElementById('gen').addEventListener('click', generate);
+    document.getElementById('flood').addEventListener('click', () => {
+      snapshot();
+      morph = { from: hgt.slice(), to: new Float32Array(NC).fill(-0.6), t: 0, plain: true };
+      cover = new Uint8Array(NC); objs = [];
+      swish(1.2, 300, 0.09);
+      Curio.toast('Glug. All gone. Undo to rescue it.');
+    });
+    function doUndo() { if (!undo.length) { Curio.toast('Nothing to undo'); return; } morph = null; restore(undo.pop()); tone(330, 0.12); }
+    document.getElementById('undo').addEventListener('click', doUndo);
+    document.getElementById('png').addEventListener('click', () => {
+      const p = pointer; pointer = null; render(); pointer = p;
+      cv.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'my-island.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        Curio.toast('Map saved');
+      });
+    });
+    addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); }
+      else if (e.key === '[') { size = Math.max(3, size - 2); sizeIn.value = size; }
+      else if (e.key === ']') { size = Math.min(40, size + 2); sizeIn.value = size; }
+      else if (!e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.closest && e.target.closest('input,select,textarea'))) {
+        const id = Object.keys(KEYS).find((q) => KEYS[q] === e.key.toUpperCase());
+        if (id) pickTool(id);
+      }
+    });
+
+    const toGrid = (p) => [p[0] / k, p[1] / k];
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    function removeNear(p) {
+      const [gx, gy] = toGrid(p);
+      let best = -1, bd = 12 * 12;
+      objs.forEach((o, i) => { const d = (o.x - gx) ** 2 + (o.y - gy) ** 2; if (d < bd) { bd = d; best = i; } });
+      if (best < 0) return false;
+      snapshot(); objs.splice(best, 1); tone(300, 0.15); setTimeout(() => tone(220, 0.15), 60); save();
+      return true;
+    }
+    function placeObj(p) {
+      const [gx, gy] = toGrid(p);
+      if (gx < 2 || gy < 2 || gx > GW - 2 || gy > GH - 2) return;
+      const i = (gy | 0) * GW + (gx | 0), e = hgt[i] - wl;
+      if (tool === 'boat' && e >= -0.005) { Curio.toast('Boats prefer water ⛵'); tone(200, 0.1); return; }
+      if (tool !== 'boat' && e < 0) { Curio.toast(tool === 'village' ? 'Villagers would get very wet 🌊' : 'Lighthouses need dry land'); tone(200, 0.1); return; }
+      snapshot();
+      objs.push({ type: tool, x: gx, y: gy, seed: Curio.randInt(1, 9999), sail: Curio.pick(['#f2b6b6', '#ffd36b', '#9fd3f5', '#c6e7a8']) });
+      tone(tool === 'boat' ? 523 : 659, 0.18, 'triangle', 0.07); setTimeout(() => tone(tool === 'boat' ? 784 : 988, 0.2, 'sine', 0.04), 70);
+      save();
+    }
+    let pressT = 0, downP = null, longDone = false, held = false;
+    cv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cv.addEventListener('pointerdown', (e) => {
+      const p = pos(e);
+      if (held) return;
+      pointer = p;
+      if (e.button === 2) { e.stopImmediatePropagation(); removeNear(p); return; }
+      if (e.button !== 0 || !isObjTool()) return;
+      e.stopImmediatePropagation();
+      if (tool === 'erase') { if (!removeNear(p)) { Curio.toast('Click right on a village, lighthouse or boat to remove it'); tone(200, 0.1); } return; }
+      downP = p; longDone = false;
+      try { cv.setPointerCapture(e.pointerId); } catch {}
+      clearTimeout(pressT);
+      pressT = setTimeout(() => { longDone = true; if (!removeNear(downP)) Curio.toast('Long-press on a village, lighthouse or boat to remove it'); }, 500);
+    });
+    Curio.drag(cv, {
+      start: (q) => { held = true; pointer = [q.x, q.y]; snapshot(); painting = true; morph = null; applyBrush(...toGrid(pointer), 1 / 60); },
+      move: (q) => { pointer = [q.x, q.y]; },
+      end: (q) => { held = false; if (painting) { painting = false; computeDist(); save(); } if (q && q.pointerType !== 'mouse') pointer = null; }
+    });
+    cv.addEventListener('pointermove', (e) => {
+      if (held) return;
+      const p = pos(e); pointer = p;
+      if (downP && Math.hypot(p[0] - downP[0], p[1] - downP[1]) > 10) clearTimeout(pressT);
+    });
+    const end = (e) => {
+      if (!downP) return;
+      clearTimeout(pressT);
+      if (tool !== 'erase' && isObjTool() && !longDone && e.type === 'pointerup' && e.button === 0) placeObj(downP);
+      downP = null;
+      if (e.pointerType !== 'mouse') pointer = null;
+    };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+    cv.addEventListener('pointerleave', () => { if (!painting) pointer = null; });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click the map to start a brush stroke, move to paint, click again to stop', 3600); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-island-maker', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-island-maker', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to start painting, click again to stop', 4200), 1800); }
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1);
+      W = r.width; Hc = r.height; k = W / GW;
+      cv.width = deco.width = Math.round(W * dpr); cv.height = deco.height = Math.round(Hc * dpr);
+      decoDirty = true;
+    }
+
+    let last = performance.now(), raf = 0, distT = 0;
+    function frame(now) {
+      raf = 0;
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
+      if (morph) {
+        morph.t = Math.min(1, morph.t + dt / 0.9);
+        const q = morph.t < 0.5 ? 4 * morph.t ** 3 : 1 - Math.pow(-2 * morph.t + 2, 3) / 2;
+        for (let i = 0; i < NC; i++) hgt[i] = morph.from[i] + (morph.to[i] - morph.from[i]) * q;
+        renderBase(); distT += dt;
+        if (distT > 0.1 || morph.t >= 1) { distT = 0; computeDist(); }
+        if (morph.t >= 1) { const plain = morph.plain; morph = null; computeDist(); if (!plain) autoDecorate(); save(); }
+      }
+      if (painting && pointer) {
+        applyBrush(...toGrid(pointer), dt);
+        distT += dt; if (distDirty && distT > 0.15) { distT = 0; computeDist(); }
+      }
+      for (const o of objs) if (o.type === 'boat') stepBoat(o, dt);
+      renderFoam();
+      render();
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+    addEventListener('resize', resize);
+
+    resize();
+    const had = load();
+    sizeIn.value = size; waterIn.value = Math.round(wl * 100); paintTools();
+    if (!had) { hgt = makeIsland((Math.random() * 1e9) | 0); renderBase(); computeDist(); autoDecorate(); }
+    else { renderBase(); computeDist(); }
+    raf = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

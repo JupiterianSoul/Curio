@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cloth · Curio</title>
+  <meta name="description" content="A sheet of fabric you can pull, cut, set on fire, pelt with balls, fly as a flag or drape over a table, a ball or a pair of poles.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="cloth">
+  <main class="c-wrap cl-main">
+    <canvas id="cv" role="img" aria-label="A sheet of cloth. Drag to pull it around, cut it with scissors, set it alight, throw balls at it or drape it over objects."></canvas>
+    <div class="cl-intro" id="intro">
+      <h1>Cloth</h1>
+      <p>Grab the fabric and pull. Cut it, burn it, throw balls at it, or drape it over a table and make a ghost.</p>
+    </div>
+    <div class="cl-stats"><div class="c-stat"><b id="sCuts">0</b><span>Threads cut</span></div><div class="c-stat"><b id="sBurn">0</b><span>Burnt</span></div></div>
+    <div class="panel" id="panel" hidden>
+      <h2>Scenes</h2>
+      <div class="scenes" id="scenes"></div>
+      <h2>Fabric</h2>
+      <div class="fabrics" id="fabrics" role="group" aria-label="Fabric pattern"></div>
+      <h2>Physics</h2>
+      <label class="sl">Gravity <output id="oGrav"></output><input type="range" id="grav" min="0" max="2.5" step="0.05" value="1"></label>
+      <label class="sl">Wind strength <output id="oWind"></output><input type="range" id="windS" min="0.1" max="3" step="0.05" value="1"></label>
+      <label class="sl">Stiffness <output id="oStiff"></output><input type="range" id="stiff" min="2" max="24" step="1" value="8"></label>
+      <label class="sl">Toughness <output id="oTough"></output><input type="range" id="tough" min="1.4" max="12" step="0.1" value="6"></label>
+      <p>Low toughness means the fabric rips when you yank it. Drag the grey objects to move them.</p>
+      <h2>Badges</h2>
+      <div class="badges" id="badges"></div>
+      <p>Keys: 1 grab, 2 scissors, 3 fire, 4 throw, Space throws a ball, B lights a match, W wind, P pins, D drop, R reset.</p>
+    </div>
+    <div class="dock" role="toolbar" aria-label="Cloth controls">
+      <div class="tools" role="group" aria-label="Tool">
+        <button type="button" class="chip" data-tool="grab" aria-pressed="true">✋ Grab</button>
+        <button type="button" class="chip" data-tool="cut" aria-pressed="false">✂️ Cut</button>
+        <button type="button" class="chip" data-tool="fire" aria-pressed="false">🔥 Burn</button>
+        <button type="button" class="chip" data-tool="throw" aria-pressed="false">🏐 Throw</button>
+      </div>
+      <button type="button" class="chip" id="bWind" aria-pressed="false">🌬️ Wind</button>
+      <button type="button" class="chip" id="bPins">📌 Pins</button>
+      <button type="button" class="chip" id="bDrop">🪂 Drop</button>
+      <button type="button" class="chip" id="bReset">🔄</button>
+      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

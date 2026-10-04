@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Breakout · Curio</title>
+  <meta name="description" content="Neon brick smashing: 25 hand-built levels, five bosses, twelve power-ups, endless and daily modes.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .bk-start { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border-radius: 999px; padding: 3px; max-width: 100%; }
+    .bk-start[hidden] { display: none; }
+    .bk-start b { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+    .bk-start button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--surface); cursor: pointer; font-weight: 900; color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+    .bk-start button:disabled { opacity: .35; cursor: default; }
+    .bk-pows { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 10px; margin: 6px 0; }
+    .bk-pows span { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .bk-pows i { width: 22px; height: 12px; border-radius: 6px; flex: none; }
+  </style>
+</head>
+<body data-game="breakout" class="arc">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="level">1</b><span>Level</span></div>
+      <div class="c-stat"><b data-hud="lives">♥♥♥</b><span>Lives</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/><rect x="11.5" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/></svg></button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Breakout game board"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <div class="arc-hero" aria-hidden="true">
+            <svg viewBox="0 0 400 132" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <linearGradient id="hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1145"/><stop offset="1" stop-color="#05040f"/></linearGradient>
+                <filter id="hg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <rect width="400" height="132" fill="url(#hb)"/>
+              <g stroke="#8264ff" stroke-opacity=".18"><path d="M0 33h400M0 66h400M0 99h400M50 0v132M100 0v132M150 0v132M200 0v132M250 0v132M300 0v132M350 0v132"/></g>
+              <g filter="url(#hg)">
+                <g fill="#ff3d7f"><rect x="40" y="16" width="40" height="14" rx="4"/><rect x="86" y="16" width="40" height="14" rx="4"/><rect x="132" y="16" width="40" height="14" rx="4"/><rect x="224" y="16" width="40" height="14" rx="4"/><rect x="270" y="16" width="40" height="14" rx="4"/><rect x="316" y="16" width="40" height="14" rx="4"/></g>
+                <g fill="#ffe14d"><rect x="63" y="36" width="40" height="14" rx="4"/><rect x="109" y="36" width="40" height="14" rx="4"/><rect x="247" y="36" width="40" height="14" rx="4"/><rect x="293" y="36" width="40" height="14" rx="4"/></g>
+                <g fill="#3dd6ff"><rect x="86" y="56" width="40" height="14" rx="4"/><rect x="270" y="56" width="40" height="14" rx="4"/></g>
+                <rect x="178" y="16" width="40" height="14" rx="4" fill="#ffc21a"/>
+                <circle cx="214" cy="80" r="7" fill="#fff"/>
+                <rect x="160" y="112" width="84" height="11" rx="5.5" fill="#5ef2ff"/>
+              </g>
+              <path d="M214 80 L196 112" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/>
+              <g fill="#ff8a3d"><rect x="198" y="38" width="6" height="6" transform="rotate(20 201 41)"/><rect x="212" y="44" width="5" height="5" transform="rotate(40 214 46)"/><rect x="190" y="48" width="4" height="4"/></g>
+            </svg>
+          </div>
+          <h1 class="c-title">Breakout</h1>
+          <p class="c-sub">Bounce the ball, smash the bricks, grab the power-ups, topple five bosses.</p>
+          <div class="arc-opts">
+            <div class="arc-seg" role="group" aria-label="Mode">
+              <button type="button" data-opt="mode" data-val="campaign">Campaign</button>
+              <button type="button" data-opt="mode" data-val="endless">Endless</button>
+              <button type="button" data-opt="mode" data-val="daily">Daily</button>
+            </div>
+            <p class="arc-desc" data-desc="mode"></p>
+            <div class="bk-start" data-start><button type="button" data-act="prev" aria-label="Previous level">‹</button><b>1. Hello, Bricks</b><button type="button" data-act="next" aria-label="Next level">›</button></div>
+            <div class="arc-label">Difficulty</div>
+            <div class="arc-seg" role="group" aria-label="Difficulty">
+              <button type="button" data-opt="diff" data-val="easy">Easy</button>
+              <button type="button" data-opt="diff" data-val="normal">Normal</button>
+              <button type="button" data-opt="diff" data-val="hard">Hard</button>
+            </div>
+            <div class="arc-label">Look</div>
+            <div class="arc-seg" role="group" aria-label="Theme">
+              <button type="button" data-opt="theme" data-val="auto">Auto</button>
+              <button type="button" data-opt="theme" data-val="neon">Neon</button>
+              <button type="button" data-opt="theme" data-val="candy">Candy</button>
+              <button type="button" data-opt="theme" data-val="synth">Synthwave</button>
+              <button type="button" data-opt="theme" data-val="ocean">Deep sea</button>
+            </div>
+          </div>
+          <button class="c-btn" type="button" data-act="start" data-autofocus>▶ Play</button>
+          <div class="arc-links">
+            <button type="button" data-act="panel" data-tab="help">How to play</button>
+            <button type="button" data-act="panel" data-tab="ach">Badges</button>
+            <button type="button" data-act="panel" data-tab="stats">Stats</button>
+          </div>
+          <p class="arc-small">Mouse, finger or <span class="c-kbd">←</span> <span class="c-kbd">→</span> to steer · <span class="c-kbd">Space</span> launch · <span class="c-kbd">P</span> pause</p>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The bricks are frozen in fear. Take your time.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+          <div class="arc-links"><button type="button" data-act="panel" data-tab="help">How to play</button><button type="button" data-act="panel" data-tab="ach">Badges</button></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-art" data-o="art"></div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-rows" data-o="rows"></div>
+          <div class="arc-gotach" data-o="ach" hidden></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Copy result</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-panel" aria-label="Info" hidden>
+        <div class="arc-card arc-card--wide c-card">
+          <div class="arc-tabs" role="tablist">
+            <button type="button" role="tab" data-tab="help">How to play</button>
+            <button type="button" role="tab" data-tab="ach">Badges</button>
+            <button type="button" role="tab" data-tab="stats">Stats</button>
+          </div>
+          <div class="arc-tabbody" data-tabbody="help">
+            <p>Keep the ball in play and break every brick to clear a level. Where the ball hits the paddle decides its angle: the edges send it flying sideways. Break bricks in a row without touching the paddle to build a <b>combo</b> that multiplies your points.</p>
+            <h3>Bricks</h3>
+            <ul>
+              <li><b>Coloured</b> bricks take 1 to 4 hits (the dots show how many).</li>
+              <li><b>Steel</b> bricks never break. Bounce around them.</li>
+              <li><b>TNT</b> bricks explode and take their neighbours with them. Chains are encouraged.</li>
+              <li><b>Gold</b> bricks are worth 500 and always drop a power-up. <b>?</b> bricks always drop one too.</li>
+              <li><b>Ghost</b> bricks are invisible until you hit them. <b>Green +</b> bricks heal if you leave them half broken.</li>
+            </ul>
+            <h3>Power-ups</h3>
+            <div class="bk-pows">
+              <span><i style="background:#2f9bff"></i>Wide paddle</span><span><i style="background:#ff4fa3"></i>Multi-ball</span>
+              <span><i style="background:#18c29c"></i>Slow-mo</span><span><i style="background:#ff3b4f"></i>Extra life</span>
+              <span><i style="background:#ff6a2b"></i>Lasers (auto fire)</span><span><i style="background:#b46bff"></i>Sticky paddle</span>
+              <span><i style="background:#ffb800"></i>Mega ball (double damage)</span><span><i style="background:#ff2d2d"></i>Fireball (ploughs through)</span>
+              <span><i style="background:#3dd6ff"></i>Shield (one save)</span><span><i style="background:#9cff3d"></i>Warp gate (skip level)</span>
+              <span><i style="background:#7a7f8c"></i>Shrink (avoid!)</span><span><i style="background:#5c5c70"></i>Speed up (avoid!)</span>
+            </div>
+            <h3>Bosses</h3>
+            <p>Every fifth level a boss shows up with a health bar. Hit it with the ball or lasers. Its bombs and beams cannot kill you, but they zap your paddle so it freezes for a moment.</p>
+            <h3>Controls</h3>
+            <p>Mouse or finger anywhere on the board steers. <span class="c-kbd">←</span> <span class="c-kbd">→</span> or <span class="c-kbd">A</span> <span class="c-kbd">D</span> work too. Click, tap, <span class="c-kbd">Space</span> or <span class="c-kbd">↑</span> launches. <span class="c-kbd">P</span> or <span class="c-kbd">Esc</span> pauses.</p>
+          </div>
+          <div class="arc-tabbody" data-tabbody="ach" hidden></div>
+          <div class="arc-tabbody" data-tabbody="stats" hidden></div>
+          <button class="c-btn" type="button" data-act="back">Back</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="engine.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Paint Pour · Curio</title>
+  <meta name="description" content="Fluid art without the mess. Pour acrylics onto a canvas, swirl them, tilt it, grow cells and save your masterpiece.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 12px; padding-bottom: 16px; }
+    .pp-head { text-align: center; }
+    .pp-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .pp-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .pp-stage { position: relative; height: max(330px, calc(100dvh - var(--bar-h) - 250px)); perspective: 1100px; }
+    .pp-tilt { position: absolute; inset: 0; border-radius: 16px; overflow: hidden; transition: transform .35s cubic-bezier(.2, .9, .3, 1.2); box-shadow: 0 2px 0 rgba(0,0,0,.08), 0 18px 40px -12px rgba(40, 30, 20, .45); background: #f6f1e7; }
+    .pp-tilt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 6px rgba(255,255,255,.55), inset 0 0 0 7px rgba(0,0,0,.08); }
+    #paint { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+    .pp-hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); pointer-events: none; background: rgba(20,16,12,.55); color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; transition: opacity .6s ease; white-space: nowrap; }
+    .pp-hint.gone { opacity: 0; }
+    .pp-tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center; margin-top: 12px; }
+    .pp-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+    .seg button { border: 0; background: transparent; padding: 7px 13px; border-radius: 999px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .cup { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--surface); cursor: pointer; box-shadow: 0 0 0 1.5px var(--line); transition: transform .12s ease; touch-action: manipulation; padding: 0; }
+    .cup:hover { transform: scale(1.1); }
+    .cup[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); transform: scale(1.1); }
+    .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 13px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; touch-action: manipulation; }
+    .chip[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+    .chip i { display: inline-flex; height: 12px; border-radius: 4px; overflow: hidden; }
+    .chip i b { width: 8px; height: 12px; }
+    .pad { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 30px); gap: 3px; }
+    .pad button { border: 0; border-radius: 9px; background: var(--surface-2); cursor: pointer; font-size: 14px; font-weight: 900; color: var(--ink-2); touch-action: none; user-select: none; -webkit-user-select: none; }
+    .pad button:active, .pad button.on { background: var(--accent); color: #fff; }
+    .pad .u { grid-column: 2; } .pad .l { grid-column: 1; grid-row: 2; } .pad .d { grid-column: 2; grid-row: 2; } .pad .r { grid-column: 3; grid-row: 2; }
+    .pp-tools .c-btn { padding: 8px 15px; font-size: 14px; }
+    .lbl { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    @media (max-width: 560px) {
+      .pp-head .c-sub { font-size: 13px; }
+      .pp-stage { height: max(300px, calc(100dvh - var(--bar-h) - 330px)); }
+      .cup { width: 28px; height: 28px; }
+    }
+  </style>
+</head>
+<body data-game="paint-pour">
+  <main class="c-wrap">
+    <div class="pp-head">
+      <h1 class="c-title">Paint Pour</h1>
+      <p class="c-sub">Hold to pour, drag to swirl, tilt to let it run. No smock required.</p>
+    </div>
+    <div class="pp-stage" id="stage">
+      <div class="pp-tilt" id="tilt">
+        <canvas id="paint" role="img" aria-label="A canvas covered in poured acrylic paint. Hold to pour paint, drag to swirl it."></canvas>
+      </div>
+      <div class="pp-hint" id="hint">Hold anywhere to pour</div>
+    </div>
+    <div class="pp-tools">
+      <div class="pp-group">
+        <div class="seg" role="group" aria-label="Tool">
+          <button type="button" data-tool="pour" aria-pressed="true" title="Pour (P)">🫗 Pour</button>
+          <button type="button" data-tool="swirl" aria-pressed="false" title="Swirl (S)">🌀 Swirl</button>
+        </div>
+        <div class="pp-group" id="cups" role="group" aria-label="Paint cup"></div>
+      </div>
+      <div class="pp-group">
+        <span class="lbl">Tilt</span>
+        <div class="pad" id="pad" aria-label="Tilt the canvas">
+          <button type="button" class="u" data-tx="0" data-ty="1" aria-label="Tilt up">▲</button>
+          <button type="button" class="l" data-tx="-1" data-ty="0" aria-label="Tilt left">◀</button>
+          <button type="button" class="d" data-tx="0" data-ty="-1" aria-label="Tilt down">▼</button>
+          <button type="button" class="r" data-tx="1" data-ty="0" aria-label="Tilt right">▶</button>
+        </div>
+        <button type="button" class="chip" id="cells" aria-pressed="false" title="Cells (C)">🫧 Cells</button>
+      </div>
+      <div class="pp-group" id="palettes" role="group" aria-label="Palettes"></div>
+      <div class="pp-group">
+        <button type="button" class="c-btn c-btn--ghost" id="auto">✨ Surprise pour</button>
+        <button type="button" class="c-btn c-btn--ghost" id="clear">🧽 Clean</button>
+        <button type="button" class="c-btn" id="save">💾 Save PNG</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const PALETTES = {
+      sunset: { name: 'Sunset', base: '#f6f1e7', cell: '#fff4dc', colors: ['#2b1145', '#9b1d64', '#ef476f', '#ff9f1c', '#ffd166'] },
+      ocean: { name: 'Ocean', base: '#f6f1e7', cell: '#ffffff', colors: ['#0b3c5d', '#1d7fb8', '#4fc3e8', '#e8f6ff', '#d4a857'] },
+      galaxy: { name: 'Galaxy', base: '#0d0c18', cell: '#f4f1ff', colors: ['#100c2c', '#3a1f8a', '#7a4fe0', '#20c4cb', '#ff7ad9'] },
+      candy: { name: 'Candy', base: '#fffaf3', cell: '#ffffff', colors: ['#ff6f91', '#ffc2d1', '#7fd8d4', '#b4f8c8', '#fbe7a1'] },
+      earth: { name: 'Earth', base: '#efe6d6', cell: '#f8efdc', colors: ['#3d2c1e', '#8a5a44', '#c98b5a', '#e8d5b5', '#5f7161'] },
+      gold: { name: 'Gold & Ink', base: '#f4efe4', cell: '#e9c76b', colors: ['#111111', '#34343a', '#c9a227', '#f1e3b0', '#ffffff'] }
+    };
+    const hex = (h) => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+
+    let paletteKey = Curio.store.get('paint-pour:palette', 'sunset');
+    if (!PALETTES[paletteKey]) paletteKey = 'sunset';
+    let cup = -1, tool = 'pour', cellsOn = false;
+    const stage = document.getElementById('stage');
+    const tiltEl = document.getElementById('tilt');
+    let canvas = document.getElementById('paint');
+    const hint = document.getElementById('hint');
+    const forceCpu = /[?&]gl=0/.test(location.search);
+
+    const VERT = `precision highp float;
+attribute vec2 aPosition;
+varying vec2 vUv; varying vec2 vL; varying vec2 vR; varying vec2 vT; varying vec2 vB;
+uniform vec2 texelSize;
+void main () {
+  vUv = aPosition * 0.5 + 0.5;
+  vL = vUv - vec2(texelSize.x, 0.0); vR = vUv + vec2(texelSize.x, 0.0);
+  vT = vUv + vec2(0.0, texelSize.y); vB = vUv - vec2(0.0, texelSize.y);
+  gl_Position = vec4(aPosition, 0.0, 1.0);
+}`;
+    const HEAD = `precision highp float; precision highp sampler2D;
+varying vec2 vUv; varying vec2 vL; varying vec2 vR; varying vec2 vT; varying vec2 vB;
+`;
+    const FRAG = {
+      copy: `uniform sampler2D uTex; void main () { gl_FragColor = texture2D(uTex, vUv); }`,
+      clear: `uniform sampler2D uTex; uniform float value; void main () { gl_FragColor = value * texture2D(uTex, vUv); }`,
+      splatVel: `uniform sampler2D uTarget; uniform float aspectRatio; uniform vec3 color; uniform vec2 point; uniform float radius;
+void main () { vec2 p = vUv - point; p.x *= aspectRatio; vec3 s = exp(-dot(p, p) / radius) * color; gl_FragColor = vec4(texture2D(uTarget, vUv).xyz + s, 1.0); }`,
+      splatDye: `uniform sampler2D uTarget; uniform float aspectRatio; uniform vec4 color; uniform vec2 point; uniform float radius;
+void main () { vec2 p = vUv - point; p.x *= aspectRatio; float d = length(p); float f = (1.0 - smoothstep(radius * 0.72, radius, d)) * color.a; vec4 c = texture2D(uTarget, vUv); gl_FragColor = mix(c, vec4(color.rgb, 1.0), f); }`,
+      advect: `uniform sampler2D uVelocity; uniform sampler2D uSource; uniform vec2 texelSize; uniform float dt; uniform float dissipation; uniform vec2 drift; uniform float edgeZero;
+void main () {
+  vec4 here = texture2D(uSource, vUv);
+  vec2 coord = vUv - dt * (texture2D(uVelocity, vUv).xy * texelSize + drift * smoothstep(0.05, 0.7, here.a));
+  vec4 r = texture2D(uSource, coord);
+  if (edgeZero > 0.5) { vec2 o = step(vec2(0.0), coord) * step(coord, vec2(1.0)); r *= o.x * o.y; }
+  gl_FragColor = r / (1.0 + dissipation * dt);
+}`,
+      curl: `uniform sampler2D uVelocity;
+void main () { float L = texture2D(uVelocity, vL).y; float R = texture2D(uVelocity, vR).y; float T = texture2D(uVelocity, vT).x; float B = texture2D(uVelocity, vB).x; gl_FragColor = vec4(0.5 * (R - L - T + B), 0.0, 0.0, 1.0); }`,
+      vorticity: `uniform sampler2D uVelocity; uniform sampler2D uCurl; uniform float curl; uniform float dt;
+void main () {
+  float L = texture2D(uCurl, vL).x; float R = texture2D(uCurl, vR).x; float T = texture2D(uCurl, vT).x; float B = texture2D(uCurl, vB).x; float C = texture2D(uCurl, vUv).x;
+  vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L)); force /= length(force) + 0.0001; force *= curl * C; force.y *= -1.0;
+  vec2 v = texture2D(uVelocity, vUv).xy + force * dt; v = min(max(v, -1000.0), 1000.0); gl_FragColor = vec4(v, 0.0, 1.0);
+}`,
+      tilt: `uniform sampler2D uVelocity; uniform sampler2D uDye; uniform vec2 force;
+void main () { float a = texture2D(uDye, vUv).a; gl_FragColor = vec4(texture2D(uVelocity, vUv).xy + force * (0.15 + a), 0.0, 1.0); }`,
+      divergence: `uniform sampler2D uVelocity; uniform vec4 sources[16]; uniform float aspectRatio;
+void main () {
+  float L = texture2D(uVelocity, vL).x; float R = texture2D(uVelocity, vR).x; float T = texture2D(uVelocity, vT).y; float B = texture2D(uVelocity, vB).y;
+  vec2 C = texture2D(uVelocity, vUv).xy;
+  if (vL.x < 0.0) { L = -C.x; } if (vR.x > 1.0) { R = -C.x; } if (vT.y > 1.0) { T = -C.y; } if (vB.y < 0.0) { B = -C.y; }
+  float div = 0.5 * (R - L + T - B);
+  for (int i = 0; i < 16; i++) { vec4 s = sources[i]; vec2 p = vUv - s.xy; p.x *= aspectRatio; div -= s.w * exp(-dot(p, p) / s.z); }
+  gl_FragColor = vec4(div, 0.0, 0.0, 1.0);
+}`,
+      pressure: `uniform sampler2D uPressure; uniform sampler2D uDivergence;
+void main () { float L = texture2D(uPressure, vL).x; float R = texture2D(uPressure, vR).x; float T = texture2D(uPressure, vT).x; float B = texture2D(uPressure, vB).x; float d = texture2D(uDivergence, vUv).x; gl_FragColor = vec4((L + R + B + T - d) * 0.25, 0.0, 0.0, 1.0); }`,
+      gradient: `uniform sampler2D uPressure; uniform sampler2D uVelocity;
+void main () { float L = texture2D(uPressure, vL).x; float R = texture2D(uPressure, vR).x; float T = texture2D(uPressure, vT).x; float B = texture2D(uPressure, vB).x; vec2 v = texture2D(uVelocity, vUv).xy - vec2(R - L, T - B); gl_FragColor = vec4(v, 0.0, 1.0); }`,
+      display: `uniform sampler2D uDye; uniform vec3 base; uniform vec2 dyeTexel; uniform float time;
+float lum (vec2 uv) { vec4 x = texture2D(uDye, uv); vec3 c = x.rgb + base * (1.0 - x.a); return dot(c, vec3(0.3, 0.59, 0.11)) + x.a * 0.25; }
+float hash (vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+void main () {
+  vec4 d = texture2D(uDye, vUv);
+  vec3 col = d.rgb + base * (1.0 - d.a);
+  vec2 tx = vec2(dyeTexel.x * 1.5, 0.0); vec2 ty = vec2(0.0, dyeTexel.y * 1.5);
+  vec2 g = vec2(lum(vUv + tx) - lum(vUv - tx), lum(vUv + ty) - lum(vUv - ty));
+  vec3 n = normalize(vec3(-g * 4.0, 1.0));
+  vec3 l = normalize(vec3(-0.45, 0.55, 0.9));
+  float diff = dot(n, l);
+  float spec = pow(max(dot(reflect(-l, n), vec3(0.0, 0.0, 1.0)), 0.0), 36.0);
+  float wet = smoothstep(0.0, 0.5, d.a);
+  col = col * (0.82 + 0.2 * diff) + vec3(spec) * 0.5 * wet;
+  col += (hash(floor(gl_FragCoord.xy)) - 0.5) * 0.025 * (1.0 - wet);
+  vec2 q = vUv - 0.5; col *= 1.0 - dot(q, q) * 0.25;
+  gl_FragColor = vec4(col, 1.0);
+}`
+    };
+
+    function makeGL(cv) {
+      const attrs = { alpha: false, depth: false, stencil: false, antialias: false, preserveDrawingBuffer: false };
+      let gl = cv.getContext('webgl2', attrs);
+      const isGL2 = !!gl;
+      if (!gl) gl = cv.getContext('webgl', attrs);
+      if (!gl) return null;
+      let type, internal, filter;
+      if (isGL2) {
+        if (!gl.getExtension('EXT_color_buffer_float')) return null;
+        type = gl.HALF_FLOAT; internal = gl.RGBA16F; filter = gl.LINEAR;
+      } else {
+        const h = gl.getExtension('OES_texture_half_float');
+        if (!h) return null;
+        type = h.HALF_FLOAT_OES; internal = gl.RGBA;
+        filter = gl.getExtension('OES_texture_half_float_linear') ? gl.LINEAR : gl.NEAREST;
+      }
+      function shader(t, src) {
+        const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+        return s;
+      }
+      const vs = shader(gl.VERTEX_SHADER, VERT);
+      const progs = {};
+      for (const k in FRAG) {
+        const p = gl.createProgram();
+        gl.attachShader(p, vs); gl.attachShader(p, shader(gl.FRAGMENT_SHADER, HEAD + FRAG[k]));
+        gl.bindAttribLocation(p, 0, 'aPosition');
+        gl.linkProgram(p);
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+        const u = {};
+        const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+        for (let i = 0; i < n; i++) { const name = gl.getActiveUniform(p, i).name.replace('[0]', ''); u[name] = gl.getUniformLocation(p, name); }
+        progs[k] = { p, u };
+      }
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(0);
+
+      function fbo(w, h) {
+        const tex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, gl.RGBA, type, null);
+        const fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('fbo');
+        gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+        return { tex, fb, w, h, tx: 1 / w, ty: 1 / h, attach(id) { gl.activeTexture(gl.TEXTURE0 + id); gl.bindTexture(gl.TEXTURE_2D, tex); return id; } };
+      }
+      function dbl(w, h) {
+        const o = { read: fbo(w, h), write: fbo(w, h), w, h, tx: 1 / w, ty: 1 / h, swap() { const t = o.read; o.read = o.write; o.write = t; } };
+        return o;
+      }
+      function use(name) { const pr = progs[name]; gl.useProgram(pr.p); return pr.u; }
+      function blit(target) {
+        if (target) { gl.viewport(0, 0, target.w, target.h); gl.bindFramebuffer(gl.FRAMEBUFFER, target.fb); }
+        else { gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); gl.bindFramebuffer(gl.FRAMEBUFFER, null); }
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      let vel, dye, pres, div, curlT, aspect = 1;
+      function resample(old, w, h) {
+        const n = dbl(w, h);
+        if (old) { const u = use('copy'); gl.uniform2f(u.texelSize, n.tx, n.ty); gl.uniform1i(u.uTex, old.read.attach(0)); blit(n.read); }
+        return n;
+      }
+      let quality = 1;
+      function size(W, H, q) {
+        if (q) quality = q;
+        aspect = W / H;
+        const sim = Math.round(150 * Math.sqrt(quality)), dyeR = Math.round(Math.min(1100, Math.max(W, H)) * quality);
+        const sw = aspect >= 1 ? Math.round(sim * aspect) : sim, sh = aspect >= 1 ? sim : Math.round(sim / aspect);
+        const dw = aspect >= 1 ? dyeR : Math.round(dyeR * aspect), dh = aspect >= 1 ? Math.round(dyeR / aspect) : dyeR;
+        vel = resample(vel, sw, sh);
+        dye = resample(dye, dw, dh);
+        if (pres && pres.w === sw && pres.h === sh) return;
+        pres = dbl(sw, sh); div = fbo(sw, sh); curlT = fbo(sw, sh);
+      }
+      const srcArr = new Float32Array(64);
+      return {
+        kind: 'gl',
+        size,
+        splatVel(x, y, dx, dy, r) {
+          const u = use('splatVel'); gl.uniform2f(u.texelSize, vel.tx, vel.ty);
+          gl.uniform1i(u.uTarget, vel.read.attach(0)); gl.uniform1f(u.aspectRatio, aspect);
+          gl.uniform2f(u.point, x, y); gl.uniform3f(u.color, dx, dy, 0); gl.uniform1f(u.radius, r * r);
+          blit(vel.write); vel.swap();
+        },
+        splatDye(x, y, rgb, r, a) {
+          const u = use('splatDye'); gl.uniform2f(u.texelSize, dye.tx, dye.ty);
+          gl.uniform1i(u.uTarget, dye.read.attach(0)); gl.uniform1f(u.aspectRatio, aspect);
+          gl.uniform2f(u.point, x, y); gl.uniform4f(u.color, rgb[0], rgb[1], rgb[2], a); gl.uniform1f(u.radius, r);
+          blit(dye.write); dye.swap();
+        },
+        clear() {
+          for (const t of [dye.read, dye.write, vel.read, vel.write, pres.read, pres.write]) { gl.bindFramebuffer(gl.FRAMEBUFFER, t.fb); gl.viewport(0, 0, t.w, t.h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+        },
+        step(dt, sources, tilt) {
+          let u = use('curl'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); blit(curlT);
+          u = use('vorticity'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uCurl, curlT.attach(1)); gl.uniform1f(u.curl, 3); gl.uniform1f(u.dt, dt); blit(vel.write); vel.swap();
+          if (tilt[0] || tilt[1]) {
+            u = use('tilt'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uDye, dye.read.attach(1)); gl.uniform2f(u.force, tilt[0] * 160 * dt, tilt[1] * 160 * dt); blit(vel.write); vel.swap();
+          }
+          srcArr.fill(0);
+          sources.slice(0, 16).forEach((s, i) => { srcArr[i * 4] = s.x; srcArr[i * 4 + 1] = s.y; srcArr[i * 4 + 2] = s.r * s.r; srcArr[i * 4 + 3] = s.s; });
+          for (let i = sources.length; i < 16; i++) srcArr[i * 4 + 2] = 1;
+          u = use('divergence'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform4fv(u.sources, srcArr); gl.uniform1f(u.aspectRatio, aspect); blit(div);
+          u = use('clear'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uTex, pres.read.attach(0)); gl.uniform1f(u.value, 0.8); blit(pres.write); pres.swap();
+          u = use('pressure'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uDivergence, div.attach(0));
+          for (let i = 0; i < 36; i++) { gl.uniform1i(u.uPressure, pres.read.attach(1)); blit(pres.write); pres.swap(); }
+          u = use('gradient'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uPressure, pres.read.attach(0)); gl.uniform1i(u.uVelocity, vel.read.attach(1)); blit(vel.write); vel.swap();
+          u = use('advect'); gl.uniform2f(u.texelSize, vel.tx, vel.ty); gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uSource, vel.read.attach(0)); gl.uniform1f(u.dt, dt); gl.uniform1f(u.dissipation, 2.2); gl.uniform2f(u.drift, 0, 0); gl.uniform1f(u.edgeZero, 0); blit(vel.write); vel.swap();
+          gl.uniform1i(u.uVelocity, vel.read.attach(0)); gl.uniform1i(u.uSource, dye.read.attach(1)); gl.uniform1f(u.dissipation, 0); gl.uniform2f(u.drift, tilt[0] * 0.07, tilt[1] * 0.07); gl.uniform1f(u.edgeZero, 1); blit(dye.write); dye.swap();
+        },
+        render(base, time) {
+          const u = use('display'); gl.uniform2f(u.texelSize, dye.tx, dye.ty); gl.uniform1i(u.uDye, dye.read.attach(0)); gl.uniform3f(u.base, base[0], base[1], base[2]); gl.uniform2f(u.dyeTexel, dye.tx, dye.ty); gl.uniform1f(u.time, time);
+          blit(null);
+        }
+      };
+    }
+
+    function makeCPU(cv) {
+      const c2 = cv.getContext('2d');
+      let w = 0, h = 0, n = 0, u, v, u2, v2, p, dv, R, G, B, A, R2, G2, B2, A2, img, off, offc, aspect = 1;
+      const alloc = () => new Float32Array(n);
+      function size(W, H) {
+        aspect = W / H;
+        const s = 140;
+        const nw = aspect >= 1 ? Math.round(s * aspect) : s, nh = aspect >= 1 ? s : Math.round(s / aspect);
+        const old = A ? { w, h, R, G, B, A } : null;
+        w = nw; h = nh; n = w * h;
+        u = alloc(); v = alloc(); u2 = alloc(); v2 = alloc(); p = alloc(); dv = alloc();
+        R = alloc(); G = alloc(); B = alloc(); A = alloc(); R2 = alloc(); G2 = alloc(); B2 = alloc(); A2 = alloc();
+        if (old) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const o = ((y * old.h / h) | 0) * old.w + ((x * old.w / w) | 0), i = y * w + x; R[i] = old.R[o]; G[i] = old.G[o]; B[i] = old.B[o]; A[i] = old.A[o]; }
+        off = document.createElement('canvas'); off.width = w; off.height = h; offc = off.getContext('2d'); img = offc.createImageData(w, h);
+      }
+      function samp(f, x, y, zero) {
+        if (zero && (x < 0 || y < 0 || x > w - 1 || y > h - 1)) return 0;
+        x = Math.max(0, Math.min(w - 1.001, x)); y = Math.max(0, Math.min(h - 1.001, y));
+        const x0 = x | 0, y0 = y | 0, fx = x - x0, fy = y - y0, i = y0 * w + x0;
+        return (f[i] * (1 - fx) + f[i + 1] * fx) * (1 - fy) + (f[i + w] * (1 - fx) + f[i + w + 1] * fx) * fy;
+      }
+      return {
+        kind: 'cpu',
+        size,
+        splatVel(x, y, dx, dy, r) {
+          const cx = x * w, cy = y * h, rr = r * h, k = 1 / (rr * rr);
+          const x0 = Math.max(0, (cx - rr * 3) | 0), x1 = Math.min(w - 1, (cx + rr * 3) | 0), y0 = Math.max(0, (cy - rr * 3) | 0), y1 = Math.min(h - 1, (cy + rr * 3) | 0);
+          for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) { const d = (xx - cx) ** 2 + (yy - cy) ** 2, f = Math.exp(-d * k), i = yy * w + xx; u[i] += dx * f; v[i] += dy * f; }
+        },
+        splatDye(x, y, rgb, r, a) {
+          const cx = x * w, cy = y * h, rr = r * h + 0.8;
+          const x0 = Math.max(0, (cx - rr - 1) | 0), x1 = Math.min(w - 1, (cx + rr + 1) | 0), y0 = Math.max(0, (cy - rr - 1) | 0), y1 = Math.min(h - 1, (cy + rr + 1) | 0);
+          for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+            const d = Math.hypot(xx - cx, yy - cy), t = Math.min(1, Math.max(0, (rr - d) / (rr * 0.28))), f = t * t * (3 - 2 * t) * a, i = yy * w + xx;
+            R[i] += (rgb[0] - R[i]) * f; G[i] += (rgb[1] - G[i]) * f; B[i] += (rgb[2] - B[i]) * f; A[i] += (1 - A[i]) * f;
+          }
+        },
+        clear() { for (const f of [u, v, p, R, G, B, A]) f.fill(0); },
+        step(dt, sources, tilt) {
+          if (tilt[0] || tilt[1]) for (let i = 0; i < n; i++) { const k = (0.15 + A[i]) * 160 * dt; u[i] += tilt[0] * k; v[i] -= tilt[1] * k; }
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            const L = x > 0 ? u[i - 1] : -u[i], Rr = x < w - 1 ? u[i + 1] : -u[i], T = y > 0 ? v[i - w] : -v[i], Bb = y < h - 1 ? v[i + w] : -v[i];
+            let d = 0.5 * (Rr - L + Bb - T);
+            for (const s of sources) { const dx = (x / w - s.x) * aspect, dy = (1 - y / h) - s.y; d -= s.s * Math.exp(-(dx * dx + dy * dy) / (s.r * s.r)); }
+            dv[i] = d; p[i] *= 0.8;
+          }
+          for (let it = 0; it < 14; it++) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            p[i] = ((x > 0 ? p[i - 1] : p[i]) + (x < w - 1 ? p[i + 1] : p[i]) + (y > 0 ? p[i - w] : p[i]) + (y < h - 1 ? p[i + w] : p[i]) - dv[i]) * 0.25;
+          }
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            u[i] -= ((x < w - 1 ? p[i + 1] : p[i]) - (x > 0 ? p[i - 1] : p[i])) * 0.5;
+            v[i] -= ((y < h - 1 ? p[i + w] : p[i]) - (y > 0 ? p[i - w] : p[i])) * 0.5;
+          }
+          const dis = 1 / (1 + 2.2 * dt);
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x, sx = x - dt * u[i], sy = y - dt * v[i];
+            u2[i] = samp(u, sx, sy) * dis; v2[i] = samp(v, sx, sy) * dis;
+          }
+          [u, u2] = [u2, u]; [v, v2] = [v2, v];
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x, a = Math.min(1, Math.max(0, (A[i] - 0.05) / 0.65));
+            const sx = x - dt * (u[i] + tilt[0] * 0.07 * w * a), sy = y - dt * (v[i] - tilt[1] * 0.07 * h * a);
+            R2[i] = samp(R, sx, sy, 1); G2[i] = samp(G, sx, sy, 1); B2[i] = samp(B, sx, sy, 1); A2[i] = samp(A, sx, sy, 1);
+          }
+          [R, R2] = [R2, R]; [G, G2] = [G2, G]; [B, B2] = [B2, B]; [A, A2] = [A2, A];
+        },
+        render(base) {
+          const d = img.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = y * w + x, o = i * 4, a = A[i];
+            const gx = x < w - 1 && x > 0 ? A[i + 1] - A[i - 1] + (R[i + 1] - R[i - 1]) * 0.3 : 0;
+            const gy = y < h - 1 && y > 0 ? A[i + w] - A[i - w] + (G[i + w] - G[i - w]) * 0.3 : 0;
+            const sh = 1 + (gy * 0.5 - gx * 0.4) * 0.6;
+            d[o] = Math.min(255, (R[i] + base[0] * (1 - a)) * 255 * sh); d[o + 1] = Math.min(255, (G[i] + base[1] * (1 - a)) * 255 * sh); d[o + 2] = Math.min(255, (B[i] + base[2] * (1 - a)) * 255 * sh); d[o + 3] = 255;
+          }
+          offc.putImageData(img, 0, 0);
+          c2.imageSmoothingEnabled = true; c2.imageSmoothingQuality = 'high';
+          c2.drawImage(off, 0, 0, cv.width, cv.height);
+        },
+        flipY: true
+      };
+    }
+
+    let sim = null;
+    if (!forceCpu) { try { sim = makeGL(canvas); } catch (e) { sim = null; } }
+    if (!sim) {
+      const fresh = canvas.cloneNode(false); canvas.replaceWith(fresh); canvas = fresh;
+      sim = makeCPU(canvas);
+    }
+
+    let W = 0, H = 0, dpr = 1;
+    function resize() {
+      const r = tiltEl.getBoundingClientRect();
+      dpr = Math.min(sim.kind === 'gl' ? 2 : 1, devicePixelRatio || 1);
+      W = Math.max(1, r.width); H = Math.max(1, r.height);
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      sim.size(canvas.width, canvas.height);
+    }
+
+    const sources = [];
+    const cells = [];
+    let tilt = [0, 0];
+    const pointers = new Map();
+    let pourTime = 0, mixIndex = 0, autoQueue = [];
+
+    const pal = () => PALETTES[paletteKey];
+    function cupColor(t) {
+      const cs = pal().colors;
+      if (cup >= 0) return hex(cs[cup]);
+      return hex(cs[Math.floor(t / 0.28) % cs.length]);
+    }
+    function toUv(e) {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      return { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, sim.flipY ? y : 1 - y)), yUp: 1 - y };
+    }
+
+    const SND = { ready: false };
+    function sound() {
+      if (SND.ready || Curio.muted) return SND.ready;
+      const ac = Curio.audioContext(); if (!ac) return false;
+      const len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      let b = 0;
+      for (let i = 0; i < len; i++) { b = b * 0.97 + (Math.random() * 2 - 1) * 0.03; ch[i] = b * 6; }
+      const mk = (freq, q) => {
+        const s = ac.createBufferSource(); s.buffer = buf; s.loop = true;
+        const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+        const g = ac.createGain(); g.gain.value = 0;
+        s.connect(f); f.connect(g); g.connect(ac.destination); s.start();
+        return { f, g };
+      };
+      SND.pour = mk(420, 1.4); SND.swirl = mk(260, 0.7); SND.ac = ac; SND.ready = true;
+      return true;
+    }
+    function bloop(f0) {
+      if (Curio.muted) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 1.9, t + 0.09);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.16);
+    }
+    let pourLevel = 0, swirlLevel = 0, lastBloop = 0;
+    function updateSound(dt, pouring, swirlSpeed, now) {
+      pourLevel += ((pouring ? 1 : 0) - pourLevel) * Math.min(1, dt * 8);
+      swirlLevel += (Math.min(1, swirlSpeed * 0.9) - swirlLevel) * Math.min(1, dt * 6);
+      if (!SND.ready) return;
+      const t = SND.ac.currentTime, m = Curio.muted ? 0 : 1;
+      const wob = 0.6 + 0.4 * Math.sin(now * 0.017) * Math.sin(now * 0.0071);
+      SND.pour.g.gain.setTargetAtTime(pourLevel * 0.11 * wob * m, t, 0.05);
+      SND.pour.f.frequency.setTargetAtTime(360 + 160 * wob, t, 0.08);
+      SND.swirl.g.gain.setTargetAtTime(swirlLevel * 0.09 * m, t, 0.06);
+      SND.swirl.f.frequency.setTargetAtTime(200 + swirlLevel * 380, t, 0.08);
+    }
+
+    function addCell(x, y, big) {
+      if (cells.length > 40) return;
+      cells.push({ x, y, life: big ? 0.3 : 0.22, r: (big ? 0.022 : 0.015) * Curio.rand(0.7, 1.3), age: 0 });
+    }
+
+    const spots = [];
+    function note(x, y, dt) {
+      let s = spots.find((p) => Math.hypot((p.x - x) * W / H, p.y - y) < 0.03);
+      if (!s) { s = { x, y, amt: 0 }; spots.push(s); if (spots.length > 30) spots.shift(); }
+      s.amt += dt;
+    }
+    function cellBloom(n) {
+      const pool = spots.filter((p) => p.amt > 0.2);
+      for (let i = 0; i < n; i++) {
+        let x, y;
+        if (pool.length) {
+          const p = Curio.pick(pool), rad = Math.min(0.32, 0.06 + Math.sqrt(p.amt) * 0.07) * Math.sqrt(Math.random()), a = Math.random() * 6.283;
+          x = p.x + Math.cos(a) * rad * H / W; y = p.y + Math.sin(a) * rad;
+        } else { x = Curio.rand(0.1, 0.9); y = Curio.rand(0.1, 0.9); }
+        setTimeout(() => addCell(Math.max(0.02, Math.min(0.98, x)), Math.max(0.02, Math.min(0.98, y)), true), i * 70);
+      }
+    }
+
+    function grab(id, e) {
+      sound();
+      const p = toUv(e);
+      pointers.set(id, { x: p.x, y: p.y, px: p.x, py: p.y, vx: 0, vy: 0, t: performance.now() });
+      hint.classList.add('gone');
+      if (tool === 'pour') pourTime = 0;
+    }
+    function follow(id, e) { const q = pointers.get(id); if (!q) return; const p = toUv(e); q.x = p.x; q.y = p.y; }
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (e.pointerType !== 'touch') return;
+      e.stopImmediatePropagation();
+      canvas.setPointerCapture?.(e.pointerId);
+      grab(e.pointerId, e);
+    });
+    canvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'touch') follow(e.pointerId, e); });
+    const up = (e) => { if (e.pointerType === 'touch') pointers.delete(e.pointerId); };
+    canvas.addEventListener('pointerup', up);
+    canvas.addEventListener('pointercancel', up);
+    canvas.addEventListener('lostpointercapture', up);
+    Curio.drag(canvas, {
+      start: (q) => grab('drag', q),
+      move: (q) => follow('drag', q),
+      end: () => pointers.delete('drag')
+    });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click to start pouring or swirling, move around, click again to stop. Click a tilt arrow to hold it', 3800); paintHint(); });
+    function paintHint() { hint.textContent = Curio.touchpad ? 'Click to pour, click again to stop' : 'Hold anywhere to pour'; }
+    paintHint();
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-paint-pour', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-paint-pour', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to start pouring, click again to stop', 4200), 1800); }
+
+    function surprise() {
+      sound();
+      hint.classList.add('gone');
+      const n = Curio.randInt(3, 5);
+      let t = 0;
+      for (let i = 0; i < n; i++) {
+        const dur = Curio.rand(1.2, 2.4);
+        autoQueue.push({ start: t, dur, x: Curio.rand(0.2, 0.8), y: Curio.rand(0.22, 0.78), cupIdx: Math.random() < 0.6 ? -1 : Curio.randInt(0, 4), off: Math.random() * 3 });
+        t += dur * Curio.rand(0.5, 0.9);
+      }
+      autoQueue.push({ start: t + 0.3, dur: 1.6, swirl: true, x: Curio.rand(0.3, 0.7), y: Curio.rand(0.3, 0.7), a: Math.random() * 6 });
+      autoClock = 0;
+    }
+    let autoClock = 0;
+
+    let raf = 0, last = 0, time = 0, frames = 0, slowT = 1 / 60, quality = 1;
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      frames++;
+      const raw = (now - (last || now)) / 1000;
+      const dt = Math.min(1 / 30, Math.max(1 / 240, raw || 1 / 60)); last = now;
+      if (raw > 0 && raw < 0.5 && sim.kind === 'gl' && quality > 0.4) {
+        slowT = slowT * 0.97 + raw * 0.03;
+        if (frames > 90 && slowT > 0.04) { quality = Math.max(0.4, quality * 0.7); slowT = 1 / 60; frames = 0; sim.size(canvas.width, canvas.height, quality); }
+      }
+      time += dt;
+      sources.length = 0;
+      let pouring = false, swirlSpeed = 0;
+      const asp = W / H;
+      for (const q of pointers.values()) {
+        const dx = q.x - q.px, dy = q.y - q.py;
+        q.vx = q.vx * 0.5 + (dx / dt) * 0.5; q.vy = q.vy * 0.5 + (dy / dt) * 0.5;
+        const speed = Math.hypot(q.vx * asp, q.vy);
+        const yUp = sim.flipY ? 1 - q.y : q.y;
+        if (tool === 'pour') {
+          pouring = true; pourTime += dt;
+          const steps = Math.max(1, Math.ceil(Math.hypot(dx * asp, dy) / 0.01));
+          for (let s = 1; s <= steps; s++) {
+            const x = q.px + dx * s / steps, y = q.py + dy * s / steps;
+            sim.splatDye(x, y, cupColor(pourTime), 0.024, 1);
+          }
+          sources.push({ x: q.x, y: yUp, r: 0.045, s: 42 }); note(q.x, yUp, dt);
+          if (speed > 0.05) sim.splatVel(q.x, q.y, q.vx * 70 * asp, q.vy * 70, 0.04);
+          if (cellsOn && Math.random() < dt * 9) addCell(q.x + Curio.rand(-0.03, 0.03), yUp + Curio.rand(-0.03, 0.03));
+        } else {
+          if (speed > 0.01) sim.splatVel(q.x, q.y, q.vx * 150, q.vy * 150, 0.065);
+          swirlSpeed = Math.max(swirlSpeed, speed);
+          if (cellsOn && speed > 0.3 && Math.random() < dt * 12) addCell(q.x + Curio.rand(-0.04, 0.04), yUp + Curio.rand(-0.04, 0.04));
+        }
+        q.px = q.x; q.py = q.y;
+      }
+      if (autoQueue.length) {
+        autoClock += dt;
+        for (const a of autoQueue) {
+          const local = autoClock - a.start;
+          if (local < 0 || local > a.dur) continue;
+          const yy = sim.flipY ? 1 - a.y : a.y;
+          if (a.swirl) {
+            const ang = a.a + local * 4, rad = 0.12;
+            const x = a.x + Math.cos(ang) * rad / asp, y = a.y + Math.sin(ang) * rad;
+            sim.splatVel(x, sim.flipY ? 1 - y : y, -Math.sin(ang) * 260, (sim.flipY ? -1 : 1) * Math.cos(ang) * 260, 0.07);
+            swirlSpeed = Math.max(swirlSpeed, 0.8);
+          } else {
+            pouring = true;
+            const cs = pal().colors;
+            const col = hex(a.cupIdx >= 0 ? cs[a.cupIdx] : cs[Math.floor((local + a.off) / 0.26) % cs.length]);
+            sim.splatDye(a.x, yy, col, 0.024, 1);
+            sources.push({ x: a.x, y: a.y, r: 0.045, s: 42 }); note(a.x, a.y, dt);
+            if (cellsOn && Math.random() < dt * 9) addCell(a.x + Curio.rand(-0.03, 0.03), a.y + Curio.rand(-0.03, 0.03));
+          }
+        }
+        if (autoQueue.every((a) => autoClock > a.start + a.dur)) autoQueue = [];
+      }
+      const cellCol = hex(pal().cell);
+      for (let i = cells.length - 1; i >= 0; i--) {
+        const c = cells[i];
+        c.age += dt;
+        if (c.age < c.life) {
+          if (sources.length < 16) sources.push({ x: c.x, y: c.y, r: c.r * 1.5, s: 15 });
+          sim.splatDye(c.x, sim.flipY ? 1 - c.y : c.y, cellCol, c.r * 0.7, 0.9);
+          if (c.age === dt && time - lastBloop > 0.05) { lastBloop = time; bloop(Curio.rand(500, 900)); }
+        } else cells.splice(i, 1);
+      }
+      const tl = tiltActive();
+      sim.step(dt, sources, tl);
+      sim.render(hex(pal().base), time);
+      updateSound(dt, pouring, swirlSpeed, now);
+    }
+    const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; for (const k of tiltKeys) tiltKeys.delete(k); if (SND.ready) { const t = SND.ac.currentTime; SND.pour.g.gain.setTargetAtTime(0, t, 0.02); SND.swirl.g.gain.setTargetAtTime(0, t, 0.02); } };
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    const tiltKeys = new Set();
+    const padBtns = new Map();
+    function tiltActive() {
+      let x = 0, y = 0;
+      for (const k of tiltKeys) { const [a, b] = k.split(',').map(Number); x += a; y += b; }
+      x = Math.max(-1, Math.min(1, x)); y = Math.max(-1, Math.min(1, y));
+      tilt[0] += (x - tilt[0]) * 0.15; tilt[1] += (y - tilt[1]) * 0.15;
+      if (Math.abs(tilt[0]) < 0.01) tilt[0] = 0; if (Math.abs(tilt[1]) < 0.01) tilt[1] = 0;
+      tiltEl.style.transform = (tilt[0] || tilt[1]) ? `rotateX(${(tilt[1] * 7).toFixed(2)}deg) rotateY(${(tilt[0] * 7).toFixed(2)}deg)` : '';
+      return tilt;
+    }
+    document.querySelectorAll('#pad button').forEach((b) => {
+      const key = `${b.dataset.tx},${b.dataset.ty}`;
+      padBtns.set(key, b);
+      const on = (e) => { e.preventDefault(); sound(); tiltKeys.add(key); b.classList.add('on'); hint.classList.add('gone'); };
+      const off = () => { tiltKeys.delete(key); b.classList.remove('on'); };
+      const latchOff = () => { if (!(Curio.touchpad && b.dataset.latch)) off(); };
+      b.addEventListener('pointerdown', (e) => {
+        if (Curio.touchpad && e.pointerType === 'mouse') {
+          e.preventDefault();
+          if (b.dataset.latch) { delete b.dataset.latch; off(); return; }
+          padBtns.forEach((o) => { if (o.dataset.latch) { delete o.dataset.latch; tiltKeys.delete(`${o.dataset.tx},${o.dataset.ty}`); o.classList.remove('on'); } });
+          b.dataset.latch = '1'; on(e); return;
+        }
+        on(e);
+      });
+      b.addEventListener('pointerup', latchOff); b.addEventListener('pointerleave', latchOff); b.addEventListener('pointercancel', latchOff);
+      b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') on(e); });
+      b.addEventListener('keyup', off);
+    });
+    const ARROWS = { ArrowUp: '0,1', ArrowDown: '0,-1', ArrowLeft: '-1,0', ArrowRight: '1,0' };
+    addEventListener('keydown', (e) => {
+      if (ARROWS[e.key]) { e.preventDefault(); tiltKeys.add(ARROWS[e.key]); padBtns.get(ARROWS[e.key])?.classList.add('on'); }
+      else if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea'))) return;
+      else if (e.key === 'c' || e.key === 'C') toggleCells();
+      else if (e.key === 'p' || e.key === 'P') document.querySelector('[data-tool="pour"]').click();
+      else if (e.key === 's' || e.key === 'S') document.querySelector('[data-tool="swirl"]').click();
+      else if (/^[0-5]$/.test(e.key)) cupsEl.querySelector(`[data-cup="${e.key === '0' ? -1 : +e.key - 1}"]`)?.click();
+    });
+    addEventListener('keyup', (e) => { if (ARROWS[e.key]) { tiltKeys.delete(ARROWS[e.key]); padBtns.get(ARROWS[e.key])?.classList.remove('on'); } });
+    addEventListener('blur', () => { tiltKeys.clear(); padBtns.forEach((b) => { b.classList.remove('on'); delete b.dataset.latch; }); });
+    addEventListener('curio:touchpad', () => { tiltKeys.clear(); padBtns.forEach((b) => { b.classList.remove('on'); delete b.dataset.latch; }); });
+
+    document.querySelectorAll('[data-tool]').forEach((b) => b.addEventListener('click', () => {
+      tool = b.dataset.tool;
+      document.querySelectorAll('[data-tool]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      canvas.style.cursor = tool === 'pour' ? 'crosshair' : 'grab';
+    }));
+
+    const cupsEl = document.getElementById('cups');
+    function buildCups() {
+      cupsEl.innerHTML = '';
+      const cs = pal().colors;
+      const mix = document.createElement('button');
+      mix.type = 'button'; mix.className = 'cup'; mix.title = 'Dirty cup: all colours layered'; mix.setAttribute('aria-label', 'Dirty cup, all colours layered');
+      mix.style.background = `conic-gradient(${cs.map((c, i) => `${c} ${i * 20}% ${(i + 1) * 20}%`).join(',')})`;
+      mix.dataset.cup = -1;
+      cupsEl.append(mix);
+      cs.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'cup'; b.style.background = c; b.dataset.cup = i; b.setAttribute('aria-label', `Paint colour ${i + 1}`);
+        cupsEl.append(b);
+      });
+      cupsEl.querySelectorAll('.cup').forEach((b) => {
+        b.setAttribute('aria-pressed', String(+b.dataset.cup === cup));
+        b.addEventListener('click', () => {
+          cup = +b.dataset.cup;
+          cupsEl.querySelectorAll('.cup').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          if (tool !== 'pour') document.querySelector('[data-tool="pour"]').click();
+        });
+      });
+    }
+    const palEl = document.getElementById('palettes');
+    for (const k in PALETTES) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.pal = k;
+      const sw = document.createElement('i');
+      PALETTES[k].colors.forEach((c) => { const s = document.createElement('b'); s.style.background = c; sw.append(s); });
+      b.append(sw, document.createTextNode(PALETTES[k].name));
+      b.addEventListener('click', () => setPalette(k));
+      palEl.append(b);
+    }
+    function setPalette(k) {
+      paletteKey = k; Curio.store.set('paint-pour:palette', k);
+      palEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pal === k)));
+      tiltEl.style.background = pal().base;
+      buildCups();
+    }
+    function toggleCells() {
+      cellsOn = !cellsOn;
+      const b = document.getElementById('cells');
+      b.setAttribute('aria-pressed', String(cellsOn));
+      if (cellsOn) {
+        Curio.toast('Silicone added. Pour or swirl to grow cells');
+        cellBloom(16);
+      }
+    }
+    document.getElementById('cells').addEventListener('click', toggleCells);
+    document.getElementById('auto').addEventListener('click', surprise);
+    document.getElementById('clear').addEventListener('click', () => {
+      sim.clear(); autoQueue = []; cells.length = 0; spots.length = 0;
+      tiltEl.animate([{ filter: 'brightness(1.4)' }, { filter: 'none' }], { duration: 350 });
+      Curio.beep(700, 0.06, 'sine', 0.05);
+    });
+    document.getElementById('save').addEventListener('click', () => {
+      sim.render(hex(pal().base), time);
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = `paint-pour-${Date.now()}.png`;
+      document.body.append(a); a.click(); a.remove();
+      Curio.toast('Saved. Frame it, obviously');
+    });
+
+    let rt = 0;
+    addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 120); });
+    setPalette(paletteKey);
+    resize();
+    surprise();
+    start();
+    window.__pp = { frames: () => frames, sim, toggleCells, surprise, setTool: (t) => document.querySelector(`[data-tool="${t}"]`).click() };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Missile Defence · Curio</title>
+  <meta name="description" content="Defend six cities from falling missiles, smart bombs, bombers and attack satellites. Supply crates, three difficulties, badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="missile-command" class="arc" style="--arc-hue: #ff6fb5">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="wave">0</b><span>Wave</span></div>
+      <div class="c-stat"><b data-hud="cities">0</b><span>Cities</span></div>
+      <div class="c-stat"><b data-hud="mult">0</b><span>Bonus</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Missile Defence game: night sky over six cities and three missile bases"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 120" aria-hidden="true"><defs><linearGradient id="mcS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b24"/><stop offset=".7" stop-color="#251651"/><stop offset="1" stop-color="#5b2a6e"/></linearGradient><radialGradient id="mcB"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#fff27a"/><stop offset="1" stop-color="#ff6fb5" stop-opacity=".2"/></radialGradient></defs><rect width="300" height="120" rx="18" fill="url(#mcS)"/><circle cx="262" cy="24" r="10" fill="#f2e6b8"/><g fill="#fff" opacity=".8"><rect x="20" y="16" width="2" height="2"/><rect x="90" y="8" width="2" height="2"/><rect x="200" y="30" width="2" height="2"/><rect x="150" y="14" width="1.5" height="1.5"/></g><path d="M60 0L100 70M180 0L150 80M240 0L220 50" stroke="#ff5a64" stroke-width="2" stroke-linecap="round" opacity=".9"/><circle class="blink" cx="150" cy="70" r="16" fill="url(#mcB)"/><path d="M150 102L150 72" stroke="#78dcff" stroke-width="2"/><path d="M0 100q40-20 80-6t80-10 70 4 70-6v40H0z" fill="#3a2560"/><rect y="104" width="300" height="16" fill="#c99a35"/><g fill="#3db7e4"><rect x="40" y="88" width="7" height="16"/><rect x="48" y="80" width="7" height="24"/><rect x="56" y="92" width="6" height="12"/><rect x="230" y="84" width="7" height="20"/><rect x="238" y="78" width="6" height="26"/><rect x="245" y="90" width="6" height="14"/></g><path d="M125 104q12-14 25-14t25 14z" fill="#d9a640"/></svg>
+          <h1 class="c-title">Missile Defence</h1>
+          <p class="c-sub">Six sleepy cities. Three missile bases. A sky full of very rude red streaks. Click where they will be, not where they are.</p>
+          <div class="arc-opts"><div class="arc-label">Difficulty</div><div class="arc-seg" role="group" aria-label="Difficulty" data-opt="diff" data-def="classic"><button type="button" data-val="rookie">🐣 Rookie</button><button type="button" data-val="classic">🚀 Classic</button><button type="button" data-val="commander">🎖️ Commander</button></div>
+<div class="arc-label">Aim assist</div><div class="arc-seg" role="group" aria-label="Aim assist" data-opt="assist" data-def="off"><button type="button" data-val="off">Normal blasts</button><button type="button" data-val="on">🎯 Bigger blasts</button></div>
+<p class="arc-small" style="margin:0">Purple <b style="color:#9c6bff">smart bombs</b> dodge blasts · every fifth wave an <b style="color:#5c6bc0">attack satellite</b> needs three hits<br>Blow up parachute <b style="color:#e6a100">📦 crates</b> for mega blasts, ammo, city shields or slow-mo.</p></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><b>Click or tap</b> the sky to fire from the nearest base · <span class="c-kbd">A</span> <span class="c-kbd">S</span> <span class="c-kbd">D</span> fire from a chosen base · <span class="c-kbd">Arrows</span> + <span class="c-kbd">Space</span> to aim by keyboard · <span class="c-kbd">P</span> pause</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Take a breath. The game will wait.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Theremin · Curio</title>
+  <meta name="description" content="Play spooky sci-fi music by waving your pointer over a glowing field. Record layered loops over a beat, follow famous tunes and try a dozen sound presets.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="theremin">
+  <main class="c-wrap">
+    <h1 class="c-title">Theremin</h1>
+    <p class="c-sub">The only instrument you play without touching it. Left and right bends the pitch, up and down sets the volume. On a phone, use several fingers for chords.</p>
+    <section class="th" aria-label="Theremin">
+      <div class="th-field" id="field" tabindex="0" role="application" aria-label="Theremin field. Move the pointer to play. With the keyboard, use the arrow keys and hold Space.">
+        <canvas id="cv" aria-hidden="true"></canvas>
+        <div class="th-read" aria-live="off"><b id="note">~</b><span id="hz">silence</span></div>
+        <div class="th-wake" id="wake">
+          <button class="c-btn" id="wakeBtn" type="button">✋ Wake the theremin</button>
+          <p>Then hover over the glow. No touching required (except on phones, where touching is very much required).</p>
+        </div>
+      </div>
+      <div class="th-looper c-card" id="looper">
+        <div class="lp-row">
+          <button type="button" class="lp-btn rec" id="lpRec" aria-label="Record a loop"><i></i><span>Rec</span></button>
+          <button type="button" class="lp-btn" id="lpPlay" aria-label="Play or pause loops" disabled>▶</button>
+          <button type="button" class="lp-btn" id="lpUndo" aria-label="Remove last layer" disabled>↶</button>
+          <button type="button" class="lp-btn" id="lpClear" aria-label="Clear all loops" disabled>🗑</button>
+          <div class="lp-track" id="lpTrack" aria-hidden="true"><div class="lp-head" id="lpHead"></div><div class="lp-beats" id="lpBeats"></div></div>
+          <span class="lp-time" id="lpTime">no loop</span>
+        </div>
+        <div class="lp-row lp-row2">
+          <div class="lp-layers" id="lpLayers"></div>
+          <button type="button" class="th-pill" id="beatBtn" aria-pressed="false">🥁 Beat</button>
+          <label class="lp-bpm"><span id="bpmV">96</span> bpm<input type="range" id="bpm" min="60" max="160" value="96" aria-label="Tempo"></label>
+          <button type="button" class="th-pill" id="tuneBtn" aria-pressed="false">🎼 Follow a tune</button>
+        </div>
+        <div class="lp-tunes hidden" id="tunes"></div>
+      </div>
+      <canvas class="th-scope" id="scope" role="img" aria-label="Oscilloscope showing the sound wave"></canvas>
+      <div class="th-panel">
+        <div class="c-card th-group">
+          <h2>Sound presets</h2>
+          <div class="th-seg" id="presets" role="group" aria-label="Sound presets"></div>
+          <h2 style="margin-top:14px">Voice</h2>
+          <div class="th-seg" id="waves" role="group" aria-label="Waveform"></div>
+          <h2 style="margin-top:14px">Snap to scale</h2>
+          <div class="th-seg" id="scales" role="group" aria-label="Scale"></div>
+          <div class="th-keyrow">
+            <label for="root" class="c-muted" style="font-weight:800;font-size:14px">Key</label>
+            <select id="root" aria-label="Key"></select>
+            <label for="range" class="c-muted" style="font-weight:800;font-size:14px;margin-left:8px">Range</label>
+            <select id="range" aria-label="Range">
+              <option value="36">Low (C2 to C5)</option>
+              <option value="48">Middle (C3 to C6)</option>
+              <option value="60">High (C4 to C7)</option>
+            </select>
+          </div>
+        </div>
+        <div class="c-card th-group">
+          <h2>Effects</h2>
+          <div class="th-sliders">
+            <div class="th-sl"><label for="vib">Vibrato <b id="vibV"></b></label><input type="range" id="vib" min="0" max="100" value="35"></div>
+            <div class="th-sl"><label for="glide">Glide <b id="glideV"></b></label><input type="range" id="glide" min="0" max="100" value="30"></div>
+            <div class="th-sl"><label for="dly">Echo <b id="dlyV"></b></label><input type="range" id="dly" min="0" max="100" value="25"></div>
+            <div class="th-sl"><label for="rev">Reverb <b id="revV"></b></label><input type="range" id="rev" min="0" max="100" value="45"></div>
+          </div>
+          <h2 style="margin-top:14px">Mouse plays on</h2>
+          <div class="th-seg" id="modes" role="group" aria-label="Mouse mode">
+            <button type="button" data-m="hover">Hover</button>
+            <button type="button" data-m="hold">Click and hold</button>
+          </div>
+        </div>
+      </div>
+      <div class="c-card th-group">
+        <h2>Badges</h2>
+        <div class="badges" id="badges"></div>
+      </div>
+      <p class="th-tip c-muted">Try the <b>Blues</b> scale with a <b>Saw</b> wave and lots of echo. Keyboard: focus the field, <span class="c-kbd">←</span><span class="c-kbd">→</span><span class="c-kbd">↑</span><span class="c-kbd">↓</span> to move, hold <span class="c-kbd">Space</span> to sing. <span class="c-kbd">R</span> records a loop, <span class="c-kbd">P</span> plays loops, <span class="c-kbd">B</span> toggles the beat.</p>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

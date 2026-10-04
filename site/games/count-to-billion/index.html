@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>What a Billion Looks Like · Curio</title>
+  <meta name="description" content="A thousand, a million, a billion, a trillion. See how different they really are, try to spend a billion dollars, and guess how big real numbers are.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="count-to-billion">
+  <main class="c-wrap">
+    <div class="cb-hero">
+      <h1 class="c-title">What a Billion Looks Like</h1>
+      <div class="odo" id="odo" aria-hidden="true"></div>
+      <p class="c-sub">Thousand, million, billion, trillion. They sound like neighbours. They are not even on the same planet.</p>
+      <div class="cb-jump">
+        <a class="c-btn" href="#spend">💸 Spend a billion</a>
+        <button class="c-btn c-btn--ghost" type="button" id="openQuiz">🎯 How big is it?</button>
+        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+      </div>
+    </div>
+
+    <div class="cb-nums">
+      <div class="c-card cb-num"><div class="cube" data-l="0"></div><b>Thousand</b><code>1,000</code><span>10³</span></div>
+      <div class="c-card cb-num"><div class="cube" data-l="1"></div><b>Million</b><code>1,000,000</code><span>10⁶ · a thousand thousands</span></div>
+      <div class="c-card cb-num"><div class="cube" data-l="2"></div><b>Billion</b><code>1,000,000,000</code><span>10⁹ · a thousand millions</span></div>
+      <div class="c-card cb-num"><div class="cube" data-l="3"></div><b>Trillion</b><code>1,000,000,000,000</code><span>10¹² · a thousand billions</span></div>
+    </div>
+
+    <h2 class="cb-h">Pick a thing to count</h2>
+    <p class="cb-lead">The bars are to scale against a billion. The trillion bar would need to be a thousand times longer than your screen.</p>
+    <div class="cb-tabs" role="tablist" id="tabs"></div>
+    <div class="cb-ladder" id="ladder" role="tabpanel"></div>
+
+    <h2 class="cb-h">Here is one million</h2>
+    <p class="cb-lead">Every dot below is one. The thin green strip at the very top is the first thousand. Keep scrolling. And keep scrolling.</p>
+    <div class="cb-million" id="million">
+      <div class="cb-stick" id="stick">
+        <canvas id="dots" role="img" aria-label="One million dots, drawn as you scroll"></canvas>
+        <div class="cb-hud" id="hud" aria-live="off">0<small>dots</small></div>
+        <div class="cb-skip"><button class="c-btn c-btn--ghost" type="button" id="skip">Skip to the end ↓</button></div>
+      </div>
+    </div>
+    <div class="c-card cb-after" id="after">
+      <b>That was one million.</b>
+      <p class="c-muted">A billion is a thousand of those scrolls. A trillion is a million of them. If you scrolled one million-dot page every minute without sleeping, a trillion would take you almost two years.</p>
+    </div>
+
+    <h2 class="cb-h" id="spend">Spend a billion dollars</h2>
+    <p class="cb-lead">Someone just handed you $1,000,000,000. Go shopping. Most people run out of ideas long before they run out of money.</p>
+    <div class="sp-bar" id="spBar"><div><b id="spLeft">$1,000,000,000</b><span id="spSub">left to spend</span></div><div class="sp-meter"><i id="spFill"></i></div><button class="c-btn c-btn--ghost" type="button" id="spReset">Reset</button></div>
+    <div class="sp-grid" id="spGrid"></div>
+    <div class="c-card sp-receipt" id="spReceipt"></div>
+
+    <h2 class="cb-h">Some numbers to sit with</h2>
+    <div class="cb-big" id="facts"></div>
+
+    <h2 class="cb-h">How long to earn a billion?</h2>
+    <div class="c-card cb-tool">
+      <label for="salary">Your yearly income (dollars, pounds, whatever)</label>
+      <div class="c-row"><input class="c-input" id="salary" type="number" min="1000" max="100000000" step="1000" value="60000" inputmode="numeric"></div>
+      <div class="cb-out" id="earn"></div>
+    </div>
+
+    <h2 class="cb-h">Count to a million, one per second</h2>
+    <div class="c-card cb-count">
+      <p class="c-muted" style="margin:0">Press start and the counter ticks once a second, like a very patient person saying numbers out loud. Your progress is saved on this device.</p>
+      <div class="cb-digits" id="digits">0</div>
+      <div class="c-muted" id="eta"></div>
+      <div class="c-row" style="margin-top:12px"><button class="c-btn" type="button" id="go">Start counting</button><button class="c-btn c-btn--ghost" type="button" id="reset">Reset</button></div>
+    </div>
+
+    <section class="panel" id="quizPanel" hidden aria-label="How big is it quiz">
+      <div class="panel__box">
+        <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+        <div id="qStart">
+          <h2>How big is it?</h2>
+          <p class="panel__lead">Thousands, millions, billions, trillions or quadrillions? Ten real numbers. Guess the size.</p>
+          <div class="diffs" role="group" aria-label="Mode"><button type="button" class="diff" data-d="classic" aria-pressed="true"><b>Classic</b><span>Random</span></button><button type="button" class="diff" data-d="daily" aria-pressed="false"><b>Daily</b><span id="dailyLabel">Today</span></button></div>
+          <button class="c-btn" type="button" id="qGo">Start</button>
+          <p class="c-muted" id="qBest"></p>
+        </div>
+        <div id="qPlay" hidden>
+          <div class="qtop"><span id="qRound"></span><b id="qScore">0</b></div>
+          <div class="qcard" id="qCard"></div>
+          <div class="qopts" id="qOpts"></div>
+          <p class="qmsg" id="qMsg" aria-live="polite"></p>
+          <button class="c-btn" type="button" id="qNext" hidden>Next ›</button>
+        </div>
+        <div id="qEnd" hidden>
+          <div class="cube big" data-l="3"></div>
+          <h2 id="qEndTitle"></h2>
+          <div class="c-row" style="justify-content:center"><div class="c-stat"><b id="qeScore">0</b><span>Correct</span></div><div class="c-stat"><b id="qeBest">0</b><span>Best</span></div></div>
+          <div class="c-row" style="justify-content:center;margin-top:12px"><button class="c-btn" type="button" id="qAgain">Play again</button><button class="c-btn c-btn--ghost" type="button" id="qShare">Copy result</button></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="c-muted cb-foot">Assumes a grain of long-grain rice weighs about 25 mg, a US $100 bill is 0.11 mm thick and weighs 1 g, and a resting heart beats 70 times a minute. Billion means the short scale 10⁹ used today almost everywhere in English.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

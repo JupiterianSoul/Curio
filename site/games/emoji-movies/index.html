@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Emoji Movies · Curio</title>
+  <meta name="description" content="Guess the film, TV show, song or book from a string of emoji. Over 350 puzzles, a 90 second rush and a daily set.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="emoji-movies">
+  <main class="c-wrap em">
+    <h1 class="c-title">Emoji Movies</h1>
+    <p class="c-sub">Lights down, emoji up. Name the film, show, song or book. Hints reveal letters but nibble your points.</p>
+    <div class="em-row">
+      <div class="em-seg" id="sets" role="group" aria-label="Puzzle set"></div>
+    </div>
+    <div class="em-row">
+      <div class="em-seg" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-m="classic">🎬 Classic 10</button>
+        <button type="button" data-m="rush">⏱️ 90s Rush</button>
+        <button type="button" data-m="daily">📅 Daily 5</button>
+      </div>
+      <div class="em-seg" id="inputs" role="group" aria-label="Answer style">
+        <button type="button" data-i="type">⌨️ Type it</button>
+        <button type="button" data-i="choice">🔘 Pick one</button>
+      </div>
+    </div>
+
+    <section id="play">
+      <div class="em-stats">
+        <div class="c-stat"><b id="sN">1/10</b><span id="sNLabel">Puzzle</span></div>
+        <div class="c-stat"><b id="sScore">0</b><span>Score</span></div>
+        <div class="c-stat"><b id="sStreak">0</b><span>Streak</span></div>
+        <div class="c-stat"><b id="sBest">-</b><span>Best</span></div>
+      </div>
+      <div class="em-timer" id="timerWrap" hidden><i id="timer"></i></div>
+      <div class="em-progress" id="prog" aria-hidden="true"></div>
+      <div class="em-theatre is-closed" id="theatre">
+        <div class="em-bulbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="em-screen" id="screen">
+          <div class="em-beam" aria-hidden="true"></div>
+          <div class="em-kind" id="kind">Film</div>
+          <div class="em-emoji" id="emoji" role="img" aria-label="Emoji clue"></div>
+          <div class="em-mask" id="mask" aria-label="Letters"></div>
+        </div>
+        <div class="em-valance" aria-hidden="true"></div>
+        <div class="em-curtain l" aria-hidden="true"></div><div class="em-curtain r" aria-hidden="true"></div>
+        <div class="em-seats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <form class="em-form" id="form" autocomplete="off">
+        <input class="c-input" id="guess" type="text" placeholder="Your guess..." aria-label="Your guess" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+        <button class="c-btn" type="submit">Guess</button>
+      </form>
+      <div class="em-choices" id="choices" hidden></div>
+      <div class="em-tools">
+        <button type="button" class="c-btn c-btn--ghost" id="hint">💡 Hint <small>(-20)</small></button>
+        <button type="button" class="c-btn c-btn--ghost" id="skip">⏭️ Skip</button>
+      </div>
+      <p class="em-msg" id="msg" aria-live="polite"></p>
+    </section>
+
+    <section id="result" class="em-result" hidden>
+      <div class="c-card">
+        <svg class="em-popcorn" viewBox="0 0 110 110" aria-hidden="true">
+          <g fill="#fff8e1" stroke="#f0d9a0" stroke-width="1.5"><circle cx="34" cy="34" r="12"/><circle cx="52" cy="24" r="13"/><circle cx="72" cy="30" r="12"/><circle cx="44" cy="40" r="11"/><circle cx="64" cy="42" r="11"/><circle cx="80" cy="44" r="9"/><circle cx="28" cy="46" r="9"/></g>
+          <path d="M22 48 h66 l-8 58 h-50z" fill="#fff"/>
+          <g fill="#e53935"><path d="M22 48 h11 l3 58 h-6z"/><path d="M44 48 h11 v58 h-9z"/><path d="M66 48 h11 l-5 58 h-8z"/></g>
+          <path d="M20 46 h70 v6 h-70z" fill="#c62828"/>
+        </svg>
+        <div class="em-stars" id="rStars" aria-hidden="true"></div>
+        <h2 class="c-title" style="font-size:28px" id="rTitle">That's a wrap!</h2>
+        <div class="em-big" id="rScore">0</div>
+        <p class="c-muted" id="rLine" style="font-weight:700;margin:0"></p>
+        <div class="em-new-badges" id="rBadges"></div>
+        <div class="em-list" id="rList"></div>
+        <div class="c-row" style="justify-content:center"><button type="button" class="c-btn" id="again">Play again</button><button type="button" class="c-btn c-btn--ghost" id="share">📋 Share</button></div>
+      </div>
+    </section>
+
+    <section class="c-card em-panel">
+      <div class="em-ptabs" role="tablist">
+        <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="stats" aria-selected="false">Stats</button>
+        <button type="button" role="tab" data-tab="badges" aria-selected="false">Badges <span id="badgeCount"></span></button>
+      </div>
+      <div data-pane="how">
+        <ul class="em-how">
+          <li>Read the emoji, then type the title. Small typos are forgiven, and you can skip "the".</li>
+          <li><b>Pick one</b> mode gives four choices instead of typing. Great on phones, worth a little less.</li>
+          <li><b>Hints</b> reveal a letter for 20 points. <b>Streaks</b> of correct answers add a bonus.</li>
+          <li><b>90s Rush:</b> solve as many as you can before the projector runs out of film. Skips are free.</li>
+          <li><b>Daily 5:</b> five puzzles from every set, the same for everyone today.</li>
+          <li>Keys: <span class="c-kbd">Enter</span> guesses, <span class="c-kbd">1</span> to <span class="c-kbd">4</span> pick a choice, type <span class="c-kbd">?</span> (or press <span class="c-kbd">H</span> in Pick one) for a hint, <span class="c-kbd">Esc</span> skip.</li>
+        </ul>
+      </div>
+      <div data-pane="stats" hidden><div class="em-stattbl" id="statTbl"></div></div>
+      <div data-pane="badges" hidden><div class="em-badges" id="badgeList"></div></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+.ol-head { text-align: center; }
+.ol-head .c-sub { margin-bottom: 14px; }
+.ol-modes { display: flex; justify-content: center; margin-bottom: 12px; }
+.ol-prompt { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 0 auto 12px; min-height: 54px; }
+.ol-chip { display: inline-flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 999px; padding: 8px 18px 8px 10px; font-weight: 800; font-size: 19px; }
+.ol-chip .ol-emo { font-size: 26px; width: 36px; height: 36px; display: grid; place-items: center; background: var(--surface-2); border-radius: 50%; }
+.ol-chip small { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); font-weight: 800; line-height: 1; }
+.ol-chip.is-pop { animation: ol-pop .35s cubic-bezier(.2, 1.5, .4, 1); }
+@keyframes ol-pop { from { transform: scale(.85); opacity: .3; } }
+.ol-seg { display: inline-flex; flex-wrap: wrap; justify-content: center; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+.ol-seg button { border: 0; background: transparent; padding: 7px 13px; border-radius: 999px; cursor: pointer; font-weight: 800; font-size: 14px; color: var(--ink-2); touch-action: manipulation; transition: background .15s; }
+.ol-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.ol-book { position: relative; width: min(100%, 720px); margin: 0 auto; padding-top: 18px; }
+.ol-rings { position: absolute; top: 0; left: 6%; right: 6%; height: 30px; display: flex; justify-content: space-between; z-index: 2; pointer-events: none; }
+.ol-rings i { width: 14px; height: 30px; border-radius: 8px; background: linear-gradient(90deg, #8d8d94, #e6e6ea 45%, #9a9aa2); box-shadow: 0 2px 3px rgba(0,0,0,.25); }
+.ol-board { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 6px 6px 18px 18px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 3px 0 -1px var(--paper, #fffdf7), 0 4px 0 -1px var(--line), 0 7px 0 -2px var(--paper, #fffdf7), 0 8px 0 -2px var(--line), 0 24px 40px -18px rgba(40,30,20,.45); background: var(--paper, #fffdf7); user-select: none; -webkit-user-select: none; }
+.ol-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+.ol-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; color: var(--ink-3); font-weight: 800; font-size: clamp(15px, 3vw, 19px); transition: opacity .25s; width: 86%; }
+.ol-hint b { display: block; font-size: clamp(34px, 7vw, 54px); line-height: 1.1; animation: ol-wiggle 2.4s ease-in-out infinite; }
+@keyframes ol-wiggle { 50% { transform: rotate(-10deg) scale(1.08); } }
+.ol-board.is-busy .ol-hint { opacity: 0; }
+.ol-live { position: absolute; left: 12px; top: 10px; font-family: var(--mono); font-weight: 800; font-size: 13px; color: var(--ink-3); pointer-events: none; font-variant-numeric: tabular-nums; }
+.ol-timer { position: absolute; right: 12px; top: 8px; font-family: var(--mono); font-weight: 900; font-size: 22px; color: var(--accent); pointer-events: none; font-variant-numeric: tabular-nums; }
+.ol-timer.low { color: var(--bad); animation: ol-pulse .5s ease-in-out infinite; }
+@keyframes ol-pulse { 50% { transform: scale(1.15); } }
+.ol-bar { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--accent); width: 0; transition: width .05s linear; }
+.ol-result { text-align: center; min-height: 58px; margin: 14px 0 4px; }
+.ol-cap { font-weight: 900; font-size: clamp(18px, 3.6vw, 23px); }
+.ol-cap.is-in { animation: ol-pop .4s cubic-bezier(.2, 1.5, .4, 1); }
+.ol-stats { color: var(--ink-3); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.ol-tools { display: flex; flex-wrap: wrap; gap: 12px 18px; justify-content: center; align-items: center; margin: 10px auto 0; max-width: 780px; }
+.ol-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ol-group > span { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); font-weight: 800; }
+.ol-sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); cursor: pointer; padding: 0; touch-action: manipulation; transition: transform .12s; }
+.ol-sw:hover { transform: scale(1.12); }
+.ol-sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+.ol-speed { width: 120px; accent-color: var(--accent); }
+.ol-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.ol-actions .c-btn { padding: 9px 16px; font-size: 15px; }
+.ol-actions .c-btn:active { transform: scale(.95); }
+.ol-gal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 36px 0 12px; flex-wrap: wrap; }
+.ol-gal-head h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.ol-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.ol-card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); animation: ol-pop .35s ease backwards; transition: transform .15s; }
+.ol-card:hover { transform: translateY(-3px) rotate(-.6deg); }
+.ol-card button.ol-open { display: block; width: 100%; padding: 8px; border: 0; background: linear-gradient(135deg, #c9a46a, #8f6a3a); cursor: pointer; }
+.ol-card canvas { display: block; width: 100%; aspect-ratio: 4 / 3; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.25); border-radius: 2px; }
+.ol-card .ol-meta { padding: 7px 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; gap: 6px; }
+.ol-card .ol-meta span { color: var(--ink-3); font-weight: 700; font-size: 12px; flex: none; }
+.ol-del { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--surface) 85%, transparent); cursor: pointer; font-size: 13px; opacity: .75; }
+.ol-del:hover { opacity: 1; }
+.ol-empty { grid-column: 1 / -1; text-align: center; padding: 28px 10px; color: var(--ink-3); font-weight: 700; border: 2px dashed var(--line); border-radius: 14px; }
+.ol-card2 { margin-top: 22px; }
+.ol-card2 h2 { margin: 0 0 10px; font-size: 20px; }
+.ol-stats2 { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.ol-stats2 .c-stat { background: var(--surface-2); border-radius: 12px; padding: 6px 12px; }
+.ol-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.ol-badge { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 14px; background: var(--surface-2); opacity: .5; filter: grayscale(1); }
+.ol-badge.got { opacity: 1; filter: none; background: color-mix(in srgb, var(--warn) 16%, var(--surface)); }
+.ol-badge i { font-style: normal; font-size: 24px; }
+.ol-badge b { display: block; font-size: 13px; }
+.ol-badge span { font-size: 12px; color: var(--ink-2); line-height: 1.25; display: block; }
+.ol-sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 8px; }
+.ol-sheet figure { margin: 0; background: var(--surface-2); border-radius: 10px; overflow: hidden; }
+.ol-sheet canvas { width: 100%; display: block; }
+.ol-sheet figcaption { font-size: 12px; font-weight: 800; padding: 4px 6px; text-align: center; color: var(--ink); }
+@media (max-width: 520px) {
+  .ol-chip { font-size: 17px; }
+  .ol-gal { grid-template-columns: repeat(2, 1fr); }
+  .ol-tools { gap: 10px 12px; }
+  .ol-sw { width: 27px; height: 27px; }
+  .ol-rings i { width: 10px; height: 24px; }
+}

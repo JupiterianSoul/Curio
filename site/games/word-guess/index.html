@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Word Guess · Curio</title>
+  <meta name="description" content="Six tries to find the hidden word. Daily puzzles in 4, 5 and 6 letters, endless play, themed word packs, a two-minute rush mode and hard mode.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="word-guess">
+  <div class="wg-float" id="float" aria-hidden="true"></div>
+  <main class="c-wrap wg" id="root">
+    <section id="home" class="wg-home">
+      <header class="wg-hero">
+        <div class="wg-logo" id="logo" aria-hidden="true"></div>
+        <h1 class="c-title">Word Guess</h1>
+        <p class="c-sub">Six tries to find the hidden word. Green means right spot, yellow means it is in there somewhere, grey means not at all.</p>
+      </header>
+      <div class="wg-modes">
+        <article class="wg-mode wg-mode--daily">
+          <div class="wg-mhead"><span class="wg-micon">📅</span><div><h2>Daily</h2><p>One word per size, the same for everyone today.</p></div></div>
+          <div class="wg-dailies" id="dailies"></div>
+        </article>
+        <article class="wg-mode">
+          <div class="wg-mhead"><span class="wg-micon">♾️</span><div><h2>Endless</h2><p>Word after word. Pick a length.</p></div></div>
+          <div class="wg-lens" id="lens"></div>
+        </article>
+        <article class="wg-mode">
+          <div class="wg-mhead"><span class="wg-micon">🎨</span><div><h2>Themes</h2><p>Every answer from one topic. A head start, sort of.</p></div></div>
+          <div class="wg-themes" id="themes"></div>
+        </article>
+        <article class="wg-mode wg-mode--rush">
+          <div class="wg-mhead"><span class="wg-micon">⏱️</span><div><h2>Rush</h2><p>Two minutes on the clock. Every solve adds 15 seconds.</p></div></div>
+          <div class="wg-rushrow"><span id="rushBest"></span><button class="c-btn" type="button" id="rushBtn">Start the clock</button></div>
+        </article>
+      </div>
+      <div class="wg-opts">
+        <label class="wg-switch"><input type="checkbox" id="hardBox"><span></span>Hard mode <small>found letters must be reused</small></label>
+        <div class="wg-pals" id="pals" role="radiogroup" aria-label="Tile colours"></div>
+      </div>
+      <div class="c-row wg-links">
+        <button class="c-btn c-btn--ghost" type="button" id="howBtn">📖 How to play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="statsBtn">📊 Stats</button>
+        <button class="c-btn c-btn--ghost" type="button" id="trophyBtn">🏆 Trophies <span id="trophyN"></span></button>
+      </div>
+    </section>
+
+    <section id="play" class="wg-play" hidden>
+      <div class="wg-bar">
+        <button class="wg-ib" type="button" id="backBtn" aria-label="Back to menu">←</button>
+        <div class="wg-label" id="label"></div>
+        <div class="wg-rush" id="rushHud" hidden><b id="rushTime">2:00</b><span id="rushScore">0 solved</span></div>
+        <button class="wg-ib" type="button" id="hintBtn" aria-label="Reveal a letter" title="Reveal a letter">💡</button>
+        <button class="wg-ib" type="button" id="skipBtn" aria-label="New word" title="New word">↻</button>
+      </div>
+      <div class="wg-reveals" id="reveals"></div>
+      <div class="wg-stage">
+        <div class="wg-board" id="board" role="grid" aria-label="Guesses"></div>
+        <div class="wg-result" id="result" hidden></div>
+      </div>
+      <div class="wg-kb" id="kb" aria-label="Keyboard"></div>
+      <p class="wg-sr" id="live" aria-live="polite"></p>
+    </section>
+  </main>
+  <div class="wg-badge" id="badge" role="status" aria-live="polite"></div>
+  <script src="data.js"></script>
+  <script src="words.js"></script>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

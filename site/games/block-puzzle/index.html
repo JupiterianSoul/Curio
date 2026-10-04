@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Block Fit · Curio</title>
+  <meta name="description" content="Drag shapes onto a 10 by 10 board, clear rows and columns, chain combos. Endless, 30 gem-hunt levels, a 2-minute blitz and a daily deal.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="block-puzzle">
+  <main class="c-wrap">
+    <header class="g-head">
+      <svg class="logo" viewBox="0 0 150 60" aria-hidden="true">
+        <rect x="20" y="28" width="16" height="16" rx="3" fill="#f5487f"/><rect x="38" y="28" width="16" height="16" rx="3" fill="#f5487f"/><rect x="38" y="10" width="16" height="16" rx="3" fill="#f5487f"/>
+        <rect x="62" y="28" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="80" y="28" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="62" y="10" width="16" height="16" rx="3" fill="#2fb36d"/><rect x="80" y="10" width="16" height="16" rx="3" fill="#2fb36d"/>
+        <rect x="104" y="10" width="16" height="16" rx="3" fill="#3d8bfd"/><rect x="104" y="28" width="16" height="16" rx="3" fill="#3d8bfd"/><rect x="122" y="28" width="16" height="16" rx="3" fill="#3d8bfd"/>
+      </svg>
+      <h1 class="c-title">Block Fit</h1>
+      <p class="c-sub">Drag the shapes onto the board. Fill a whole row or column and it vanishes. Run out of room and it's over.</p>
+    </header>
+    <div class="modes">
+      <div class="seg" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-mode="classic">♾️ Endless</button>
+        <button type="button" data-mode="gems">💎 Gem hunt</button>
+        <button type="button" data-mode="blitz">⏱️ Blitz</button>
+        <button type="button" data-mode="daily">📅 Daily</button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="c-stat"><b id="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b id="best">0</b><span>Best</span></div>
+      <div class="c-stat"><b id="combo">-</b><span>Combo</span></div>
+      <div class="c-stat" id="extra-stat" hidden><b id="extra">0</b><span id="extra-l">Gems</span></div>
+    </div>
+    <p class="goal-line" id="goal" aria-live="polite"></p>
+    <div class="stage">
+      <div class="frame" id="frame"><div class="board" id="board" role="grid" aria-label="10 by 10 board"></div></div>
+      <div class="tray" id="tray" aria-label="Shapes to place"></div>
+      <div class="c-row g-row">
+        <button class="c-btn c-btn--ghost" type="button" id="undo">↶ Undo <small id="undo-n"></small></button>
+        <button class="c-btn c-btn--ghost" type="button" id="rotate">⟳ Rotate <small id="rot-n"></small></button>
+        <button class="c-btn" type="button" id="new">New game</button>
+      </div>
+    </div>
+    <p class="g-help c-muted">Drag a shape from the tray (on phones it floats above your finger). Keyboard: <span class="c-kbd">1</span> <span class="c-kbd">2</span> <span class="c-kbd">3</span> pick a shape, arrows move it, <span class="c-kbd">Enter</span> drops it, <span class="c-kbd">R</span> rotates it, <span class="c-kbd">U</span> undo.</p>
+    <div class="panels">
+      <details class="c-card" id="levels-card">
+        <summary>💎 Gem hunt levels <span id="lv-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="levels" id="levels"></div>
+      </details>
+      <details class="c-card">
+        <summary>🎨 Block style</summary>
+        <div class="skins" id="skins" role="group" aria-label="Block style"></div>
+      </details>
+      <details class="c-card">
+        <summary>🏅 Stats and badges <span id="ach-count" class="c-muted" style="margin-left:auto;font-size:13px"></span></summary>
+        <div class="statgrid" id="statgrid"></div>
+        <div class="achs" id="achs"></div>
+      </details>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

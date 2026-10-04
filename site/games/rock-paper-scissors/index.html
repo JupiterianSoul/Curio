@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rock Paper Scissors · Curio</title>
+  <meta name="description" content="Rock Paper Scissors with animated hands, seven robot rivals with secret habits, a mind-reading AI, an eight-player tournament, a daily gauntlet and three rule sets.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="rock-paper-scissors">
+  <main class="c-wrap rps" id="app">
+    <header class="rps-head">
+      <h1 class="c-title">Rock Paper Scissors</h1>
+      <p class="c-sub">Seven robot rivals, each with a secret habit. Spot it, exploit it, and then try your luck against the one that reads minds.</p>
+    </header>
+
+    <section class="menu" id="menu" aria-label="Game setup">
+      <div class="hero" aria-hidden="true" id="hero"></div>
+
+      <div class="modes" id="modes" role="radiogroup" aria-label="Mode"></div>
+
+      <div class="pick-grid">
+        <section class="c-card pick">
+          <h2>Rival</h2>
+          <div class="opps" id="opps" role="radiogroup" aria-label="Rival"></div>
+        </section>
+        <section class="c-card pick">
+          <h2>Rules</h2>
+          <div class="rules-list" id="rules" role="radiogroup" aria-label="Rule set"></div>
+          <h2 class="mt">Match length</h2>
+          <div class="seg" id="lengths" role="radiogroup" aria-label="Match length"></div>
+          <h2 class="mt">Your hand</h2>
+          <div class="tones" id="tones" role="radiogroup" aria-label="Skin tone"></div>
+          <label class="tog"><input type="checkbox" id="opt-fast"> <span>Fast throws (skip the pump)</span></label>
+        </section>
+      </div>
+
+      <div class="menu-actions">
+        <button type="button" class="c-btn play-btn" id="go">Let's throw</button>
+        <button type="button" class="c-btn c-btn--ghost" id="how">How to play</button>
+        <button type="button" class="c-btn c-btn--ghost" id="stats-btn">Stats and badges <span class="pill" id="badge-count">0</span></button>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Match">
+      <div class="hud">
+        <div class="pchip you"><span class="ava" id="ava-you"></span><span class="pmeta"><b>You</b><span class="pips" id="pips-you"></span></span><b class="pscore" id="sc-you">0</b></div>
+        <div class="vs-mid"><span id="mode-tag">Quick match</span><span class="c-muted" id="round-tag">Round 1</span></div>
+        <div class="pchip ai"><b class="pscore" id="sc-ai">0</b><span class="pmeta"><b id="ai-name">Rocky</b><span class="pips" id="pips-ai"></span></span><span class="ava" id="ava-ai"></span></div>
+      </div>
+
+      <div class="arena" id="arena">
+        <div class="spot spot-l"></div><div class="spot spot-r"></div>
+        <div class="crowd" aria-hidden="true"></div>
+        <div class="side you-side" id="you-side"><div class="hand-wrap" id="you-hand" role="img" aria-label="Your hand"></div></div>
+        <div class="mid"><div class="call" id="call" aria-live="polite">VS</div></div>
+        <div class="side ai-side" id="ai-side"><div class="hand-wrap" id="ai-hand" role="img" aria-label="Rival hand"></div></div>
+        <canvas class="burst" id="burst" aria-hidden="true"></canvas>
+      </div>
+      <p class="verdict" id="verdict" aria-live="polite">Pick your throw.</p>
+      <div class="picks" id="picks"></div>
+      <div class="strip" id="strip" aria-label="Round history"></div>
+
+      <div class="panels">
+        <section class="c-card panel" id="brain-panel">
+          <h2 id="brain-title">What it predicted</h2>
+          <div class="bars" id="bars"></div>
+          <p class="note" id="brain-note"></p>
+        </section>
+        <section class="c-card panel">
+          <h2>Your habits this match</h2>
+          <div class="bars" id="mine"></div>
+          <p class="note" id="mine-note"></p>
+        </section>
+      </div>
+      <div class="actions">
+        <button type="button" class="c-btn c-btn--ghost" id="restart">Restart match</button>
+        <button type="button" class="c-btn c-btn--ghost" id="back">Menu</button>
+      </div>
+      <p class="keys c-muted" id="keys"></p>
+    </section>
+
+    <section class="bracket-view" id="bracket-view" hidden aria-label="Tournament bracket">
+      <h2 class="bv-title" id="bv-title">Tournament</h2>
+      <p class="c-muted" id="bv-sub"></p>
+      <div class="bracket" id="bracket"></div>
+      <div class="menu-actions" id="bv-actions"></div>
+    </section>
+
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-box c-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+        <h2 id="sheet-title"></h2>
+        <div id="sheet-body"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="logic.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

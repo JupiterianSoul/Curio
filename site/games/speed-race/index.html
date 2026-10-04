@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>How Fast? · Curio</title>
+  <meta name="description" content="Pick from 68 racers, from drifting continents to a beam of light, race them at their true relative speeds, add yourself, and solve the slowest to fastest puzzle.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="speed-race">
+  <main class="c-wrap">
+    <header class="hero">
+      <div class="gauge" aria-hidden="true">
+        <svg viewBox="0 0 200 120"><defs><linearGradient id="arc" x1="0" x2="1"><stop offset="0" stop-color="#1f9d55"/><stop offset=".5" stop-color="#ffc233"/><stop offset="1" stop-color="#ff3b2f"/></linearGradient></defs>
+          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="var(--surface-2)" stroke-width="18" stroke-linecap="round"/>
+          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#arc)" stroke-width="18" stroke-linecap="round" stroke-dasharray="252" class="garc"/>
+          <g class="needle"><path d="M100 110 L100 40" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/></g>
+          <circle cx="100" cy="110" r="10" fill="var(--ink)"/><circle cx="100" cy="110" r="4" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <h1 class="c-title">How Fast?</h1>
+      <p class="c-sub">Pick up to six racers, from drifting continents to a beam of light, and watch them race at their true relative speeds. Spoiler: the snail does not win.</p>
+      <div class="heroBtns">
+        <button class="c-btn c-btn--ghost" type="button" id="openOrder">🧩 Slowest to fastest</button>
+        <button class="c-btn c-btn--ghost" type="button" id="openMe">🏃 Add yourself</button>
+        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+      </div>
+    </header>
+
+    <section class="c-card arena" aria-label="Race track">
+      <div class="stage" id="stage">
+        <div class="sky" aria-hidden="true"></div>
+        <div class="lanes" id="lanes" aria-live="polite"></div>
+        <div class="count" id="count3" aria-hidden="true"><div class="lights"><i></i><i></i><i></i></div><b id="countTxt"></b></div>
+      </div>
+      <div class="controls">
+        <div class="left">
+          <button class="c-btn" type="button" id="go">🏁 Race!</button>
+          <button class="c-btn c-btn--ghost" type="button" id="rand">🎲 Random</button>
+        </div>
+        <div class="right">
+          <div class="seg" role="group" aria-label="Scale">
+            <button type="button" id="lin" aria-pressed="true">True scale</button>
+            <button type="button" id="log" aria-pressed="false">Log scale</button>
+          </div>
+          <select class="c-input" id="dist" aria-label="Race distance"></select>
+          <span class="clock" id="clock" aria-hidden="true">0.0 s</span>
+        </div>
+      </div>
+      <p class="scale-note" id="note"></p>
+    </section>
+
+    <section class="c-card podium" id="podium" hidden aria-live="polite"></section>
+    <section class="c-card info" id="info" aria-live="polite"></section>
+
+    <div class="pick-head">
+      <h2>Pick your racers</h2>
+      <span class="c-muted" id="count" style="font-size:13px;font-weight:700"></span>
+    </div>
+    <div class="roster" id="roster"></div>
+  </main>
+
+  <section class="panel" id="orderPanel" hidden aria-label="Slowest to fastest puzzle">
+    <div class="panel__box">
+      <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+      <h2>Slowest to fastest</h2>
+      <p class="panel__lead">Tap the five racers in order, starting with the slowest. Five puzzles a game, or the daily one that everyone gets.</p>
+      <div class="diffs" role="group" aria-label="Mode"><button type="button" class="diff" data-d="classic" aria-pressed="true"><b>Classic</b><span>5 puzzles</span></button><button type="button" class="diff" data-d="daily" aria-pressed="false"><b>Daily</b><span id="dailyLabel">Today</span></button></div>
+      <div class="otop"><span id="oRound"></span><b id="oScore">0</b></div>
+      <div class="oslots" id="oSlots"></div>
+      <div class="opool" id="oPool"></div>
+      <p class="qmsg" id="oMsg" aria-live="polite"></p>
+      <div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="oGo">Start</button><button class="c-btn c-btn--ghost" type="button" id="oUndo" hidden>↶ Undo</button><button class="c-btn c-btn--ghost" type="button" id="oShare" hidden>Copy result</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="mePanel" hidden aria-label="Add your own racer">
+    <div class="panel__box mebox">
+      <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+      <h2>Add yourself</h2>
+      <p class="panel__lead">How fast do you run, cycle or skate? Add your own racer and see who you can beat.</p>
+      <div class="meform">
+        <label>Name <input class="c-input" id="meName" maxlength="18" value="Me"></label>
+        <label>Speed (km/h) <input class="c-input" id="meV" type="number" min="0.1" max="100000" step="0.1" value="12"></label>
+        <div class="meEmo" id="meEmo" role="group" aria-label="Pick an icon"></div>
+        <div class="mePresets" id="mePresets"></div>
+      </div>
+      <p class="mePreview" id="mePreview"></p>
+      <div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="meAdd">Add to the race</button></div>
+      <div class="meList" id="meList"></div>
+    </div>
+  </section>
+
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Infinite Craft · Curio</title>
+  <meta name="description" content="Start with water, fire, wind and earth. Smash them together until you have invented the universe.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="infinite-craft">
+  <main class="ic">
+    <section class="ic-board" id="board" aria-label="Crafting board. Drop one element onto another to combine them.">
+      <div class="ic-head">
+        <h1>Infinite Craft</h1>
+        <p>Drag one element onto another. Make the universe.</p>
+      </div>
+      <div class="ic-hint" id="hint"><b>💧 + 🔥</b>Drag elements from the list onto this board, then drop one on top of another. On a phone, tap to place them.
+        <ul><li>Tap one on the board, then one in the list, to combine</li><li>Select one and press <span class="c-kbd">D</span> to copy, <span class="c-kbd">Delete</span> to remove</li><li>Stuck? Press 💡 Hint or <span class="c-kbd">H</span></li><li><span class="c-kbd">/</span> searches, 📖 Info or <span class="c-kbd">I</span> shows an element's story</li></ul></div>
+      <div class="ic-tools">
+        <button class="c-btn" id="hintBtn" type="button">💡 Hint</button>
+        <button class="c-btn c-btn--ghost" id="infoBtn" type="button" aria-pressed="false">📖 Info</button>
+        <button class="c-btn c-btn--ghost" id="clear" type="button">🧹 Clear</button>
+        <button class="c-btn c-btn--ghost" id="tidy" type="button">✨ Tidy</button>
+        <button class="c-btn c-btn--ghost" id="reset" type="button">↺ Reset</button>
+      </div>
+    </section>
+    <aside class="ic-side" aria-label="Your elements">
+      <div class="ic-side__top">
+        <div class="ic-count"><span><b id="count">4</b> discovered</span><span id="total"></span></div>
+        <div class="ic-bar"><i id="bar"></i></div>
+        <div class="ic-tabs" role="tablist"><button type="button" role="tab" id="tabEl" aria-selected="true">🧪 Elements</button><button type="button" role="tab" id="tabGoal" aria-selected="false">🎯 Goals</button></div>
+        <div class="ic-row2" id="filters"><input class="c-input ic-search" id="search" type="search" placeholder="Search elements..." aria-label="Search elements" autocomplete="off">
+        <select class="ic-sort" id="sort" aria-label="Sort elements"><option value="time">Oldest</option><option value="new">Newest</option><option value="az">A-Z</option><option value="tier">Tier</option></select></div>
+      </div>
+      <div class="ic-list" id="list"></div>
+      <div class="ic-panel" id="goals" hidden></div>
+      <div class="ic-side__foot">Tip: tap an element on the board, then one in this list to combine. Press 📖 Info, then click a chip to see its recipes.</div>
+    </aside>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="data2.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

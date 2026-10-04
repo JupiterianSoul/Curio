@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>True or False · Curio</title>
+  <meta name="description" content="Over 500 strange facts, some real, some fake. Swipe right if it is true, left if it is nonsense.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="true-or-false">
+  <main class="c-wrap tf">
+    <svg class="tf-hero" viewBox="0 0 300 110" role="img" aria-label="A magnifying glass inspecting fact cards">
+      <g transform="rotate(-6 90 60)"><rect x="40" y="22" width="100" height="70" rx="8" fill="#fffdf6" stroke="#e4d8be"/><rect x="40" y="22" width="100" height="6" rx="3" fill="#2ecc71"/><g fill="#d8cdb6"><rect x="52" y="40" width="70" height="6" rx="3"/><rect x="52" y="52" width="56" height="6" rx="3"/><rect x="52" y="64" width="64" height="6" rx="3"/></g><text x="118" y="86" font-size="16" font-weight="900" fill="#16995a" font-family="system-ui, sans-serif">✓</text></g>
+      <g transform="rotate(7 210 60)"><rect x="160" y="22" width="100" height="70" rx="8" fill="#fffdf6" stroke="#e4d8be"/><rect x="160" y="22" width="100" height="6" rx="3" fill="#ff5a36"/><g fill="#d8cdb6"><rect x="172" y="40" width="70" height="6" rx="3"/><rect x="172" y="52" width="50" height="6" rx="3"/><rect x="172" y="64" width="62" height="6" rx="3"/></g><text x="238" y="86" font-size="16" font-weight="900" fill="#d64545" font-family="system-ui, sans-serif">✗</text></g>
+      <g class="glass"><circle cx="150" cy="56" r="26" fill="rgba(140, 200, 255, .25)" stroke="#6d4c41" stroke-width="7"/><path d="M168 74 l22 22" stroke="#6d4c41" stroke-width="10" stroke-linecap="round"/><path d="M138 44 a14 14 0 0 1 14 -6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    </svg>
+    <h1 class="c-title">True or False</h1>
+    <p class="c-sub">Strange facts, some real, some fake. Swipe right if it is true, left if it is nonsense. <span id="factCount"></span></p>
+    <div class="tf-row">
+      <div class="tf-seg" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-m="classic">❤️ Classic</button>
+        <button type="button" data-m="sudden">💀 Sudden death</button>
+        <button type="button" data-m="speed">⚡ 60s Speed</button>
+        <button type="button" data-m="daily">📅 Daily 10</button>
+      </div>
+    </div>
+    <section id="play">
+      <div class="tf-stats">
+        <div class="c-stat"><b id="sScore">0</b><span>Score</span></div>
+        <div class="c-stat"><b id="sStreak">0</b><span>Streak</span></div>
+        <div class="c-stat"><b id="sBest">-</b><span>Best</span></div>
+      </div>
+      <div class="tf-lives" id="lives" aria-label="Lives"></div>
+      <div class="tf-timer" id="timerWrap" hidden><i id="timer"></i></div>
+      <div class="tf-stage" id="stage">
+        <div class="tf-card back2" aria-hidden="true"></div>
+        <div class="tf-card back" aria-hidden="true"></div>
+        <div class="tf-card" id="card" tabindex="-1">
+          <span class="pin" aria-hidden="true"></span>
+          <span class="tf-stamp t" id="stT">TRUE</span>
+          <span class="tf-stamp f" id="stF">FALSE</span>
+          <div id="cardBody"></div>
+        </div>
+      </div>
+      <div class="tf-btns" id="btns">
+        <button type="button" class="tf-btn f" id="bF">✗ False <small>← or F</small></button>
+        <button type="button" class="tf-btn t" id="bT">✓ True <small>→ or T</small></button>
+      </div>
+      <button type="button" class="c-btn tf-next" id="next" hidden>Next fact →</button>
+      <p class="tf-help c-muted">Keys: <span class="c-kbd">←</span> false · <span class="c-kbd">→</span> true · <span class="c-kbd">Enter</span> next</p>
+    </section>
+    <section class="c-card tf-result" id="result" hidden>
+      <svg class="tf-ring" id="ring" viewBox="0 0 140 140" aria-hidden="true"></svg>
+      <div class="tf-rbig" id="rTitle">0 correct</div>
+      <p class="c-muted" id="rQuip" style="font-weight:700"></p>
+      <div class="tf-rstats" id="rStats"></div>
+      <div class="tf-new-badges" id="rBadges"></div>
+      <div class="c-row" style="justify-content:center"><button type="button" class="c-btn" id="again">Play again</button><button type="button" class="c-btn c-btn--ghost" id="share">📋 Share</button></div>
+      <div class="tf-list" id="rList"></div>
+    </section>
+    <section class="c-card tf-panel">
+      <div class="tf-ptabs" role="tablist">
+        <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="stats" aria-selected="false">Stats</button>
+        <button type="button" role="tab" data-tab="badges" aria-selected="false">Badges <span id="badgeCount"></span></button>
+      </div>
+      <div data-pane="how">
+        <ul class="tf-how">
+          <li>Read the fact. Swipe or press <b>True</b> or <b>False</b>. Every answer comes with the real story.</li>
+          <li><b>Classic:</b> three lives. <b>Sudden death:</b> one. <b>60s Speed:</b> as many as you can, wrong answers cost 5 seconds, no time for explanations until the end. <b>Daily 10:</b> the same ten facts for everyone today.</li>
+          <li>Every 10 in a row earns a celebration. You will not see the same fact again until you have worked through most of the deck.</li>
+        </ul>
+      </div>
+      <div data-pane="stats" hidden><div class="tf-stattbl" id="statTbl"></div></div>
+      <div data-pane="badges" hidden><div class="tf-badges" id="badgeList"></div></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

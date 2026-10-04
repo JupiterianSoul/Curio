@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chain Reaction · Curio</title>
+  <meta name="description" content="One click, one blast. Every dot it touches explodes too. Can you set off a big enough chain?">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="chain-reaction">
+  <main class="c-wrap cr-main">
+    <div class="cr-stage" id="stage">
+      <canvas id="field" role="img" aria-label="A field of drifting dots. Click once, or aim with the arrow keys and press Enter, to place a blast; dots that touch a blast explode and set off more blasts."></canvas>
+      <div class="cr-intro" id="intro">
+        <h1>Chain Reaction</h1>
+        <p>You get one click. Every dot your blast touches explodes too.</p>
+      </div>
+      <div class="cr-count" aria-live="polite"><b id="stat">0 / 1</b><br><span id="sub">Level 1</span></div>
+      <div class="cr-tag" id="tag"></div>
+    </div>
+    <div class="cr-tools">
+      <div class="cr-row">
+        <span class="cr-mode" role="group" aria-label="Mode">
+          <button type="button" data-mode="levels" aria-pressed="true">🎯 Levels</button>
+          <button type="button" data-mode="sandbox" aria-pressed="false" title="Switch mode (S)">♾️ Sandbox</button>
+        </span>
+        <span class="cr-bar" aria-hidden="true"><i id="bar"></i></span>
+        <button type="button" class="cr-b" id="rewind" title="Same dots, try another spot (R)">↶ Rewind</button>
+        <button type="button" class="cr-b" id="fresh" title="New dots (N)">🎲 New dots</button>
+        <button type="button" class="cr-b" id="pause" aria-pressed="false" title="Pause (Space)">⏸ Pause</button>
+        <label class="cr-b">🗺 <select id="lvl" aria-label="Choose level" style="border:0;background:transparent;font:inherit;color:inherit;font-weight:700"></select></label>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

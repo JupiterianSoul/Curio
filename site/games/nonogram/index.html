@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nonogram · Curio</title>
+  <meta name="description" content="Picture logic puzzles: use the number clues to fill the grid and reveal a hidden pixel picture. 75 hand-made puzzles in four sizes, a daily puzzle and endless random ones.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="nonogram">
+  <main class="c-wrap">
+    <header class="g-head">
+      <h1 class="c-title">Nonogram</h1>
+      <p class="c-sub">The numbers say how many filled squares sit together in each row and column, in order. Fill the right ones and a hidden pixel picture appears, in full colour.</p>
+    </header>
+    <div class="c-row"><div class="seg" role="group" aria-label="Puzzle size" id="seg"></div></div>
+    <div class="picker" id="picker" aria-label="Puzzles"></div>
+    <div class="hud">
+      <div class="c-stat"><b id="pnum">1</b><span>Puzzle</span></div>
+      <div class="c-stat"><b id="time">0:00</b><span>Time</span></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+      <div class="c-stat"><b id="solvedN">0</b><span>Solved</span></div>
+      <div class="lives" id="lives" aria-label="Hearts left" hidden></div>
+    </div>
+    <div class="play">
+      <div class="board-wrap" id="bw"><div class="easel"><div class="nono" id="nono" role="grid" tabindex="0" aria-label="Nonogram grid. Arrow keys move, F fills, X crosses."></div></div>
+        <div class="result" id="result" hidden>
+          <div class="result-card">
+            <canvas class="rpic" id="rPic" width="10" height="10" aria-label="The finished picture"></canvas>
+            <div class="stars" id="rStars" aria-hidden="true"></div>
+            <h2 id="rTitle">Solved!</h2>
+            <p id="rBody"></p>
+            <div class="badges" id="rBadges"></div>
+            <div class="c-row">
+              <button class="c-btn" type="button" id="rNext">Next puzzle</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rAgain">Admire it</button>
+              <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="reveal" id="reveal" aria-live="polite"></p>
+      <div class="tools">
+        <button class="tool" type="button" id="mFill" aria-pressed="true"><span class="ico-fill"></span>Fill</button>
+        <button class="tool" type="button" id="mX" aria-pressed="false"><i>✕</i>Cross</button>
+        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
+        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
+        <button class="tool" type="button" id="clear"><i>⌫</i>Clear</button>
+      </div>
+      <div class="opts"><label class="chk"><input type="checkbox" id="check"> Mistake checking (3 hearts)</label></div>
+    </div>
+    <details class="c-card prog">
+      <summary>Stats and badges <span id="badgeCount"></span></summary>
+      <div class="stats" id="stats"></div>
+      <div class="badges" id="badges"></div>
+    </details>
+    <p class="g-help c-muted">Drag across a row or column to fill many squares at once, starting on a filled square erases instead. On a touchpad, Touchpad mode in the top bar lets you click, glide along a line, and click again. Cross mode (or right-click, or X) marks squares you know are empty. Keyboard: arrows, <span class="c-kbd">F</span> or <span class="c-kbd">Space</span> fill, <span class="c-kbd">X</span> cross, <span class="c-kbd">Z</span> undo. Every hand-made puzzle can be solved by pure logic, no guessing.</p>
+  </main>
+  <div class="count" id="count"></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

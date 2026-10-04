@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a0a34"/><stop offset=".45" stop-color="#2d1b69"/><stop offset=".75" stop-color="#16405a"/><stop offset="1" stop-color="#1f5a36"/></linearGradient>
+    <radialGradient id="bang"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#ffe28a"/><stop offset=".6" stop-color="#ff8a3c"/><stop offset="1" stop-color="#b06cff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <g fill="#fff" opacity=".7"><circle cx="120" cy="40" r="1.4"/><circle cx="180" cy="250" r="1.2"/><circle cx="230" cy="30" r="1.5"/><circle cx="90" cy="260" r="1.2"/><circle cx="160" cy="120" r="1"/><circle cx="300" cy="50" r="1.2"/></g>
+  <circle cx="44" cy="150" r="70" fill="url(#bang)"/>
+  <path d="M44 150 C110 150 120 90 170 100 S240 210 290 180 S360 120 400 130" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
+  <g transform="translate(150 96)"><ellipse rx="22" ry="9" fill="#b06cff" opacity=".6" transform="rotate(-20)"/><circle r="5" fill="#fff6c9"/></g>
+  <circle cx="205" cy="150" r="17" fill="#2a6fd6"/><path d="M193 144 Q200 136 208 142 Q214 150 206 156 Q198 160 194 152Z M210 158 Q216 154 220 158 Q216 164 210 162Z" fill="#3fb06a"/>
+  <g transform="translate(268 160)" fill="#4f8a3a"><path d="M0 22 Q16 14 28 12 L36 4 Q44 0 52 4 L50 12 L40 12 Q36 18 30 22 L32 34 L26 34 L24 26 L14 26 L14 34 L8 34 L8 26 Q2 26 0 22Z"/><circle cx="46" cy="6" r="1.5" fill="#fff"/></g>
+  <g transform="translate(348 96)"><circle cx="0" cy="0" r="7" fill="#e0a878"/><path d="M-8 10 Q0 6 8 10 L9 34 L-9 34Z" fill="#ff5a36"/><path d="M-8 34 h16 v18 h-6 l-2 -10 l-2 10 h-6Z" fill="#2d4a7a"/></g>
+  <g fill="#ffcf6e"><circle cx="150" cy="100" r="4"/><circle cx="205" cy="150" r="0"/><circle cx="292" cy="179" r="4"/><circle cx="380" cy="128" r="4"/></g>
+  <rect x="112" y="238" width="176" height="40" rx="20" fill="#0b0716" stroke="#ffcf6e" stroke-width="2"/>
+  <text x="200" y="264" fill="#fff" font-family="monospace" font-weight="900" font-size="17" text-anchor="middle">13.8 bn yrs ago</text>
+</svg>

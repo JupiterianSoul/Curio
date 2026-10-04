@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sudoku · Curio</title>
+  <meta name="description" content="Freshly generated sudoku with one solution: classic, mini 6x6, diagonal and killer, a daily puzzle, and hints that explain the technique.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="sudoku">
+  <main class="c-wrap sd" id="root">
+    <section id="home" class="sd-home">
+      <header class="sd-hero">
+        <div class="sd-heroart" id="heroArt" aria-hidden="true"></div>
+        <div>
+          <h1 class="c-title">Sudoku</h1>
+          <p class="c-sub">Every puzzle is made fresh in your browser and has exactly one answer. Four ways to play, a new daily puzzle, and hints that teach you the trick instead of just spoiling it.</p>
+        </div>
+      </header>
+      <div class="sd-toprow">
+        <article class="sd-daily c-card" id="daily"></article>
+        <article class="sd-cont c-card" id="cont" hidden></article>
+      </div>
+      <h2 class="sd-h">Pick a puzzle</h2>
+      <div class="sd-variants" id="variants" role="radiogroup" aria-label="Variant"></div>
+      <div class="sd-diffrow">
+        <div class="sd-seg" id="levels" role="radiogroup" aria-label="Difficulty"></div>
+        <button class="c-btn sd-start" id="startBtn" type="button">New puzzle</button>
+      </div>
+      <div class="c-row sd-links">
+        <button class="c-btn c-btn--ghost" type="button" id="howBtn">📖 How to play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="trophyBtn">🏆 Trophies <span id="trophyN"></span></button>
+        <button class="c-btn c-btn--ghost" type="button" id="statsBtn">📊 Stats</button>
+        <button class="c-btn c-btn--ghost" type="button" id="setBtn">⚙️ Settings</button>
+      </div>
+    </section>
+
+    <section id="play" class="sd-play" hidden>
+      <div class="sd-bar">
+        <button class="sd-ib" type="button" id="backBtn" aria-label="Back to menu">←</button>
+        <div class="sd-chip" id="chip"></div>
+        <div class="sd-meta">
+          <span title="Mistakes" id="mistakes">✕ 0</span>
+          <span title="Hints" id="hintsN">💡 0</span>
+        </div>
+        <button class="sd-timer" type="button" id="pauseBtn" aria-label="Pause"><span id="time">0:00</span><i></i></button>
+      </div>
+      <div class="sd-layout">
+        <div class="sd-boardwrap" id="boardWrap">
+          <div class="sd-board" id="board" role="grid" aria-label="Sudoku board"></div>
+          <svg class="sd-over" id="over" aria-hidden="true"></svg>
+          <div class="sd-pause" id="pauseCover" hidden><div><b>Paused</b><span>The clock is stopped. No peeking.</span><button class="c-btn" type="button" id="resumeBtn">Resume</button></div></div>
+          <div class="sd-gen" id="genCover" hidden><div class="sd-spinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><b>Making your puzzle...</b><span>Checking it has exactly one answer</span></div>
+          <div class="sd-result" id="result" hidden></div>
+        </div>
+        <div class="sd-side">
+          <div class="sd-tools">
+            <button class="sd-tool" type="button" id="undoBtn"><i>↶</i>Undo</button>
+            <button class="sd-tool" type="button" id="redoBtn"><i>↷</i>Redo</button>
+            <button class="sd-tool" type="button" id="eraseBtn"><i>⌫</i>Erase</button>
+            <button class="sd-tool" type="button" id="notesBtn" aria-pressed="false"><i>✎</i>Notes<em id="notesState">off</em></button>
+            <button class="sd-tool" type="button" id="autoBtn"><i>✨</i>Auto notes</button>
+            <button class="sd-tool" type="button" id="hintBtn"><i>💡</i>Hint</button>
+          </div>
+          <div class="sd-pad" id="pad" aria-label="Number pad"></div>
+          <div class="sd-hint" id="hintCard" hidden aria-live="polite"></div>
+          <p class="c-muted sd-keys">Arrows move · <span class="c-kbd">1</span>-<span class="c-kbd">9</span> fill · <span class="c-kbd">N</span> notes · <span class="c-kbd">⌫</span> erase · <span class="c-kbd">Z</span>/<span class="c-kbd">Y</span> undo/redo · <span class="c-kbd">H</span> hint · <span class="c-kbd">P</span> pause</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="sd-badge" id="badge" role="status" aria-live="polite"></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="engine.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

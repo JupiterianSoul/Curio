@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dino Run · Curio</title>
+  <meta name="description" content="An endless runner through five biomes: jump cacti, duck vines, leap lava, collect amber and hatch six dinosaurs.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dr-chars { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; width: 100%; }
+    .dr-chars button { border: 2px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 4px 2px 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1px; color: var(--ink); transition: transform .12s ease, border-color .15s ease; }
+    .dr-chars button:hover { transform: translateY(-2px); }
+    .dr-chars button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+    .dr-chars button.is-locked canvas { filter: brightness(0) opacity(.35); }
+    .dr-chars canvas { width: 44px; height: 44px; image-rendering: pixelated; }
+    .dr-chars em { font-style: normal; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .dr-bank { font-size: 13px; font-weight: 800; color: #c07a00; }
+    .dr-perk { font-size: 13px; color: var(--ink-2); margin: 0; min-height: 1.4em; }
+    @media (max-width: 520px) { .dr-chars canvas { width: 36px; height: 36px; } .dr-chars em { font-size: 10px; } }
+  </style>
+</head>
+<body data-game="dino-run" class="arc">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Metres</span></div>
+      <div class="c-stat"><b data-hud="amber">0</b><span>Amber</span></div>
+      <div class="c-stat"><b data-hud="biome">Desert</b><span>Biome</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/><rect x="11.5" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/></svg></button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Dino runner: a small dinosaur running through changing landscapes"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <div class="arc-hero" aria-hidden="true">
+            <svg viewBox="0 0 400 132" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="ds" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd9a0"/><stop offset=".25" stop-color="#9fe3c4"/><stop offset=".5" stop-color="#a8c8ff"/><stop offset=".75" stop-color="#b5432a"/><stop offset="1" stop-color="#2a2f6b"/></linearGradient></defs>
+              <rect width="400" height="132" fill="url(#ds)"/>
+              <path d="M0 92l30-18 30 8 20-14 30 10V100H0z" fill="#e9b27a"/>
+              <path d="M100 100V60l6-10 6 10v40zM118 100V70l5-8 5 8v30z" fill="#3f8f5c"/>
+              <path d="M170 100l20-34 20 34zM200 100l14-24 14 24z" fill="#c7d8f2"/>
+              <path d="M186 74l4-8 4 8z" fill="#fff"/>
+              <path d="M250 100l40-50h14l40 50z" fill="#2a1010"/>
+              <circle cx="297" cy="52" r="12" fill="#ffb03d" opacity=".8"/>
+              <circle cx="370" cy="26" r="10" fill="#f4f1d8"/>
+              <rect y="100" width="400" height="32" fill="#6b5a4a"/>
+              <rect y="98" width="400" height="4" fill="#4a3c30"/>
+              <g fill="#4caf50"><path d="M62 62h21v3h3v9h-3v3h-9v3h6v3h-6v3h-3v3h-3v6h3v3h-6v-9h-3v3h-3v6h-6v-3h3v-6h-3v-3h-3v-3h-3v-3h-3v-6h3v3h3v3h3v-3h3v-3h3v-6h3v-6h3z"/></g>
+              <rect x="72" y="66" width="3" height="3" fill="#fff"/>
+              <g fill="#7b5ea7"><path d="M150 40h24l-6 4h6l-8 5h-10l-6-5z"/></g>
+              <g fill="#ffc21a"><ellipse cx="110" cy="44" rx="4" ry="5"/><ellipse cx="128" cy="38" rx="4" ry="5"/><ellipse cx="146" cy="44" rx="4" ry="5"/></g>
+            </svg>
+          </div>
+          <h1 class="c-title">Dino Run</h1>
+          <p class="c-sub">You are a small dinosaur. The world is big and full of pointy things. Run.</p>
+          <div class="arc-opts">
+            <div class="arc-seg" role="group" aria-label="Mode">
+              <button type="button" data-opt="mode" data-val="endless">Endless</button>
+              <button type="button" data-opt="mode" data-val="daily">Daily</button>
+              <button type="button" data-opt="mode" data-val="hardcore">Hardcore</button>
+            </div>
+            <p class="arc-desc" data-desc="mode"></p>
+            <div class="arc-label">Runner · <span class="dr-bank">🟠 <span data-bank>0</span> amber</span></div>
+            <div class="dr-chars" role="group" aria-label="Character">
+              <button type="button" data-opt="char" data-val="rex"><canvas width="88" height="88"></canvas><em>Rex</em></button>
+              <button type="button" data-opt="char" data-val="ruby"><canvas width="88" height="88"></canvas><em>Ruby</em></button>
+              <button type="button" data-opt="char" data-val="sunny"><canvas width="88" height="88"></canvas><em>Sunny</em></button>
+              <button type="button" data-opt="char" data-val="frost"><canvas width="88" height="88"></canvas><em>Frost</em></button>
+              <button type="button" data-opt="char" data-val="ember"><canvas width="88" height="88"></canvas><em>Ember</em></button>
+              <button type="button" data-opt="char" data-val="shadow"><canvas width="88" height="88"></canvas><em>Shadow</em></button>
+            </div>
+            <p class="dr-perk" data-perk></p>
+          </div>
+          <button class="c-btn" type="button" data-act="start" data-autofocus>▶ Run</button>
+          <div class="arc-links">
+            <button type="button" data-act="panel" data-tab="help">How to play</button>
+            <button type="button" data-act="panel" data-tab="ach">Badges</button>
+            <button type="button" data-act="panel" data-tab="stats">Stats</button>
+          </div>
+          <p class="arc-small"><span class="c-kbd">Space</span> / <span class="c-kbd">↑</span> jump (hold for higher) · <span class="c-kbd">↓</span> duck · <span class="c-kbd">P</span> pause · tap to jump, swipe down to duck</p>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Catching your breath. Dinosaurs need that too.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+          <div class="arc-links"><button type="button" data-act="panel" data-tab="help">How to play</button><button type="button" data-act="panel" data-tab="ach">Badges</button></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-art" data-o="art"></div>
+          <h2 class="c-title" data-o="title">Extinct!</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b> m</div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-rows" data-o="rows"></div>
+          <div class="arc-gotach" data-o="ach" hidden></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">↻ Run again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Copy result</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-panel" aria-label="Info" hidden>
+        <div class="arc-card arc-card--wide c-card">
+          <div class="arc-tabs" role="tablist">
+            <button type="button" role="tab" data-tab="help">How to play</button>
+            <button type="button" role="tab" data-tab="ach">Badges</button>
+            <button type="button" role="tab" data-tab="stats">Stats</button>
+          </div>
+          <div class="arc-tabbody" data-tabbody="help">
+            <p>Your dinosaur runs by itself and keeps getting faster. Jump over things on the ground, duck under things in the air, and see how far you get. Every 600 m the world changes.</p>
+            <h3>Five biomes</h3>
+            <ul>
+              <li><b>Dusty Desert</b>: cacti and bouncing tumbleweeds.</li>
+              <li><b>Steamy Jungle</b>: logs, thorn bushes and hanging vines you must duck under.</li>
+              <li><b>Frozen Tundra</b>: ice spikes and runaway snowballs that roll faster than you.</li>
+              <li><b>Lava Lands</b>: lava pits to leap, boulders and meteors (watch for their shadow).</li>
+              <li><b>Moonlit Plains</b>: cacti, swooping bats and lots of pterodactyls.</li>
+            </ul>
+            <h3>Power-ups</h3>
+            <ul>
+              <li><b>Shield</b> takes one hit for you, even a lava pit.</li>
+              <li><b>Magnet</b> pulls in nearby amber. <b>Amber x2</b> doubles every pickup.</li>
+              <li><b>Double jump</b> lets you jump again in mid air.</li>
+              <li><b>Slow-mo</b> slows the whole world down for a few seconds.</li>
+              <li><b>Rocket</b>: blast forward and smash straight through obstacles.</li>
+            </ul>
+            <h3>Amber and friends</h3>
+            <p>Amber you collect goes into your bank. Spend it to hatch five more runners, each with a perk: higher jumps, a built-in magnet, permanent double jump, a free shield, or longer power-ups.</p>
+            <h3>Controls</h3>
+            <p><span class="c-kbd">Space</span>, <span class="c-kbd">↑</span> or <span class="c-kbd">W</span> to jump (hold for a higher jump), <span class="c-kbd">↓</span> or <span class="c-kbd">S</span> to duck or drop faster. On a phone tap to jump and swipe down to duck, or use the big buttons.</p>
+          </div>
+          <div class="arc-tabbody" data-tabbody="ach" hidden></div>
+          <div class="arc-tabbody" data-tabbody="stats" hidden></div>
+          <button class="c-btn" type="button" data-act="back">Back</button>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"><div class="arc-pad__row"><button type="button" data-key="ArrowUp" aria-label="Jump">▲<small>Jump</small></button><button type="button" data-key="ArrowDown" aria-label="Duck">▼<small>Duck</small></button></div></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="engine.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

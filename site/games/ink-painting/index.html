@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ink Painting · Curio</title>
+  <meta name="description" content="Sumi-e on rice paper: a bristle brush that runs dry, grey washes that bleed into the fibres, and a red seal with your initials.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    body { overflow-x: hidden; }
+    .dw { display: grid; grid-template-columns: minmax(0, 1fr) 272px; grid-template-areas: "stage head" "stage panel"; grid-template-rows: auto 1fr; gap: 14px 18px; padding: 16px; max-width: 1360px; margin: 0 auto; align-items: start; }
+    .dw-head { grid-area: head; }
+    .dw-head h1 { font-size: 30px; font-weight: 900; letter-spacing: -.02em; margin: 0 0 4px; line-height: 1.1; }
+    .dw-head p { margin: 0; color: var(--ink-2); font-size: 15px; }
+    .dw-stage { grid-area: stage; min-width: 0; display: flex; justify-content: center; position: sticky; top: calc(var(--bar-h) + 16px); }
+    .dw-frame { position: relative; width: min(100%, calc((100dvh - var(--bar-h) - 34px) * 1.5)); aspect-ratio: 3 / 2; border-radius: 6px; box-shadow: 0 2px 4px rgba(40, 30, 20, .12), 0 14px 40px rgba(40, 30, 20, .18); overflow: hidden; background: #f3ecda; }
+    .dw-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: crosshair; }
+    .dw-panel { grid-area: panel; display: flex; flex-direction: column; gap: 14px; }
+    .dw-field { display: flex; flex-direction: column; gap: 5px; }
+    .dw-lab { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); font-weight: 800; display: flex; justify-content: space-between; gap: 8px; }
+    .dw-lab span { text-transform: none; letter-spacing: 0; color: var(--ink-2); }
+    .dw-field input[type=range] { width: 100%; accent-color: var(--accent); }
+    .dw-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .dw-btns .c-btn { padding: 9px 10px; font-size: 14px; }
+    .dw-wide { grid-column: span 2; }
+    .dw-tog { border: 1.5px solid var(--line); background: var(--surface-2); padding: 7px 12px; border-radius: 999px; cursor: pointer; font-weight: 800; font-size: 13px; touch-action: manipulation; }
+    .dw-tog[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+    .dw-hint { font-size: 13px; color: var(--ink-3); margin: 0; }
+    .ip-meter { height: 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+    .ip-meter i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #2a2724, #59544e); border-radius: 999px; transition: width .08s linear; }
+    .ip-loadrow { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .ip-loadrow .c-btn { padding: 7px 14px; font-size: 14px; }
+    .ip-seal { display: grid; grid-template-columns: 74px 1fr; gap: 8px; align-items: center; }
+    .ip-seal .c-input { width: 100%; text-transform: uppercase; text-align: center; font-weight: 900; letter-spacing: .1em; padding: 8px 6px; }
+    .ip-seal .dw-tog { padding: 9px 12px; font-size: 14px; }
+    .ip-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ip-placing { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); background: rgba(196, 35, 27, .92); color: #fff; font-weight: 800; font-size: 13px; padding: 5px 12px; border-radius: 999px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+    .ip-placing.on { opacity: 1; }
+    @media (max-width: 860px) {
+      .dw { grid-template-columns: 1fr; grid-template-areas: "head" "stage" "panel"; padding: 10px 16px 32px; gap: 12px; }
+      .dw-stage { position: static; }
+      .dw-frame { width: 100%; }
+      .dw-head h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body data-game="ink-painting">
+  <main class="dw">
+    <header class="dw-head">
+      <h1>Ink Painting</h1>
+      <p>Load the brush, breathe out, commit to one stroke. Slow pools the ink, fast flicks go dry and wispy.</p>
+    </header>
+    <div class="dw-stage">
+      <div class="dw-frame">
+        <canvas id="cv" role="img" aria-label="Rice paper. Drag to paint with a sumi-e ink brush."></canvas>
+        <div class="ip-placing" id="placing">Tap the paper to stamp your seal</div>
+      </div>
+    </div>
+    <aside class="dw-panel c-card">
+      <div class="dw-field">
+        <label class="dw-lab" for="size">Brush <span id="sizeV">26</span></label>
+        <input type="range" id="size" min="5" max="80" value="26">
+      </div>
+      <div class="dw-field">
+        <label class="dw-lab" for="water">Water <span id="waterV">Dark ink</span></label>
+        <input type="range" id="water" min="0" max="100" value="12">
+      </div>
+      <div class="dw-field">
+        <span class="dw-lab">Ink on the brush <span id="loadV">100%</span></span>
+        <div class="ip-loadrow">
+          <div class="ip-meter" aria-hidden="true"><i id="meter"></i></div>
+          <button class="c-btn c-btn--ghost" id="dip" title="Dip the brush (D)">Dip</button>
+        </div>
+        <div class="ip-pills">
+          <button class="dw-tog" id="autodip" aria-pressed="true">Auto-dip each stroke</button>
+        </div>
+      </div>
+      <div class="dw-field">
+        <span class="dw-lab">Red seal <span>your initials</span></span>
+        <div class="ip-seal">
+          <input class="c-input" id="initials" maxlength="4" value="ME" aria-label="Seal initials" autocomplete="off" spellcheck="false">
+          <button class="dw-tog" id="stamp" aria-pressed="false">Stamp seal</button>
+        </div>
+      </div>
+      <div class="dw-btns">
+        <button class="c-btn c-btn--ghost" id="undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" id="clear">Fresh sheet</button>
+        <button class="c-btn dw-wide" id="save">Save PNG</button>
+      </div>
+      <p class="dw-hint">A stylus paints with real pressure. Hold the brush still and the ink blooms. <span class="c-kbd">D</span> dips, <span class="c-kbd">[</span> <span class="c-kbd">]</span> resize, <span class="c-kbd">S</span> seal, <span class="c-kbd">U</span> or <span class="c-kbd">Ctrl</span>+<span class="c-kbd">Z</span> undoes. On a touchpad, turn on Touchpad mode in the top bar: click to put the brush down, click again to lift it. Your painting autosaves.</p>
+    </aside>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Flock · Curio</title>
+  <meta name="description" content="Hundreds of birds, fish or bats following three simple rules. Chase them as a hawk, shark or owl, drop food, place obstacles, and play a 30-second hunt.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="flocking">
+  <main class="c-wrap fl-main" id="main">
+    <canvas id="cv" role="img" aria-label="A sky full of flocking birds. Move the pointer to chase them with a predator, drop food, or place obstacles they steer around."></canvas>
+    <div class="fl-intro" id="intro">
+      <h1>Flock</h1>
+      <p>Every bird follows three rules: don't crowd, match your neighbours, stay with the group. Move your pointer to send in the hawk.</p>
+    </div>
+    <div class="hud hidden" id="hud"><b id="hTime">30</b><span>seconds</span><b id="hScore">0</b><span>caught</span><em id="hCombo"></em></div>
+    <div class="panel" id="panel" hidden>
+      <h2>World</h2>
+      <div class="worlds" id="worlds">
+        <button type="button" data-w="sky"><i>🐦</i>Sky</button>
+        <button type="button" data-w="sea"><i>🐟</i>Sea</button>
+        <button type="button" data-w="night"><i>🦇</i>Night</button>
+      </div>
+      <h2>Flock styles</h2>
+      <div class="presets" id="presets"></div>
+      <h2>The three rules</h2>
+      <label class="sl">Separation <output id="oSep"></output><input type="range" id="sep" min="0" max="4" step="0.05" value="1.7"></label>
+      <label class="sl">Alignment <output id="oAli"></output><input type="range" id="ali" min="0" max="4" step="0.05" value="1.1"></label>
+      <label class="sl">Cohesion <output id="oCoh"></output><input type="range" id="coh" min="0" max="4" step="0.05" value="0.9"></label>
+      <h2>The flock</h2>
+      <label class="sl">How many <output id="oNum"></output><input type="range" id="num" min="20" max="1200" step="10" value="400"></label>
+      <label class="sl">Speed <output id="oSpd"></output><input type="range" id="spd" min="0.3" max="2.5" step="0.05" value="1"></label>
+      <label class="sl">Vision <output id="oVis"></output><input type="range" id="vis" min="15" max="110" step="1" value="48"></label>
+      <label class="sl">Wind <output id="oWind"></output><input type="range" id="wind" min="-60" max="60" step="1" value="0"></label>
+      <div class="sw-row"><span>Colour by heading</span><button type="button" class="sw" id="swHue" aria-pressed="false" aria-label="Colour by heading"></button></div>
+      <div class="sw-row"><span>Inspect one bird</span><button type="button" class="sw" id="swInspect" aria-pressed="false" aria-label="Inspect one bird"></button></div>
+      <h2>Badges</h2>
+      <div class="badges" id="badges"></div>
+      <p>Keys: arrows steer the predator (and move the placing cursor), Space drops food or an obstacle, H predator, F food, B obstacles, S scatter, G hunt, 1 2 3 worlds.</p>
+    </div>
+    <div class="dock" role="toolbar" aria-label="Flock controls">
+      <button type="button" class="chip" id="mHawk" aria-pressed="true">🦅 Hawk</button>
+      <button type="button" class="chip" id="mFood" aria-pressed="false">🌾 Food</button>
+      <button type="button" class="chip" id="mBalloon" aria-pressed="false">🎈 Balloons</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button type="button" class="chip" id="bScatter">💨 Scatter</button>
+      <button type="button" class="chip" id="bHunt">⏱️ Hunt</button>
+      <button type="button" class="chip" id="bClear">🧹</button>
+      <button type="button" class="chip" id="bPanel" aria-pressed="false" aria-controls="panel">⚙️ More</button>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

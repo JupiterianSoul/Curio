@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>2048 · Curio</title>
+  <meta name="description" content="Slide, merge and double: four board sizes, a pick-your-target goal mode, blitz, rocks, a daily board, eight themes and hints.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="2048">
+  <main class="c-wrap t-wrap">
+    <header class="t-head">
+      <h1 class="c-title">2048</h1>
+      <p class="c-sub">Slide the tiles. Twins merge. Keep doubling until you hit your target, or just keep going.</p>
+    </header>
+    <div class="t-setupbar"><button type="button" class="t-setupbtn" id="setupBtn" aria-expanded="true" aria-controls="setup"><span>⚙</span> <b id="setupSum">Classic · 4×4</b> <i>Change</i></button></div>
+    <div class="t-setup" id="setup">
+      <div class="t-seg" role="group" aria-label="Mode">
+        <button type="button" data-set="mode" data-val="classic">Classic</button>
+        <button type="button" data-set="mode" data-val="goal">Goal</button>
+        <button type="button" data-set="mode" data-val="blitz">Blitz</button>
+        <button type="button" data-set="mode" data-val="rocks">Rocks</button>
+        <button type="button" data-set="mode" data-val="daily">Daily</button>
+      </div>
+      <p class="t-desc" id="desc"></p>
+      <div class="t-row">
+        <div class="t-seg" role="group" aria-label="Board size" id="sizes">
+          <button type="button" data-set="size" data-val="3">3×3</button>
+          <button type="button" data-set="size" data-val="4">4×4</button>
+          <button type="button" data-set="size" data-val="5">5×5</button>
+          <button type="button" data-set="size" data-val="6">6×6</button>
+        </div>
+        <div class="t-seg" role="group" aria-label="Undo allowance" id="undos">
+          <button type="button" data-set="undo" data-val="0">No undo</button>
+          <button type="button" data-set="undo" data-val="1">1 undo</button>
+          <button type="button" data-set="undo" data-val="3">3 undos</button>
+          <button type="button" data-set="undo" data-val="99">∞</button>
+        </div>
+      </div>
+      <div class="t-seg" role="group" aria-label="Target tile" id="goals" hidden></div>
+      <div class="t-themes" role="group" aria-label="Theme" id="themes"></div>
+    </div>
+    <div class="t-top">
+      <div class="c-stat"><b id="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b id="best">0</b><span>Best</span></div>
+      <div class="c-stat" id="third"><b id="moves">0</b><span id="thirdLabel">Moves</span></div>
+      <div class="c-stat"><b id="goal">2048</b><span>Target</span></div>
+    </div>
+    <div class="t-stage">
+      <div class="board" id="board" role="application" aria-label="2048 board. Use arrow keys or swipe to slide tiles." tabindex="0">
+        <div class="grid" aria-hidden="true"></div>
+        <div class="tiles" id="tiles" aria-hidden="true"></div>
+        <canvas class="fx" id="fx" aria-hidden="true"></canvas>
+        <div class="t-ov" id="ov" hidden><div class="t-card" id="card" role="dialog" aria-live="polite"></div></div>
+      </div>
+      <div class="c-row t-controls">
+        <button class="c-btn c-btn--ghost" type="button" id="undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" type="button" id="hint">💡 Hint</button>
+        <button class="c-btn" type="button" id="new">New game</button>
+      </div>
+      <p class="t-help c-muted">Arrows or <span class="c-kbd">W</span><span class="c-kbd">A</span><span class="c-kbd">S</span><span class="c-kbd">D</span> to slide, swipe on a phone · <span class="c-kbd">U</span> undo · <span class="c-kbd">H</span> hint · <span class="c-kbd">N</span> new game</p>
+      <p id="live" aria-live="polite" style="position:absolute;left:-9999px"></p>
+    </div>
+    <section class="c-card t-panel">
+      <div class="t-tabs" role="tablist">
+        <button type="button" role="tab" data-tab="help" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="ach">Badges</button>
+        <button type="button" role="tab" data-tab="stats">Stats</button>
+      </div>
+      <div class="t-body" data-body="help">
+        <p>Every move slides <b>all</b> tiles as far as they go in one direction. Two tiles with the same number that bump into each other merge into one with double the value, and that value is added to your score. After each move a new 2 (or sometimes a 4) appears. When the board is full and nothing can merge, the game is over.</p>
+        <h3>Modes</h3>
+        <ul>
+          <li><b>Classic</b>: reach 2048, then keep going as long as you can.</li>
+          <li><b>Goal</b>: pick your own target tile, from a quick 64 up to a heroic 8192, and race to it in as few moves as possible.</li>
+          <li><b>Blitz</b>: two minutes on the clock. Every merge counts. The timer starts on your first move.</li>
+          <li><b>Rocks</b>: a couple of boulders sit on the board. They never move and never merge, so you have to work around them.</li>
+          <li><b>Daily</b>: one 4×4 board for everyone today, same starting tiles and same random stream, no undo.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Pick a corner and keep your biggest tile in it.</li>
+          <li>Try to use only two or three directions most of the time.</li>
+          <li>Build a chain of descending tiles along one edge so merges cascade.</li>
+          <li>Stuck? The hint button runs a small look-ahead search and suggests a move.</li>
+        </ul>
+      </div>
+      <div class="t-body" data-body="ach" hidden></div>
+      <div class="t-body" data-body="stats" hidden></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

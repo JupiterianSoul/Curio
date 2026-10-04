@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#22c065"/>
+  <path d="M0 0 H190 L140 300 H0 Z" fill="#e04848"/>
+  <g fill="#fff" opacity=".12"><circle cx="60" cy="250" r="30"/><circle cx="330" cy="60" r="40"/><circle cx="250" cy="250" r="18"/><circle cx="120" cy="40" r="14"/></g>
+  <g transform="translate(46 54)">
+    <rect width="56" height="132" rx="22" fill="#232328"/>
+    <circle cx="28" cy="30" r="27" fill="#ff5b5b" opacity=".3"/>
+    <circle cx="28" cy="30" r="17" fill="#ff5b5b"/>
+    <circle cx="28" cy="66" r="14" fill="#5a4a1e"/>
+    <circle cx="28" cy="102" r="14" fill="#1e4a30"/>
+    <circle cx="23" cy="25" r="5" fill="#fff" opacity=".6"/>
+  </g>
+  <text x="74" y="222" fill="#fff" font-family="sans-serif" font-weight="900" font-size="20" text-anchor="middle">WAIT</text>
+  <path d="M262 26 L210 140 H250 L226 252 L314 112 H270 L298 26 Z" fill="#ffe14d" stroke="#1b1b1b" stroke-width="5" stroke-linejoin="round"/>
+  <g transform="translate(330 196)">
+    <path d="M-44 0 A44 44 0 0 1 44 0" fill="none" stroke="#1b1b1b" stroke-opacity=".25" stroke-width="12"/>
+    <path d="M-44 0 A44 44 0 0 1 -12 -42" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+    <path d="M0 0 L-24 -26" stroke="#1b1b1b" stroke-width="5" stroke-linecap="round"/><circle r="7" fill="#1b1b1b"/>
+  </g>
+  <g transform="translate(176 180) rotate(-18)">
+    <path d="M0 0 L0 58 L14 45 L24 68 L34 63 L24 41 L42 41 Z" fill="#fff" stroke="#1b1b1b" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+  <rect x="236" y="250" width="132" height="34" rx="17" fill="#fff"/>
+  <text x="302" y="273" fill="#1b1b1b" font-family="monospace" font-weight="900" font-size="19" text-anchor="middle">213 ms</text>
+</svg>

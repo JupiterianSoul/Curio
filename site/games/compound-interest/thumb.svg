@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+<rect width="400" height="300" fill="#388e3c"/>
+<circle cx="340" cy="60" r="80" fill="#43a047"/>
+<rect x="30" y="40" width="340" height="220" rx="16" fill="#fff"/>
+<g stroke="#e8e2d8" stroke-width="2"><line x1="56" y1="80" x2="350" y2="80"/><line x1="56" y1="130" x2="350" y2="130"/><line x1="56" y1="180" x2="350" y2="180"/></g>
+<path d="M56 236L350 236L350 170C260 196 150 214 56 230Z" fill="#64b5f6"/>
+<path d="M56 230C150 214 260 196 350 170L350 62C280 150 160 210 56 230Z" fill="#43a047"/>
+<path d="M56 230C160 210 280 150 350 62" fill="none" stroke="#1b5e20" stroke-width="4" stroke-linecap="round"/>
+<circle cx="350" cy="62" r="9" fill="#fff" stroke="#1b5e20" stroke-width="4"/>
+<g transform="translate(120 70)"><ellipse cx="0" cy="22" rx="30" ry="9" fill="#f9a825"/><rect x="-30" y="0" width="60" height="22" fill="#fbc02d"/><ellipse cx="0" cy="0" rx="30" ry="9" fill="#ffeb3b"/><ellipse cx="0" cy="-10" rx="30" ry="9" fill="#fbc02d"/><ellipse cx="0" cy="-14" rx="30" ry="9" fill="#ffeb3b"/><text x="0" y="-9" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="14" fill="#f57f17">$</text></g>
+<text x="228" y="118" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="30" fill="#1b5e20">$1M</text>
+</svg>

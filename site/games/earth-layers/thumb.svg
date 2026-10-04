@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#bfe6ff"/>
+  <rect y="0" width="400" height="80" fill="#cdeeff"/>
+  <circle cx="340" cy="34" r="18" fill="#ffd23f"/>
+  <path d="M0 80 H400 V300 H0Z" fill="#8d4925"/>
+  <path d="M40 300 A160 160 0 0 1 360 300Z" fill="#6e3a1c"/>
+  <path d="M46 300 A154 154 0 0 1 354 300Z" fill="#e0602a"/>
+  <path d="M110 300 A90 90 0 0 1 290 300Z" fill="#ffb03a"/>
+  <path d="M160 300 A40 40 0 0 1 240 300Z" fill="#fff0b0"/>
+  <rect x="0" y="72" width="400" height="12" fill="#5aa84a"/>
+  <path d="M200 84 V300" stroke="#1d120b" stroke-width="6" stroke-dasharray="10 6"/>
+  <g transform="translate(184 30)"><circle cx="14" cy="8" r="7" fill="#e0a878"/><path d="M6 4 Q14 -6 22 4Z" fill="#ffcf1a"/><path d="M6 16 Q14 12 22 16 L23 34 L5 34Z" fill="#ff5a36"/><path d="M5 34 h18 v10 h-6 l-3 -6 l-3 6 h-6Z" fill="#2d4a7a"/><path d="M22 20 L38 40" stroke="#8a5a33" stroke-width="3" stroke-linecap="round"/><path d="M34 36 L44 46 L38 50 L32 42Z" fill="#9aa4ae"/></g>
+  <g font-family="sans-serif" font-weight="800" font-size="12" fill="#fff"><text x="20" y="108">CRUST</text><text x="60" y="262">MANTLE</text><text x="300" y="276">OUTER CORE</text></g>
+  <rect x="244" y="104" width="136" height="54" rx="14" fill="#1d120b" opacity=".9"/>
+  <text x="312" y="128" fill="#fff" font-family="monospace" font-weight="900" font-size="17" text-anchor="middle">6,371 km</text>
+  <text x="312" y="147" fill="#ffcf6e" font-family="monospace" font-weight="700" font-size="12" text-anchor="middle">🌡 5,400 °C</text>
+</svg>

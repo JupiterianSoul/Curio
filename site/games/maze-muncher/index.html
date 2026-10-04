@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Maze Muncher · Curio</title>
+  <meta name="description" content="Gobble every dot across four mazes while four ghosts with their own personalities hunt you. Lantern and Turbo modes, fruit, badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="maze-muncher" class="arc" style="--arc-hue: #ffd400">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="level">0</b><span>Level</span></div>
+      <div class="c-stat"><b data-hud="lives">0</b><span>Lives</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)">⏸</button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Maze with dots and ghosts"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <svg class="arc-art" viewBox="0 0 300 110" aria-hidden="true"><defs><radialGradient id="mmP" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff59d"/><stop offset=".6" stop-color="#ffd400"/><stop offset="1" stop-color="#f9a825"/></radialGradient></defs><rect width="300" height="110" rx="18" fill="#0d0d3b"/><rect x="10" y="10" width="280" height="90" rx="14" fill="none" stroke="#3d5afe" stroke-width="6" opacity=".9"/><rect x="16" y="16" width="268" height="78" rx="10" fill="none" stroke="#3d5afe" stroke-width="1.5" opacity=".5"/><g fill="#ffd9b3"><circle cx="130" cy="55" r="3"/><circle cx="150" cy="55" r="3"/><circle cx="170" cy="55" r="3"/><circle cx="190" cy="55" r="3"/><circle cx="215" cy="55" r="7" class="blink"/></g><g class="drift"><path d="M100 55l20-12a24 24 0 1 0 0 24z" fill="url(#mmP)" transform="rotate(0 100 55)"/><circle cx="96" cy="44" r="2.5" fill="#3d2b00"/></g><g class="bob" transform="translate(40 46)"><path d="M-14 4a14 14 0 0 1 28 0v14l-4.7-4-4.7 4-4.6-4-4.7 4-4.6-4-4.7 4z" fill="#ff4d4d"/><ellipse cx="-5" cy="2" rx="4" ry="5" fill="#fff"/><ellipse cx="5" cy="2" rx="4" ry="5" fill="#fff"/><circle cx="-3.5" cy="3" r="2.2" fill="#1a237e"/><circle cx="6.5" cy="3" r="2.2" fill="#1a237e"/></g><g class="bob2" transform="translate(250 46)"><path d="M-14 4a14 14 0 0 1 28 0v14l-4.7-4-4.7 4-4.6-4-4.7 4-4.6-4-4.7 4z" fill="#ff8ad8"/><ellipse cx="-5" cy="2" rx="4" ry="5" fill="#fff"/><ellipse cx="5" cy="2" rx="4" ry="5" fill="#fff"/><circle cx="-3.5" cy="3" r="2.2" fill="#1a237e"/><circle cx="6.5" cy="3" r="2.2" fill="#1a237e"/></g><g class="bob" transform="translate(272 70)"><path d="M-14 4a14 14 0 0 1 28 0v14l-4.7-4-4.7 4-4.6-4-4.7 4-4.6-4-4.7 4z" fill="#3a5bff"/><ellipse cx="-5" cy="2" rx="4" ry="5" fill="#fff"/><ellipse cx="5" cy="2" rx="4" ry="5" fill="#fff"/><circle cx="-3.5" cy="3" r="2.2" fill="#1a237e"/><circle cx="6.5" cy="3" r="2.2" fill="#1a237e"/></g></svg>
+          <h1 class="c-title">Maze Muncher</h1>
+          <p class="c-sub">Eat every dot. Grab a power pellet and the ghosts suddenly remember an appointment. Four mazes, each one meaner.</p>
+          <div class="arc-opts"><div class="arc-label">Mode</div><div class="arc-seg" role="group" aria-label="Mode" data-opt="mode" data-def="classic"><button type="button" data-val="classic">🟡 Classic</button><button type="button" data-val="lantern">🔦 Lantern</button><button type="button" data-val="turbo">⚡ Turbo</button></div>
+<p class="arc-small" style="margin:0"><b style="color:#ff4d4d">Pepper</b> chases · <b style="color:#ff8ad8">Bubblegum</b> ambushes · <b style="color:#26a6b8">Splash</b> flanks · <b style="color:#ffa53b">Clementine</b> dithers<br>Lantern: you only see what is near you. Lantern and Turbo score x1.5.</p></div>
+          <button class="c-btn" type="button" data-act="start">▶ Play</button>
+          <p class="arc-help"><span class="c-kbd">←</span> <span class="c-kbd">↑</span> <span class="c-kbd">→</span> <span class="c-kbd">↓</span> or <span class="c-kbd">WASD</span> to steer · <span class="c-kbd">P</span> pause<br>Turns are remembered, so press early. On a phone, swipe anywhere.</p>
+          <div class="arc-chips" data-o="mstats"></div>
+          <p class="arc-shelf-h">Badges <span data-hud="badgecount"></span></p>
+          <div class="arc-badges" data-badges></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" aria-hidden="true">⏸️</div>
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">The ghosts are waiting. Patiently. Menacingly.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-emoji" data-o="emoji" aria-hidden="true">💥</div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-chips" data-o="lines"></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="arc-chips" data-o="earned" hidden></div>
+          <div class="c-row" style="margin-top:12px">
+            <button class="c-btn" type="button" data-act="restart">↻ Play again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Share</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls"><div class="arc-pad__row"><button type="button" data-key="ArrowLeft" aria-label="Left">◀<small>Left</small></button><button type="button" data-key="ArrowUp" aria-label="Up">▲<small>Up</small></button><button type="button" data-key="ArrowDown" aria-label="Down">▼<small>Down</small></button><button type="button" data-key="ArrowRight" aria-label="Right">▶<small>Right</small></button></div></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

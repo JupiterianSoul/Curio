@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Anagram · Curio</title>
+  <meta name="description" content="Unscramble words against the clock. Sprint, themed packs, a relaxed zen mode and a daily ten, with over 1,600 words.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="anagram">
+  <main class="c-wrap an">
+    <h1 class="c-title">Anagram</h1>
+    <p class="c-sub">Scrambled letter tiles. Put them back in order, fast. Longer words and rarer letters score more.</p>
+    <div class="an-row">
+      <div class="an-seg" id="modes" role="group" aria-label="Mode">
+        <button type="button" data-m="sprint">⏱️ Sprint</button>
+        <button type="button" data-m="themes">🎯 Themes</button>
+        <button type="button" data-m="zen">🧘 Zen</button>
+        <button type="button" data-m="daily">📅 Daily 10</button>
+      </div>
+      <div class="an-seg" id="diffs" role="group" aria-label="Difficulty">
+        <button type="button" data-d="easy">Easy</button>
+        <button type="button" data-d="normal">Normal</button>
+        <button type="button" data-d="hard">Hard</button>
+      </div>
+    </div>
+    <div class="an-row"><div class="an-seg" id="themes" role="group" aria-label="Theme"></div></div>
+    <div class="an-stats">
+      <div class="c-stat"><b id="sTime">60</b><span id="sTimeLabel">Seconds</span></div>
+      <div class="c-stat"><b id="sScore">0</b><span>Score</span></div>
+      <div class="c-stat"><b id="sWords">0</b><span>Words</span></div>
+      <div class="c-stat"><b id="sBest">-</b><span>Best</span></div>
+    </div>
+    <div class="an-timer" aria-hidden="true"><i id="bar"></i></div>
+    <div class="an-board" id="board">
+      <canvas class="an-fx" id="fx" aria-hidden="true"></canvas>
+      <div class="an-tag" id="tag">5 letters · 50 points</div>
+      <div class="an-rack"><div class="an-slots" id="slots" aria-label="Your answer"></div></div>
+      <div class="an-tiles" id="tiles" aria-label="Letter tiles"></div>
+      <div class="an-cover" id="cover">
+        <div>
+          <div class="an-logo" aria-hidden="true" id="logo"><span>A</span><span>N</span><span>A</span><span>G</span><span>R</span><span>A</span><span>M</span></div>
+          <div class="big" id="cBig" hidden></div>
+          <h2 id="cTitle">Ready to unscramble?</h2>
+          <p id="cText">Tap the tiles or just type. Words get longer as you go.</p>
+          <div class="an-cstats" id="cStats"></div>
+          <div class="an-new-badges" id="cBadges"></div>
+          <div class="an-words" id="cWords"></div>
+          <div class="c-row"><button type="button" class="c-btn" id="go">Start</button><button type="button" class="c-btn ghost" id="share" hidden>📋 Share</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="an-tools">
+      <button type="button" class="c-btn c-btn--ghost" id="shuffle">🔀 Shuffle</button>
+      <button type="button" class="c-btn c-btn--ghost" id="hint">💡 Hint</button>
+      <button type="button" class="c-btn c-btn--ghost" id="clear">⌫ Clear</button>
+      <button type="button" class="c-btn c-btn--ghost" id="skip">⏭️ Pass <small id="passCost">(-3s)</small></button>
+      <button type="button" class="c-btn c-btn--ghost" id="stop" hidden>🏁 Finish</button>
+    </div>
+    <p class="an-msg" id="msg" aria-live="polite"></p>
+    <p class="an-help c-muted">Type letters, <span class="c-kbd">Backspace</span> to undo, <span class="c-kbd">Space</span> to shuffle, <span class="c-kbd">?</span> hint, <span class="c-kbd">Enter</span> pass</p>
+    <section class="c-card an-panel">
+      <div class="an-ptabs" role="tablist">
+        <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="stats" aria-selected="false">Stats</button>
+        <button type="button" role="tab" data-tab="badges" aria-selected="false">Badges <span id="badgeCount"></span></button>
+      </div>
+      <div data-pane="how">
+        <ul class="an-how">
+          <li>Click tiles (or type) to place them on the rack. Click a placed tile to send it back.</li>
+          <li>Points: longer words are worth more, each tile's letter value adds a bonus, and three in a row starts a streak bonus. Hints cost a chunk of the word's value.</li>
+          <li><b>Sprint:</b> 60 seconds, words grow from short to long. <b>Themes:</b> every word belongs to the theme you pick. <b>Zen:</b> no clock, just you and the tiles. <b>Daily 10:</b> the same ten words for everyone, against the stopwatch. Passing adds 20 seconds.</li>
+          <li>Any real word using all the tiles counts, so LEMON and MELON are both fine.</li>
+        </ul>
+      </div>
+      <div data-pane="stats" hidden><div class="an-stattbl" id="statTbl"></div></div>
+      <div data-pane="badges" hidden><div class="an-badges" id="badgeList"></div></div>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

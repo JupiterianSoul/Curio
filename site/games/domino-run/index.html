@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dominoes · Curio</title>
+  <meta name="description" content="Line up hundreds of colourful dominoes across stairs and ramps, then tip the first one and watch the chain reaction.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="domino-run">
+  <main class="c-wrap dr-main">
+    <div class="dr-stage" id="stage">
+      <canvas id="board" role="img" aria-label="Domino table. Drag a line to place dominoes, then press Topple to start the chain."></canvas>
+      <div class="dr-intro" id="intro">
+        <h1>Dominoes</h1>
+        <p>Drag a line to set up dominoes, add stairs, balls and a bell, then tip the first one.</p>
+      </div>
+      <div class="dr-count" aria-live="polite"><b id="nFallen">0</b> / <span id="nTotal">0</span> fallen</div>
+      <div class="dr-tag" id="tag"></div>
+    </div>
+    <div class="dr-tools">
+      <div class="dr-row" id="toolRow" role="toolbar" aria-label="Tools"></div>
+      <div class="dr-row dr-row2">
+        <button type="button" class="c-btn dr-go" id="go" title="Topple (Space)">👉 Topple!</button>
+        <button type="button" class="dr-b" id="slow" aria-pressed="false" title="Slow-mo (S)">🐢 Slow-mo</button>
+        <button type="button" class="dr-b" id="pause" aria-pressed="false" title="Pause (P)">⏸ Pause</button>
+        <button type="button" class="dr-b" id="stand" title="Stand up (R)">↺ Stand up</button>
+        <button type="button" class="dr-b" id="rotL" title="Rotate or flip the selected piece (Q)" aria-label="Rotate selected piece left">⟲</button>
+        <button type="button" class="dr-b" id="rotR" title="Rotate or flip the selected piece (E)" aria-label="Rotate selected piece right">⟳</button>
+        <button type="button" class="dr-b" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <label class="dr-b dr-sel">🎨 <select id="pattern" aria-label="Colour pattern for new dominoes"></select></label>
+        <label class="dr-b dr-sel">📐 <select id="preset" aria-label="Load a preset"><option value="">Presets…</option></select></label>
+        <button type="button" class="dr-b" id="clear">🗑 Clear</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="physics.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

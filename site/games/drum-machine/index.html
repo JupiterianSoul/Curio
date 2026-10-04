@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Beat Maker · Curio</title>
+  <meta name="description" content="A 12-track drum machine with 21 synthesized kits, a bass line piano roll with scale lock, chords, polymeter, fills, effects, 35 presets, a beat generator, WAV export and a beat-matching challenge.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="drum-machine">
+  <main class="c-wrap dm-wrap simple" id="wrap">
+    <h1 class="c-title">Beat Maker</h1>
+    <p class="c-sub">Click the squares to place drum hits, press Play, and you have a beat. Zero talent required.</p>
+    <div class="dm-modebar">
+      <button class="dm-pill" id="helpBtn" type="button">❓ How to play</button>
+      <button class="dm-pill dm-pill--adv" id="advBtn" type="button" aria-pressed="false">⚙️ Advanced mode: Off</button>
+    </div>
+    <div class="dm-howto" id="howto" hidden>
+      <ol>
+        <li><b>1</b><span><strong>Click the squares.</strong> Each row is a drum, each square is a moment in time. Lit squares play.</span></li>
+        <li><b>2</b><span><strong>Press Play</strong> (or the Space bar). The light runs left to right and plays what is lit.</span></li>
+        <li><b>3</b><span><strong>Try a preset</strong> or press <em>Make a beat</em>. Change the drum kit and the tempo to taste.</span></li>
+      </ol>
+      <p>Made a mess? <strong>Clear</strong> empties the grid, <strong>Reset</strong> brings back the starter beat, and <strong>Undo</strong> takes back any change. Want bass lines, effects and songs? Turn on <strong>Advanced mode</strong>.</p>
+      <button class="c-btn" id="howtoOk" type="button">Got it</button>
+    </div>
+
+    <section class="dm" id="dm" aria-label="Drum machine">
+      <i class="dm-screw" aria-hidden="true"></i><i class="dm-screw" aria-hidden="true"></i><i class="dm-screw" aria-hidden="true"></i><i class="dm-screw" aria-hidden="true"></i>
+      <div class="dm-top">
+        <button class="dm-play" id="play" type="button" aria-pressed="false" aria-label="Play"><span id="playIcon">▶</span><small id="playLbl">Play</small></button>
+        <div class="dm-screen">
+          <canvas id="scope" aria-hidden="true"></canvas>
+          <div class="dm-lcd">
+            <span id="lcdKit">808</span>
+            <span id="lcdPat">PAT A</span>
+            <b id="lcdBpm">110</b><small>BPM</small>
+            <span id="lcdStep">--</span>
+          </div>
+        </div>
+        <div class="dm-vu" aria-hidden="true"><i id="vuL"></i><i id="vuR"></i></div>
+        <div class="dm-knobs" id="topKnobs"></div>
+        <div class="dm-tapcol adv"><button class="dm-tap" id="tap" type="button" title="Tap tempo">TAP</button><button class="dm-tap dm-fill" id="fill" type="button" title="Fill on the next bar (F)">FILL</button></div>
+      </div>
+      <div class="dm-sweep adv"><span>SWEEP</span><input type="range" id="sweep" min="0" max="1" step="0.005" aria-label="Filter sweep"><button class="dm-mini" id="autoFill" type="button" aria-pressed="false" title="Automatic fill every 4th bar">Auto fill</button></div>
+
+      <div class="dm-label">Drum kit <small>pick the sound of your drums</small></div>
+      <div class="dm-kits" id="kits" role="group" aria-label="Drum kit"></div>
+      <div class="dm-quick">
+        <label class="dm-qitem"><span>Preset beat</span><select class="dm-genre" id="presetSel" aria-label="Load a preset beat"></select></label>
+        <label class="dm-qitem"><span>Make a beat in style</span><select class="dm-genre" id="genre" aria-label="Style for a random beat"></select></label>
+        <button class="dm-act dm-act--gen" id="rand" type="button" title="Make a random beat in the chosen style (G)">✨ Make a beat</button>
+      </div>
+
+      <div class="dm-bar adv">
+        <div class="dm-pats" id="pats" role="group" aria-label="Patterns"></div>
+        <div class="dm-tools" role="group" aria-label="Edit tool" id="tools">
+          <button data-tool="draw" type="button" title="Draw: toggle steps">✏️ Draw</button>
+          <button data-tool="vel" type="button" title="Velocity: soft, normal, accent">📶 Velocity</button>
+          <button data-tool="prob" type="button" title="Chance: 100, 75, 50, 25 percent">🎲 Chance</button>
+          <button data-tool="rat" type="button" title="Ratchet: 1, 2 or 3 hits">⚡ Ratchet</button>
+        </div>
+      </div>
+
+      <div class="dm-ledpad"><span></span><div class="dm-leds" id="leds"></div></div>
+      <div class="dm-grid" id="grid"></div>
+
+      <div class="dm-actions">
+        <button class="dm-act" id="undo" type="button" title="Undo the last change (Ctrl+Z)">↶ Undo</button>
+        <button class="dm-act" id="redo" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
+        <button class="dm-act" id="clear" type="button" title="Empty the grid of this pattern (undoable)">🗑 Clear</button>
+        <button class="dm-act" id="reset" type="button" title="Back to the starter beat and default settings">⟲ Reset</button>
+        <button class="dm-act adv" id="copy" type="button" title="Copy this pattern">⧉ Copy</button>
+        <button class="dm-act adv" id="paste" type="button" title="Paste into this pattern">📋 Paste</button>
+        <button class="dm-act adv" id="dup" type="button" title="Copy this pattern into the next slot">➕ Copy to next</button>
+        <button class="dm-act dm-act--hot" id="share" type="button" title="Copy a link to this beat">🔗 Share</button>
+        <button class="dm-act adv" id="wav" type="button" title="Download the loop or song as a WAV file">⬇ Save WAV</button>
+      </div>
+
+      <section class="dm-bass adv" id="bassLane" aria-label="Bass and chords">
+        <div class="dm-basshead">
+          <b>🎹 Bass line</b>
+          <select id="bSynth" aria-label="Bass sound"></select>
+          <select id="bRoot" aria-label="Key root"></select>
+          <select id="bScale" aria-label="Scale"></select>
+          <span class="dm-oct"><button type="button" id="octDown" aria-label="Octave down">−</button><b id="octV">2</b><button type="button" id="octUp" aria-label="Octave up">+</button></span>
+          <button class="dm-mini" id="bassClear" type="button">Clear bass</button>
+        </div>
+        <div class="dm-roll" id="roll"></div>
+        <div class="dm-chordrow">
+          <b>Chords</b>
+          <div class="dm-chslots" id="chSlots"></div>
+          <div class="dm-chpads" id="chPads"></div>
+        </div>
+      </section>
+
+      <div class="dm-boot" id="boot">
+        <b>CURIO BX-16</b>
+        <button class="dm-power" id="power" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8M6.3 6.3a8 8 0 1 0 11.4 0"/></svg><span>Tap to start</span></button>
+        <span>Browsers only play sound after you click or tap, so one tap here (or anywhere) switches the drum machine on.</span>
+      </div>
+    </section>
+
+    <div class="dm-tabs adv" role="tablist">
+      <button role="tab" data-tab="song" aria-selected="true">🔗 Song</button>
+      <button role="tab" data-tab="presets" aria-selected="false">🎵 Presets</button>
+      <button role="tab" data-tab="fx" aria-selected="false">🎛️ Effects</button>
+      <button role="tab" data-tab="mixer" aria-selected="false">🎚️ Mixer</button>
+      <button role="tab" data-tab="pads" aria-selected="false">🥁 Pads</button>
+      <button role="tab" data-tab="challenge" aria-selected="false">🕵️ Challenge</button>
+    </div>
+
+    <section class="dm-panel c-card adv" data-panel="song">
+      <div class="dm-songhead">
+        <div class="dm-seg" role="group" aria-label="Play mode" id="playMode">
+          <button data-pm="pattern" type="button">Loop pattern</button><button data-pm="song" type="button">Play song</button>
+        </div>
+        <span class="c-muted" id="songInfo"></span>
+      </div>
+      <div class="dm-chain" id="chain" aria-label="Song chain"></div>
+      <div class="dm-chainbtns" id="chainAdd"></div>
+      <p class="c-muted dm-note">Tap a letter to append that pattern to the song. Tap a chip in the chain to remove it. Up to 32 bars.</p>
+    </section>
+
+    <section class="dm-panel c-card adv" data-panel="presets" hidden>
+      <div class="dm-presets" id="presets"></div>
+    </section>
+
+    <section class="dm-panel c-card adv" data-panel="fx" hidden>
+      <div class="dm-fx" id="fx"></div>
+      <div class="dm-fxpresets" id="fxPresets"></div>
+    </section>
+
+    <section class="dm-panel c-card adv" data-panel="mixer" hidden>
+      <div class="dm-mixer" id="mixer"></div>
+    </section>
+
+    <section class="dm-panel c-card adv" data-panel="pads" hidden>
+      <div class="dm-padhead">
+        <button class="dm-act" id="liveRec" type="button" aria-pressed="false">⏺ Record into pattern</button>
+        <span class="c-muted">On this tab, keys <span class="c-kbd">1</span> to <span class="c-kbd">8</span> play pads. While recording and playing, hits snap to the nearest step.</span>
+      </div>
+      <div class="dm-livepads" id="livepads"></div>
+    </section>
+
+    <section class="dm-panel c-card adv" data-panel="challenge" hidden>
+      <div class="dm-chal" id="chal"></div>
+    </section>
+
+    <section class="dm-extra">
+      <div class="dm-stats" id="stats"></div>
+      <h3 class="dm-h3">Badges <span id="achCount"></span></h3>
+      <div class="dm-ach" id="ach"></div>
+    </section>
+    <p class="c-muted dm-foot"><span class="c-kbd">Esc</span> stops the sound · <span class="c-kbd">Space</span> play/stop · <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> pick a track · <span class="c-kbd">1</span>-<span class="c-kbd">8</span> and <span class="c-kbd">Q</span>-<span class="c-kbd">I</span> toggle its 16 steps · <span class="c-kbd">Shift</span>+<span class="c-kbd">1</span>-<span class="c-kbd">8</span> switch pattern · <span class="c-kbd">F</span> fill · <span class="c-kbd">G</span> generate · <span class="c-kbd">C</span>/<span class="c-kbd">V</span> copy/paste pattern · every sound is synthesized live, no samples.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

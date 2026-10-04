@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tiny Town · Curio</title>
+  <meta name="description" content="Tap the sea to build a cosy little town. Houses, roofs, arches and gardens arrange themselves.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 10px; padding-bottom: 16px; }
+    .tt-head { text-align: center; }
+    .tt-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .tt-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .tt-stage { position: relative; height: max(360px, calc(100dvh - var(--bar-h) - 230px)); border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); background: #8ccbd6; }
+    #cv { display: block; width: 100%; height: 100%; touch-action: none; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .tt-tip { position: absolute; left: 12px; bottom: 10px; right: 12px; text-align: center; pointer-events: none; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.35); transition: opacity .6s ease; }
+    .tt-tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center; margin-top: 12px; }
+    .tt-pal { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .sw { width: 30px; height: 30px; border-radius: 9px; cursor: pointer; border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); padding: 0; touch-action: manipulation; transition: transform .12s ease; font-size: 15px; line-height: 1; }
+    .sw:hover { transform: translateY(-2px); }
+    .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); transform: translateY(-2px); }
+    .sw.mix { background: conic-gradient(#f6d47a, #e9776b, #b8a3d9, #8fc3e8, #a9c98a, #f6d47a); }
+    .tt-mode { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+    .tt-mode button { border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink-2); touch-action: manipulation; }
+    .tt-mode button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    #cv.rm { cursor: not-allowed; }
+    .tt-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .tt-btns .c-btn { padding: 8px 14px; font-size: 14px; }
+    @media (max-width: 520px) {
+      .tt-stage { height: max(340px, calc(100dvh - var(--bar-h) - 300px)); }
+      .sw { width: 28px; height: 28px; }
+      .tt-btns .c-btn { padding: 8px 11px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body data-game="tiny-town">
+  <main class="c-wrap">
+    <div class="tt-head">
+      <h1 class="c-title">Tiny Town</h1>
+      <p class="c-sub">Tap the sea to build. Stack up, and the houses sort out their own roofs, doors, arches and gardens.</p>
+    </div>
+    <div class="tt-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="An isometric seaside town made of coloured blocks. Click the water or a block to build. Switch to Remove, right-click or long-press to remove. Pinch to zoom."></canvas>
+      <div class="tt-tip" id="tip">Click to build · Remove tool (X), right-click or long-press to remove · pinch to zoom</div>
+    </div>
+    <div class="tt-tools">
+      <div class="tt-mode" role="group" aria-label="Tool">
+        <button type="button" id="mBuild" aria-pressed="true" title="Build (B)">🧱 Build</button>
+        <button type="button" id="mRemove" aria-pressed="false" title="Remove (X)">🧹 Remove</button>
+      </div>
+      <div class="tt-pal" id="pal" role="toolbar" aria-label="Block colour"></div>
+      <div class="tt-btns">
+        <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+        <button class="c-btn c-btn--ghost" type="button" id="rotL" aria-label="Rotate view left">⟲</button>
+        <button class="c-btn c-btn--ghost" type="button" id="rotR" aria-label="Rotate view right">⟳</button>
+        <button class="c-btn c-btn--ghost" type="button" id="night">🌙 Night</button>
+        <button class="c-btn c-btn--ghost" type="button" id="clear">🌊 Clear</button>
+        <button class="c-btn" type="button" id="png">📷 Save PNG</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const N = 12, H = 10, K = 0.86;
+    const PAL = ['#f4e9d8', '#fbfaf6', '#f6d47a', '#f4a96a', '#e9776b', '#eda3b8', '#b8a3d9', '#8fc3e8', '#6fbfb3', '#a9c98a', '#c9745a', '#8e9aa8'];
+    const NAMES = ['Cream', 'Chalk', 'Butter', 'Apricot', 'Coral', 'Rose', 'Lilac', 'Sky', 'Teal', 'Sage', 'Brick', 'Slate'];
+    const SCALE = [392, 440, 494, 587, 659, 784, 880, 988, 1175, 1319];
+    const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    const cv = document.getElementById('cv'), g = cv.getContext('2d');
+    const stage = document.getElementById('stage');
+    const shA = document.createElement('canvas'), shB = document.createElement('canvas');
+    let W = 0, Hc = 0, dpr = 1, s = 30, ox = 0, oy = 0;
+    let grid = new Uint8Array(N * N * H);
+    let colour = 0, ang = Math.PI / 4, angTarget = ang, cs = Math.cos(ang), sn = Math.sin(ang);
+    let night = 0, nightTarget = 0;
+    let undo = [], cells = [], hits = [], glows = [], puffs = [], drops = new Map();
+    let hover = null, shadowDirty = true, t = 0, stars = [];
+    let s0 = 30, zoom = 1, panX = 0, panY = 0, rmMode = false, spinAcc = 0;
+    const at = (x, y, z) => (x < 0 || y < 0 || x >= N || y >= N || z < 0 || z >= H) ? 0 : grid[(z * N + y) * N + x];
+    const put = (x, y, z, v) => { grid[(z * N + y) * N + x] = v; };
+    const hash = (x, y, z, k = 0) => {
+      let h = (x * 374761 + y * 668265 + z * 214748 + k * 127412 + 99991) | 0;
+      h = Math.imul(h ^ (h >>> 13), 1274126177); h = Math.imul(h ^ (h >>> 16), 668265263); h ^= h >>> 15;
+      return ((h >>> 0) % 100000) / 100000;
+    };
+    const rgbOf = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+    const RGB = PAL.map(rgbOf);
+    const ROOF = RGB.map((c) => [c[0] * 0.42 + 120 * 0.5, c[1] * 0.38 + 52 * 0.5, c[2] * 0.36 + 44 * 0.5]);
+    const STONE = [196, 188, 172], CREAM = [250, 244, 230], GLASS = [62, 92, 122], LIT = [255, 210, 120], WOOD = [120, 74, 50];
+    const NIGHT = [22, 30, 66];
+    function col(c, f = 1, a = 1) {
+      let r = c[0] * f, gg = c[1] * f, b = c[2] * f;
+      const k = night * 0.6;
+      r = r * (1 - k) + NIGHT[0] * k; gg = gg * (1 - k) + NIGHT[1] * k; b = b * (1 - k) + NIGHT[2] * k;
+      return a < 1 ? `rgba(${r | 0},${gg | 0},${b | 0},${a})` : `rgb(${r | 0},${gg | 0},${b | 0})`;
+    }
+    function P(x, y, z) {
+      const cx = x - N / 2, cy = y - N / 2;
+      return [ox + (cx * cs - cy * sn) * s, oy + (cx * sn + cy * cs) * s * 0.5 - z * s * K];
+    }
+    const visN = (nx, ny, nz) => (nx * sn + ny * cs) * 2 * K + nz > 0.001;
+    const rotX = (nx, ny) => nx * cs - ny * sn;
+    function poly(pts, fill, seam = true) {
+      g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+      g.closePath(); g.fillStyle = fill; g.fill();
+      if (seam) { g.strokeStyle = fill; g.lineWidth = 0.7; g.stroke(); }
+    }
+    function mkFace(x, y, z, d) {
+      const [nx, ny] = DIRS[d];
+      let ax, ay, bx, by;
+      if (d === 0) { ax = x + 1; ay = y; bx = x + 1; by = y + 1; }
+      else if (d === 1) { ax = x + 1; ay = y + 1; bx = x; by = y + 1; }
+      else if (d === 2) { ax = x; ay = y + 1; bx = x; by = y; }
+      else { ax = x; ay = y; bx = x + 1; by = y; }
+      return { ax, ay, bx, by, nx, ny, z };
+    }
+    const FP = (f, u, v, d = 0) => P(f.ax + (f.bx - f.ax) * u + f.nx * d, f.ay + (f.by - f.ay) * u + f.ny * d, f.z + v);
+    const fpoly = (f, uv, fill, d = 0, seam = false) => poly(uv.map(([u, v]) => FP(f, u, v, d)), fill, seam);
+    const frect = (f, u0, v0, u1, v1, fill, d = 0) => fpoly(f, [[u0, v0], [u1, v0], [u1, v1], [u0, v1]], fill, d);
+    function archUV(u0, u1, v0, vTop, rise, n = 10) {
+      const pts = [[u0, v0], [u1, v0], [u1, vTop]];
+      for (let i = 1; i < n; i++) { const a = i / n; pts.push([u1 - (u1 - u0) * a, vTop + Math.sin(Math.PI * a) * rise]); }
+      pts.push([u0, vTop]);
+      return pts;
+    }
+    function archFace(f, fill) {
+      g.beginPath();
+      [[0, 0], [0, 1], [1, 1], [1, 0]].map(([u, v]) => FP(f, u, v)).forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+      g.closePath();
+      archUV(0.14, 0.86, 0, 0, 0.62).map(([u, v]) => FP(f, u, v)).forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+      g.closePath();
+      g.fillStyle = fill; g.fill('evenodd');
+    }
+    function wallShade(nx, ny) { return 0.93 - 0.17 * rotX(nx, ny); }
+
+    function windowAt(f, u0, v0, u1, v1, lit, shade, kind, shutter) {
+      const mid = (u0 + u1) / 2;
+      if (kind === 1) {
+        fpoly(f, archUV(u0 - 0.04, u1 + 0.04, v0 - 0.04, v1 - 0.06, 0.12), col(CREAM, shade));
+        fpoly(f, archUV(u0, u1, v0, v1 - 0.06, 0.1), glassCol(lit, shade));
+      } else {
+        frect(f, u0 - 0.04, v0 - 0.04, u1 + 0.04, v1 + 0.04, col(CREAM, shade));
+        frect(f, u0, v0, u1, v1, glassCol(lit, shade));
+        frect(f, u0, (v0 + v1) / 2 - 0.012, u1, (v0 + v1) / 2 + 0.012, col(CREAM, shade));
+      }
+      if (night < 0.5) fpoly(f, [[u0, v1 - 0.02], [u0 + (u1 - u0) * 0.45, v1 - 0.02], [u0, v0 + (v1 - v0) * 0.35]], `rgba(255,255,255,${0.22 * (1 - night * 2)})`);
+      frect(f, mid - 0.011, v0, mid + 0.011, v1 - (kind === 1 ? 0 : 0), col(CREAM, shade));
+      if (shutter) {
+        const sc = shutter;
+        frect(f, u0 - 0.15, v0 - 0.02, u0 - 0.05, v1 + 0.02, col(sc, shade));
+        frect(f, u1 + 0.05, v0 - 0.02, u1 + 0.15, v1 + 0.02, col(sc, shade));
+      }
+      frect(f, u0 - 0.07, v0 - 0.09, u1 + 0.07, v0 - 0.04, col(STONE, shade * 0.95), 0.03);
+      if (lit && night > 0.05) glows.push([FP(f, mid, (v0 + v1) / 2, 0.05), 1]);
+    }
+    function glassCol(lit, shade) {
+      if (lit) {
+        const k = night;
+        const r = GLASS[0] * shade * (1 - k) + LIT[0] * k, gg = GLASS[1] * shade * (1 - k) + LIT[1] * k, b = GLASS[2] * shade * (1 - k) + LIT[2] * k;
+        return `rgb(${r | 0},${gg | 0},${b | 0})`;
+      }
+      return col(GLASS, shade * 0.9);
+    }
+    function doorSide(x, y) {
+      const start = Math.floor(hash(x, y, 0, 7) * 4);
+      for (let i = 0; i < 4; i++) {
+        const d = (start + i) % 4;
+        if (!at(x + DIRS[d][0], y + DIRS[d][1], 0)) return d;
+      }
+      return -1;
+    }
+    const SHUT = [[70, 120, 110], [60, 90, 140], [150, 70, 70], [90, 120, 70]];
+
+    function drawWall(x, y, z, d, c, f, floating, door) {
+      const shade = wallShade(f.nx, f.ny);
+      if (floating) {
+        archFace(f, col(c, shade));
+        const arc = [];
+        for (let i = 0; i <= 12; i++) { const a = i / 12; arc.push(FP(f, 0.14 + 0.72 * a, Math.sin(Math.PI * a) * 0.62)); }
+        g.beginPath(); arc.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+        g.strokeStyle = col(STONE, shade * 0.85); g.lineWidth = Math.max(1.5, s * 0.06); g.stroke();
+        const lit = hash(x, y, z, d + 20) < 0.72;
+        windowAt(f, 0.42, 0.74, 0.58, 0.9, lit, shade, 0, null);
+        return;
+      }
+      fpoly(f, [[0, 0], [1, 0], [1, 1], [0, 1]], col(c, shade), 0, true);
+      const hv = hash(x, y, z, d);
+      if (z === 0) frect(f, 0, 0, 1, 0.12, col([c[0] * 0.5 + STONE[0] * 0.5, c[1] * 0.5 + STONE[1] * 0.5, c[2] * 0.5 + STONE[2] * 0.5], shade * 0.88));
+      if (door) {
+        fpoly(f, archUV(0.33, 0.67, 0.12, 0.5, 0.12), col(CREAM, shade));
+        fpoly(f, archUV(0.37, 0.63, 0.12, 0.48, 0.1), col(WOOD, shade));
+        frect(f, 0.495, 0.14, 0.505, 0.55, col(WOOD, shade * 0.75));
+        const st = col(STONE, shade * 1.02), top = col(STONE, 1.08);
+        poly([FP(f, 0.28, 0.12, 0), FP(f, 0.72, 0.12, 0), FP(f, 0.72, 0.12, 0.24), FP(f, 0.28, 0.12, 0.24)], top);
+        poly([FP(f, 0.28, 0, 0.24), FP(f, 0.72, 0, 0.24), FP(f, 0.72, 0.12, 0.24), FP(f, 0.28, 0.12, 0.24)], st);
+        poly([FP(f, 0.24, 0.0, 0.24), FP(f, 0.76, 0.0, 0.24), FP(f, 0.76, 0.0, 0.42), FP(f, 0.24, 0.0, 0.42)], col(STONE, 0.95));
+        const lamp = FP(f, 0.76, 0.5, 0.04);
+        g.fillStyle = night > 0.2 ? `rgba(255,220,140,${night})` : col([60, 60, 60]);
+        g.beginPath(); g.arc(lamp[0], lamp[1], Math.max(1.5, s * 0.045), 0, 7); g.fill();
+        if (night > 0.05) glows.push([lamp, 0.8]);
+        return;
+      }
+      const lit = hash(x, y, z, d + 20) < 0.72;
+      const kind = hv < 0.25 ? 1 : 0;
+      const shutter = hv > 0.62 ? SHUT[Math.floor(hash(x, y, z, 5) * 4)] : null;
+      if (z === 0 || hv < 0.45 || shutter) {
+        const w = shutter ? 0.17 : 0.18;
+        windowAt(f, 0.5 - w, z === 0 ? 0.36 : 0.32, 0.5 + w, z === 0 ? 0.74 : 0.76, lit, shade, kind, shutter);
+      } else {
+        windowAt(f, 0.14, 0.34, 0.4, 0.76, lit, shade, kind, null);
+        windowAt(f, 0.6, 0.34, 0.86, 0.76, hash(x, y, z, d + 40) < 0.7, shade, kind, null);
+      }
+      if (hv > 0.85 && z > 0) {
+        frect(f, 0.3, 0.16, 0.7, 0.24, col(WOOD, shade), 0.05);
+        for (let i = 0; i < 4; i++) {
+          const p = FP(f, 0.34 + i * 0.105, 0.27, 0.05);
+          g.fillStyle = col(i % 2 ? [240, 110, 130] : [255, 200, 80]);
+          g.beginPath(); g.arc(p[0], p[1], Math.max(1.2, s * 0.035), 0, 7); g.fill();
+        }
+      }
+    }
+
+    function drawGable(x, y, z, c, axisX) {
+      const rh = 0.52, ov = 0.1, top = z + 1;
+      const r = ROOF[c.idx];
+      let pts, ends;
+      if (axisX) {
+        const l = at(x - 1, y, z) ? 0 : 0.07, rr = at(x + 1, y, z) ? 0 : 0.07;
+        const x0 = x - l, x1 = x + 1 + rr;
+        pts = [
+          { p: [[x0, y - ov, top - 0.07], [x1, y - ov, top - 0.07], [x1, y + 0.5, top + rh], [x0, y + 0.5, top + rh]], n: [0, -1] },
+          { p: [[x0, y + 1 + ov, top - 0.07], [x1, y + 1 + ov, top - 0.07], [x1, y + 0.5, top + rh], [x0, y + 0.5, top + rh]], n: [0, 1] }
+        ];
+        ends = [];
+        if (!at(x - 1, y, z)) ends.push({ p: [[x, y, top], [x, y + 1, top], [x, y + 0.5, top + rh]], n: [-1, 0] });
+        if (!at(x + 1, y, z)) ends.push({ p: [[x + 1, y, top], [x + 1, y + 1, top], [x + 1, y + 0.5, top + rh]], n: [1, 0] });
+      } else {
+        const l = at(x, y - 1, z) ? 0 : 0.07, rr = at(x, y + 1, z) ? 0 : 0.07;
+        const y0 = y - l, y1 = y + 1 + rr;
+        pts = [
+          { p: [[x - ov, y0, top - 0.07], [x - ov, y1, top - 0.07], [x + 0.5, y1, top + rh], [x + 0.5, y0, top + rh]], n: [-1, 0] },
+          { p: [[x + 1 + ov, y0, top - 0.07], [x + 1 + ov, y1, top - 0.07], [x + 0.5, y1, top + rh], [x + 0.5, y0, top + rh]], n: [1, 0] }
+        ];
+        ends = [];
+        if (!at(x, y - 1, z)) ends.push({ p: [[x, y, top], [x + 1, y, top], [x + 0.5, y, top + rh]], n: [0, -1] });
+        if (!at(x, y + 1, z)) ends.push({ p: [[x, y + 1, top], [x + 1, y + 1, top], [x + 0.5, y + 1, top + rh]], n: [0, 1] });
+      }
+      const hitPolys = [];
+      for (const e of ends) {
+        if (!visN(e.n[0], e.n[1], 0)) continue;
+        const sp = e.p.map((q) => P(q[0], q[1], q[2]));
+        poly(sp, col(c, wallShade(e.n[0], e.n[1])));
+        hitPolys.push(sp);
+        const m = P(e.p[2][0] * 0.98 + e.p[0][0] * 0.01 + e.p[1][0] * 0.01 + e.n[0] * 0.01, e.p[2][1] * 0.98 + e.p[0][1] * 0.01 + e.p[1][1] * 0.01 + e.n[1] * 0.01, top + rh * 0.38);
+        g.fillStyle = hash(x, y, z, 31) < 0.5 ? col(CREAM, wallShade(e.n[0], e.n[1])) : glassCol(false, 1);
+        g.beginPath(); g.arc(m[0], m[1], s * 0.07, 0, 7); g.fill();
+      }
+      pts.sort((a, b) => (a.n[0] * sn + a.n[1] * cs) - (b.n[0] * sn + b.n[1] * cs));
+      for (const sl of pts) {
+        const nz = 0.55, nh = 0.83;
+        if (!visN(sl.n[0] * nh, sl.n[1] * nh, nz)) continue;
+        const sp = sl.p.map((q) => P(q[0], q[1], q[2]));
+        const f = 0.95 - 0.2 * rotX(sl.n[0], sl.n[1]) + 0.08 * (sl.n[0] * sn + sl.n[1] * cs);
+        poly(sp, col(r, f));
+        hitPolys.push(sp);
+        g.strokeStyle = col(r, f * 0.82); g.lineWidth = Math.max(0.8, s * 0.025);
+        for (let i = 1; i < 4; i++) {
+          const a = i / 4;
+          const p0 = [sp[0][0] + (sp[3][0] - sp[0][0]) * a, sp[0][1] + (sp[3][1] - sp[0][1]) * a];
+          const p1 = [sp[1][0] + (sp[2][0] - sp[1][0]) * a, sp[1][1] + (sp[2][1] - sp[1][1]) * a];
+          g.beginPath(); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); g.stroke();
+        }
+        g.strokeStyle = col(r, f * 0.7); g.lineWidth = Math.max(1, s * 0.04);
+        g.beginPath(); g.moveTo(sp[0][0], sp[0][1]); g.lineTo(sp[1][0], sp[1][1]); g.stroke();
+      }
+      if (hash(x, y, z, 9) < 0.32) {
+        const cx = x + (axisX ? 0.68 : 0.28), cy = y + (axisX ? 0.28 : 0.68);
+        box(cx, cy, top + 0.15, 0.16, 0.16, rh + 0.16, [170, 96, 80]);
+      }
+      return hitPolys;
+    }
+    function box(x, y, z0, wx, wy, h, c) {
+      const faces = [
+        { n: [1, 0], p: [[x + wx, y, z0], [x + wx, y + wy, z0], [x + wx, y + wy, z0 + h], [x + wx, y, z0 + h]] },
+        { n: [-1, 0], p: [[x, y, z0], [x, y + wy, z0], [x, y + wy, z0 + h], [x, y, z0 + h]] },
+        { n: [0, 1], p: [[x, y + wy, z0], [x + wx, y + wy, z0], [x + wx, y + wy, z0 + h], [x, y + wy, z0 + h]] },
+        { n: [0, -1], p: [[x, y, z0], [x + wx, y, z0], [x + wx, y, z0 + h], [x, y, z0 + h]] }
+      ];
+      for (const f of faces) if (visN(f.n[0], f.n[1], 0)) poly(f.p.map((q) => P(q[0], q[1], q[2])), col(c, wallShade(f.n[0], f.n[1])));
+      poly([[x, y], [x + wx, y], [x + wx, y + wy], [x, y + wy]].map((q) => P(q[0], q[1], z0 + h)), col(c, 0.7));
+    }
+    function drawSpire(x, y, z, c) {
+      const ov = 0.08, top = z + 1, apex = [x + 0.5, y + 0.5, top + 1.05];
+      const r = ROOF[c.idx];
+      const corners = [[x - ov, y - ov], [x + 1 + ov, y - ov], [x + 1 + ov, y + 1 + ov], [x - ov, y + 1 + ov]];
+      const tris = [[0, 1, [0, -1]], [1, 2, [1, 0]], [2, 3, [0, 1]], [3, 0, [-1, 0]]];
+      const hitPolys = [];
+      for (const [a, b, n] of tris) {
+        if (!visN(n[0] * 0.9, n[1] * 0.9, 0.45)) continue;
+        const sp = [P(corners[a][0], corners[a][1], top - 0.06), P(corners[b][0], corners[b][1], top - 0.06), P(apex[0], apex[1], apex[2])];
+        poly(sp, col(r, 0.95 - 0.22 * rotX(n[0], n[1])));
+        hitPolys.push(sp);
+      }
+      const ap = P(apex[0], apex[1], apex[2] + 0.06);
+      g.fillStyle = col([240, 196, 80], 1.05); g.beginPath(); g.arc(ap[0], ap[1], s * 0.06, 0, 7); g.fill();
+      return hitPolys;
+    }
+    function drawGarden(x, y, z, c) {
+      const sp = [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]].map((q) => P(q[0], q[1], z + 1));
+      poly(sp, col([125, 176, 96], 1.02));
+      const inner = [[x + 0.08, y + 0.08], [x + 0.92, y + 0.08], [x + 0.92, y + 0.92], [x + 0.08, y + 0.92]].map((q) => P(q[0], q[1], z + 1));
+      poly(inner, col([140, 192, 104], 1.04), false);
+      for (let i = 0; i < 5; i++) {
+        const p = P(x + 0.15 + hash(x, y, z, 50 + i) * 0.7, y + 0.15 + hash(x, y, z, 60 + i) * 0.7, z + 1);
+        g.fillStyle = col(i % 2 ? [255, 255, 255] : [248, 120, 150]);
+        g.beginPath(); g.arc(p[0], p[1], Math.max(1, s * 0.035), 0, 7); g.fill();
+      }
+      const tree = hash(x, y, z, 70) < 0.55;
+      const b = P(x + 0.5, y + 0.5, z + 1);
+      if (tree) {
+        g.fillStyle = col(WOOD); g.fillRect(b[0] - s * 0.04, b[1] - s * 0.45, s * 0.08, s * 0.45);
+        const cr = s * 0.3;
+        g.fillStyle = col([84, 140, 80]); g.beginPath(); g.arc(b[0], b[1] - s * 0.55, cr, 0, 7); g.fill();
+        g.fillStyle = col([112, 170, 96]); g.beginPath(); g.arc(b[0] - cr * 0.28, b[1] - s * 0.62, cr * 0.62, 0, 7); g.fill();
+      } else {
+        g.fillStyle = col([88, 146, 82]); g.beginPath(); g.ellipse(b[0], b[1] - s * 0.12, s * 0.26, s * 0.18, 0, 0, 7); g.fill();
+        g.fillStyle = col([120, 178, 100]); g.beginPath(); g.ellipse(b[0] - s * 0.06, b[1] - s * 0.17, s * 0.15, s * 0.1, 0, 0, 7); g.fill();
+      }
+      return [sp];
+    }
+
+    function drawBlock(x, y, z, ci) {
+      const a = drops.get((z * N + y) * N + x);
+      let dz = 0;
+      if (a != null) {
+        const k = Math.min(1, (t - a) / 0.35);
+        dz = (1 - k) * (1 - k) * 0.9;
+        if (k >= 1) drops.delete((z * N + y) * N + x);
+      }
+      const c = RGB[ci - 1]; c.idx = ci - 1;
+      const floating = z > 0 && !at(x, y, z - 1);
+      const zz = z + dz;
+      const dside = z === 0 ? doorSide(x, y) : -1;
+      if (floating) {
+        for (let d = 0; d < 4; d++) {
+          const [nx, ny] = DIRS[d];
+          if (visN(nx, ny, 0) || at(x + nx, y + ny, z)) continue;
+          const f = mkFace(x, y, zz, d);
+          archFace(f, col(c, 0.55));
+        }
+      }
+      for (let d = 0; d < 4; d++) {
+        const [nx, ny] = DIRS[d];
+        if (!visN(nx, ny, 0) || at(x + nx, y + ny, z)) continue;
+        const f = mkFace(x, y, zz, d);
+        drawWall(x, y, z, d, c, f, floating, d === dside);
+        const fp = [FP(f, 0, 0), FP(f, 1, 0), FP(f, 1, 1), FP(f, 0, 1)];
+        hits.push({ poly: fp, x, y, z, side: d });
+      }
+      if (!at(x, y, z + 1)) {
+        let sx = 0, sy = 0, taller = 0;
+        if (at(x + 1, y, z)) sx++; if (at(x - 1, y, z)) sx++;
+        if (at(x, y + 1, z)) sy++; if (at(x, y - 1, z)) sy++;
+        for (const [nx, ny] of DIRS) if (at(x + nx, y + ny, z + 1)) taller++;
+        let hp;
+        if (taller >= 2) hp = drawGarden(x, y, zz, c);
+        else if (sx + sy === 0 && z >= 2 && at(x, y, z - 1) && at(x, y, z - 2)) hp = drawSpire(x, y, zz, c);
+        else hp = drawGable(x, y, zz, c, sx > sy || (sx === sy && hash(x, y, z, 3) < 0.5));
+        const topQuad = [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]].map((q) => P(q[0], q[1], zz + 1));
+        hits.push({ poly: topQuad, x, y, z, side: -1 });
+        for (const p of hp) hits.push({ poly: p, x, y, z, side: -1 });
+      }
+    }
+
+    function hull(pts) {
+      pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+      const lo = [], up = [];
+      for (const p of pts) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+      for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    }
+    function bakeShadows() {
+      shadowDirty = false;
+      shA.width = shB.width = cv.width; shA.height = shB.height = cv.height;
+      const a = shA.getContext('2d');
+      a.setTransform(dpr, 0, 0, dpr, 0, 0);
+      a.fillStyle = '#000';
+      const lrx = 0.62, lry = -0.42;
+      const lx = lrx * cs + lry * sn, ly = -lrx * sn + lry * cs;
+      for (let z = 0; z < H; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        if (!at(x, y, z)) continue;
+        const z1 = z + 1 + (at(x, y, z + 1) ? 0 : 0.5);
+        const pts = [];
+        for (const zz of [z, z1]) for (const [qx, qy] of [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]]) pts.push(P(qx + lx * zz, qy + ly * zz, 0));
+        const hp = hull(pts);
+        a.beginPath(); hp.forEach((p, i) => i ? a.lineTo(p[0], p[1]) : a.moveTo(p[0], p[1])); a.closePath(); a.fill();
+      }
+      const b = shB.getContext('2d');
+      b.clearRect(0, 0, shB.width, shB.height);
+      b.filter = `blur(${Math.round(s * 0.18 * dpr)}px)`;
+      b.drawImage(shA, 0, 0);
+      b.filter = 'none';
+    }
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1);
+      W = r.width; Hc = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(Hc * dpr);
+      s0 = Math.min(W * 0.94 / (1.414 * N), Hc * 0.92 / (0.707 * N + 4.2 * K));
+      place2();
+      stars = Array.from({ length: 70 }, () => [Math.random() * W, Math.random() * Hc, Math.random()]);
+      shadowDirty = true;
+      sortCells();
+    }
+    function place2() {
+      s = s0 * zoom;
+      if (zoom <= 1.001) { panX = 0; panY = 0; }
+      const lim = s0 * N * 0.75 * zoom;
+      panX = Math.max(-lim, Math.min(lim, panX)); panY = Math.max(-lim, Math.min(lim, panY));
+      ox = W / 2 + panX; oy = Hc / 2 + 1.7 * K * s + panY;
+      shadowDirty = true;
+    }
+    function zoomAt(f, mx, my) {
+      const nz = Math.max(1, Math.min(2.6, zoom * f));
+      if (nz === zoom) return;
+      const k = nz / zoom;
+      const nox = mx - (mx - ox) * k, noy = my - (my - oy) * k;
+      zoom = nz; s = s0 * zoom;
+      panX = nox - W / 2; panY = noy - Hc / 2 - 1.7 * K * s;
+      place2();
+    }
+    function sortCells() {
+      cells = [];
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const cx = x + 0.5 - N / 2, cy = y + 0.5 - N / 2;
+        cells.push([x, y, cx * sn + cy * cs, cx * cs - cy * sn]);
+      }
+      cells.sort((a, b) => a[2] - b[2] || a[3] - b[3]);
+    }
+
+    function drawSea() {
+      const k = night;
+      const top = mix([168, 222, 226], [20, 32, 70], k), bot = mix([96, 178, 196], [12, 22, 52], k);
+      const gr = g.createLinearGradient(0, 0, 0, Hc);
+      gr.addColorStop(0, `rgb(${top})`); gr.addColorStop(1, `rgb(${bot})`);
+      g.fillStyle = gr; g.fillRect(0, 0, W, Hc);
+      if (k > 0.02) {
+        for (const [x, y, b] of stars) {
+          g.fillStyle = `rgba(255,255,240,${k * (0.3 + 0.5 * b) * (0.7 + 0.3 * Math.sin(t * 2 + b * 20))})`;
+          g.fillRect(x, y, 1.6, 1.6);
+        }
+      }
+      g.strokeStyle = `rgba(255,255,255,${0.16 - k * 0.08})`; g.lineWidth = 1.5;
+      for (let i = 0; i < 26; i++) {
+        const yy = ((i * 53.7) % Hc), xx = ((i * 131.3 + t * 9 * (1 + (i % 3))) % (W + 80)) - 40;
+        const w = 14 + (i % 4) * 8, ph = Math.sin(t * 1.4 + i);
+        g.globalAlpha = 0.5 + 0.5 * ph;
+        g.beginPath(); g.moveTo(xx, yy); g.quadraticCurveTo(xx + w / 2, yy - 3, xx + w, yy); g.stroke();
+      }
+      g.globalAlpha = 1;
+      const corners = [[0, 0], [N, 0], [N, N], [0, N]].map((q) => P(q[0], q[1], 0));
+      g.beginPath(); corners.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
+      g.fillStyle = `rgba(255,255,255,${0.07 - k * 0.03})`; g.fill();
+      g.strokeStyle = `rgba(255,255,255,${0.13 - k * 0.06})`; g.lineWidth = 1;
+      g.beginPath();
+      for (let i = 0; i <= N; i++) {
+        let a = P(i, 0, 0), b = P(i, N, 0); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]);
+        a = P(0, i, 0); b = P(N, i, 0); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]);
+      }
+      g.stroke();
+    }
+    function mix(a, b, k) { return [0, 1, 2].map((i) => Math.round(a[i] * (1 - k) + b[i] * k)).join(','); }
+    function drawFoam() {
+      const al = 0.35 + 0.2 * Math.sin(t * 2.2);
+      g.strokeStyle = `rgba(255,255,255,${al * (1 - night * 0.6)})`; g.lineWidth = Math.max(1.5, s * 0.07); g.lineCap = 'round';
+      g.beginPath();
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        if (!at(x, y, 0)) continue;
+        for (let d = 0; d < 4; d++) {
+          const [nx, ny] = DIRS[d];
+          if (at(x + nx, y + ny, 0)) continue;
+          const f = mkFace(x, y, 0, d);
+          const off = 0.08 + 0.04 * Math.sin(t * 2.2 + x + y);
+          const a = FP(f, -0.05, 0, off), b = FP(f, 1.05, 0, off);
+          g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]);
+        }
+      }
+      g.stroke();
+    }
+    function inPoly(p, pts) {
+      let c = false;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        if (((pts[i][1] > p[1]) !== (pts[j][1] > p[1])) && (p[0] < (pts[j][0] - pts[i][0]) * (p[1] - pts[i][1]) / (pts[j][1] - pts[i][1]) + pts[i][0])) c = !c;
+      }
+      return c;
+    }
+    function pick(px, py) {
+      for (let i = hits.length - 1; i >= 0; i--) {
+        if (inPoly([px, py], hits[i].poly)) return hits[i];
+      }
+      const rx = (px - ox) / s, ry = (py - oy) / (s * 0.5);
+      const cx = rx * cs + ry * sn + N / 2, cy = -rx * sn + ry * cs + N / 2;
+      const x = Math.floor(cx), y = Math.floor(cy);
+      if (x < 0 || y < 0 || x >= N || y >= N) return null;
+      return { water: true, x, y, z: 0 };
+    }
+    function target(h) {
+      if (!h) return null;
+      if (h.water) return at(h.x, h.y, 0) ? null : [h.x, h.y, 0];
+      if (h.side < 0) return h.z + 1 < H && !at(h.x, h.y, h.z + 1) ? [h.x, h.y, h.z + 1] : null;
+      const nx = h.x + DIRS[h.side][0], ny = h.y + DIRS[h.side][1];
+      if (nx < 0 || ny < 0 || nx >= N || ny >= N || at(nx, ny, h.z)) return null;
+      return [nx, ny, h.z];
+    }
+    function ghost(tg) {
+      const [x, y, z] = tg;
+      const pts = [];
+      for (const zz of [z, z + 1]) for (const [qx, qy] of [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]]) pts.push(P(qx, qy, zz));
+      const hp = hull(pts);
+      g.beginPath(); hp.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
+      g.fillStyle = 'rgba(255,255,255,.28)'; g.fill();
+      g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2; g.setLineDash([5, 4]); g.stroke(); g.setLineDash([]);
+    }
+
+    function render() {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawSea();
+      if (shadowDirty) bakeShadows();
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 0.24 - night * 0.12; g.drawImage(shB, 0, 0); g.restore();
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawFoam();
+      hits = []; glows = [];
+      for (const [x, y] of cells) {
+        for (let z = 0; z < H; z++) { const v = at(x, y, z); if (v) drawBlock(x, y, z, v); }
+      }
+      if (glows.length) {
+        g.globalCompositeOperation = 'lighter';
+        for (const [p, a] of glows) {
+          const r = s * 0.7;
+          const gr = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], r);
+          gr.addColorStop(0, `rgba(255,190,90,${0.26 * night * a})`); gr.addColorStop(1, 'rgba(255,190,90,0)');
+          g.fillStyle = gr; g.fillRect(p[0] - r, p[1] - r, r * 2, r * 2);
+        }
+        g.globalCompositeOperation = 'source-over';
+      }
+      if (hover && !pressing && !rmMode) { const tg = target(pick(hover[0], hover[1])); if (tg) ghost(tg); }
+      for (let i = puffs.length - 1; i >= 0; i--) {
+        const p = puffs[i]; p.life -= 1 / 60; p.x += p.vx; p.y += p.vy; p.vy += 0.05;
+        if (p.life <= 0) { puffs.splice(i, 1); continue; }
+        g.fillStyle = `rgba(255,255,255,${p.life * 1.6})`; g.beginPath(); g.arc(p.x, p.y, p.r * (1.3 - p.life), 0, 7); g.fill();
+      }
+    }
+
+    function tone(f, d = 0.18, type = 'triangle', v = 0.09) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0);
+      gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.008); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.05);
+    }
+    function snapshot() { undo.push(grid.slice()); if (undo.length > 120) undo.shift(); }
+    function changed() { shadowDirty = true; save(); }
+    let saveT = 0;
+    function save() {
+      clearTimeout(saveT);
+      saveT = setTimeout(() => {
+        let str = '';
+        for (let i = 0; i < grid.length; i++) str += grid[i].toString(36);
+        Curio.store.set('tiny-town', { g: str, a: Math.round((angTarget - Math.PI / 4) / (Math.PI / 2)), n: nightTarget, c: colour });
+      }, 300);
+    }
+    function load() {
+      const d = Curio.store.get('tiny-town', null);
+      if (d && typeof d.g === 'string' && d.g.length === grid.length) {
+        for (let i = 0; i < grid.length; i++) grid[i] = parseInt(d.g[i], 36) || 0;
+        angTarget = ang = Math.PI / 4 + (d.a | 0) * Math.PI / 2;
+        nightTarget = night = d.n ? 1 : 0;
+        colour = Math.max(0, Math.min(PAL.length, d.c | 0));
+        return;
+      }
+      const demo = [[5, 5, 0, 1], [6, 5, 0, 4], [5, 6, 0, 8], [5, 5, 1, 1], [6, 5, 1, 4], [5, 5, 2, 1], [5, 5, 3, 1], [4, 5, 0, 3], [4, 6, 0, 10],
+        [6, 7, 0, 6], [7, 7, 0, 7], [7, 7, 1, 7], [3, 7, 0, 9], [5, 7, 0, 2], [5, 7, 1, 2], [8, 4, 0, 5], [8, 4, 1, 5], [8, 6, 0, 3], [8, 6, 1, 3], [8, 5, 1, 9], [7, 4, 0, 1], [6, 6, 0, 2], [6, 6, 1, 2]];
+      for (const [x, y, z, c] of demo) put(x, y, z, c);
+    }
+
+    function place(tg) {
+      snapshot();
+      const c = colour === 0 ? 1 + Math.floor(Math.random() * PAL.length) : colour;
+      put(tg[0], tg[1], tg[2], c);
+      drops.set((tg[2] * N + tg[1]) * N + tg[0], t);
+      tone(SCALE[(tg[2] + c) % SCALE.length], 0.22, 'triangle', 0.1);
+      setTimeout(() => tone(SCALE[(tg[2] + c + 2) % SCALE.length] * 2, 0.12, 'sine', 0.035), 60);
+      changed(); hideTip();
+    }
+    function remove(h) {
+      if (!h || h.water) return;
+      snapshot();
+      put(h.x, h.y, h.z, 0);
+      const p = P(h.x + 0.5, h.y + 0.5, h.z + 0.5);
+      for (let i = 0; i < 10; i++) puffs.push({ x: p[0], y: p[1], vx: Curio.rand(-1.5, 1.5), vy: Curio.rand(-2.2, -0.4), r: s * Curio.rand(0.08, 0.16), life: Curio.rand(0.4, 0.6) });
+      tone(330, 0.16, 'sine', 0.08); setTimeout(() => tone(220, 0.2, 'sine', 0.06), 50);
+      changed(); hideTip();
+      if (navigator.vibrate) try { navigator.vibrate(12); } catch {}
+    }
+    const tip = document.getElementById('tip');
+    function hideTip() { tip.style.opacity = '0'; }
+
+    let pressing = false, pressT = 0, longDone = false, downAt = null;
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cv.addEventListener('pointerdown', (e) => {
+      const p = pos(e);
+      hover = e.pointerType === 'mouse' ? p : null;
+      if (e.button === 2) { remove(pick(p[0], p[1])); return; }
+      if (e.button === 0 && rmMode) { remove(pick(p[0], p[1])); return; }
+      if (e.button !== 0) return;
+      pressing = true; longDone = false; downAt = p;
+      clearTimeout(pressT);
+      pressT = setTimeout(() => {
+        if (!pressing) return;
+        longDone = true;
+        remove(pick(downAt[0], downAt[1]));
+      }, 480);
+    });
+    cv.addEventListener('pointermove', (e) => {
+      const p = pos(e);
+      if (e.pointerType === 'mouse') hover = p;
+      if (pressing && downAt && Math.hypot(p[0] - downAt[0], p[1] - downAt[1]) > 10) { clearTimeout(pressT); pressing = false; }
+    });
+    cv.addEventListener('pointerleave', () => { hover = null; });
+    const endPress = (e) => {
+      if (!pressing) return;
+      pressing = false; clearTimeout(pressT);
+      if (longDone) return;
+      const tg = target(pick(downAt[0], downAt[1]));
+      if (tg) place(tg); else tone(180, 0.08, 'sine', 0.04);
+    };
+    cv.addEventListener('pointerup', endPress);
+    cv.addEventListener('pointercancel', () => { pressing = false; clearTimeout(pressT); });
+
+    const pal = document.getElementById('pal');
+    const mixB = document.createElement('button');
+    mixB.type = 'button'; mixB.className = 'sw mix'; mixB.title = 'Mixed colours'; mixB.setAttribute('aria-label', 'Mixed colours');
+    pal.append(mixB);
+    const sws = [mixB];
+    PAL.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sw'; b.style.background = c; b.title = NAMES[i]; b.setAttribute('aria-label', NAMES[i]);
+      pal.append(b); sws.push(b);
+    });
+    sws.forEach((b, i) => b.addEventListener('click', () => { colour = i; paintPal(); save(); tone(SCALE[i % SCALE.length], 0.1, 'sine', 0.05); }));
+    function setMode(rm) {
+      rmMode = rm;
+      document.getElementById('mBuild').setAttribute('aria-pressed', String(!rm));
+      document.getElementById('mRemove').setAttribute('aria-pressed', String(rm));
+      cv.classList.toggle('rm', rm);
+      tone(rm ? 300 : 520, 0.08, 'sine', 0.05);
+    }
+    document.getElementById('mBuild').addEventListener('click', () => setMode(false));
+    document.getElementById('mRemove').addEventListener('click', () => setMode(true));
+    cv.addEventListener('wheel', (e) => {
+      const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      const unit = e.deltaMode === 1 ? 16 : 1;
+      if (e.ctrlKey) { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * unit * 0.01), mx, my); return; }
+      if (zoom > 1.001) { e.preventDefault(); panX -= e.deltaX * unit; panY -= e.deltaY * unit; place2(); return; }
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+        spinAcc += e.deltaX * unit;
+        if (Math.abs(spinAcc) > 140) { rotate(spinAcc > 0 ? 1 : -1); spinAcc = 0; }
+      }
+    }, { passive: false });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click to build, pinch to zoom, two-finger swipe sideways to rotate. Remove tool is X', 3800); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-tiny-town', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-tiny-town', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar. Pinch zooms, two-finger swipe rotates', 4200), 1800); }
+    function paintPal() { sws.forEach((b, i) => b.setAttribute('aria-pressed', String(i === colour))); }
+
+    function rotate(dir) { angTarget += dir * Math.PI / 2; save(); tone(dir > 0 ? 520 : 440, 0.25, 'sine', 0.05); setTimeout(() => tone(dir > 0 ? 660 : 350, 0.2, 'sine', 0.04), 90); }
+    document.getElementById('rotL').addEventListener('click', () => rotate(-1));
+    document.getElementById('rotR').addEventListener('click', () => rotate(1));
+    const nightB = document.getElementById('night');
+    function paintNight() { nightB.textContent = nightTarget ? '☀️ Day' : '🌙 Night'; }
+    function toggleNight() { nightTarget = nightTarget ? 0 : 1; paintNight(); save(); tone(nightTarget ? 330 : 660, 0.4, 'sine', 0.05); }
+    nightB.addEventListener('click', toggleNight);
+    function doUndo() {
+      if (!undo.length) { Curio.toast('Nothing to undo'); return; }
+      grid = undo.pop(); changed(); tone(300, 0.12, 'sine', 0.06);
+    }
+    document.getElementById('undo').addEventListener('click', doUndo);
+    document.getElementById('clear').addEventListener('click', () => {
+      if (!grid.some((v) => v)) return;
+      snapshot(); grid = new Uint8Array(N * N * H); changed();
+      Curio.toast('Back to open sea. Undo brings the town back.');
+      tone(260, 0.5, 'sine', 0.06);
+    });
+    document.getElementById('png').addEventListener('click', () => {
+      const h = hover; hover = null; render(); hover = h;
+      cv.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b); a.download = 'tiny-town.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        Curio.toast('Postcard saved');
+      });
+    });
+    addEventListener('keydown', (e) => {
+      if (e.target.closest && e.target.closest('input,textarea')) return;
+      const k = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); doUndo(); }
+      else if (k === 'q') rotate(-1);
+      else if (k === 'e' || k === 'r') rotate(1);
+      else if (k === 'n') toggleNight();
+      else if (k === 'b') setMode(false);
+      else if (k === 'x' || k === 'delete' || k === 'backspace') { e.preventDefault(); setMode(true); }
+      else if (k === '[' || k === ']') { colour = (colour + (k === ']' ? 1 : PAL.length)) % (PAL.length + 1); paintPal(); save(); tone(SCALE[colour % SCALE.length], 0.1, 'sine', 0.05); }
+      else if (k === '+' || k === '=') zoomAt(1.2, W / 2, Hc / 2);
+      else if (k === '-' || k === '_') zoomAt(1 / 1.2, W / 2, Hc / 2);
+      else if (k === '0') { zoom = 1; place2(); }
+    });
+
+    let last = performance.now(), raf = 0;
+    function frame(now) {
+      raf = 0;
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
+      if (Math.abs(angTarget - ang) > 0.0005) {
+        ang += (angTarget - ang) * Math.min(1, dt * 7);
+        if (Math.abs(angTarget - ang) < 0.0005) ang = angTarget;
+        cs = Math.cos(ang); sn = Math.sin(ang); sortCells(); shadowDirty = true;
+      }
+      if (night !== nightTarget) { night += Math.sign(nightTarget - night) * dt * 1.6; if (Math.abs(night - nightTarget) < 0.02) night = nightTarget; }
+      render();
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+    addEventListener('resize', resize);
+    load(); paintPal(); paintNight();
+    cs = Math.cos(ang); sn = Math.sin(ang);
+    resize();
+    raf = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

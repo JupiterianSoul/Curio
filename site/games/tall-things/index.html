@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tall Things · Curio</title>
+  <meta name="description" content="Climb from a ladybird to the International Space Station past 74 tall things, compare any of them side by side, and test your sense of scale.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="tall-things">
+  <div id="sky" aria-hidden="true"></div>
+  <div id="stars" aria-hidden="true"></div>
+  <div id="limb" aria-hidden="true"></div>
+  <main class="world" id="world" aria-label="A climb from the ground to the International Space Station">
+    <div class="ruler" id="ruler"></div>
+  </main>
+  <section class="ground" id="ground">
+    <svg class="hills" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 120 L0 70 Q150 20 300 60 T600 50 T900 40 T1200 60 L1200 120Z" fill="#7cc46a"/>
+      <path d="M0 120 L0 90 Q200 50 420 86 T820 76 T1200 84 L1200 120Z" fill="#5aa84a"/>
+    </svg>
+    <div class="ground__in">
+      <div class="climber" aria-hidden="true">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#ffffff22"/><path d="M60 14 Q74 26 74 54 L74 82 L46 82 L46 54 Q46 26 60 14Z" fill="#fff"/><circle cx="60" cy="46" r="8" fill="#5ad8ff" stroke="#2a6fd6" stroke-width="3"/><path d="M46 64 L32 84 L46 82Z M74 64 L88 84 L74 82Z" fill="#ff5a36"/><path d="M50 82 Q60 112 70 82Z" fill="#ffc233" class="flame"/></svg>
+      </div>
+      <h1>Tall Things</h1>
+      <p>Start at ladybird height and climb all the way to the International Space Station, 420 km straight up. The ruler zooms out as you go, so it will not take all day.</p>
+      <div class="gbtns">
+        <button class="c-btn" type="button" id="go">Start climbing ↑</button>
+        <button class="c-btn c-btn--ghost" type="button" id="openCmp">📏 Compare</button>
+        <button class="c-btn c-btn--ghost" type="button" id="openGuess">🎯 Guess the height</button>
+      </div>
+      <div class="stats"><span id="statN">📏 74 tall things</span><span>🔭 8 zoom levels</span><span>🛰️ 420 km to go</span><button type="button" class="badgesBtn" id="badgesBtn">🏅 <span id="badgeCount">0</span></button></div>
+      <p class="keys">Keys: <span class="c-kbd">Space</span> climb · <span class="c-kbd">C</span> compare · <span class="c-kbd">G</span> guess · <span class="c-kbd">End</span> ground</p>
+    </div>
+  </section>
+
+  <aside class="meter off" id="meter" aria-live="off">
+    <div class="veh" id="veh" aria-hidden="true">🚶</div>
+    <div class="d" id="mH">0 m</div>
+    <div><div class="ft" id="mFt">0 ft</div><div class="zn" id="mZone">Ground level</div></div>
+    <div class="row"><span id="mTemp">15 °C</span><span id="mAir">Air 100%</span></div>
+    <div class="pace" id="mPace"></div>
+    <div class="bar"><i id="mBar"></i></div>
+    <div class="btns"><button type="button" id="climb" aria-pressed="false">🚀 Climb</button><button type="button" id="speed" aria-label="Climb speed">1×</button><button type="button" id="down">⏬ Ground</button></div>
+  </aside>
+
+  <section class="panel" id="cmpPanel" hidden aria-label="Compare tall things">
+    <div class="panel__box">
+      <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+      <h2>Compare</h2>
+      <p class="panel__lead">Pick up to four things and line them up on the same ruler.</p>
+      <div class="cmpPicks" id="cmpPicks"></div>
+      <div class="c-row cmpOpts">
+        <button class="c-btn c-btn--ghost" type="button" id="cmpRand">🎲 Surprise me</button>
+        <button class="c-btn c-btn--ghost" type="button" id="cmpLog" aria-pressed="false">Log scale: off</button>
+      </div>
+      <div class="cmpStage" id="cmpStage"></div>
+      <p class="cmpSay" id="cmpSay"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="guessPanel" hidden aria-label="Guess the height game">
+    <div class="panel__box gbox">
+      <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+      <div id="gStart">
+        <h2>Guess the height</h2>
+        <p class="panel__lead">Ten tall things. Slide to how high you think each one goes. Within 10% is a bullseye, and every factor of two off costs you points.</p>
+        <div class="diffs" role="group" aria-label="Mode">
+          <button type="button" class="diff" data-d="classic" aria-pressed="true"><b>Classic</b><span>Random picks</span></button>
+          <button type="button" class="diff" data-d="daily" aria-pressed="false"><b>Daily</b><span id="dailyLabel">Same for everyone</span></button>
+          <button type="button" class="diff" data-d="hilo" aria-pressed="false"><b>Taller?</b><span>Endless streak</span></button>
+        </div>
+        <button class="c-btn" type="button" id="gGo">Play</button>
+        <p class="c-muted qbest" id="gBest"></p>
+      </div>
+      <div id="gPlay" hidden>
+        <div class="qtop"><span id="gRound">1/10</span><b id="gScore">0</b></div>
+        <div class="qprog"><i id="gProg"></i></div>
+        <div class="gthing" id="gThing"></div>
+        <div id="gSlide">
+          <div class="gval"><b id="gVal">10 m</b><span id="gValFt"></span></div>
+          <input type="range" id="gRange" min="-3" max="5.7" step="0.01" value="1" aria-label="Your guess">
+          <div class="gticks"><span>1 mm</span><span>1 m</span><span>1 km</span><span>500 km</span></div>
+          <button class="c-btn" type="button" id="gLock">Lock it in</button>
+        </div>
+        <div id="gHilo" hidden>
+          <p class="hiq">Is <b id="hiName">this</b> taller or shorter than <b id="hiRef">that</b>?</p>
+          <div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="hiUp">⬆ Taller</button><button class="c-btn" type="button" id="hiDown">⬇ Shorter</button></div>
+        </div>
+        <p class="qmsg" id="gMsg" aria-live="polite"></p>
+        <button class="c-btn" type="button" id="gNext" hidden>Next ›</button>
+      </div>
+      <div id="gEnd" hidden>
+        <div class="trophy" id="gTrophy" aria-hidden="true"></div>
+        <h2 id="gEndTitle">Done!</h2>
+        <div class="c-row qstats"><div class="c-stat"><b id="geScore">0</b><span>Score</span></div><div class="c-stat"><b id="geBest">0</b><span>Best</span></div></div>
+        <p class="c-muted" id="geNote"></p>
+        <div class="c-row" style="justify-content:center"><button class="c-btn" type="button" id="gAgain">Play again</button><button class="c-btn c-btn--ghost" type="button" id="gShare">Copy result</button></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="art.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

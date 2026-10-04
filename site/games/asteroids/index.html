@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Asteroids · Curio</title>
+  <meta name="description" content="Glowing vector space combat: split rocks, collect crystals, upgrade your ship, fight three bosses, unlock six ships.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .as-shop { width: min(100%, 620px); }
+    .as-shophead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; text-align: left; }
+    .as-shophead h2 { margin: 0; font-size: 24px; line-height: 1.1; }
+    .as-shophead p { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
+    .as-gems { font-size: 22px; font-weight: 900; color: #10a36b; background: color-mix(in srgb, #10a36b 14%, var(--surface)); border-radius: 999px; padding: 4px 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .as-ups { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; margin: 8px 0 12px; }
+    .as-up { display: flex; align-items: center; gap: 10px; text-align: left; border: 1.5px solid var(--line); background: var(--surface); border-radius: 14px; padding: 8px 10px; cursor: pointer; color: var(--ink); transition: transform .1s ease, border-color .15s ease; }
+    .as-up:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+    .as-up:disabled { opacity: .5; cursor: default; }
+    .as-up.is-bought { animation: as-buy .4s cubic-bezier(.2, 1.6, .4, 1); border-color: #10a36b; }
+    @keyframes as-buy { 40% { transform: scale(1.05); } }
+    .as-ic { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #1b1f3d, #3a2a6b); color: #fff; display: grid; place-items: center; font-size: 18px; flex: none; }
+    .as-tx { flex: 1; min-width: 0; }
+    .as-tx b { display: block; font-size: 14px; line-height: 1.2; }
+    .as-tx small { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.3; }
+    .as-tx em { font-style: normal; font-size: 11px; color: var(--ink-3); font-weight: 800; }
+    .as-pips { display: flex; gap: 3px; margin-top: 3px; }
+    .as-pips i { width: 14px; height: 5px; border-radius: 3px; background: var(--line); }
+    .as-pips i.on { background: #10a36b; }
+    .as-cost { font-weight: 900; font-size: 14px; color: #10a36b; white-space: nowrap; }
+    .arc-seg button[data-opt="skin"]::before { content: '▲'; display: inline-block; transform: rotate(90deg); color: var(--skin); font-size: 10px; margin-right: 5px; }
+    .arc-seg button.is-locked::before { content: '🔒'; transform: none; }
+    @media (max-width: 520px) { .as-ups { grid-template-columns: 1fr; } .as-up small { display: none; } }
+  </style>
+</head>
+<body data-game="asteroids" class="arc">
+  <main class="c-wrap arc-wrap">
+    <div class="arc-hud">
+      <div class="c-stat"><b data-hud="score">0</b><span>Score</span></div>
+      <div class="c-stat"><b data-hud="wave">1</b><span>Wave</span></div>
+      <div class="c-stat"><b data-hud="lives">▲▲▲</b><span>Ships</span></div>
+      <div class="c-stat"><b data-hud="gems">◆0</b><span>Crystals</span></div>
+      <div class="c-stat"><b data-hud="best">0</b><span>Best</span></div>
+      <button class="arc-iconbtn" type="button" data-act="pause" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/><rect x="11.5" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/></svg></button>
+    </div>
+    <div class="arc-stage">
+      <canvas id="arc-canvas" role="img" aria-label="Asteroids game: your ship in a field of glowing asteroids"></canvas>
+      <section class="arc-ov" id="ov-menu" aria-label="Start">
+        <div class="arc-card c-card">
+          <div class="arc-hero" aria-hidden="true">
+            <svg viewBox="0 0 400 132" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="an1" cx=".25" cy=".3" r=".6"><stop offset="0" stop-color="#6b3dff" stop-opacity=".55"/><stop offset="1" stop-color="#6b3dff" stop-opacity="0"/></radialGradient>
+                <radialGradient id="an2" cx=".8" cy=".7" r=".5"><stop offset="0" stop-color="#ff3d9a" stop-opacity=".45"/><stop offset="1" stop-color="#ff3d9a" stop-opacity="0"/></radialGradient>
+                <filter id="ag" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <rect width="400" height="132" fill="#05050f"/>
+              <rect width="400" height="132" fill="url(#an1)"/>
+              <rect width="400" height="132" fill="url(#an2)"/>
+              <g fill="#fff" opacity=".7"><circle cx="30" cy="20" r="1"/><circle cx="120" cy="100" r=".8"/><circle cx="260" cy="18" r="1.2"/><circle cx="350" cy="110" r=".9"/><circle cx="380" cy="30" r="1"/><circle cx="80" cy="70" r=".7"/><circle cx="210" cy="120" r=".8"/></g>
+              <g fill="none" stroke-width="2" stroke-linejoin="round" filter="url(#ag)">
+                <path d="M60 40l22-10 20 6 8 18-6 20-24 8-20-10-6-16z" stroke="#cdd8ec"/>
+                <path d="M300 70l14-8 16 4 6 14-8 14-18 2-12-10z" stroke="#ffb366"/>
+                <path d="M340 20l8-4 8 4 2 8-6 6-9-1-4-6z" stroke="#ff5c5c"/>
+                <path d="M150 96l10-5 9 4 2 9-7 6-10-2z" stroke="#8ff0ff"/>
+                <path d="M206 66l-26-12 6 12-6 12z" stroke="#5ef2ff"/>
+                <path d="M236 66h22M268 66h14" stroke="#e8f4ff" stroke-linecap="round"/>
+                <path d="M110 18l4 6-4 6-4-6z" stroke="#5effb0"/>
+                <path d="M174 66h-14" stroke="#ffb347"/>
+              </g>
+            </svg>
+          </div>
+          <h1 class="c-title">Asteroids</h1>
+          <p class="c-sub">Blast rocks into smaller rocks, scoop up crystals, upgrade your ship and take on the things that live out here.</p>
+          <div class="arc-opts">
+            <div class="arc-seg" role="group" aria-label="Mode">
+              <button type="button" data-opt="mode" data-val="classic">Classic</button>
+              <button type="button" data-opt="mode" data-val="blitz">Blitz</button>
+              <button type="button" data-opt="mode" data-val="daily">Daily</button>
+            </div>
+            <p class="arc-desc" data-desc="mode"></p>
+            <div class="arc-label">Difficulty</div>
+            <div class="arc-seg" role="group" aria-label="Difficulty">
+              <button type="button" data-opt="diff" data-val="easy">Cadet</button>
+              <button type="button" data-opt="diff" data-val="normal">Pilot</button>
+              <button type="button" data-opt="diff" data-val="hard">Ace</button>
+            </div>
+            <div class="arc-label">Ship</div>
+            <div class="arc-seg" role="group" aria-label="Ship">
+              <button type="button" data-opt="skin" data-val="arrow">Arrow</button>
+              <button type="button" data-opt="skin" data-val="falcon">Falcon</button>
+              <button type="button" data-opt="skin" data-val="viper">Viper</button>
+              <button type="button" data-opt="skin" data-val="moth">Moth</button>
+              <button type="button" data-opt="skin" data-val="comet">Comet</button>
+              <button type="button" data-opt="skin" data-val="phantom">Phantom</button>
+            </div>
+            <label class="arc-check"><input type="checkbox" data-opt="auto"> Auto-fire (handy on phones)</label>
+          </div>
+          <button class="c-btn" type="button" data-act="start" data-autofocus>▶ Launch</button>
+          <div class="arc-links">
+            <button type="button" data-act="panel" data-tab="help">How to play</button>
+            <button type="button" data-act="panel" data-tab="ach">Badges</button>
+            <button type="button" data-act="panel" data-tab="stats">Stats</button>
+          </div>
+          <p class="arc-small"><span class="c-kbd">←</span> <span class="c-kbd">→</span> turn · <span class="c-kbd">↑</span> thrust · <span class="c-kbd">Space</span> fire · <span class="c-kbd">H</span> hyperspace · <span class="c-kbd">B</span> bomb · <span class="c-kbd">P</span> pause</p>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-shop" aria-label="Upgrade shop" hidden>
+        <div class="arc-card as-shop c-card">
+          <div class="as-shophead">
+            <div><h2>Hangar</h2><p>Wave <b data-shop="wave">2</b> is on its way. <span data-shop="next"></span></p></div>
+            <div class="as-gems">◆ <span data-shop="gems">0</span></div>
+          </div>
+          <div class="as-ups" id="shop-list"></div>
+          <button class="c-btn" type="button" data-act="launch" data-autofocus>Launch next wave ▶</button>
+          <p class="arc-small">Crystals drop from rocks and saucers. Fly through them to collect. <span class="c-kbd">Enter</span> launches.</p>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-pause" aria-label="Paused" hidden>
+        <div class="arc-card c-card">
+          <h2 class="c-title">Paused</h2>
+          <p class="c-sub">Space is very patient. So are we.</p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="resume">Resume</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="restart">Restart</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+          <div class="arc-links"><button type="button" data-act="panel" data-tab="help">How to play</button><button type="button" data-act="panel" data-tab="ach">Badges</button></div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-over" aria-label="Game over" aria-live="polite" hidden>
+        <div class="arc-card c-card">
+          <div class="arc-art" data-o="art"></div>
+          <h2 class="c-title" data-o="title">Game over</h2>
+          <div class="arc-big" data-o="score">0</div>
+          <div class="c-muted">Best <b data-o="best">0</b></div>
+          <div class="arc-new" data-o="new" hidden>★ New personal best!</div>
+          <div class="arc-rows" data-o="rows"></div>
+          <div class="arc-gotach" data-o="ach" hidden></div>
+          <p class="arc-msg" data-o="msg"></p>
+          <div class="c-row">
+            <button class="c-btn" type="button" data-act="restart">↻ Fly again</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="share">Copy result</button>
+            <button class="c-btn c-btn--ghost" type="button" data-act="menu">Menu</button>
+          </div>
+        </div>
+      </section>
+      <section class="arc-ov" id="ov-panel" aria-label="Info" hidden>
+        <div class="arc-card arc-card--wide c-card">
+          <div class="arc-tabs" role="tablist">
+            <button type="button" role="tab" data-tab="help">How to play</button>
+            <button type="button" role="tab" data-tab="ach">Badges</button>
+            <button type="button" role="tab" data-tab="stats">Stats</button>
+          </div>
+          <div class="arc-tabbody" data-tabbody="help">
+            <p>Your ship drifts: there is no friction worth mentioning, so thrust in short bursts and turn to aim. Big rocks split into two medium rocks, which split into two small ones. Clear every rock to finish a wave.</p>
+            <h3>Rocks</h3>
+            <ul>
+              <li><b style="color:#7b8ba8">Stone</b>: the classic.</li>
+              <li><b style="color:#2bb8d1">Ice</b>: drops twice the crystals.</li>
+              <li><b style="color:#e08530">Metal</b>: takes several hits per piece.</li>
+              <li><b style="color:#e04545">Volatile</b>: explodes and damages everything nearby, including you.</li>
+              <li><b style="color:#c9a100">Gold</b>: rare, tough, full of crystals.</li>
+            </ul>
+            <h3>Crystals and the hangar</h3>
+            <p>Crystals spill out of broken rocks and saucers and fade after a few seconds. Between waves you visit the hangar to spend them on rapid fire, spread shot, engines, shield cells, a crystal magnet, piercing rounds, smart bombs and spare ships.</p>
+            <h3>Enemies and bosses</h3>
+            <p>Saucers shoot at you (the small ones aim). Orange hunter drones chase you down. Every fifth wave brings a boss: the Mothership, the Rock Titan and the Hive Queen, in that order, then again but tougher.</p>
+            <h3>Pickups</h3>
+            <p>Rare floating capsules: <b>S</b> recharges a shield cell, <b>B</b> adds a smart bomb, <b>O</b> gives eight seconds of overdrive fire.</p>
+            <h3>Controls</h3>
+            <p><span class="c-kbd">←</span> <span class="c-kbd">→</span> or <span class="c-kbd">A</span> <span class="c-kbd">D</span> turn, <span class="c-kbd">↑</span> or <span class="c-kbd">W</span> thrust, <span class="c-kbd">Space</span> fire (hold for auto), <span class="c-kbd">H</span> or <span class="c-kbd">Shift</span> hyperspace, <span class="c-kbd">B</span> smart bomb, <span class="c-kbd">P</span> pause. On a phone use the buttons under the screen and turn on auto-fire.</p>
+          </div>
+          <div class="arc-tabbody" data-tabbody="ach" hidden></div>
+          <div class="arc-tabbody" data-tabbody="stats" hidden></div>
+          <button class="c-btn" type="button" data-act="back">Back</button>
+        </div>
+      </section>
+    </div>
+    <div class="arc-pad" aria-label="Touch controls">
+      <div class="arc-pad__row">
+        <button type="button" data-key="ArrowLeft" aria-label="Turn left">⟲<small>Left</small></button>
+        <button type="button" data-key="ArrowRight" aria-label="Turn right">⟳<small>Right</small></button>
+        <button type="button" data-key="ArrowUp" aria-label="Thrust">▲<small>Thrust</small></button>
+        <button type="button" data-key=" " aria-label="Fire">●<small>Fire</small></button>
+        <button type="button" data-key="h" aria-label="Hyperspace">◌<small>Hyper</small></button>
+        <button type="button" data-key="b" aria-label="Smart bomb">✹<small>Bomb</small></button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="engine.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

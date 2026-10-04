@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sliding Puzzle · Curio</title>
+  <meta name="description" content="Slide the tiles back into place. Sixteen hand-drawn pictures in four sets, number boards in four styles, sizes from 3x3 to 6x6, a daily puzzle, hints and stars.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="sliding-puzzle">
+  <main class="c-wrap sp" id="root">
+    <section id="home" class="sp-home">
+      <header class="sp-hero">
+        <div class="sp-herotiles" id="heroTiles" aria-hidden="true"></div>
+        <div>
+          <h1 class="c-title">Sliding Puzzle</h1>
+          <p class="c-sub">Sixteen little paintings, chopped into tiles and scrambled. Slide them home. Every shuffle is guaranteed solvable, and the fewer moves you take, the more stars you earn.</p>
+        </div>
+      </header>
+      <div class="sp-top">
+        <article class="sp-daily c-card" id="daily"></article>
+        <article class="sp-opts c-card">
+          <div class="sp-optrow"><span>Size</span><div class="sp-seg" id="sizes" role="radiogroup" aria-label="Board size"></div></div>
+          <div class="sp-optrow"><span>Numbers on tiles</span><label class="sp-switch"><input type="checkbox" id="numsBox"><i></i></label></div>
+          <div class="sp-optrow sp-nums"><span>Number boards</span><div class="sp-skins" id="skins" role="radiogroup" aria-label="Number board style"></div></div>
+          <button class="c-btn" type="button" id="numPlay">Play a number board</button>
+        </article>
+      </div>
+      <article class="sp-cont c-card" id="cont" hidden></article>
+      <div id="gallery" class="sp-gallery"></div>
+      <div class="c-row sp-links">
+        <button class="c-btn c-btn--ghost" type="button" id="howBtn">📖 How to play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="trophyBtn">🏆 Trophies <span id="trophyN"></span></button>
+        <button class="c-btn c-btn--ghost" type="button" id="statsBtn">📊 Stats</button>
+      </div>
+    </section>
+
+    <section id="play" class="sp-play" hidden>
+      <div class="sp-bar">
+        <button class="sp-ib" type="button" id="backBtn" aria-label="Back to gallery">←</button>
+        <div class="sp-chip" id="chip"></div>
+        <div class="sp-hud">
+          <div><b id="moves">0</b><span>moves</span></div>
+          <div><b id="time">0:00</b><span>time</span></div>
+          <div><b id="par">-</b><span>par</span></div>
+        </div>
+      </div>
+      <div class="sp-stage">
+        <div class="sp-frame" id="frame">
+          <div class="sp-board" id="board" role="group" aria-label="Sliding puzzle board"><div class="sp-inner" id="inner"></div></div>
+          <div class="sp-peek" id="peek" aria-hidden="true"></div>
+          <div class="sp-result" id="result" hidden></div>
+        </div>
+      </div>
+      <div class="sp-tools">
+        <button class="sp-tool" type="button" id="undoBtn"><i>↶</i>Undo</button>
+        <button class="sp-tool" type="button" id="hintBtn"><i>💡</i>Hint</button>
+        <button class="sp-tool" type="button" id="peekBtn"><i>👀</i>Peek</button>
+        <button class="sp-tool" type="button" id="numBtn" aria-pressed="false"><i>#</i>Numbers</button>
+        <button class="sp-tool" type="button" id="shuffleBtn"><i>🔀</i>Shuffle</button>
+        <button class="sp-tool" type="button" id="solveBtn"><i>🤖</i>Solve</button>
+      </div>
+      <p class="c-muted sp-keys">Tap a tile in line with the gap, swipe on the board, or use arrows / <span class="c-kbd">WASD</span>. <span class="c-kbd">U</span> undo · <span class="c-kbd">H</span> hint · <span class="c-kbd">P</span> or hold <span class="c-kbd">Space</span> to peek.</p>
+    </section>
+  </main>
+  <div class="sp-badge" id="badge" role="status" aria-live="polite"></div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="art.js"></script>
+  <script src="solver.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

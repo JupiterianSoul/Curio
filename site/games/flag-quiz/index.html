@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Flag Quiz · Curio</title>
+  <meta name="description" content="196 real flags, 174 country outlines, capitals, neighbours, typing, blitz and a daily quiz, plus an atlas to study from.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="flag-quiz">
+  <main class="c-wrap fq-wrap">
+    <section id="menu">
+      <div class="fq-hero">
+        <div class="fq-marquee" aria-hidden="true"><div class="fq-marquee__row" id="mq1"></div><div class="fq-marquee__row fq-marquee__row--rev" id="mq2"></div></div>
+        <h1 class="c-title">Flag Quiz</h1>
+        <p class="c-sub">196 flags, 174 country shapes, capitals and neighbours. How well do you know the world?</p>
+      </div>
+      <div class="fq-modes" id="modes" role="radiogroup" aria-label="Mode"></div>
+      <div class="fq-opts">
+        <div><div class="fq-label">Region</div><div class="fq-seg" id="regions" role="group" aria-label="Region"></div></div>
+        <div><div class="fq-label">Difficulty</div><div class="fq-seg" id="diff" role="group" aria-label="Difficulty"></div></div>
+      </div>
+      <p class="fq-modeinfo" id="modeinfo"></p>
+      <div class="fq-go">
+        <button class="c-btn fq-play" type="button" id="play">Play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="open-atlas">Atlas</button>
+        <button class="c-btn c-btn--ghost" type="button" id="open-stats">Badges &amp; stats</button>
+      </div>
+      <p class="fq-tiny c-muted">Keys: <span class="c-kbd">1</span>-<span class="c-kbd">4</span> answer, <span class="c-kbd">Enter</span> next.</p>
+    </section>
+
+    <section id="game" hidden>
+      <div class="fq-hud">
+        <div class="c-stat"><b id="h-q">1/15</b><span id="h-qlabel">Question</span></div>
+        <div class="c-stat"><b id="h-score">0</b><span>Score</span></div>
+        <div class="c-stat"><b id="h-streak">0</b><span>Streak</span></div>
+        <div class="c-stat"><b id="h-best">-</b><span>Best</span></div>
+      </div>
+      <div class="fq-timer" id="timer"><i></i></div>
+      <div class="fq-stage">
+        <div class="fq-prompt" id="prompt"></div>
+        <p class="fq-question" id="question"></p>
+        <div class="fq-opts4" id="opts"></div>
+        <form class="fq-type" id="typeform" hidden autocomplete="off">
+          <input class="c-input" id="typein" type="text" placeholder="Type the country..." aria-label="Country name" autocapitalize="words" spellcheck="false">
+          <button class="c-btn" type="submit">Guess</button>
+          <button class="c-btn c-btn--ghost" type="button" id="typehint">Hint</button>
+          <button class="c-btn c-btn--ghost" type="button" id="typeskip">Skip</button>
+        </form>
+        <div class="fq-reveal" id="reveal" hidden></div>
+      </div>
+      <div class="fq-bottom"><button class="fq-link" type="button" id="quit">Quit round</button></div>
+    </section>
+
+    <section id="result" hidden>
+      <div class="c-card fq-rcard">
+        <div class="fq-rmedal" id="r-medal"></div>
+        <h2 class="fq-rtitle" id="r-title">Nice!</h2>
+        <div class="fq-rbig" id="r-score">0</div>
+        <div class="fq-new" id="r-new" hidden>New personal best!</div>
+        <div class="fq-rstats" id="r-stats"></div>
+        <p class="fq-rmsg" id="r-msg"></p>
+        <div class="fq-earned" id="r-earned"></div>
+        <div class="c-row">
+          <button class="c-btn" type="button" id="again">Play again</button>
+          <button class="c-btn c-btn--ghost" type="button" id="share">Share</button>
+          <button class="c-btn c-btn--ghost" type="button" id="to-menu">Menu</button>
+        </div>
+      </div>
+      <h3 class="fq-h3">Review</h3>
+      <div class="fq-review" id="review"></div>
+    </section>
+
+    <section id="atlas" hidden>
+      <div class="fq-head2"><h2 class="c-title">Atlas</h2><button class="c-btn c-btn--ghost" type="button" data-back>Back</button></div>
+      <div class="fq-atlasbar">
+        <input class="c-input" id="atlas-q" type="search" placeholder="Search countries or capitals" aria-label="Search">
+        <div class="fq-seg" id="atlas-reg" role="group" aria-label="Region"></div>
+      </div>
+      <div class="fq-detail" id="detail" hidden></div>
+      <div class="fq-atlas" id="atlas-grid"></div>
+    </section>
+
+    <section id="stats" hidden>
+      <div class="fq-head2"><h2 class="c-title">Badges &amp; stats</h2><button class="c-btn c-btn--ghost" type="button" data-back>Back</button></div>
+      <div class="fq-statgrid" id="statgrid"></div>
+      <div class="fq-continents" id="continents"></div>
+      <div class="fq-badges" id="badges"></div>
+      <h3 class="fq-h3">Recent rounds</h3>
+      <ol class="fq-history" id="history"></ol>
+    </section>
+    <p class="fq-credit c-muted">Flag artwork adapted from country-flag-icons (MIT). Outlines from Natural Earth (public domain). Currency and language facts from mledoze/countries (ODbL).</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="flags.js"></script>
+  <script src="shapes.js"></script>
+  <script src="extra.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+window.TT_DATA = (() => {
+  const w = (s) => s.trim().split(/\s+/);
+  const common = w(`the be to of and a in that have it for not on with he as you do at this but his by from they we say her she or an will my one all would there their what so up out if about who get which go me when make can like time no just him know take people into year your good some could them see other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us is was are been has had were said did many more very through long where much should here old life still own while last might great little world under find same another place live man too again never before between home tell off big small keep start hand high school end kind show try ask need feel city put run write play move word light house turn follow food eat water sun night open walk music hold read begin week game plan book call head fast late early sure half near money story sound young fire green red blue best black white found every those both each few such why around always often together close left right part number line point thing name group problem fact family next learn change child order sea late real face life side mind state stand form went seem door study story door table friend hear stop idea once land body river carry color mile young tree farm cut hard grow draw miss`);
+  const extra = w(`about above across action active actually address afraid afternoon against agree ahead allow almost alone along already although amazing among amount animal answer anyone anything appear apple area argue army arrive article artist attack attention autumn average avoid awake aware baby balance basket battle beach beautiful became become bedroom behind believe belong below beside better beyond bicycle birthday blanket bottle bottom branch bread break breakfast bridge bright bring brother brown bubble build building burn busy butter button buy camera camp candle capital captain careful carpet castle catch cause center certain chair chance chapter cheese chicken choice choose circle class clean clear clever climb clock cloud coast coffee collect common company complete computer contain continue control cook corner correct cotton country couple course cover crowd culture curious current danger dark daughter dead dear decide deep degree describe desert design detail develop different dinner direction discover distance doctor dollar double dream dress drink drive during early earth east easy edge effect effort eight either electric elephant else empty energy engine enjoy enough enter entire equal escape evening event exactly example excited exercise expect experience explain extra famous fancy farmer father feather feeling field figure final finger finish flower flying forest forget forward fresh front fruit full funny future garden gather gentle giant glass global golden grass ground guess guide happen happy harbor health heart heavy hello helpful history holiday honest honey hope horse hospital hotel hour hundred hungry husband ice imagine important inch include inside instead invite island jacket journey juice jump jungle kitchen knife ladder language large laugh lazy leader leaf lemon lesson letter level library lift listen little lonely lucky lunch machine magic market master matter maybe meadow measure meeting member memory message metal middle minute mirror modern moment monkey month morning mother motion mountain mouse mouth museum music narrow nation nature nearly neighbor nervous network noise north notice object ocean offer office orange outside paint paper parent party pattern peace pencil people pepper perfect person picture piece pilot planet plastic pleasant pocket poem police polite popular possible potato powder power practice prepare present pretty price prince problem promise proud public puzzle quarter queen question quick quiet rabbit rainbow rather ready reason record remember repeat reply rescue result return rhythm ribbon rocket rough round royal rubber sail salad sample sand scale science season second secret seven shadow shape share sharp shelf shell shine shiny shoulder silent silver simple single sister skill sleepy slow smile smooth snake soft soldier solid sound south space special speed spirit spring square stage station steady stomach stone storm straight strange stream street strong student sudden sugar summer supper surprise sweet swim system talent teacher team temple thank thick thin thousand thunder ticket tiger tiny today tomorrow tongue tonight tooth total touch tower town track trade travel treasure triangle trouble truck true twenty uncle under unless until upper usual valley value village visit voice wagon warm wash watch weather welcome west whale wheel whisper whole wide wild window winter wise wonder wooden world worry yellow yesterday young zebra`);
+  const themes = {
+    animals: w(`otter badger beaver falcon dolphin giraffe hamster koala lemur llama meerkat narwhal octopus ostrich panda parrot penguin platypus puffin raccoon reindeer salamander seahorse sloth squirrel starfish swan tortoise toucan walrus wombat zebra cheetah chameleon flamingo hedgehog hippo jaguar kangaroo lobster manatee moose owl pelican porcupine rhino shark snail sparrow tapir turtle vulture weasel yak alpaca armadillo axolotl bison camel crab dragonfly eagle gecko gorilla heron iguana jellyfish`),
+    space: w(`asteroid astronaut atmosphere aurora black hole comet constellation cosmos crater eclipse equinox galaxy gravity horizon hydrogen jupiter launch lunar mars mercury meteor milky moon nebula neptune nova observatory orbit planet pluto probe pulsar quasar radiation rocket rover satellite saturn shuttle solar spacewalk star sunspot supernova telescope universe uranus venus voyager zenith capsule cluster cosmic dwarf gas giant helium module mission parsec rings station`),
+    food: w(`apple avocado bagel banana basil biscuit blueberry broccoli butter cabbage carrot cereal cheddar cherry chickpea cinnamon coconut cookie cracker crumble cucumber cupcake custard dumpling eggplant falafel garlic ginger granola grape honey hummus lemon lentil mango melon muffin noodle oatmeal olive omelette orange pancake papaya pasta peach peanut pear pepper pickle pineapple pizza popcorn potato pretzel pumpkin raisin ravioli rice salad sandwich spinach strawberry sushi taco tomato waffle walnut yogurt`),
+    nature: w(`acorn blossom boulder breeze brook canyon cave cliff clover coral creek dawn desert dew drizzle dune fern fjord flood fog forest frost geyser glacier gorge grove hail harbor hill iceberg island lagoon lake leaf lichen lightning marsh meadow mist moss mountain oasis pebble pine pond prairie puddle rain rainbow reef ridge river savanna shore sky snowflake spring stream summit sunrise sunset swamp thunder tide tundra valley volcano waterfall wave willow`),
+    science: w(`acid atom bacteria battery biology carbon catalyst cell chemistry circuit climate compound current data density electron element energy enzyme evolution experiment fission force formula fossil friction fusion gene genome gravity habitat hypothesis inertia isotope kinetic laser lens magnet mass matter metal microscope mineral molecule momentum neuron neutron nucleus orbit organism oxygen particle photon physics plasma pressure prism protein proton quantum radar reaction research sample sensor solution species spectrum theory velocity voltage wavelength`),
+    tricky: w(`rhythm queue onomatopoeia mnemonic pharaoh psychology quizzical squirrel zephyr jukebox awkward buzzword fjord jazz kayak oxygen pixel quartz sphinx syzygy twelfth wizard xylophone yacht zigzag boxcar cryptic galaxy hyphen jinx kiwi lynx mystify nymph pygmy rhubarb scythe sync gnome knight subtle wrist whisk pseudo bureau colonel fuchsia handkerchief liaison miniature`)
+  };
+  const Q = (t, a) => ({ t, a });
+  const quotes = [
+    Q('The only thing we have to fear is fear itself.', 'Franklin D. Roosevelt'),
+    Q("That's one small step for man, one giant leap for mankind.", 'Neil Armstrong'),
+    Q('I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character.', 'Martin Luther King Jr.'),
+    Q('Imagination is more important than knowledge.', 'Albert Einstein'),
+    Q('Ask not what your country can do for you, ask what you can do for your country.', 'John F. Kennedy'),
+    Q('Two roads diverged in a wood, and I, I took the one less traveled by, and that has made all the difference.', 'Robert Frost'),
+    Q('Hope is the thing with feathers that perches in the soul, and sings the tune without the words, and never stops at all.', 'Emily Dickinson'),
+    Q('It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.', 'Charles Dickens'),
+    Q('It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.', 'Jane Austen'),
+    Q('Call me Ishmael. Some years ago, never mind how long precisely, having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.', 'Herman Melville'),
+    Q("Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'", 'Lewis Carroll'),
+    Q('The journey of a thousand miles begins with a single step.', 'Lao Tzu'),
+    Q('To be, or not to be, that is the question.', 'William Shakespeare'),
+    Q('All the world\'s a stage, and all the men and women merely players.', 'William Shakespeare'),
+    Q('Brevity is the soul of wit.', 'William Shakespeare'),
+    Q('We shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields and in the streets, we shall fight in the hills; we shall never surrender.', 'Winston Churchill'),
+    Q('The important thing is not to stop questioning. Curiosity has its own reason for existing.', 'Albert Einstein'),
+    Q('If I have seen further it is by standing on the shoulders of Giants.', 'Isaac Newton'),
+    Q('The Earth is the cradle of humanity, but one cannot live in the cradle forever.', 'Konstantin Tsiolkovsky'),
+    Q("The good thing about science is that it's true whether or not you believe in it.", 'Neil deGrasse Tyson'),
+    Q('I think, therefore I am.', 'Rene Descartes'),
+    Q('The unexamined life is not worth living.', 'Socrates'),
+    Q('Twinkle, twinkle, little star, how I wonder what you are! Up above the world so high, like a diamond in the sky.', 'Jane Taylor'),
+    Q('The woods are lovely, dark and deep, but I have promises to keep, and miles to go before I sleep.', 'Robert Frost'),
+    Q('I wandered lonely as a cloud that floats on high o\'er vales and hills, when all at once I saw a crowd, a host, of golden daffodils; beside the lake, beneath the trees, fluttering and dancing in the breeze.', 'William Wordsworth'),
+    Q('Water, water, every where, nor any drop to drink.', 'Samuel Taylor Coleridge'),
+    Q('Genius is one percent inspiration and ninety-nine percent perspiration.', 'Thomas Edison'),
+    Q('Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure.', 'Abraham Lincoln'),
+    Q('The best way to predict the future is to invent it.', 'Alan Kay'),
+    Q('Simplicity is prerequisite for reliability.', 'Edsger W. Dijkstra'),
+    Q('Programs must be written for people to read, and only incidentally for machines to execute.', 'Harold Abelson and Gerald Jay Sussman'),
+    Q('Any sufficiently advanced technology is indistinguishable from magic.', 'Arthur C. Clarke'),
+    Q('Talk is cheap. Show me the code.', 'Linus Torvalds'),
+    Q('Science is a way of thinking much more than it is a body of knowledge.', 'Carl Sagan'),
+    Q('The cosmos is within us. We are made of star-stuff. We are a way for the universe to know itself.', 'Carl Sagan'),
+    Q('We are all in the gutter, but some of us are looking at the stars.', 'Oscar Wilde'),
+    Q("'Tis better to have loved and lost than never to have loved at all.", 'Alfred, Lord Tennyson'),
+    Q('Hold fast to dreams, for if dreams die, life is a broken-winged bird that cannot fly.', 'Langston Hughes'),
+    Q('Look up at the stars and not down at your feet.', 'Stephen Hawking'),
+    Q('The pen is mightier than the sword.', 'Edward Bulwer-Lytton'),
+    Q('Early to bed and early to rise, makes a man healthy, wealthy, and wise.', 'Benjamin Franklin'),
+    Q('Well done is better than well said.', 'Benjamin Franklin'),
+    Q('There is no place like home.', 'L. Frank Baum'),
+    Q('All children, except one, grow up.', 'J. M. Barrie'),
+    Q('The Mole had been working very hard all the morning, spring-cleaning his little home.', 'Kenneth Grahame'),
+    Q("Isn't it nice to think that tomorrow is a new day with no mistakes in it yet?", 'L. M. Montgomery'),
+    Q("I'm not afraid of storms, for I'm learning how to sail my ship.", 'Louisa May Alcott'),
+    Q('I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.', 'Henry David Thoreau'),
+    Q('Slow and steady wins the race.', "Aesop's fable"),
+    Q('The happiness of your life depends upon the quality of your thoughts.', 'Marcus Aurelius'),
+    Q("The most dangerous phrase in the language is, 'We've always done it this way.'", 'Grace Hopper'),
+    Q('The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves.', 'Ada Lovelace'),
+    Q('The first principle is that you must not fool yourself, and you are the easiest person to fool.', 'Richard Feynman'),
+    Q('What you do makes a difference, and you have to decide what kind of difference you want to make.', 'Jane Goodall'),
+    Q('Education is the most powerful weapon which you can use to change the world.', 'Nelson Mandela'),
+    Q('One child, one teacher, one book, one pen can change the world.', 'Malala Yousafzai'),
+    Q('You miss one hundred percent of the shots you don\'t take.', 'Wayne Gretzky'),
+    Q('Nature does nothing in vain.', 'Aristotle'),
+    Q('Octopuses have three hearts and blue blood. Two of the hearts pump blood through the gills, and the third pumps it around the rest of the body.', 'Curio fact'),
+    Q('A day on Venus is longer than its year. Venus takes about 243 Earth days to spin around once, but only about 225 days to travel around the Sun.', 'Curio fact'),
+    Q('Light from the Sun takes about eight minutes and twenty seconds to reach Earth, so you always see the Sun as it was a few minutes ago.', 'Curio fact'),
+    Q('Botanically speaking, bananas are berries, but strawberries are not.', 'Curio fact'),
+    Q('The Great Wall of China is not visible to the naked eye from the Moon. Astronauts have said it is very hard to spot even from low orbit.', 'Curio fact'),
+    Q('A group of flamingos is called a flamboyance.', 'Curio fact'),
+    Q('Your heart beats about one hundred thousand times every day, pumping blood through tens of thousands of miles of blood vessels.', 'Curio fact'),
+    Q('A bolt of lightning is about five times hotter than the surface of the Sun, which is why the air around it expands so fast that we hear thunder.', 'Curio fact'),
+    Q('Water expands by about nine percent when it freezes. That is why ice floats, and why a full bottle of water can crack in the freezer.', 'Curio fact'),
+    Q('Mount Everest grows by a few millimetres every year, because the Indian plate keeps pushing north into Asia.', 'Curio fact'),
+    Q('The Eiffel Tower can be around fifteen centimetres taller in summer than in winter, because its iron expands in the heat.', 'Curio fact'),
+    Q('Sharks have been around for longer than trees. The first sharks appeared more than 400 million years ago, while the first trees appeared around 385 million years ago.', 'Curio fact'),
+    Q('Honey is low in water and slightly acidic, so germs find it very hard to grow in it. Sealed honey can stay good to eat for a very long time.', 'Curio fact'),
+    Q('Sea otters sometimes hold hands while they sleep so that they do not drift apart on the water.', 'Curio fact'),
+    Q('The QWERTY layout gets its name from the first six letters on the top row of letters. It was designed for typewriters in the 1870s.', 'Curio fact'),
+    Q('The sentence "The quick brown fox jumps over the lazy dog" uses every letter of the English alphabet, which is why it is used to test keyboards and fonts.', 'Curio fact'),
+    Q('A jiffy is a real unit of time. In electronics it often means one tick of a clock, such as a sixtieth or a hundredth of a second.', 'Curio fact'),
+    Q('Saturn is so light for its size that it would float in water, if you could find a bathtub big enough to hold it.', 'Curio fact')
+  ];
+  const L = (...lines) => lines.join('\n');
+  const code = {
+    js: [
+      L('function greet(name) {', '  return "Hello, " + name + "!";', '}', 'console.log(greet("Curio"));'),
+      L('const nums = [3, 1, 4, 1, 5, 9];', 'const sorted = [...nums].sort((a, b) => a - b);', 'const total = nums.reduce((sum, n) => sum + n, 0);', 'console.log(sorted, total);'),
+      L('for (let i = 1; i <= 15; i++) {', '  if (i % 15 === 0) console.log("FizzBuzz");', '  else if (i % 3 === 0) console.log("Fizz");', '  else if (i % 5 === 0) console.log("Buzz");', '  else console.log(i);', '}'),
+      L('const button = document.querySelector("#start");', 'button.addEventListener("click", () => {', '  button.textContent = "Clicked!";', '  button.disabled = true;', '});'),
+      L('class Counter {', '  constructor() {', '    this.count = 0;', '  }', '  increment() {', '    this.count += 1;', '    return this.count;', '  }', '}'),
+      L('const pets = [', '  { name: "Biscuit", type: "dog" },', '  { name: "Mochi", type: "cat" },', '];', 'const names = pets.map((p) => p.name);'),
+      L('async function load(url) {', '  const res = await fetch(url);', '  if (!res.ok) throw new Error("Failed");', '  return res.json();', '}'),
+      L('const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));', 'const lerp = (a, b, t) => a + (b - a) * t;', 'const mid = lerp(0, 100, clamp(0.5, 0, 1));')
+    ],
+    py: [
+      L('def greet(name):', '    return f"Hello, {name}!"', '', 'print(greet("Curio"))'),
+      L('numbers = [3, 1, 4, 1, 5, 9]', 'squares = [n * n for n in numbers]', 'print(sorted(squares))'),
+      L('for i in range(1, 16):', '    if i % 15 == 0:', '        print("FizzBuzz")', '    elif i % 3 == 0:', '        print("Fizz")', '    elif i % 5 == 0:', '        print("Buzz")', '    else:', '        print(i)'),
+      L('class Dog:', '    def __init__(self, name):', '        self.name = name', '', '    def speak(self):', '        return self.name + " says woof"'),
+      L('scores = {"ana": 12, "ben": 9, "cy": 15}', 'best = max(scores, key=scores.get)', 'print(best, scores[best])'),
+      L('def fib(n):', '    a, b = 0, 1', '    for _ in range(n):', '        a, b = b, a + b', '    return a'),
+      L('with open("notes.txt") as f:', '    lines = f.read().splitlines()', 'print(len(lines), "lines")'),
+      L('words = "the quick brown fox".split()', 'longest = max(words, key=len)', 'print(longest.upper())')
+    ],
+    css: [
+      L('.card {', '  padding: 16px;', '  border-radius: 12px;', '  background: white;', '  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);', '}'),
+      L('.row {', '  display: flex;', '  gap: 8px;', '  align-items: center;', '  justify-content: space-between;', '}'),
+      L('button:hover {', '  transform: translateY(-2px);', '  transition: transform 0.2s ease;', '}'),
+      L('@media (max-width: 600px) {', '  .grid {', '    grid-template-columns: 1fr;', '  }', '}'),
+      L('.title {', '  font-size: 2rem;', '  font-weight: 800;', '  letter-spacing: -0.02em;', '  color: #ff5a36;', '}'),
+      L('@keyframes spin {', '  from { transform: rotate(0deg); }', '  to { transform: rotate(360deg); }', '}')
+    ],
+    html: [
+      L('<!doctype html>', '<html lang="en">', '  <head>', '    <title>My Page</title>', '  </head>', '  <body>', '    <h1>Hello!</h1>', '  </body>', '</html>'),
+      L('<ul class="menu">', '  <li><a href="/">Home</a></li>', '  <li><a href="/about">About</a></li>', '</ul>'),
+      L('<form>', '  <label for="name">Name</label>', '  <input id="name" type="text">', '  <button type="submit">Send</button>', '</form>'),
+      L('<img src="cat.png" alt="A sleepy cat">', '<p>This is <strong>very</strong> important.</p>', '<button id="start">Start</button>'),
+      L('<table>', '  <tr><th>Day</th><th>Steps</th></tr>', '  <tr><td>Mon</td><td>8000</td></tr>', '</table>')
+    ]
+  };
+  return { common, extra, themes, quotes, code };
+})();

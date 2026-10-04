@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Timeline · Curio</title>
+  <meta name="description" content="Put 500+ moments from history in order. Fourteen themed decks, a daily deck, blitz and sudden death modes, hints, streaks and badges.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="timeline-game">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="g-world" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b267"/><stop offset="1" stop-color="#fbe3c0"/></linearGradient>
+      <linearGradient id="g-sci" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f766e"/><stop offset="1" stop-color="#34d399"/></linearGradient>
+      <linearGradient id="g-tech" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+      <linearGradient id="g-space" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e1b4b"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+      <linearGradient id="g-culture" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7f1d1d"/><stop offset="1" stop-color="#db2777"/></linearGradient>
+      <linearGradient id="g-pop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f97316"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
+      <linearGradient id="g-sport" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15803d"/><stop offset="1" stop-color="#4ade80"/></linearGradient>
+      <linearGradient id="g-explore" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0369a1"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient>
+      <symbol id="art-world" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-world)"/><circle cx="262" cy="34" r="16" fill="#fff4d6"/><path d="M0 84q50-28 110-6t110-8 100 4v36H0z" fill="#b5c98e"/><path d="M0 96q70-22 150-4t170-6v24H0z" fill="#8fb36a"/><g fill="#8a6f5a"><rect x="60" y="48" width="56" height="36"/><rect x="54" y="38" width="14" height="46"/><rect x="108" y="38" width="14" height="46"/><path d="M54 38h4v-5h3v5h3v-5h4v5M108 38h4v-5h3v5h3v-5h4v5"/><path d="M80 84v-16a8 8 0 0 1 16 0v16z" fill="#5d4637"/></g><path d="M61 38V20" stroke="#5d4637" stroke-width="2"/><path d="M61 20l14 4-14 4z" fill="#d63a3a"/><path d="M188 30q4-4 8 0q4-4 8 0M210 22q3-3 6 0q3-3 6 0" stroke="#7a5a3a" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+      <symbol id="art-sci" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-sci)"/><g fill="none" stroke="#a7f3d0" stroke-opacity=".55" stroke-width="2.5"><ellipse cx="250" cy="52" rx="42" ry="14"/><ellipse cx="250" cy="52" rx="42" ry="14" transform="rotate(60 250 52)"/><ellipse cx="250" cy="52" rx="42" ry="14" transform="rotate(-60 250 52)"/></g><circle cx="250" cy="52" r="7" fill="#fde68a"/><path d="M40 20h22v26l18 40a6 6 0 0 1-5 9H27a6 6 0 0 1-5-9l18-40z" fill="#ecfeff" fill-opacity=".85"/><path d="M27 72h48l6 14a5 5 0 0 1-5 7H26a5 5 0 0 1-5-7z" fill="#f472b6"/><rect x="36" y="14" width="30" height="7" rx="3" fill="#ecfeff"/><circle cx="48" cy="58" r="4" fill="#ecfeff"/><circle cx="58" cy="46" r="3" fill="#ecfeff"/><rect x="110" y="40" width="16" height="56" rx="8" fill="#ecfeff" fill-opacity=".85"/><rect x="110" y="70" width="16" height="26" rx="8" fill="#fbbf24"/><circle cx="160" cy="80" r="5" fill="#a7f3d0" fill-opacity=".6"/><circle cx="174" cy="66" r="3.5" fill="#a7f3d0" fill-opacity=".6"/><circle cx="186" cy="88" r="7" fill="#a7f3d0" fill-opacity=".4"/></symbol>
+      <symbol id="art-tech" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-tech)"/><g stroke="#93c5fd" stroke-opacity=".5" stroke-width="2.5" fill="none"><path d="M0 30h60l14 14h50M0 70h40l20-20h40M140 110V80l20-20h40l14-14h106M200 0v20l20 20M260 110V80h60"/></g><g fill="#bfdbfe"><circle cx="124" cy="44" r="4"/><circle cx="100" cy="50" r="4"/><circle cx="220" cy="40" r="4"/><circle cx="260" cy="80" r="4"/></g><g transform="translate(66 74)"><circle r="22" fill="#fbbf24"/><g fill="#fbbf24"><rect x="-5" y="-30" width="10" height="12" rx="2"/><rect x="-5" y="18" width="10" height="12" rx="2"/><rect x="-30" y="-5" width="12" height="10" rx="2"/><rect x="18" y="-5" width="12" height="10" rx="2"/><rect x="-5" y="-30" width="10" height="12" rx="2" transform="rotate(45)"/><rect x="-5" y="18" width="10" height="12" rx="2" transform="rotate(45)"/><rect x="-30" y="-5" width="12" height="10" rx="2" transform="rotate(45)"/><rect x="18" y="-5" width="12" height="10" rx="2" transform="rotate(45)"/></g><circle r="9" fill="#1e3a8a"/></g><rect x="230" y="14" width="56" height="40" rx="6" fill="#0f172a" stroke="#bfdbfe" stroke-width="3"/><path d="M240 28h18M240 38h30" stroke="#4ade80" stroke-width="3" stroke-linecap="round"/></symbol>
+      <symbol id="art-space" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-space)"/><g fill="#fff"><circle cx="30" cy="20" r="1.5"/><circle cx="80" cy="60" r="1"/><circle cx="120" cy="18" r="1.8"/><circle cx="160" cy="90" r="1.2"/><circle cx="196" cy="30" r="1"/><circle cx="296" cy="96" r="1.6"/><circle cx="60" cy="96" r="1.4"/><circle cx="140" cy="50" r="1"/><circle cx="300" cy="20" r="1.2"/></g><path d="M100 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fde68a"/><circle cx="236" cy="58" r="30" fill="#f59e0b"/><path d="M210 50q26 10 52 0" stroke="#b45309" stroke-width="5" fill="none" stroke-opacity=".5"/><ellipse cx="236" cy="60" rx="54" ry="11" fill="none" stroke="#fde68a" stroke-width="4" transform="rotate(-14 236 60)"/><circle cx="56" cy="40" r="14" fill="#e5e7eb"/><circle cx="51" cy="36" r="3" fill="#9ca3af"/><circle cx="61" cy="45" r="2.4" fill="#9ca3af"/><path d="M150 76l26-10-6 10 10 4z" fill="#f87171"/></symbol>
+      <symbol id="art-culture" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-culture)"/><g fill="#fde2e4"><path d="M24 34h86l-43-18z"/><rect x="24" y="34" width="86" height="6"/><rect x="30" y="44" width="10" height="50"/><rect x="50" y="44" width="10" height="50"/><rect x="72" y="44" width="10" height="50"/><rect x="94" y="44" width="10" height="50"/><rect x="20" y="94" width="94" height="8"/></g><rect x="196" y="18" width="70" height="56" rx="3" fill="#fbbf24"/><rect x="204" y="26" width="54" height="40" fill="#7dd3fc"/><path d="M204 66l18-20 14 12 10-8 12 16z" fill="#16a34a"/><circle cx="246" cy="36" r="5" fill="#fde68a"/><g fill="#fde2e4"><path d="M146 80v-34l20-5v32"/><circle cx="141" cy="80" r="6"/><circle cx="161" cy="74" r="6"/><circle cx="290" cy="90" r="5"/><path d="M294 90V66" stroke="#fde2e4" stroke-width="3"/></g></symbol>
+      <symbol id="art-pop" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-pop)"/><g fill="#fff" fill-opacity=".18"><path d="M160 0l-60 110h40z"/><path d="M160 0l60 110h-40z"/></g><rect x="0" y="80" width="320" height="22" fill="#1f2937"/><g fill="#fef3c7"><rect x="8" y="84" width="10" height="7" rx="1"/><rect x="30" y="84" width="10" height="7" rx="1"/><rect x="52" y="84" width="10" height="7" rx="1"/><rect x="74" y="84" width="10" height="7" rx="1"/><rect x="96" y="84" width="10" height="7" rx="1"/><rect x="118" y="84" width="10" height="7" rx="1"/><rect x="140" y="84" width="10" height="7" rx="1"/><rect x="162" y="84" width="10" height="7" rx="1"/><rect x="184" y="84" width="10" height="7" rx="1"/><rect x="206" y="84" width="10" height="7" rx="1"/><rect x="228" y="84" width="10" height="7" rx="1"/><rect x="250" y="84" width="10" height="7" rx="1"/><rect x="272" y="84" width="10" height="7" rx="1"/><rect x="294" y="84" width="10" height="7" rx="1"/></g><path d="M40 20l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" fill="#fde047"/><path d="M280 14l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#fde047"/><rect x="226" y="40" width="54" height="30" rx="14" fill="#312e81"/><circle cx="242" cy="55" r="5" fill="#a5b4fc"/><circle cx="262" cy="51" r="3.5" fill="#f87171"/><circle cx="270" cy="58" r="3.5" fill="#4ade80"/></symbol>
+      <symbol id="art-sport" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-sport)"/><g fill="#fff" fill-opacity=".12"><rect x="0" y="0" width="40" height="110"/><rect x="80" y="0" width="40" height="110"/><rect x="160" y="0" width="40" height="110"/><rect x="240" y="0" width="40" height="110"/></g><g stroke="#f0fdf4" stroke-width="3" fill="none" stroke-opacity=".9"><path d="M160 0v110"/><circle cx="160" cy="55" r="26"/><rect x="-2" y="25" width="40" height="60"/><rect x="282" y="25" width="40" height="60"/></g><circle cx="214" cy="70" r="14" fill="#fff"/><path d="M214 61l7 5-3 8h-8l-3-8z" fill="#111827"/><g fill="#fef9c3"><rect x="20" y="4" width="4" height="12"/><rect x="290" y="4" width="4" height="12"/></g></symbol>
+      <symbol id="art-explore" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice"><rect width="320" height="110" fill="url(#g-explore)"/><path d="M0 70l50-44 30 26 40-40 50 58z" fill="#e0f2fe" fill-opacity=".8"/><path d="M80 52l40-40 14 14-12-2-10 8-8-6z" fill="#fff"/><rect y="70" width="320" height="40" fill="#0c4a6e"/><path d="M0 78q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="#7dd3fc" stroke-width="2" fill="none"/><g transform="translate(220 54)"><path d="M0 16h52l-8 12H8z" fill="#92400e"/><path d="M24 16V-26" stroke="#78350f" stroke-width="3"/><path d="M26-24q20 16 0 36z" fill="#fef3c7"/><path d="M22-20q-16 14 0 32z" fill="#fde68a"/></g><g transform="translate(272 26)"><circle r="16" fill="#fef3c7" stroke="#92400e" stroke-width="2"/><path d="M0-12l4 12-4 12-4-12z" fill="#dc2626"/><path d="M0 12l4-12h-8z" fill="#475569"/></g></symbol>
+    </defs>
+  </svg>
+  <main class="c-wrap tl-wrap">
+    <section id="menu" class="tl-menu">
+      <div class="tl-hero">
+        <div class="tl-fan" aria-hidden="true">
+          <div class="tl-fan__card" style="--r:-14deg;--x:-70px"><svg><use href="#art-culture"/></svg><b>1503</b></div>
+          <div class="tl-fan__card" style="--r:0deg;--x:0px"><svg><use href="#art-space"/></svg><b>1969</b></div>
+          <div class="tl-fan__card" style="--r:14deg;--x:70px"><svg><use href="#art-world"/></svg><b>1066</b></div>
+        </div>
+        <h1 class="c-title">Timeline</h1>
+        <p class="c-sub">Drop each moment where it belongs in history. 539 events, 14 decks, one very long time.</p>
+      </div>
+      <div class="tl-modes" role="radiogroup" aria-label="Mode"></div>
+      <h2 class="tl-h2">Pick a deck</h2>
+      <div class="tl-decks" id="decks"></div>
+      <div class="tl-go">
+        <button class="c-btn tl-play" type="button" id="play">Play</button>
+        <button class="c-btn c-btn--ghost" type="button" id="open-stats">Badges &amp; stats</button>
+      </div>
+      <p class="tl-help c-muted">Drag the card into your timeline, tap a gap, or use <span class="c-kbd">↑</span> <span class="c-kbd">↓</span> and <span class="c-kbd">Enter</span>. <span class="c-kbd">H</span> uses a hint.</p>
+    </section>
+
+    <section id="game" class="tl-game" hidden>
+      <div class="tl-hud">
+        <div class="c-stat"><b id="score">0</b><span>Placed</span></div>
+        <div class="c-stat"><div class="tl-lives" id="lives" aria-label="Lives"></div><span id="lives-label">Lives</span></div>
+        <div class="c-stat"><b id="streak">0</b><span>Streak</span></div>
+        <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+      </div>
+      <div class="tl-bar">
+        <span class="tl-deckname" id="deckname"></span>
+        <div class="tl-timer" id="timer" hidden><i></i></div>
+        <button class="tl-chip" type="button" id="hint" aria-label="Use a hint">Hint <b id="hints">3</b></button>
+        <button class="tl-chip" type="button" id="quit">Quit</button>
+      </div>
+      <div class="tl-dock" id="dock"></div>
+      <ol class="tl-list" id="list" aria-label="Your timeline"></ol>
+    </section>
+
+    <section id="result" class="tl-result" hidden>
+      <div class="c-card tl-rcard">
+        <div class="tl-rbadge" id="r-emblem"></div>
+        <h2 class="tl-rtitle" id="r-title">Time's up</h2>
+        <div class="tl-rbig" id="r-score">0</div>
+        <div class="tl-new" id="r-new" hidden>New personal best!</div>
+        <div class="tl-rstats" id="r-stats"></div>
+        <p class="tl-rmsg" id="r-msg"></p>
+        <div class="tl-ribbon" id="r-ribbon" aria-hidden="true"></div>
+        <div class="tl-earned" id="r-earned"></div>
+        <div class="c-row">
+          <button class="c-btn" type="button" id="again">Play again</button>
+          <button class="c-btn c-btn--ghost" type="button" id="share">Share</button>
+          <button class="c-btn c-btn--ghost" type="button" id="to-menu">Change deck</button>
+        </div>
+      </div>
+      <h3 class="tl-h2">Your timeline</h3>
+      <ol class="tl-list tl-list--final" id="final"></ol>
+    </section>
+
+    <section id="stats" class="tl-statsview" hidden>
+      <div class="tl-head2"><h2 class="c-title">Badges &amp; stats</h2><button class="c-btn c-btn--ghost" type="button" id="stats-back">Back</button></div>
+      <div class="tl-statgrid" id="statgrid"></div>
+      <div class="tl-badges" id="badges"></div>
+      <h3 class="tl-h2">Recent games</h3>
+      <ol class="tl-history" id="history"></ol>
+    </section>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="events.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

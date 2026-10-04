@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Click Speed · Curio</title>
+  <meta name="description" content="How many clicks per second can you manage? CPS test, race to 100, and a target hunt for your aim.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="click-speed">
+  <main class="c-wrap">
+    <div class="cs-head">
+      <h1 class="c-title">Click Speed</h1>
+      <p class="c-sub">Click as fast as humanly possible. Or race to 100. Or prove your aim on moving targets.</p>
+    </div>
+    <div class="cs-tabs" role="tablist" id="tabs">
+      <button class="cs-tab" type="button" role="tab" data-mode="cps"><i>⚡</i><b>CPS Test</b><span>Clicks per second</span></button>
+      <button class="cs-tab" type="button" role="tab" data-mode="race"><i>🏁</i><b>Race</b><span>Fastest to N clicks</span></button>
+      <button class="cs-tab" type="button" role="tab" data-mode="hunt"><i>🎯</i><b>Target Hunt</b><span>Speed plus aim</span></button>
+    </div>
+    <div class="cs-modes">
+      <div class="cs-seg" id="durs" role="group" aria-label="Duration"></div>
+      <div class="cs-seg" id="inputs" role="group" aria-label="Input">
+        <button type="button" data-i="click">🖱️ Click</button>
+        <button type="button" data-i="space">⌨️ Space</button>
+        <button type="button" data-i="zx">🎹 Z + X</button>
+      </div>
+      <div class="cs-seg" id="sizes" role="group" aria-label="Target size">
+        <button type="button" data-s="big">Big</button>
+        <button type="button" data-s="medium">Medium</button>
+        <button type="button" data-s="small">Small</button>
+      </div>
+    </div>
+    <div class="cs-pad" id="pad" role="button" tabindex="0" aria-label="Click area">
+      <div class="cs-inner" id="inner">
+        <svg class="cs-gauge" id="gauge" viewBox="0 0 200 112" aria-hidden="true">
+          <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="16" stroke-linecap="round"/>
+          <path d="M20 100 A80 80 0 0 1 60 30.7" fill="none" stroke="#9be7a1" stroke-width="12" stroke-linecap="round"/>
+          <path d="M64 28 A80 80 0 0 1 136 28" fill="none" stroke="#ffe08a" stroke-width="12"/>
+          <path d="M140 30.7 A80 80 0 0 1 180 100" fill="none" stroke="#ff9e8a" stroke-width="12" stroke-linecap="round"/>
+          <g fill="rgba(255,255,255,.85)" font-size="10" font-weight="800" font-family="system-ui, sans-serif" text-anchor="middle"><text x="20" y="111">0</text><text x="100" y="12">8</text><text x="180" y="111">16</text></g>
+          <g class="needle" id="needle" transform="rotate(-90)"><path d="M97 100 L100 30 L103 100 Z" fill="#fff"/></g>
+          <circle cx="100" cy="100" r="8" fill="#fff"/><circle cx="100" cy="100" r="3.5" fill="#c62828"/>
+        </svg>
+        <div class="cs-big" id="big">Click!</div>
+        <div class="cs-small" id="small">Click here to start</div>
+        <div class="cs-btn3d" aria-hidden="true"></div>
+      </div>
+      <div class="cs-combo" id="combo" hidden></div>
+      <div class="cs-timer" id="timer"></div>
+    </div>
+    <div class="c-card cs-graph-wrap" id="graphCard">
+      <div class="cs-graph-label"><span>Clicks per second</span><span id="live">0.0 CPS</span></div>
+      <canvas class="cs-graph" id="graph" role="img" aria-label="Live graph of clicks per second over time"></canvas>
+    </div>
+    <section class="c-card cs-results" id="results" aria-live="polite" hidden>
+      <div class="cs-animal" id="rAnimal">🐇</div>
+      <div class="cs-rating" id="rating"></div>
+      <p class="cs-rating-sub" id="ratingSub"></p>
+      <div class="cs-ladder" id="ladder" aria-hidden="true"></div>
+      <div class="cs-stats" id="rStats"></div>
+      <div class="cs-new-badges" id="rBadges"></div>
+      <div class="c-row" style="justify-content:center;margin-top:12px">
+        <button class="c-btn" id="again" type="button">Go again</button>
+        <button class="c-btn c-btn--ghost" id="share" type="button">📋 Share</button>
+      </div>
+      <div class="cs-bests" id="bests"></div>
+    </section>
+    <section class="c-card cs-panel">
+      <div class="cs-ptabs" role="tablist">
+        <button type="button" role="tab" data-tab="how" aria-selected="true">How to play</button>
+        <button type="button" role="tab" data-tab="hist" aria-selected="false">History</button>
+        <button type="button" role="tab" data-tab="badges" aria-selected="false">Badges <span id="badgeCount"></span></button>
+      </div>
+      <div data-pane="how">
+        <ul class="cs-how">
+          <li><b>CPS Test:</b> the clock starts on your first click. Pick 1 to 60 seconds.</li>
+          <li><b>Race:</b> how quickly can you land 50, 100 or 200 clicks? Lower time wins.</li>
+          <li><b>Target Hunt:</b> targets pop up and shrink. Hit as many as you can (a near miss still counts, and Big targets suit touchpads). Missing the target or letting one fade breaks your combo.</li>
+          <li>Inputs: mouse or finger, the <span class="c-kbd">Space</span> bar, or alternate <span class="c-kbd">Z</span> and <span class="c-kbd">X</span> like a rhythm gamer. In Z + X mode the same key twice in a row does not count.</li>
+          <li><span class="c-kbd">R</span> resets the current test. Looking away cancels a run, no cheating.</li>
+        </ul>
+      </div>
+      <div data-pane="hist" hidden><div class="cs-hist" id="hist"></div><div class="cs-hist-label" id="histLabel"></div></div>
+      <div data-pane="badges" hidden><div class="cs-badges" id="badgeList"></div></div>
+    </section>
+    <p class="cs-hint c-muted" id="hint"></p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

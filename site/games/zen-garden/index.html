@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zen Garden · Curio</title>
+  <meta name="description" content="Rake patterns into the sand, place stones, maples, lanterns and a koi pond, recreate Ryoan-ji, change the season and breathe along with a guided timer. A small, calm place.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="zen-garden">
+  <main class="c-wrap zg-main">
+    <canvas id="cv" role="img" aria-label="A top-down Japanese rock garden of raked sand. Drag to rake grooves, choose a tool to place stones, plants or a bonsai."></canvas>
+    <div class="zg-intro" id="intro">
+      <h1>Zen Garden</h1>
+      <p>Drag to rake the sand, or use the arrow keys. Place stones, maples, lanterns and a koi pond. Breathe out. Nothing here is urgent.</p>
+    </div>
+    <div class="breath hidden" id="breath" aria-live="polite"><div class="orb" id="orb"></div><b id="breathTxt">Breathe in</b><span id="breathTime">3:00</span><button type="button" class="c-btn c-btn--ghost" id="breathStop">End</button></div>
+    <div class="dock" role="toolbar" aria-label="Garden tools">
+      <div class="grp" role="group" aria-label="Rakes">
+        <button type="button" class="chip" data-tool="stick" aria-pressed="false" title="Stick (1)">🥢<span class="lbl"> Stick</span></button>
+        <button type="button" class="chip" data-tool="rake" aria-pressed="true" title="Rake (2)">🔱<span class="lbl"> Rake</span></button>
+        <button type="button" class="chip" data-tool="wide" aria-pressed="false" title="Wide rake (3)">🧹<span class="lbl"> Wide</span></button>
+        <button type="button" class="chip" data-tool="smooth" aria-pressed="false" title="Smooth (4)">✋<span class="lbl"> Smooth</span></button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="grp" role="group" aria-label="Place">
+        <button type="button" class="chip" data-tool="stone" aria-pressed="false" title="Stone (5)">🪨<span class="lbl"> Stone</span></button>
+        <button type="button" class="chip" data-tool="plant" aria-pressed="false" title="Plant (6)">🌿<span class="lbl"> Plant</span></button>
+        <button type="button" class="chip" data-tool="bonsai" aria-pressed="false" title="Bonsai (7)">🪴<span class="lbl"> Bonsai</span></button>
+        <button type="button" class="chip" data-tool="maple" aria-pressed="false" title="Maple (8)">🍁<span class="lbl"> Maple</span></button>
+        <button type="button" class="chip" data-tool="moss" aria-pressed="false" title="Moss (9)">🟢<span class="lbl"> Moss</span></button>
+        <button type="button" class="chip" data-tool="lantern" aria-pressed="false" title="Lantern (0)">🏮<span class="lbl"> Lantern</span></button>
+        <button type="button" class="chip" data-tool="pond" aria-pressed="false" title="Koi pond (K)">🐟<span class="lbl"> Pond</span></button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="grp">
+        <button type="button" class="chip" id="bPattern" title="Rake a pattern (P)">🌀<span class="lbl"> Patterns</span></button>
+        <button type="button" class="chip" id="bGarden" title="Famous gardens (G)">🏯<span class="lbl"> Gardens</span></button>
+        <button type="button" class="chip" id="bWeather" title="Weather (W)">🌸<span class="lbl"> Petals</span></button>
+        <button type="button" class="chip" id="bTime" title="Time of day (T)">☀️<span class="lbl"> Day</span></button>
+        <button type="button" class="chip" id="bBreathe" title="Breathe (B)">🧘<span class="lbl"> Breathe</span></button>
+        <button type="button" class="chip" id="bSound" aria-pressed="true" title="Ambience">🎐<span class="lbl"> Ambience</span></button>
+        <button type="button" class="chip" id="bClear" title="New garden">🧺</button>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

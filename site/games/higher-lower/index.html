@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Higher or Lower · Curio</title>
+  <meta name="description" content="Two things, one number: is the second higher or lower? Twelve categories and over a thousand facts, from populations and box office to animal weights, landmark ages and planets.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="fx.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="higher-lower">
+  <main class="c-wrap hl">
+    <h1 class="c-title">Higher or Lower</h1>
+    <p class="c-sub">Two things. One number. Is the second one higher or lower? Twelve categories, over a thousand facts.</p>
+    <div class="hl-top">
+      <div id="oMode"></div>
+    </div>
+    <div class="hl-cats" id="cats" role="group" aria-label="Category"></div>
+    <div class="hl-hud">
+      <div class="c-stat"><b id="streak">0</b><span id="scoreLabel">Streak</span></div>
+      <div class="hl-extra" id="extra"></div>
+      <div class="c-stat"><b id="best">-</b><span>Best</span></div>
+    </div>
+    <p class="hl-cat" id="cat"></p>
+    <div class="hl-board" id="board">
+      <div class="hl-card" id="left"></div>
+      <div class="hl-vs" id="vs">VS</div>
+      <div class="hl-card" id="right"></div>
+    </div>
+    <p class="hl-help c-muted">Keys: <span class="c-kbd">↑</span> higher · <span class="c-kbd">↓</span> lower · <span class="c-kbd">N</span> new game</p>
+    <div id="tabs"></div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="fx.js"></script>
+  <script src="countries.js"></script>
+  <script src="things.js"></script>
+  <script src="more.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

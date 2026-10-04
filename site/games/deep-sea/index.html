@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Deep Sea · Curio</title>
+  <meta name="description" content="Scroll from the sunny surface to the bottom of the Challenger Deep, meeting over 100 creatures and wrecks at their real depths. Ping your sonar and fill your field guide.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    body { overflow-x: hidden; }
+    .sky {
+      position: relative; z-index: 2; overflow: hidden;
+      min-height: calc(78vh - var(--bar-h)); padding: 40px 16px 150px; text-align: center;
+      background: linear-gradient(#bfe6ff, #eaf6ff 70%, #d8f0ff);
+    }
+    :root[data-theme="dark"] .sky { background: linear-gradient(#0b1430, #1b2c55 70%, #24406e); color: #f3eee7; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sky { background: linear-gradient(#0b1430, #1b2c55 70%, #24406e); color: #f3eee7; } }
+    .sky .c-sub { max-width: 560px; margin: 0 auto 22px; }
+    .sky .sun { position: absolute; right: 8%; top: 30px; width: 90px; height: 90px; border-radius: 50%; background: #ffd23f; box-shadow: 0 0 60px #ffe38a; }
+    :root[data-theme="dark"] .sky .sun { background: #f4f1de; box-shadow: 0 0 40px #9fb4ff; width: 64px; height: 64px; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sky .sun { background: #f4f1de; box-shadow: 0 0 40px #9fb4ff; width: 64px; height: 64px; } }
+    .cloud { position: absolute; background: #fff; border-radius: 40px; height: 26px; opacity: .9; animation: drift 60s linear infinite; }
+    .cloud::before, .cloud::after { content: ''; position: absolute; background: #fff; border-radius: 50%; }
+    .cloud::before { width: 40px; height: 40px; left: 14px; top: -20px; }
+    .cloud::after { width: 30px; height: 30px; left: 44px; top: -12px; }
+    :root[data-theme="dark"] .cloud, :root[data-theme="dark"] .cloud::before, :root[data-theme="dark"] .cloud::after { background: #33466e; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cloud, :root:not([data-theme="light"]) .cloud::before, :root:not([data-theme="light"]) .cloud::after { background: #33466e; } }
+    @keyframes drift { from { transform: translateX(-120px); } to { transform: translateX(110vw); } }
+    .boat { position: absolute; left: 50%; bottom: 34px; width: 150px; transform: translateX(-50%); animation: bob 3s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translate(-50%, 5px) rotate(1.5deg); } }
+    .waves { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 60px; }
+    .hero-stats { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 18px; font-size: 14px; color: var(--ink-2); }
+    .sky .hero-stats { color: inherit; opacity: .8; }
+
+    #water { position: fixed; inset: 0; z-index: 0; background: #1a86c6; }
+    #snow { position: fixed; inset: 0; z-index: 1; pointer-events: none; width: 100%; height: 100%; }
+    .ocean { position: relative; z-index: 2; color: #eaf6ff; max-width: 1180px; margin: 0 auto; }
+    .ruler { position: absolute; left: 0; top: 0; bottom: 0; width: 56px; border-right: 1px solid rgba(255,255,255,.18); }
+    .tick { position: absolute; left: 0; width: 10px; height: 1px; background: rgba(255,255,255,.35); }
+    .tick.big { width: 18px; background: rgba(255,255,255,.6); }
+    .tick span { position: absolute; left: 22px; top: -8px; font: 700 11px/1 var(--mono); color: rgba(255,255,255,.7); white-space: nowrap; }
+    .zone { position: absolute; left: 0; right: 0; border-top: 2px dashed rgba(255,255,255,.35); }
+    .zone { z-index: 4; }
+    .zone b { position: absolute; left: 64px; top: 6px; color: #fff; background: #0a1a2e !important; box-shadow: 0 2px 10px rgba(0,0,0,.3); font-size: 13px; text-transform: uppercase; letter-spacing: .14em; background: rgba(0,0,0,.25); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .item {
+      position: absolute; padding: 8px 10px 10px; border-radius: 14px;
+      background: rgba(4, 16, 32, .28); border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+      transition: transform .25s ease, background .25s;
+    }
+    .item:hover, .item:focus-within { transform: scale(1.03); background: rgba(4, 16, 32, .5); }
+    .item .art { margin: 0 auto; max-width: 100%; }
+    .item .art svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+    .item .nm { font-weight: 900; font-size: 15px; line-height: 1.15; margin-top: 4px; }
+    .item .dp { font: 700 12px/1.2 var(--mono); color: #8fd8ff; margin-top: 2px; }
+    .item p { margin: 5px 0 0; font-size: 12.5px; line-height: 1.35; color: rgba(234,246,255,.82); }
+    .item.marker { border-style: dashed; }
+    .note { position: absolute; z-index: 2; font-style: italic; font-weight: 700; font-size: 15px; color: rgba(234,246,255,.7); text-align: center; padding: 6px 10px; }
+    .item::before { content: ''; position: absolute; left: -8px; width: 8px; top: var(--ty, 20px); border-top: 1px dotted rgba(255,255,255,.35); }
+    .floor { position: absolute; left: 0; right: 0; height: 520px; }
+    .floor svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .end { position: absolute; left: 50%; transform: translateX(-50%); width: min(92%, 520px); text-align: center; bottom: 30px; }
+    .end h2 { margin: 0 0 6px; font-size: clamp(24px, 4vw, 34px); }
+    .end p { margin: 0 0 14px; color: rgba(234,246,255,.8); }
+
+    .meter {
+      position: fixed; z-index: 20; right: 16px; bottom: 16px; width: 214px;
+      background: rgba(5, 12, 24, .72); color: #eaf6ff; border: 1px solid rgba(255,255,255,.16);
+      border-radius: 18px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      transition: opacity .3s, transform .3s;
+    }
+    .meter.off { opacity: 0; transform: translateY(20px); pointer-events: none; }
+    .meter .d { font: 900 30px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+    .meter .d small { font-size: 15px; }
+    .meter .ft { font: 700 13px/1.4 var(--mono); color: #8fd8ff; }
+    .meter .zn { font-weight: 900; margin-top: 6px; font-size: 14px; }
+    .meter .zn small { display: block; font-weight: 600; font-size: 11.5px; line-height: 1.3; color: rgba(234,246,255,.7); margin-top: 2px; }
+    .meter.flash { animation: flash 1s ease 2; }
+    @keyframes flash { 50% { box-shadow: 0 0 0 4px #5ad8ff, 0 10px 30px rgba(0,0,0,.35); } }
+    .meter .row { display: flex; justify-content: space-between; font-size: 12px; color: rgba(234,246,255,.75); margin-top: 4px; }
+    .meter .bar { height: 6px; background: rgba(255,255,255,.15); border-radius: 9px; margin-top: 8px; overflow: hidden; }
+    .meter .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #5ad8ff, #ff5a36); }
+    .meter .btns { display: flex; gap: 6px; margin-top: 10px; }
+    .meter button { flex: 1; border: 0; border-radius: 999px; padding: 7px 6px; font-weight: 800; font-size: 12px; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; }
+    .meter button:hover { background: rgba(255,255,255,.24); }
+    .meter button[aria-pressed="true"] { background: #ff5a36; }
+    .pointer { position: fixed; z-index: 3; left: max(0px, calc(50vw - 590px)); top: 50%; width: 56px; height: 0; border-top: 2px solid #ff5a36; pointer-events: none; }
+    .pointer.off { display: none; }
+    @media (max-width: 600px) {
+      .ruler { width: 40px; }
+      .tick span { left: 12px; font-size: 9.5px; top: -12px; }
+      .pointer { width: 40px; }
+      .zone b { left: 46px; font-size: 11px; }
+      .item { padding: 6px 7px 8px; }
+      .item .nm { font-size: 13px; }
+      .item p { display: none; position: absolute; left: -4px; right: -4px; top: calc(100% + 4px); z-index: 10; margin: 0; padding: 10px 12px; border-radius: 12px; background: #0a1a2e; border: 1px solid rgba(255,255,255,.25); box-shadow: 0 10px 24px rgba(0,0,0,.4); font-size: 13px; }
+      .item.open { z-index: 9; }
+      .item.open p { display: block; }
+      .item .nm::after { content: ' ⓘ'; font-size: 11px; opacity: .6; }
+      .meter .zn small { display: none; }
+      .meter { left: 12px; right: 12px; bottom: 10px; width: auto; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; padding: 9px 12px; }
+      .meter .d { font-size: 24px; grid-row: span 2; align-self: center; }
+      .meter .zn { margin-top: 0; }
+      .meter .row, .meter .bar { grid-column: 1 / -1; }
+      .meter .btns { grid-column: 1 / -1; margin-top: 6px; }
+    }
+    .item.glow .art svg { filter: drop-shadow(0 0 6px rgba(90,216,255,.0)); transition: filter .6s; }
+    .deep .item.glow { border-color: rgba(90,216,255,.35); animation: biolum 3.2s ease-in-out infinite; }
+    .deep .item.glow .art svg { filter: drop-shadow(0 0 10px rgba(124,247,255,.75)) drop-shadow(0 0 2px rgba(124,247,255,.9)); }
+    @keyframes biolum { 50% { box-shadow: 0 0 22px rgba(90,216,255,.35), inset 0 0 12px rgba(90,216,255,.12); } }
+    .item.pinged { animation: pinged 0.9s ease 3; border-color: #ffd36b; }
+    @keyframes pinged { 50% { box-shadow: 0 0 0 4px rgba(255,211,107,.55), 0 0 30px rgba(255,211,107,.45); transform: scale(1.04); } }
+    .item.found { animation: found .7s cubic-bezier(.2, 1.6, .4, 1); }
+    @keyframes found { 0% { transform: scale(.92); opacity: .4; } 60% { transform: scale(1.04); } }
+    .item .new { position: absolute; top: -9px; right: -6px; background: #ffd36b; color: #1d1b19; font: 900 10px/1 var(--font); padding: 4px 7px; border-radius: 999px; letter-spacing: .06em; animation: found .6s; }
+    .sonar { position: fixed; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 3px solid rgba(124,247,255,.9); z-index: 15; pointer-events: none; opacity: 0; }
+    .sonar.go { animation: sonar 1.6s cubic-bezier(.1, .6, .3, 1); }
+    @keyframes sonar { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(60); border-width: .2px; } }
+    .meter .btns + .btns { margin-top: 6px; }
+    .log { position: fixed; z-index: 40; top: var(--bar-h); right: 0; bottom: 0; width: min(420px, 100%); background: #08142a; color: #eaf6ff; border-left: 1px solid rgba(255,255,255,.12); box-shadow: -14px 0 40px rgba(0,0,0,.45); padding: 16px; overflow-y: auto; animation: logIn .3s cubic-bezier(.2, 1, .3, 1); }
+    @keyframes logIn { from { transform: translateX(40px); opacity: 0; } }
+    .log__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .log__head h2 { margin: 0; font-size: 22px; }
+    .log__head p { margin: 2px 0 0; font-size: 13px; color: rgba(234,246,255,.7); }
+    .log__head button { border: 0; background: rgba(255,255,255,.12); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 15px; }
+    .log__bar { height: 8px; border-radius: 9px; background: rgba(255,255,255,.12); overflow: hidden; margin: 12px 0; }
+    .log__bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #5ad8ff, #7dff9a); transition: width .6s; }
+    .log h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #8fd8ff; margin: 16px 0 8px; }
+    .log__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .log__grid button { border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: inherit; border-radius: 12px; padding: 8px 6px; cursor: pointer; text-align: center; font: 700 11.5px/1.2 var(--font); transition: background .15s, transform .12s; }
+    .log__grid button:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
+    .log__grid button .a { height: 46px; display: grid; place-items: center; margin-bottom: 4px; }
+    .log__grid button .a svg { max-width: 100%; max-height: 46px; }
+    .log__grid button.unk .a svg { filter: brightness(0); opacity: .45; }
+    .log__grid button.unk { color: rgba(234,246,255,.5); }
+    .log__grid small { display: block; font: 700 10px var(--mono); color: #8fd8ff; margin-top: 2px; }
+    .log__badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .log__badges div { text-align: center; font-size: 10.5px; font-weight: 800; line-height: 1.2; padding: 6px 2px; border-radius: 10px; background: rgba(255,255,255,.06); }
+    .log__badges svg { width: 30px; height: 30px; display: block; margin: 0 auto 3px; }
+    .log__badges .locked { opacity: .4; }
+    .log__badges .locked svg { filter: grayscale(1); }
+    .tip { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 30; background: rgba(5,12,24,.85); color: #eaf6ff; padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; max-width: calc(100vw - 32px); text-align: center; }
+    .tip .c-kbd { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); color: #fff; }
+    .end .stats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 0 0 14px; }
+    .end .stats span { background: rgba(255,255,255,.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: 13px; }
+    @media (max-width: 600px) { .log__grid { grid-template-columns: repeat(2, 1fr); } .meter .btns button { padding: 6px 4px; } .tip { bottom: auto; top: calc(var(--bar-h) + 10px); border-radius: 14px; } }
+  </style>
+</head>
+<body data-game="deep-sea">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <radialGradient id="ds-shine" cx=".32" cy=".3" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></radialGradient>
+    <linearGradient id="ds-rainbow" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ad8ff"/><stop offset=".33" stop-color="#7dff9a"/><stop offset=".66" stop-color="#ff7ad8"/><stop offset="1" stop-color="#ffd36b"/></linearGradient>
+  </defs></svg>
+  <header class="sky">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="cloud" style="top:60px;width:90px;animation-delay:-12s" aria-hidden="true"></div>
+    <div class="cloud" style="top:120px;width:70px;animation-delay:-40s;animation-duration:80s" aria-hidden="true"></div>
+    <h1 class="c-title">The Deep Sea</h1>
+    <p class="c-sub">The ocean is deeper than you think. Scroll down from the waves to the very bottom of the Mariana Trench, 10,935 metres below, drawn to scale.</p>
+    <div class="c-row">
+      <button class="c-btn" id="dive" type="button">Start diving ↓</button>
+    </div>
+    <div class="hero-stats"><span>🐟 <b id="heroCount">100+</b> things to meet</span><span>📏 1 m = <b id="scaleTxt">1.8</b> px (top 200 m stretched)</span><span>🌑 5 zones</span></div>
+    <svg class="boat" viewBox="0 0 150 70" aria-hidden="true"><path d="M70 6 L70 44" stroke="#5a3b22" stroke-width="3"/><path d="M72 8 L110 40 L72 40Z" fill="#fff" stroke="#ddd"/><path d="M68 12 L40 40 L68 40Z" fill="#ff5a36"/><path d="M14 46 L136 46 L120 64 L28 64Z" fill="#8a5a33"/><path d="M14 46 L136 46 L134 51 L16 51Z" fill="#b07a47"/></svg>
+    <svg class="waves" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q50 10 100 30 T200 30 T300 30 T400 30 T500 30 T600 30 T700 30 T800 30 T900 30 T1000 30 T1100 30 T1200 30 V60 H0Z" fill="#1a86c6"/></svg>
+  </header>
+
+  <div id="water" aria-hidden="true"></div>
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div class="pointer off" id="pointer" aria-hidden="true"></div>
+
+  <main class="ocean" id="ocean" aria-label="The ocean from the surface to the Challenger Deep">
+    <div class="ruler" id="ruler"></div>
+  </main>
+
+  <aside class="meter off" id="meter" aria-live="off">
+    <div class="d"><span id="mDepth">0</span><small> m</small></div>
+    <div><div class="ft" id="mFt">0 ft</div><div class="zn"><span id="mZone">Sunlight Zone</span><small id="mNote"></small></div></div>
+    <div class="row"><span id="mPress">1 atm</span><span id="mTemp">20 °C</span><span id="mLight">☀ 100%</span></div>
+    <div class="bar"><i id="mBar"></i></div>
+    <div class="btns"><button type="button" id="sink" aria-pressed="false">⏬ Sink</button><button type="button" id="speed" aria-label="Sink speed">1×</button><button type="button" id="up">⏫ Surface</button></div>
+    <div class="btns"><button type="button" id="ping" title="Sonar ping (P)">📡 Ping</button><button type="button" id="logBtn" title="Field guide (G)">📖 <span id="foundTxt">0</span></button></div>
+  </aside>
+  <div class="sonar" id="sonar" aria-hidden="true"></div>
+  <aside class="log" id="log" hidden aria-label="Field guide">
+    <div class="log__head"><div><h2>Field guide</h2><p id="logSub"></p></div><button type="button" id="logClose" aria-label="Close">✕</button></div>
+    <div class="log__bar"><i id="logBar"></i></div>
+    <div class="log__badges" id="badges"></div>
+    <div id="logList"></div>
+  </aside>
+  <div class="tip" id="tip" hidden>Scroll or swipe down to dive. Keys: <span class="c-kbd">S</span> sink, <span class="c-kbd">P</span> sonar, <span class="c-kbd">G</span> field guide.</div>
+
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="art.js"></script>
+  <script src="art2.js"></script>
+  <script src="data.js"></script>
+  <script src="data2.js"></script>
+  <script>
+  (function () {
+    const MAX = 10935;
+    const S = 1.8;
+    const FT = 3.28084;
+    const ITEMS = window.DEEP_ITEMS;
+    const ZONES = [
+      { d: 0, name: 'Sunlight Zone', sci: 'Epipelagic', note: 'Enough light for plants to photosynthesise.' },
+      { d: 200, name: 'Twilight Zone', sci: 'Mesopelagic', note: 'A dim blue glow. No plants can grow here.' },
+      { d: 1000, name: 'Midnight Zone', sci: 'Bathypelagic', note: 'No sunlight at all. The only light is made by animals.' },
+      { d: 4000, name: 'Abyssal Zone', sci: 'Abyssopelagic', note: 'Near freezing, crushing pressure, total darkness.' },
+      { d: 6000, name: 'Hadal Zone', sci: 'Hadalpelagic', note: 'The trenches. Named after Hades, the underworld.' }
+    ];
+    const STOPS = [[0, [26, 134, 198]], [200, [12, 78, 140]], [1000, [6, 34, 72]], [4000, [2, 12, 28]], [6000, [1, 4, 10]], [MAX, [0, 0, 0]]];
+
+    const ocean = document.getElementById('ocean');
+    const ruler = document.getElementById('ruler');
+    const water = document.getElementById('water');
+    const meter = document.getElementById('meter');
+    const pointer = document.getElementById('pointer');
+    const $ = (id) => document.getElementById(id);
+    document.getElementById('scaleTxt').textContent = S;
+    const TOP = 200, S1 = 6.5;
+    const Y = (d) => d <= TOP ? d * S1 : TOP * S1 + (d - TOP) * S;
+    const D = (y) => y <= TOP * S1 ? y / S1 : TOP + (y - TOP * S1) / S;
+    const floorY = Y(MAX);
+    const TAIL = 420;
+    ocean.style.height = `${floorY + TAIL}px`;
+
+    let rhtml = '';
+    for (let m = 20; m <= MAX; m += m < 200 ? 20 : 100) {
+      const big = m < 200 ? m % 100 === 0 : m % 500 === 0;
+      rhtml += `<div class="tick${big ? ' big' : ''}" style="top:${Y(m)}px">${big ? `<span>${m.toLocaleString('en-US')} m</span>` : ''}</div>`;
+    }
+    ruler.innerHTML = rhtml;
+
+    for (const z of ZONES) {
+      const el = document.createElement('div');
+      el.className = 'zone';
+      el.style.top = `${Y(z.d)}px`;
+      el.innerHTML = `<b>${z.name} · ${z.d.toLocaleString('en-US')} m</b>`;
+      if (z.d === 0) el.style.borderTop = '0';
+      ocean.append(el);
+    }
+
+    const floor = document.createElement('div');
+    floor.className = 'floor';
+    floor.style.top = `${floorY - 100}px`;
+    floor.innerHTML = `<svg viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 40 L180 60 L300 80 L420 100 L500 100 L600 96 L720 70 L860 50 L1000 30 L1000 520 L0 520Z" fill="#14161c"/>
+      <path d="M0 40 L180 60 L300 80 L420 100 L500 100 L600 96 L720 70 L860 50 L1000 30" stroke="#2a2e38" stroke-width="4" fill="none"/></svg>
+      <div class="end">
+        <h2>You reached the Challenger Deep</h2>
+        <p>10,935 m (35,876 ft) down, under about 1,100 atmospheres of pressure. Only a few dozen people have ever been this deep.</p>
+        <div class="stats" id="endStats"></div>
+        <div class="c-row"><button class="c-btn" type="button" id="again">Back to the surface ⏫</button><button class="c-btn c-btn--ghost" type="button" id="endLog">Open field guide</button><button class="c-btn c-btn--ghost" type="button" id="endShare">Copy my dive</button></div>
+      </div>`;
+    ocean.append(floor);
+
+    const NOTES = [
+      { d: 170, t: 'Most ocean life lives up here, where the sunlight is.' },
+      { d: 1000, t: 'From here down there is no sunlight at all. Every glow you see is made by an animal.' },
+      { d: 2600, t: 'The pressure now is like having a car parked on every square inch of you.' },
+      { d: 3200, t: 'Still going. The ocean is really, really deep.' },
+      { d: 4050, t: 'Welcome to the abyss. The water is about 2 °C and it never changes.' },
+      { d: 5300, t: 'We have better maps of the surface of Mars than of this seafloor.' },
+      { d: 5900, t: 'Most of the ocean ends around here. What follows are the trenches.' },
+      { d: 7800, t: 'Below about 8,200 m, fish cannot survive: the pressure breaks their proteins.' },
+      { d: 9000, t: "Mount Everest would fit in here with room to spare." },
+      { d: 9700, t: 'Almost there. The water above you weighs over 1,000 times more than the air at the surface.' }
+    ];
+    const noteCards = NOTES.map((n) => {
+      const el = document.createElement('p');
+      el.className = 'note';
+      el.textContent = n.t;
+      ocean.append(el);
+      return { it: { d: n.d, w: 220 }, el, note: true };
+    });
+    const cards0 = ITEMS.map((it) => {
+      const el = document.createElement('article');
+      el.className = 'item' + (it.marker ? ' marker' : '') + (it.glow ? ' glow' : '');
+      el.dataset.name = it.name;
+      el.tabIndex = 0;
+      el.innerHTML = `<div class="art"></div><div class="nm"></div><div class="dp"></div><p></p>`;
+      el.querySelector('.art').innerHTML = it.art;
+      el.querySelector('.art svg').setAttribute('aria-label', it.name);
+      el.querySelector('.nm').textContent = it.name;
+      el.querySelector('.dp').textContent = `${it.d.toLocaleString('en-US')} m · ${Math.round(it.d * FT).toLocaleString('en-US')} ft`;
+      el.querySelector('p').textContent = it.fact;
+      ocean.append(el);
+      return { it, el };
+    });
+    ocean.addEventListener('click', (e) => {
+      const card = e.target.closest('.item');
+      document.querySelectorAll('.item.open').forEach((x) => { if (x !== card) x.classList.remove('open'); });
+      if (card) card.classList.toggle('open');
+    });
+    const cards = cards0.concat(noteCards).sort((a, b) => a.it.d - b.it.d);
+
+
+    const SAVE = Curio.store.get('deep:save', null);
+    const DS = { v: 2, found: [], badges: [], pings: 0 };
+    if (SAVE && SAVE.v === 2) Object.assign(DS, SAVE);
+    if (!Array.isArray(DS.found)) DS.found = [];
+    if (!Array.isArray(DS.badges)) DS.badges = [];
+    const foundSet = new Set(DS.found.filter((n) => ITEMS.some((it) => it.name === n)));
+    const saveDS = () => { DS.found = [...foundSet]; Curio.store.set('deep:save', DS); };
+    $('heroCount').textContent = ITEMS.length;
+    const ZONE_OF = (d) => { let z = 0; for (let i = 0; i < ZONES.length; i++) if (d >= ZONES[i].d) z = i; return z; };
+    const BADGES = [
+      ['sun', 'Sunbather', 'Find everything in the Sunlight Zone', '#ffc233', 'M20 13a7 7 0 1 0 0 14 7 7 0 0 0 0-14z'],
+      ['twi', 'Twilight', 'Find everything in the Twilight Zone', '#4ea6ef', 'M24 9a11 11 0 1 0 7 19A12 12 0 0 1 24 9z'],
+      ['mid', 'Night owl', 'Find everything in the Midnight Zone', '#6c5ce7', 'M20 10l2.5 6 6.5.5-5 4 1.5 6.5L20 23.5 14.5 27l1.5-6.5-5-4 6.5-.5z'],
+      ['aby', 'Abyss walker', 'Find everything in the Abyssal Zone', '#1abc9c', 'M8 28q6-10 12-4t12-4'],
+      ['had', 'Hadal hero', 'Find everything in the Hadal Zone', '#e84393', 'M14 10l6 20 6-20'],
+      ['half', 'Naturalist', 'Find half of everything', '#2ecc71', 'M20 9a11 11 0 1 0 0 22V9z'],
+      ['all', 'Ocean expert', 'Find all ' + ITEMS.length, '#ffb020', 'M12 20l6 6 12-12'],
+      ['bottom', 'Bottomed out', 'Reach the Challenger Deep', '#ff5a36', 'M20 8v20M12 20l8 8 8-8'],
+      ['ping', 'Sonar operator', 'Ping 10 times', '#5ad8ff', 'M10 20a10 10 0 0 1 20 0M14 20a6 6 0 0 1 12 0'],
+      ['guide', 'Bookworm', 'Open the field guide', '#c49a6c', 'M10 11h9v18h-9zM21 11h9v18h-9z'],
+      ['speed', 'Torpedo', 'Sink at 10× speed', '#d64545', 'M8 20h20l4-4v8l-4-4']
+    ];
+    function award(id) {
+      if (DS.badges.includes(id)) return;
+      DS.badges.push(id); saveDS();
+      const b = BADGES.find((x) => x[0] === id);
+      setTimeout(() => Curio.toast(`Badge unlocked: ${b[1]}`, 2200), 300);
+      [880, 1175].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.12, 'triangle', 0.06), 300 + i * 90));
+      if (!logEl.hidden) paintLog();
+    }
+    function checkZones() {
+      const ids = ['sun', 'twi', 'mid', 'aby', 'had'];
+      ids.forEach((id, z) => {
+        const inZone = ITEMS.filter((it) => ZONE_OF(it.d) === z);
+        if (inZone.length && inZone.every((it) => foundSet.has(it.name))) award(id);
+      });
+      if (foundSet.size >= ITEMS.length / 2) award('half');
+      if (foundSet.size >= ITEMS.length) award('all');
+    }
+    function paintFound() { $('foundTxt').textContent = `${foundSet.size}/${ITEMS.length}`; }
+    let sessionFinds = 0;
+    const discIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+      for (const e of es) {
+        if (!e.isIntersecting) continue;
+        const name = e.target.dataset.name;
+        discIO.unobserve(e.target);
+        if (foundSet.has(name)) continue;
+        foundSet.add(name); sessionFinds++;
+        e.target.classList.remove('found'); void e.target.offsetWidth; e.target.classList.add('found');
+        const tag = document.createElement('span'); tag.className = 'new'; tag.textContent = 'NEW'; e.target.append(tag);
+        setTimeout(() => tag.remove(), 2600);
+        Curio.beep(1200 + Math.random() * 400, 0.06, 'sine', 0.035);
+        paintFound(); saveDS(); checkZones();
+      }
+    }, { threshold: 0.6 }) : null;
+
+    const logEl = $('log');
+    function paintLog() {
+      $('logSub').textContent = `You have found ${foundSet.size} of ${ITEMS.length} creatures, wrecks and wonders.`;
+      $('logBar').style.width = `${foundSet.size / ITEMS.length * 100}%`;
+      $('badges').innerHTML = BADGES.map(([id, n, how, col, d]) => { const got = DS.badges.includes(id); const st = /q|v20M|l6 6|a10|M14 10/.test(d); return `<div class="${got ? '' : 'locked'}" title="${how}"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="${col}"/><path d="${d}" fill="${st ? 'none' : '#fff'}" stroke="#fff" stroke-width="${st ? 2.6 : 0.5}" stroke-linecap="round" stroke-linejoin="round"/></svg>${n}</div>`; }).join('');
+      $('logList').innerHTML = ZONES.map((z, zi) => {
+        const list = ITEMS.filter((it) => ZONE_OF(it.d) === zi);
+        const got = list.filter((it) => foundSet.has(it.name)).length;
+        return `<h3>${z.name} · ${got}/${list.length}</h3><div class="log__grid">${list.map((it) => { const k = foundSet.has(it.name); return `<button type="button" class="${k ? '' : 'unk'}" data-n="${it.name.replace(/"/g, '&quot;')}"><div class="a">${it.art}</div>${k ? it.name : '???'}<small>${it.d.toLocaleString('en-US')} m</small></button>`; }).join('')}</div>`;
+      }).join('');
+      $('logList').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+        const card = cards.find((c) => c.it.name === b.dataset.n);
+        if (!card) return;
+        setLog(false); setSink(false);
+        const top = card.el.getBoundingClientRect().top + scrollY - innerHeight / 2 + card.el.offsetHeight / 2;
+        scrollTo({ top, behavior: Math.abs(top - scrollY) > 20000 ? 'auto' : 'smooth' });
+        setTimeout(() => { card.el.classList.remove('pinged'); void card.el.offsetWidth; card.el.classList.add('pinged'); setTimeout(() => card.el.classList.remove('pinged'), 2800); }, 400);
+      }));
+    }
+    function setLog(on) {
+      logEl.hidden = !on;
+      if (on) { paintLog(); award('guide'); Curio.beep(520, 0.06, 'triangle', 0.06); }
+    }
+    $('logBtn').addEventListener('click', () => setLog(logEl.hidden));
+    $('logClose').addEventListener('click', () => setLog(false));
+    $('endLog').addEventListener('click', () => setLog(true));
+
+    function sonarSound() {
+      if (Curio.muted) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime;
+      [0, 0.35, 0.7].forEach((dl, k) => {
+        const o = ac.createOscillator(), g2 = ac.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(1480, t0 + dl); o.frequency.exponentialRampToValueAtTime(1320, t0 + dl + 0.6);
+        g2.gain.setValueAtTime(0.0001, t0 + dl); g2.gain.exponentialRampToValueAtTime(0.12 / (k * 2 + 1), t0 + dl + 0.01); g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dl + 0.7);
+        o.connect(g2).connect(ac.destination); o.start(t0 + dl); o.stop(t0 + dl + 0.75);
+      });
+    }
+    let lastPing = 0;
+    function ping() {
+      const now = performance.now();
+      if (now - lastPing < 900) return;
+      lastPing = now;
+      const so = $('sonar'); so.classList.remove('go'); void so.offsetWidth; so.classList.add('go');
+      sonarSound();
+      const dc = Math.max(0, Math.min(MAX, depth));
+      const near = cards.filter((c) => !c.note && Math.abs(Y(c.it.d) - Y(dc)) < innerHeight * 0.9).sort((a, b) => Math.abs(a.it.d - dc) - Math.abs(b.it.d - dc));
+      near.forEach((c, k) => setTimeout(() => { c.el.classList.remove('pinged'); void c.el.offsetWidth; c.el.classList.add('pinged'); setTimeout(() => c.el.classList.remove('pinged'), 2800); Curio.beep(1800 - k * 40, 0.04, 'sine', 0.03); }, 250 + k * 120));
+      Curio.toast(near.length ? `Sonar: ${near.length} contact${near.length > 1 ? 's' : ''} nearby${near[0] ? `, closest ${foundSet.has(near[0].it.name) ? near[0].it.name : 'unknown'}` : ''}` : 'Sonar: nothing nearby. Just water.', 2400);
+      DS.pings = (DS.pings | 0) + 1; saveDS();
+      if (DS.pings >= 10) award('ping');
+      try { navigator.vibrate?.([20, 60, 20]); } catch {}
+    }
+    $('ping').addEventListener('click', ping);
+
+    const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+    function layout() {
+      const W = ocean.clientWidth;
+      const rw = W < 600 ? 40 : 56;
+      const inner = W - rw - 12;
+      const C = W < 600 ? 2 : W < 900 ? 3 : 4;
+      const colW = inner / C;
+      const k = W < 600 ? 0.7 : 1;
+      for (const c of cards) {
+        const cw = Math.min(colW - 8, Math.max(W < 600 ? 150 : 170, c.it.w * k + 20));
+        c.el.style.width = `${cw}px`;
+        c.w = cw;
+        if (!c.note) c.el.querySelector('.art').style.width = `${Math.round(c.it.w * k)}px`;
+      }
+      for (const c of cards) c.h = c.el.offsetHeight;
+      const bottoms = new Array(C).fill(-1e9);
+      const zoneList = ZONES.slice(1).map((z) => z.d);
+      let zi = 0, last = -1;
+      const deepGroup = [];
+      cards.forEach((c, i) => {
+        if (c.it.d >= 10800) { deepGroup.push(c); return; }
+        while (zi < zoneList.length && c.it.d >= zoneList[zi]) {
+          const zy = Y(zoneList[zi]) + 40;
+          for (let j = 0; j < C; j++) bottoms[j] = Math.max(bottoms[j], zy);
+          zi++;
+        }
+        const artH = c.note ? c.h : c.el.querySelector('.art').offsetHeight;
+        const target = Math.max(46, Y(c.it.d) - artH / 2 - 8);
+        const free = [];
+        for (let j = 0; j < C; j++) if (bottoms[j] + 12 <= target && j !== last) free.push(j);
+        let col, top;
+        if (free.length) { col = free[Math.floor(hash(i) * free.length)]; top = target; }
+        else {
+          col = 0;
+          for (let j = 1; j < C; j++) if (bottoms[j] < bottoms[col]) col = j;
+          top = Math.max(target, bottoms[col] + 12);
+        }
+        last = col;
+        bottoms[col] = top + c.h;
+        const x = rw + 12 + col * colW + (colW - c.w) * hash(i + 99);
+        c.el.style.left = `${x}px`;
+        c.el.style.top = `${top}px`;
+        c.el.style.setProperty('--ty', `${Math.max(10, Math.min(c.h - 10, Y(c.it.d) - top))}px`);
+      });
+      const tops = new Array(C).fill(floorY - 110);
+      deepGroup.reverse().forEach((c, i) => {
+        let col = 0;
+        for (let j = 1; j < C; j++) if (tops[j] > tops[col]) col = j;
+        const top = tops[col] - c.h - 10;
+        tops[col] = top;
+        const x = rw + 12 + col * colW + (colW - c.w) * 0.5;
+        c.el.style.left = `${x}px`;
+        c.el.style.top = `${top}px`;
+        c.el.style.setProperty('--ty', `${Math.max(10, Math.min(c.h - 10, Y(c.it.d) - top))}px`);
+      });
+    }
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+    function waterColor(d) {
+      d = Math.max(0, Math.min(MAX, d));
+      for (let i = 1; i < STOPS.length; i++) {
+        if (d <= STOPS[i][0]) {
+          const [d0, c0] = STOPS[i - 1], [d1, c1] = STOPS[i];
+          const t = (d - d0) / (d1 - d0);
+          return c0.map((v, j) => Math.round(lerp(v, c1[j], t)));
+        }
+      }
+      return [0, 0, 0];
+    }
+    function temp(d) {
+      const T = [[0, 20], [200, 14], [1000, 4], [4000, 2], [MAX, 1.5]];
+      for (let i = 1; i < T.length; i++) if (d <= T[i][0]) return lerp(T[i - 1][1], T[i][1], (d - T[i - 1][0]) / (T[i][0] - T[i - 1][0]));
+      return 1.5;
+    }
+    let depth = 0, zoneIdx = 0, reachedBottom = false, maxZone = 0;
+    function update() {
+      const top = ocean.getBoundingClientRect().top;
+      const d = D(innerHeight / 2 - top);
+      depth = d;
+      const inOcean = top < innerHeight * 0.55;
+      meter.classList.toggle('off', !inOcean);
+      pointer.classList.toggle('off', !inOcean);
+      const dc = Math.max(0, Math.min(MAX, d));
+      const [r, g, b] = waterColor(dc);
+      water.style.background = `rgb(${r},${g},${b})`;
+      $('mDepth').textContent = Math.round(dc).toLocaleString('en-US');
+      $('mFt').textContent = `${Math.round(dc * FT).toLocaleString('en-US')} ft`;
+      $('mPress').textContent = `${Math.round(1 + dc / 10.06).toLocaleString('en-US')} atm`;
+      $('mTemp').textContent = `${temp(dc).toFixed(1)} °C`;
+      const light = 100 * Math.exp(-dc / 43.4);
+      $('mLight').textContent = light >= 1 ? `☀ ${Math.round(light)}%` : light > 1e-7 ? '☀ <1%' : '● dark';
+      $('mBar').style.width = `${(dc / MAX) * 100}%`;
+      let z = 0;
+      for (let i = 0; i < ZONES.length; i++) if (dc >= ZONES[i].d) z = i;
+      if (z !== zoneIdx || !$('mNote').textContent) { $('mZone').textContent = ZONES[z].name; $('mNote').textContent = ZONES[z].note; }
+      if (z !== zoneIdx) {
+        if (z > zoneIdx && z > maxZone) {
+          meter.classList.remove('flash'); void meter.offsetWidth; meter.classList.add('flash');
+          Curio.beep(1320, 0.5, 'sine', 0.06);
+          setTimeout(() => Curio.beep(660, 0.8, 'sine', 0.04), 180);
+          maxZone = z;
+        }
+        zoneIdx = z;
+      }
+      if (!reachedBottom && dc >= MAX - 60) {
+        reachedBottom = true;
+        Curio.confetti();
+        [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => Curio.beep(f, 0.18, 'triangle', 0.08), i * 110));
+        const b = Curio.best('deepest', 1);
+        Curio.toast(b.isNew ? 'You made it to the bottom!' : 'Back at the bottom again!', 2600);
+        award('bottom');
+        const mins = (performance.now() - diveStart) / 60000;
+        $('endStats').innerHTML = `<span>${foundSet.size}/${ITEMS.length} found</span><span>${sessionFinds} new this dive</span><span>${mins < 1 ? Math.round(mins * 60) + ' s' : mins.toFixed(1) + ' min'} dive</span><span>${DS.pings | 0} pings</span>`;
+      }
+    }
+
+    const cv = document.getElementById('snow');
+    const g = cv.getContext('2d');
+    let parts = [], dpr = 1, lastScroll = scrollY;
+    function sizeSnow() {
+      dpr = Math.min(2, devicePixelRatio || 1);
+      cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+      const n = Math.round(Math.min(140, innerWidth * innerHeight / 9000));
+      parts = Array.from({ length: n }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: 0.6 + Math.random() * 1.8, vy: 6 + Math.random() * 14, ph: Math.random() * 6.28 }));
+    }
+    let lastT = performance.now(), running = true;
+    function frame(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+      const dy = scrollY - lastScroll; lastScroll = scrollY;
+      if (Math.abs(dy) > innerHeight) for (const p of parts) p.y = Math.random() * innerHeight;
+      if (sinking) {
+        const speed = Math.min(1600, 120 + Math.max(0, depth) * 0.12) * sinkSpeed;
+        window.scrollBy(0, speed * dt);
+        if (depth >= MAX + 10) setSink(false);
+      }
+      const a = Math.max(0, Math.min(1, (depth - 100) / 400));
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, innerWidth, innerHeight);
+      if (a > 0 && depth < MAX + 200) {
+        g.fillStyle = `rgba(230,240,255,${0.55 * a})`;
+        for (const p of parts) {
+          p.y += p.vy * dt - dy * 0.5;
+          p.ph += dt;
+          p.x += Math.sin(p.ph) * 0.15;
+          if (p.y > innerHeight + 5 || p.y < -5) { p.y = ((p.y % innerHeight) + innerHeight) % innerHeight; p.x = Math.random() * innerWidth; }
+          g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.283); g.fill();
+        }
+      }
+      const W = innerWidth, H = innerHeight;
+      const rayA = Math.max(0, 1 - Math.max(0, depth) / 420);
+      if (rayA > 0) {
+        g.save(); g.globalCompositeOperation = 'lighter';
+        for (let k = 0; k < 7; k++) {
+          const sway = Math.sin(now / 2400 + k * 1.7) * 30;
+          const x0 = ((k * 0.17 + 0.05) * W * 1.3 - scrollY * 0.04 * (1 + k * 0.15) + sway) % (W * 1.3) - W * 0.1;
+          const w0 = 18 + (k % 3) * 14, w1 = w0 * 4;
+          const gr = g.createLinearGradient(0, 0, 0, H);
+          gr.addColorStop(0, `rgba(220,245,255,${0.16 * rayA})`); gr.addColorStop(1, 'rgba(220,245,255,0)');
+          g.fillStyle = gr;
+          g.beginPath(); g.moveTo(x0, 0); g.lineTo(x0 + w0, 0); g.lineTo(x0 + w0 + H * 0.35 + w1, H); g.lineTo(x0 + H * 0.35, H); g.fill();
+        }
+        g.restore();
+      }
+      const schoolA = Math.max(0, Math.min(1, depth / 40)) * Math.max(0, 1 - Math.max(0, depth - 160) / 220);
+      if (schoolA > 0) {
+        g.fillStyle = `rgba(10,40,70,${0.45 * schoolA})`;
+        for (const f of school) {
+          f.x += f.v * dt; f.ph += dt * 3;
+          if (f.x > W + 40) f.x = -40;
+          const y = f.y * H + Math.sin(now / 1400 + f.o) * 24 - (scrollY * 0.15 % H) * f.par;
+          const yy = ((y % (H + 60)) + H + 60) % (H + 60) - 30;
+          g.beginPath(); g.moveTo(f.x + 8 * f.s, yy); g.quadraticCurveTo(f.x, yy - 3 * f.s, f.x - 6 * f.s, yy); g.quadraticCurveTo(f.x, yy + 3 * f.s, f.x + 8 * f.s, yy);
+          g.lineTo(f.x - 6 * f.s, yy); g.moveTo(f.x - 5 * f.s, yy); g.lineTo(f.x - 10 * f.s, yy - 3 * f.s + Math.sin(f.ph)); g.lineTo(f.x - 10 * f.s, yy + 3 * f.s + Math.sin(f.ph)); g.fill();
+        }
+      }
+      const bioA = Math.max(0, Math.min(1, (depth - 700) / 500)) * (depth < MAX + 100 ? 1 : 0);
+      if (bioA > 0) {
+        const want = Math.min(6, 0.6 + Math.abs(dy) * 0.05);
+        if (Math.random() < want * dt * 8 && sparks.length < 160) {
+          const n = Math.abs(dy) > 8 ? 4 : 1;
+          for (let q = 0; q < n; q++) sparks.push({ x: Math.random() * W, y: Math.random() * H, r: 1.5 + Math.random() * 3, life: 0, max: 0.8 + Math.random() * 1.8, c: Curio.pick(['124,247,255', '90,216,255', '125,255,154', '160,140,255']) });
+        }
+        g.save(); g.globalCompositeOperation = 'lighter';
+        for (let k = sparks.length - 1; k >= 0; k--) {
+          const sp = sparks[k];
+          sp.life += dt; sp.y -= dy * 0.6;
+          const t = sp.life / sp.max;
+          if (t >= 1 || sp.y < -20 || sp.y > H + 20) { sparks.splice(k, 1); continue; }
+          const al = Math.sin(t * Math.PI) * bioA;
+          const gr = g.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sp.r * 5);
+          gr.addColorStop(0, `rgba(${sp.c},${0.9 * al})`); gr.addColorStop(1, `rgba(${sp.c},0)`);
+          g.fillStyle = gr; g.beginPath(); g.arc(sp.x, sp.y, sp.r * 5, 0, 6.283); g.fill();
+        }
+        g.restore();
+      } else sparks.length = 0;
+      document.body.classList.toggle('deep', depth > 900);
+      requestAnimationFrame(frame);
+    }
+    const sparks = [];
+    const school = Array.from({ length: 34 }, (_, k) => ({ x: Math.random() * innerWidth, y: 0.2 + (k % 6) * 0.1 + Math.random() * 0.05, v: 30 + (k % 6) * 6, s: 0.9 + (k % 3) * 0.35, ph: Math.random() * 6, o: Math.floor(k / 6), par: 0.5 + (k % 3) * 0.3 }));
+    const diveStart = performance.now();
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { running = false; setSink(false); }
+      else if (!running) { running = true; lastT = performance.now(); requestAnimationFrame(frame); }
+    });
+
+    let sinking = false;
+    const sinkBtn = $('sink');
+    function setSink(on) { sinking = on; sinkBtn.setAttribute('aria-pressed', String(on)); sinkBtn.textContent = on ? '⏸ Stop' : '⏬ Sink'; }
+    sinkBtn.addEventListener('click', () => setSink(!sinking));
+    let sinkSpeed = 1;
+    const SPEEDS = [1, 3, 10];
+    $('speed').addEventListener('click', () => { sinkSpeed = SPEEDS[(SPEEDS.indexOf(sinkSpeed) + 1) % 3]; $('speed').textContent = `${sinkSpeed}×`; if (sinkSpeed === 10) award('speed'); if (!sinking) setSink(true); Curio.beep(400 + sinkSpeed * 40, 0.06, 'triangle', 0.06); });
+    ['wheel', 'touchstart'].forEach((ev) => addEventListener(ev, (e) => { if (sinking && !e.target.closest('.meter')) setSink(false); }, { passive: true }));
+    addEventListener('keydown', (e) => {
+      if (e.target.closest('input, textarea, select')) return;
+      const k = e.key.toLowerCase();
+      if (k === 's') { setSink(!sinking); return; }
+      if (k === 'p') { ping(); return; }
+      if (k === 'g') { setLog(logEl.hidden); return; }
+      if (k === 'u') { toSurface(); return; }
+      if (k === 'escape') { setLog(false); return; }
+      if (sinking && ['arrowup', 'arrowdown', 'pageup', 'pagedown', ' ', 'home', 'end'].includes(k)) setSink(false);
+    });
+    $('endShare').addEventListener('click', async () => { try { await navigator.clipboard.writeText(`I dived 10,935 m to the bottom of the Challenger Deep and found ${foundSet.size} of ${ITEMS.length} sea creatures and wrecks. Curio: The Deep Sea`); Curio.toast('Copied'); } catch { Curio.toast('Could not copy, sorry'); } });
+    const toSurface = () => { setSink(false); scrollTo({ top: 0, behavior: 'smooth' }); Curio.beep(880, 0.2, 'sine', 0.05); };
+    $('up').addEventListener('click', toSurface);
+    $('again').addEventListener('click', toSurface);
+    $('dive').addEventListener('click', () => {
+      scrollTo({ top: ocean.offsetTop - innerHeight * 0.3, behavior: 'smooth' });
+      Curio.beep(300, 0.3, 'sine', 0.08);
+    });
+
+    let rt = 0;
+    addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); sizeSnow(); update(); }, 120); });
+    addEventListener('scroll', update, { passive: true });
+    layout(); sizeSnow(); update();
+    cards0.forEach((c) => discIO?.observe(c.el));
+    paintFound();
+    if (!Curio.store.get('deep:tip', false)) { const tp = $('tip'); setTimeout(() => { tp.hidden = false; }, 1500); setTimeout(() => { tp.hidden = true; Curio.store.set('deep:tip', true); }, 9000); }
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

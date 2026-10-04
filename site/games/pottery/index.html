@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pottery Wheel · Curio</title>
+  <meta name="description" content="Throw a pot on a spinning wheel, paint it with glaze while it turns, then fire it in the kiln and add it to your shelf.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 10px; padding-bottom: 24px; }
+    .pt-head { text-align: center; }
+    .pt-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .pt-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .pt-steps { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+    .step { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 14px; color: var(--ink-3); cursor: pointer; touch-action: manipulation; }
+    .step[aria-current="step"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .step:disabled { cursor: default; opacity: .55; }
+    .pt-stage { position: relative; height: max(360px, calc(100dvh - var(--bar-h) - 330px)); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); background: #e9d8c2; }
+    #cv { display: block; width: 100%; height: 100%; touch-action: none; -webkit-user-select: none; user-select: none; }
+    .pt-hint { position: absolute; left: 0; right: 0; top: 10px; text-align: center; font-size: 13px; font-weight: 800; color: #6b4b35; pointer-events: none; padding: 0 12px; }
+    .pt-panel { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: center; margin-top: 12px; min-height: 44px; }
+    .pt-panel[hidden] { display: none; }
+    .pt-panel .c-btn { padding: 8px 14px; font-size: 14px; }
+    .pt-panel label { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink-2); font-size: 14px; }
+    .pt-panel input[type=range] { width: 100px; accent-color: var(--accent); }
+    .sws { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+    .sw { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); cursor: pointer; padding: 0; touch-action: manipulation; }
+    .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+    .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 11px; font-weight: 800; font-size: 13px; color: var(--ink-2); cursor: pointer; touch-action: manipulation; }
+    .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+    .pt-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+    .pt-bar .c-btn { padding: 8px 14px; font-size: 14px; }
+    .pt-shelfwrap { margin-top: 18px; }
+    .pt-shelfwrap h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 0 0 6px; text-align: center; }
+    .pt-shelf { display: flex; gap: 10px; align-items: flex-end; overflow-x: auto; padding: 10px 12px 0; min-height: 96px; border-bottom: 14px solid #9a6a45; border-radius: 6px; background: linear-gradient(#0000 70%, color-mix(in srgb, #9a6a45 20%, transparent)); box-shadow: 0 10px 12px -8px rgba(0,0,0,.35); }
+    .pt-shelf button { border: 0; background: none; padding: 0; cursor: pointer; flex: 0 0 auto; transition: transform .15s ease; }
+    .pt-shelf button:hover { transform: translateY(-4px); }
+    .pt-shelf img { height: 86px; display: block; }
+    .pt-empty { color: var(--ink-3); font-size: 14px; margin: auto; padding-bottom: 20px; }
+    @media (max-width: 560px) {
+      .pt-stage { height: max(320px, calc(100dvh - var(--bar-h) - 380px)); }
+      .step { padding: 5px 10px; font-size: 13px; }
+      .pt-panel .c-btn, .pt-bar .c-btn { padding: 8px 11px; font-size: 13px; }
+      .sw { width: 26px; height: 26px; }
+    }
+  </style>
+</head>
+<body data-game="pottery">
+  <main class="c-wrap">
+    <div class="pt-head">
+      <h1 class="c-title">Pottery Wheel</h1>
+      <p class="c-sub">Squish a lump of clay into something lovely. Glaze it while it spins, fire it, then show it off on the shelf.</p>
+    </div>
+    <div class="pt-steps" role="group" aria-label="Steps">
+      <button class="step" type="button" data-p="shape" title="Shape (1)">1 · Shape</button>
+      <button class="step" type="button" data-p="glaze" title="Glaze (2)">2 · Glaze</button>
+      <button class="step" type="button" data-p="fire" title="Fire (3)">3 · Fire</button>
+    </div>
+    <div class="pt-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="A clay pot spinning on a pottery wheel. Drag its sides to shape it, then paint glaze on it."></canvas>
+      <div class="pt-hint" id="hint"></div>
+    </div>
+    <div class="pt-panel" id="pShape">
+      <span class="c-muted" style="font-weight:700;font-size:14px">Start from:</span>
+      <button class="chip" type="button" data-preset="lump">Lump</button>
+      <button class="chip" type="button" data-preset="bowl">Bowl</button>
+      <button class="chip" type="button" data-preset="vase">Vase</button>
+      <button class="chip" type="button" data-preset="mug">Cup</button>
+      <button class="chip" type="button" data-preset="jar">Jar</button>
+      <span class="c-muted" style="font-weight:700;font-size:14px">Clay:</span>
+      <div class="sws" id="clays" role="group" aria-label="Clay"></div>
+    </div>
+    <div class="pt-panel" id="pGlaze" hidden>
+      <div class="sws" id="glazes" role="group" aria-label="Glaze colour"></div>
+      <label>Brush <input type="range" id="brush" min="3" max="40" value="12" aria-label="Brush size"></label>
+      <button class="chip" type="button" data-pat="dip">Dip</button>
+      <button class="chip" type="button" data-pat="rim">Rim</button>
+      <button class="chip" type="button" data-pat="stripes">Stripes</button>
+      <button class="chip" type="button" data-pat="waves">Waves</button>
+      <button class="chip" type="button" data-pat="dots">Dots</button>
+      <button class="chip" type="button" data-pat="speckle">Speckle</button>
+      <button class="chip" type="button" data-pat="clear">Wipe</button>
+    </div>
+    <div class="pt-panel" id="pFire" hidden>
+      <button class="c-btn" type="button" id="fire">🔥 Fire in the kiln</button>
+    </div>
+    <div class="pt-bar">
+      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+      <button class="c-btn c-btn--ghost" type="button" id="new">🟤 New clay</button>
+      <button class="c-btn c-btn--ghost" type="button" id="png">📷 Save PNG</button>
+    </div>
+    <div class="pt-shelfwrap">
+      <h2>Your shelf</h2>
+      <div class="pt-shelf" id="shelf" aria-label="Your fired pots"></div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const cv = document.getElementById('cv'), g = cv.getContext('2d');
+    const stage = document.getElementById('stage');
+    const NP = 64, TW = 512, TH = 256, PHI = 0.34, CPH = Math.cos(PHI), SPH = Math.sin(PHI), THICK = 0.07, FLOOR = 0.07;
+    const CLAYS = [
+      { id: 'terra', name: 'Terracotta', wet: [160, 88, 56], fired: [198, 112, 72] },
+      { id: 'stone', name: 'Stoneware', wet: [134, 122, 110], fired: [208, 198, 182] },
+      { id: 'porc', name: 'Porcelain', wet: [212, 206, 196], fired: [247, 245, 240] }
+    ];
+    const GLAZES = ['#1f6fb2', '#2bb3a3', '#5aa35a', '#f2c230', '#f08a24', '#d8402f', '#c2457a', '#7d5ac6', '#f6f3ea', '#2d2a2e', '#86c5e8', '#e9a6b8'];
+    const PRESETS = {
+      lump: { H: 0.62, f: (q) => 0.62 + 0.06 * Math.sin(q * Math.PI) - 0.18 * q ** 4 },
+      bowl: { H: 0.5, f: (q) => 0.32 + 0.62 * Math.sin(q * Math.PI / 2) ** 0.8 },
+      vase: { H: 1.3, f: (q) => 0.17 + 0.38 * Math.sin(Math.PI * Math.min(1, q / 0.78)) ** 1.6 + (q > 0.78 ? (q - 0.78) * 1.3 : 0) + 0.1 * (1 - q) },
+      mug: { H: 0.82, f: (q) => 0.46 + 0.02 * q },
+      jar: { H: 0.95, f: (q) => 0.4 + 0.28 * Math.sin(Math.min(1, q * 1.15) * Math.PI) - (q > 0.87 ? 0.0 : 0) + (q > 0.9 ? 0.05 : 0) }
+    };
+    let W = 0, Hc = 0, dpr = 1, RS = 1, U = 100, cx = 0, baseY = 0, t = 0, spin = 0, spinV = 0.9;
+    let prof = new Float32Array(NP), H = 0.62, V0 = 1;
+    let phase = 'shape', clay = 0, glaze = 0, brush = 12, fired = false;
+    let undo = [], shelf = [], morph = null, firing = null;
+    const tex = document.createElement('canvas'); tex.width = TW; tex.height = TH;
+    const tctx = tex.getContext('2d', { willReadFrequently: true });
+    let texData = tctx.getImageData(0, 0, TW, TH).data;
+    const grain = new Float32Array(TW * TH);
+    for (let i = 0; i < grain.length; i++) grain[i] = (Math.random() - 0.5) * (Math.random() < 0.06 ? 0.25 : 0.06);
+    const potC = document.createElement('canvas'), pctx = potC.getContext('2d');
+    let pimg = null, zb = null, bb = { x: 0, y: 0, w: 1, h: 1 };
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const hexRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+
+    function rAt(h) {
+      const f = clamp(h / H, 0, 1) * (NP - 1), i = Math.floor(f), a = f - i;
+      return i >= NP - 1 ? prof[NP - 1] : prof[i] * (1 - a) + prof[i + 1] * a;
+    }
+    const volume = () => { let s = 0; for (let i = 0; i < NP; i++) s += prof[i] * prof[i]; return s / NP * H; };
+    function setPreset(name, instant) {
+      const p = PRESETS[name], to = new Float32Array(NP);
+      for (let i = 0; i < NP; i++) to[i] = clamp(p.f(i / (NP - 1)), 0.14, 1.1);
+      if (instant) { prof = to; H = p.H; V0 = volume(); return; }
+      morph = { from: prof.slice(), fromH: H, to, toH: p.H, k: 0 };
+    }
+
+    const L = (() => { const v = [-0.5, 0.55, 0.68], n = Math.hypot(...v); return v.map((q) => q / n); })();
+    const HV = (() => { const v = [L[0], L[1] + SPH, L[2] + CPH], n = Math.hypot(...v); return v.map((q) => q / n); })();
+
+    const ASIN = new Float32Array(2049);
+    for (let i = 0; i <= 2048; i++) ASIN[i] = Math.asin(i / 1024 - 1);
+    const asin = (x) => ASIN[((x + 1) * 1024 + 0.5) | 0];
+    function renderPot() {
+      let maxR = 0; for (let i = 0; i < NP; i++) maxR = Math.max(maxR, prof[i]);
+      const s = U * RS;
+      const x0 = Math.floor(cx * RS - maxR * s - 3), x1 = Math.ceil(cx * RS + maxR * s + 3);
+      const y0 = Math.floor(baseY * RS - H * s * CPH - maxR * s * SPH - 3), y1 = Math.ceil(baseY * RS + maxR * s * SPH + 3);
+      const bw = x1 - x0, bh = y1 - y0;
+      if (!pimg || pimg.width !== bw || pimg.height !== bh) { potC.width = bw; potC.height = bh; pimg = pctx.createImageData(bw, bh); zb = new Float32Array(bw * bh); }
+      bb = { x: x0, y: y0, w: bw, h: bh };
+      const d = pimg.data; d.fill(0); zb.fill(-1e9);
+      const cl = CLAYS[clay], base = fired ? cl.fired : cl.wet;
+      const gloss = fired ? 0.85 : phase === 'shape' ? 0.22 : 0.08;
+      const pcx = cx * RS - x0, pby = baseY * RS - y0;
+      const td = texData, TWOPI = Math.PI * 2;
+      const rTop = rAt(H), riTop = Math.max(0.03, rTop - THICK);
+      const oy = pby - H * s * CPH, orx = riTop * s, ory = Math.max(1, riTop * s * SPH);
+      const inOpening = (px, py) => { const a = (px - pcx) / orx, b = (py - oy) / ory; return a * a + b * b <= 1.05; };
+      const shade = (o, ti, nx, ny, nz, occl, ring) => {
+        const o4 = ti * 4, ga = td[o4 + 3] / 255, gr = 1 + grain[ti];
+        let r = base[0] * gr, gg = base[1] * gr, b = base[2] * gr;
+        let gl = gloss * (1 - ga) * (fired ? 0.15 : 1);
+        if (ga > 0) {
+          let cr = td[o4], cg = td[o4 + 1], cb = td[o4 + 2];
+          if (!fired) { cr = cr * 0.62 + 89; cg = cg * 0.62 + 88; cb = cb * 0.62 + 85; }
+          r += (cr - r) * ga; gg += (cg - gg) * ga; b += (cb - b) * ga;
+          gl += ga * (fired ? 0.95 : 0.04);
+        }
+        const dif = nx * L[0] + ny * L[1] + nz * L[2];
+        const lit = (0.32 + (dif > 0 ? dif : 0) * 0.78) * occl * ring;
+        let spec = 0;
+        if (gl > 0) {
+          let sp = nx * HV[0] + ny * HV[1] + nz * HV[2];
+          if (sp > 0) { sp *= sp; sp *= sp; sp *= sp; sp *= sp; if (fired) { sp *= sp; sp *= sp; } spec = sp * gl * 255 * occl; }
+        }
+        if (fired && ga > 0) { const q = 1 - (nz < 0 ? -nz : nz); spec += q * q * q * 30 * ga; }
+        d[o] = r * lit + spec; d[o + 1] = gg * lit + spec; d[o + 2] = b * lit + spec; d[o + 3] = 255;
+      };
+      let tvar = 0; for (let i = 1; i < NP; i++) tvar += Math.abs(prof[i] - prof[i - 1]);
+      const rows = Math.ceil((H * CPH + tvar * SPH * 1.5) * s * 1.25);
+      const ringOn = !fired && phase === 'shape';
+      for (let k = 0; k <= rows; k++) {
+        const h = k / rows * H, r = rAt(h), dr = (rAt(h + 0.012) - rAt(h - 0.012)) / 0.024;
+        const yc = pby - h * s * CPH, v = 1 - h / H;
+        const tvr = Math.min(TH - 1, Math.max(0, (v * TH) | 0)) * TW;
+        const inv = 1 / Math.sqrt(1 + dr * dr), nyv = -dr * inv;
+        const ring = ringOn ? 1 + 0.045 * Math.sin(v * 140 + Math.sin(v * 13) * 3) : 1;
+        for (let side = 1; side >= -1; side -= 2) {
+          if (side < 0 && h < FLOOR) continue;
+          const rr = side > 0 ? r : Math.max(0.03, r - THICK);
+          const rx = rr * s, n = Math.ceil(rx), ryk = rr * s * SPH;
+          const occl = side > 0 ? 1 : 0.45 + 0.5 * Math.pow(h / H, 1.5);
+          for (let i = -n; i <= n; i++) {
+            let sn = i / rx; if (sn > 1) sn = 1; else if (sn < -1) sn = -1;
+            const cs = Math.sqrt(1 - sn * sn) * side;
+            const px = (pcx + i + 0.5) | 0, py = (yc + ryk * cs + 0.5) | 0;
+            if (px < 0 || py < 0 || px >= bw || py >= bh - 1) continue;
+            if (side < 0 && !inOpening(px, py)) continue;
+            const depth = h * SPH + rr * cs * CPH;
+            const zi = py * bw + px, zj = zi + bw;
+            const a1 = depth > zb[zi], a2 = depth - 0.0001 > zb[zj];
+            if (!a1 && !a2) continue;
+            const as = asin(sn), th = side > 0 ? as : Math.PI - as;
+            let u = th / TWOPI + spin; u -= Math.floor(u);
+            const ti = tvr + ((u * TW) | 0);
+            const nx = sn * inv * side, nz = cs * inv * side, ny = nyv * side;
+            if (a1) { zb[zi] = depth; shade(zi * 4, ti, nx, ny, nz, occl, ring); }
+            if (a2) { zb[zj] = depth - 0.0001; shade(zj * 4, ti, nx, ny, nz, occl, ring); }
+          }
+        }
+      }
+      const disc = (h, r0, r1, occl, row, clipOpen) => {
+        const yc = pby - h * s * CPH;
+        for (let rr = r0; rr <= r1; rr += 0.7 / s) {
+          const cnt = Math.max(12, Math.ceil(TWOPI * rr * s / 0.8));
+          for (let j = 0; j < cnt; j++) {
+            const th = j / cnt * TWOPI, sn = Math.sin(th), cs = Math.cos(th);
+            const px = (pcx + rr * s * sn + 0.5) | 0, py = (yc + rr * s * SPH * cs + 0.5) | 0;
+            if (px < 0 || py < 0 || px >= bw || py >= bh) continue;
+            if (clipOpen && !inOpening(px, py)) continue;
+            const zi = py * bw + px, depth = h * SPH + rr * cs * CPH + 0.0005;
+            if (depth <= zb[zi]) continue;
+            zb[zi] = depth;
+            let u = th / TWOPI + spin; u -= Math.floor(u);
+            shade(zi * 4, row + ((u * TW) | 0), 0, 1, 0, occl, 1);
+          }
+        }
+      };
+      disc(H, riTop, rTop, 1.05, 0, false);
+      disc(FLOOR, 0, Math.max(0.03, rAt(FLOOR) - THICK), 0.42, (TH - 1) * TW, true);
+      pctx.putImageData(pimg, 0, 0);
+    }
+
+    function drawScene() {
+      const wall = g.createLinearGradient(0, 0, 0, Hc);
+      wall.addColorStop(0, '#f1e3cf'); wall.addColorStop(1, '#dcc3a6');
+      g.fillStyle = wall; g.fillRect(0, 0, W, Hc);
+      g.fillStyle = 'rgba(120,80,50,.06)';
+      for (let i = 0; i < 9; i++) g.fillRect((i * W) / 9, 0, 2, Hc * 0.62);
+      g.fillStyle = '#b98a62'; g.fillRect(0, Hc * 0.62, W, Hc * 0.38);
+      g.fillStyle = '#a77852'; g.fillRect(0, Hc * 0.62, W, 6);
+      const wr = U * 1.32;
+      g.fillStyle = '#4a4f56';
+      g.beginPath(); g.ellipse(cx, baseY + U * 0.42, wr * 1.25, wr * 1.25 * SPH, 0, 0, 7); g.fill();
+      g.fillStyle = '#6b7178'; g.fillRect(cx - wr * 1.25, baseY + U * 0.18, wr * 2.5, U * 0.24);
+      g.fillStyle = '#7c838b';
+      g.beginPath(); g.ellipse(cx, baseY + U * 0.18, wr * 1.25, wr * 1.25 * SPH, 0, 0, 7); g.fill();
+      g.fillStyle = '#5a6067';
+      g.beginPath(); g.ellipse(cx, baseY + U * 0.18, wr * 1.12, wr * 1.12 * SPH, 0, 0, 7); g.fill();
+      g.fillStyle = '#9aa1a8'; g.fillRect(cx - wr, baseY, wr * 2, U * 0.07);
+      g.fillStyle = '#c4cad0';
+      g.beginPath(); g.ellipse(cx, baseY, wr, wr * SPH, 0, 0, 7); g.fill();
+      g.strokeStyle = 'rgba(80,86,92,.5)'; g.lineWidth = 1.2;
+      for (const k of [0.45, 0.75]) { g.beginPath(); g.ellipse(cx, baseY, wr * k, wr * k * SPH, 0, 0, 7); g.stroke(); }
+      g.fillStyle = 'rgba(70,76,82,.6)';
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6 + spin) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+        if (c < -0.1) continue;
+        g.beginPath(); g.ellipse(cx + sn * wr * 0.88, baseY + c * wr * 0.88 * SPH, 3, 2, 0, 0, 7); g.fill();
+      }
+      const r0 = rAt(0);
+      g.fillStyle = 'rgba(60,40,30,.28)';
+      g.beginPath(); g.ellipse(cx + U * 0.05, baseY + 2, r0 * U * 1.08, r0 * U * 1.08 * SPH, 0, 0, 7); g.fill();
+    }
+
+    let pointer = null, dragMode = null, lastTex = null, sndT = 0;
+    function render() {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawScene();
+      renderPot();
+      g.save(); g.setTransform(dpr / RS, 0, 0, dpr / RS, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(potC, bb.x, bb.y); g.restore();
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (pointer && !firing) {
+        if (phase === 'shape') {
+          g.fillStyle = dragMode ? 'rgba(255,240,225,.75)' : 'rgba(255,255,255,.45)';
+          g.strokeStyle = 'rgba(120,70,40,.5)'; g.lineWidth = 1.5;
+          g.beginPath(); g.ellipse(pointer[0], pointer[1], 10, 13, 0, 0, 7); g.fill(); g.stroke();
+        } else if (phase === 'glaze') {
+          g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2;
+          g.beginPath(); g.arc(pointer[0], pointer[1], brush * U / 160, 0, 7); g.stroke();
+          g.fillStyle = GLAZES[glaze]; g.globalAlpha = 0.5; g.fill(); g.globalAlpha = 1;
+        }
+      }
+      if (firing) drawKiln();
+    }
+    function drawKiln() {
+      const e = firing.t;
+      const door = e < 0.7 ? e / 0.7 : e < 3.1 ? 1 : Math.max(0, 1 - (e - 3.1) / 0.7);
+      const ease = 1 - Math.pow(1 - door, 3);
+      if (e > 0.6 && e < 3.3) {
+        const k = Math.min(1, (e - 0.6) / 0.5) * Math.min(1, (3.3 - e) / 0.3);
+        const fl = 0.7 + 0.3 * Math.sin(t * 23) * Math.sin(t * 7.3);
+        g.fillStyle = `rgba(255,${120 + fl * 60 | 0},40,${0.55 * k})`; g.fillRect(0, 0, W, Hc);
+      }
+      const dh = Hc * ease;
+      g.fillStyle = '#7a3b2a'; g.fillRect(0, 0, W, dh);
+      g.fillStyle = '#8f4a33';
+      const bh = 22, bwid = 54;
+      for (let y = 0; y < dh; y += bh) {
+        const off = (y / bh) % 2 ? bwid / 2 : 0;
+        for (let x = -bwid; x < W + bwid; x += bwid) g.fillRect(x + off + 2, y + 2, bwid - 4, bh - 4);
+      }
+      if (door > 0.5) {
+        const glow = 0.6 + 0.4 * Math.sin(t * 17) * Math.sin(t * 5);
+        const gx = W / 2, gy = dh - Hc * 0.28;
+        g.fillStyle = '#3a1a12'; g.beginPath(); g.ellipse(gx, gy, 70, 44, 0, 0, 7); g.fill();
+        const gr = g.createRadialGradient(gx, gy, 4, gx, gy, 66);
+        gr.addColorStop(0, `rgba(255,230,140,${0.9 * glow})`); gr.addColorStop(0.6, `rgba(255,110,30,${0.8 * glow})`); gr.addColorStop(1, 'rgba(120,20,0,0)');
+        g.fillStyle = gr; g.beginPath(); g.ellipse(gx, gy, 66, 40, 0, 0, 7); g.fill();
+        g.fillStyle = '#fff3d6'; g.font = '800 18px system-ui, sans-serif'; g.textAlign = 'center';
+        g.fillText(`${Math.round(Math.min(1, Math.max(0, (e - 0.7) / 2.2)) * 1240)}°C`, gx, gy + 76);
+      }
+    }
+
+    function tone(f, d = 0.2, type = 'sine', v = 0.05, slide = 0) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0);
+      if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t0 + d);
+      gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.015); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.05);
+    }
+    function noise(d, f, v, type = 'lowpass', q = 0.7) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const len = Math.floor(ac.sampleRate * d), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len);
+      const src = ac.createBufferSource(), fl = ac.createBiquadFilter(), gn = ac.createGain();
+      src.buffer = buf; fl.type = type; fl.frequency.value = f; fl.Q.value = q; gn.gain.value = v;
+      src.connect(fl).connect(gn).connect(ac.destination); src.start();
+    }
+
+    function shapeStep(dt) {
+      if (!pointer || !dragMode) return;
+      const [px, py] = pointer;
+      if (dragMode === 'top') {
+        const nh = clamp((baseY - py) / (U * CPH), 0.3, 1.7);
+        H += (nh - H) * Math.min(1, dt * 6);
+        const k = Math.sqrt(V0 / volume());
+        for (let i = 0; i < NP; i++) prof[i] = clamp(prof[i] * k, 0.12, 1.1);
+      } else {
+        const h = (baseY - py) / (U * CPH);
+        const c = clamp(h / H, 0, 1) * (NP - 1);
+        const target = clamp(Math.abs(px - cx) / U, 0.12, 1.1);
+        for (let j = 0; j < NP; j++) {
+          const w = Math.exp(-((j - c) ** 2) / (2 * 3.6 * 3.6));
+          prof[j] += (target - prof[j]) * w * Math.min(1, dt * 9);
+        }
+        let s = 0; for (let i = 0; i < NP; i++) s += prof[i] * prof[i];
+        H = clamp(V0 / (s / NP), 0.25, 1.75);
+      }
+      const sm = prof.slice();
+      for (let i = 1; i < NP - 1; i++) prof[i] = sm[i] * 0.84 + (sm[i - 1] + sm[i + 1]) * 0.08;
+      prof[0] = Math.max(prof[0], 0.18);
+      sndT -= dt;
+      if (sndT <= 0) { sndT = 0.07; noise(0.12, 260 + Math.random() * 300, 0.09, 'lowpass', 2); }
+    }
+    function texAt(px, py) {
+      const dx = (px - cx) / U;
+      let h = (baseY - py) / (U * CPH);
+      for (let i = 0; i < 4; i++) {
+        const r = rAt(h); if (Math.abs(dx) > r) return null;
+        const cs = Math.sqrt(1 - (dx / r) ** 2);
+        h = (baseY - py + r * U * SPH * cs) / (U * CPH);
+      }
+      if (h < 0 || h > H) return null;
+      const r = rAt(h); if (Math.abs(dx) > r) return null;
+      const sn = dx / r, cs = Math.sqrt(1 - sn * sn);
+      const u = ((Math.atan2(sn, cs) / (Math.PI * 2) + spin) % 1 + 1) % 1;
+      return { u, v: 1 - h / H, r };
+    }
+    function dab(u, v, r) {
+      const ry = brush / 160 / H * TH * 0.9;
+      const rx = brush / 160 / (2 * Math.PI * r) * TW * 0.9;
+      tctx.fillStyle = GLAZES[glaze];
+      for (const off of [-TW, 0, TW]) { tctx.beginPath(); tctx.ellipse(u * TW + off, v * TH, Math.max(1, rx), Math.max(1, ry), 0, 0, 7); tctx.fill(); }
+    }
+    function glazeStep(dt) {
+      if (!pointer || !dragMode) return;
+      const q = texAt(pointer[0], pointer[1]);
+      if (!q) { lastTex = null; return; }
+      if (lastTex && Math.abs(lastTex.u - q.u) < 0.3) {
+        const steps = Math.ceil(Math.max(Math.abs(lastTex.u - q.u) * TW, Math.abs(lastTex.v - q.v) * TH) / 1.5) + 1;
+        for (let i = 1; i <= steps; i++) dab(lastTex.u + (q.u - lastTex.u) * i / steps, lastTex.v + (q.v - lastTex.v) * i / steps, q.r);
+      } else dab(q.u, q.v, q.r);
+      lastTex = q;
+      texData = tctx.getImageData(0, 0, TW, TH).data;
+      sndT -= dt;
+      if (sndT <= 0) { sndT = 0.09; noise(0.1, 1800, 0.035, 'bandpass', 1); }
+    }
+    function pattern(name) {
+      if (fired) return;
+      snapshot();
+      const c = GLAZES[glaze];
+      tctx.fillStyle = c;
+      if (name === 'clear') tctx.clearRect(0, 0, TW, TH);
+      else if (name === 'dip') {
+        const lvl = TH * 0.72;
+        tctx.fillRect(0, 0, TW, lvl);
+        for (let x = 0; x < TW; x += 4 + Math.random() * 8) { const len = 4 + Math.random() * 16; tctx.beginPath(); tctx.ellipse(x, lvl, 2.2, len, 0, 0, 7); tctx.fill(); }
+      } else if (name === 'rim') tctx.fillRect(0, 0, TW, TH * 0.1);
+      else if (name === 'stripes') { const n = 4; for (let i = 0; i < n; i++) tctx.fillRect(0, TH * (0.12 + i * 0.22), TW, TH * 0.07); }
+      else if (name === 'waves') {
+        for (const y0 of [0.3, 0.62]) {
+          tctx.beginPath();
+          for (let x = 0; x <= TW; x += 2) tctx.lineTo(x, TH * y0 + Math.sin(x / TW * Math.PI * 12) * TH * 0.06);
+          tctx.lineWidth = TH * 0.05; tctx.strokeStyle = c; tctx.stroke();
+        }
+      } else if (name === 'dots') {
+        for (let i = 0; i < 26; i++) { const x = Math.random() * TW, y = TH * (0.1 + Math.random() * 0.8), r = 3 + Math.random() * 4; for (const off of [-TW, 0, TW]) { tctx.beginPath(); tctx.ellipse(x + off, y, r * 0.6, r, 0, 0, 7); tctx.fill(); } }
+      } else if (name === 'speckle') {
+        for (let i = 0; i < 700; i++) tctx.fillRect(Math.random() * TW, Math.random() * TH, 1 + Math.random(), 1 + Math.random());
+      }
+      texData = tctx.getImageData(0, 0, TW, TH).data;
+      noise(0.35, 900, 0.08, 'bandpass', 0.8);
+      tone(name === 'clear' ? 300 : 620, 0.2, 'sine', 0.04, name === 'clear' ? 0.7 : 1.3);
+      save();
+    }
+
+    function snapshot() {
+      undo.push({ prof: prof.slice(), H, V0, tex: tctx.getImageData(0, 0, TW, TH), phase, fired, clay });
+      if (undo.length > 40) undo.shift();
+    }
+    function doUndo() {
+      if (firing) return;
+      if (!undo.length) { Curio.toast('Nothing to undo'); return; }
+      const s = undo.pop();
+      prof = s.prof; H = s.H; V0 = s.V0; tctx.putImageData(s.tex, 0, 0); texData = tctx.getImageData(0, 0, TW, TH).data;
+      fired = s.fired; clay = s.clay; setPhase(s.phase, true); paintClays();
+      tone(330, 0.12); save();
+    }
+    let saveT = 0;
+    function save() {
+      clearTimeout(saveT);
+      saveT = setTimeout(() => {
+        Curio.store.set('pottery', { prof: Array.from(prof, (v) => +v.toFixed(4)), H, V0, phase, clay, glaze, brush, fired, tex: tex.toDataURL('image/png') });
+      }, 500);
+    }
+    function load() {
+      const s = Curio.store.get('pottery', null);
+      shelf = Curio.store.get('pottery-shelf', []);
+      if (!Array.isArray(shelf)) shelf = [];
+      if (s && Array.isArray(s.prof) && s.prof.length === NP) {
+        prof = Float32Array.from(s.prof); H = s.H; V0 = s.V0; clay = s.clay | 0; glaze = s.glaze | 0; brush = s.brush || 12; fired = !!s.fired;
+        phase = ['shape', 'glaze', 'fire'].includes(s.phase) ? s.phase : 'shape';
+        if (s.tex) { const im = new Image(); im.onload = () => { tctx.clearRect(0, 0, TW, TH); tctx.drawImage(im, 0, 0); texData = tctx.getImageData(0, 0, TW, TH).data; }; im.src = s.tex; }
+        return;
+      }
+      setPreset('lump', true);
+    }
+
+    const hint = document.getElementById('hint');
+    const panels = { shape: document.getElementById('pShape'), glaze: document.getElementById('pGlaze'), fire: document.getElementById('pFire') };
+    const steps = [...document.querySelectorAll('.step')];
+    function setPhase(p, quiet) {
+      phase = p;
+      for (const k in panels) panels[k].hidden = k !== p;
+      steps.forEach((b) => { b.setAttribute('aria-current', b.dataset.p === p ? 'step' : 'false'); b.disabled = fired && b.dataset.p !== 'fire'; });
+      hint.textContent = fired ? 'Fired and glossy! It is on your shelf. Start new clay for another.' :
+        p === 'shape' ? (Curio.touchpad ? 'Click a side, move in or out to shape, click to let go. Click just above the rim to pull it taller.' : 'Drag the sides in or out to shape. Drag just above the rim to pull it taller.') :
+        p === 'glaze' ? (Curio.touchpad ? 'Click the pot to start painting while it spins, click again to stop.' : 'Hold on the pot to paint while it spins. Move up and down for spirals.') :
+        'Ready? Into the kiln it goes.';
+      spinV = fired ? 0.12 : p === 'shape' ? 0.9 : p === 'glaze' ? 0.45 : 0.25;
+      document.getElementById('fire').disabled = fired;
+      if (!quiet) { tone(p === 'shape' ? 440 : p === 'glaze' ? 554 : 659, 0.25, 'triangle', 0.05); save(); }
+    }
+    steps.forEach((b) => b.addEventListener('click', () => { if (!firing && !b.disabled) setPhase(b.dataset.p); }));
+    document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+      if (fired || firing) return;
+      snapshot(); setPreset(b.dataset.preset); noise(0.5, 400, 0.12, 'lowpass', 1.5); tone(330, 0.4, 'sine', 0.04, 1.5);
+    }));
+    const claysEl = document.getElementById('clays');
+    CLAYS.forEach((c, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.title = c.name; b.setAttribute('aria-label', c.name + ' clay');
+      b.style.background = `rgb(${c.wet})`;
+      b.addEventListener('click', () => { if (fired) return; snapshot(); clay = i; paintClays(); save(); tone(300 + i * 80, 0.15); });
+      claysEl.append(b);
+    });
+    function paintClays() { claysEl.querySelectorAll('.sw').forEach((b, i) => b.setAttribute('aria-pressed', String(i === clay))); }
+    const glazesEl = document.getElementById('glazes');
+    GLAZES.forEach((c, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.style.background = c; b.setAttribute('aria-label', 'Glaze ' + c);
+      b.addEventListener('click', () => { glaze = i; paintGlazes(); save(); tone(500 + i * 40, 0.08); });
+      glazesEl.append(b);
+    });
+    function paintGlazes() { glazesEl.querySelectorAll('.sw').forEach((b, i) => b.setAttribute('aria-pressed', String(i === glaze))); }
+    document.querySelectorAll('[data-pat]').forEach((b) => b.addEventListener('click', () => pattern(b.dataset.pat)));
+    const brushIn = document.getElementById('brush');
+    brushIn.addEventListener('input', () => { brush = +brushIn.value; save(); });
+    document.getElementById('fire').addEventListener('click', () => {
+      if (fired || firing) return;
+      snapshot();
+      firing = { t: 0, done: false };
+      noise(0.8, 300, 0.15, 'lowpass', 1);
+      tone(110, 0.6, 'sine', 0.12, 0.7);
+    });
+    document.getElementById('undo').addEventListener('click', doUndo);
+    document.getElementById('new').addEventListener('click', () => {
+      if (firing) return;
+      snapshot();
+      fired = false; tctx.clearRect(0, 0, TW, TH); texData = tctx.getImageData(0, 0, TW, TH).data;
+      setPreset('lump'); setPhase('shape');
+      noise(0.3, 200, 0.2, 'lowpass', 1); tone(120, 0.3, 'sine', 0.12, 0.6);
+    });
+    document.getElementById('png').addEventListener('click', () => {
+      const p = pointer; pointer = null; render(); pointer = p;
+      cv.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'my-pot.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        Curio.toast('Photo saved');
+      });
+    });
+    addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea'))) return;
+      const k = e.key.toLowerCase();
+      const st = { 1: 'shape', 2: 'glaze', 3: 'fire' }[k];
+      if (st) { const b = steps.find((q) => q.dataset.p === st); if (b && !b.disabled && !firing) setPhase(st); }
+      else if (k === 'f' && phase === 'fire') document.getElementById('fire').click();
+      else if (k === 'n') document.getElementById('new').click();
+      else if ((k === '[' || k === ']') && phase === 'glaze') { brush = Math.max(3, Math.min(40, brush + (k === ']' ? 3 : -3))); brushIn.value = brush; save(); }
+      else if ((k === ',' || k === '.') && phase === 'glaze') glazesEl.querySelectorAll('.sw')[(glaze + (k === '.' ? 1 : GLAZES.length - 1)) % GLAZES.length].click();
+    });
+
+    const shelfEl = document.getElementById('shelf');
+    function paintShelf() {
+      shelfEl.innerHTML = '';
+      if (!shelf.length) { const p = document.createElement('div'); p.className = 'pt-empty'; p.textContent = 'Fired pots will live here.'; shelfEl.append(p); return; }
+      shelf.forEach((src, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', `Pot ${i + 1}`);
+        const im = document.createElement('img'); im.src = src; im.alt = `Your pot number ${i + 1}`;
+        b.append(im);
+        b.addEventListener('click', async () => {
+          const body = document.createElement('div');
+          const big = document.createElement('img'); big.src = src; big.alt = 'Your pot'; big.style.cssText = 'height:200px;display:block;margin:0 auto 6px';
+          body.append(big, document.createTextNode('A one of a kind original.'));
+          const v = await Curio.modal({ emoji: '', title: `Pot no. ${i + 1}`, body, buttons: [{ label: 'Lovely', value: 'ok' }, { label: 'Download', value: 'dl' }, { label: 'Smash 💥', value: 'smash' }] });
+          if (v === 'dl') { const a = document.createElement('a'); a.href = src; a.download = `pot-${i + 1}.png`; a.click(); }
+          if (v === 'smash') { shelf.splice(i, 1); Curio.store.set('pottery-shelf', shelf); paintShelf(); noise(0.4, 3000, 0.25, 'highpass', 0.5); tone(1400, 0.2, 'triangle', 0.05, 0.5); }
+        });
+        shelfEl.append(b);
+      });
+    }
+    function toShelf() {
+      const s = 150 / potC.height;
+      const c = document.createElement('canvas'); c.width = Math.round(potC.width * s); c.height = 150;
+      const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(potC, 0, 0, c.width, c.height);
+      shelf.push(c.toDataURL('image/png'));
+      if (shelf.length > 16) shelf.shift();
+      Curio.store.set('pottery-shelf', shelf);
+      paintShelf();
+    }
+
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    let held = false;
+    function engage(p, first) {
+      if (firing || fired || dragMode) return;
+      if (phase === 'shape') {
+        const h = (baseY - p[1]) / (U * CPH);
+        if (h > H - 0.06 && h < H + 0.5 && Math.abs(p[0] - cx) < rAt(H) * U + 30) dragMode = 'top';
+        else if (h >= -0.05 && h <= H && (first || Math.abs(p[0] - cx) < rAt(Math.max(0, h)) * U + 40)) dragMode = 'side';
+        else return;
+        snapshot();
+      } else if (phase === 'glaze') {
+        if (!texAt(p[0], p[1])) return;
+        snapshot(); dragMode = 'paint'; lastTex = null;
+      }
+    }
+    Curio.drag(cv, {
+      start: (q) => {
+        if (firing) return;
+        const p = [q.x, q.y]; pointer = p; held = true;
+        if (fired) { Curio.toast('This one is fired. Start new clay to make another.'); return; }
+        if (phase === 'fire') { Curio.toast('Press the fire button 🔥'); return; }
+        engage(p, true);
+      },
+      move: (q) => { pointer = [q.x, q.y]; if (held && !dragMode && Curio.touchpad) engage(pointer, false); },
+      end: (q) => {
+        held = false;
+        if (dragMode) { dragMode = null; lastTex = null; save(); }
+        if (q && q.pointerType !== 'mouse') pointer = null;
+      }
+    });
+    cv.addEventListener('pointermove', (e) => { if (!held) pointer = pos(e); });
+    cv.addEventListener('pointerleave', () => { if (!dragMode) pointer = null; });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: click the clay to grab it, move to shape or paint, click again to let go', 3600); setPhase(phase, true); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-pottery', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-pottery', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to grab the clay, click again to let go', 4200), 1800); }
+
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1); RS = Math.min(1.5, dpr);
+      W = r.width; Hc = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(Hc * dpr);
+      U = Math.min(W * 0.34, Hc * 0.36);
+      cx = W / 2; baseY = Hc * 0.8;
+    }
+    let last = performance.now(), raf = 0;
+    function frame(now) {
+      raf = 0;
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
+      spin = (spin + dt * spinV) % 1;
+      if (morph) {
+        morph.k = Math.min(1, morph.k + dt / 0.6);
+        const q = 1 - Math.pow(1 - morph.k, 3);
+        for (let i = 0; i < NP; i++) prof[i] = morph.from[i] + (morph.to[i] - morph.from[i]) * q;
+        H = morph.fromH + (morph.toH - morph.fromH) * q;
+        if (morph.k >= 1) { morph = null; V0 = volume(); save(); }
+      }
+      if (phase === 'shape' && !fired) shapeStep(dt);
+      if (phase === 'glaze' && !fired) glazeStep(dt);
+      if (firing) {
+        const pt = firing.t;
+        firing.t += dt;
+        if (Math.floor(pt * 6) !== Math.floor(firing.t * 6) && firing.t > 0.8 && firing.t < 3) noise(0.05, 2000 + Math.random() * 2000, 0.06, 'bandpass', 3);
+        if (pt < 3.1 && firing.t >= 3.1) { fired = true; setPhase('fire', true); hint.textContent = ''; }
+        if (pt < 3.5 && firing.t >= 3.5) { tone(1318, 1.2, 'sine', 0.06); setTimeout(() => tone(1760, 1.4, 'sine', 0.04), 120); }
+        if (firing.t > 3.9) {
+          firing = null; render(); toShelf(); Curio.confetti(70);
+          Curio.toast(Curio.pick(['Gorgeous! Straight to the shelf.', 'A masterpiece. The kiln gods approve.', 'Shiny! Your shelf thanks you.', 'Museum quality, honestly.']));
+          setPhase('fire', true); save();
+        }
+      }
+      render();
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+    addEventListener('resize', resize);
+
+    resize(); load();
+    brushIn.value = brush; paintClays(); paintGlazes(); paintShelf(); setPhase(phase, true);
+    raf = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

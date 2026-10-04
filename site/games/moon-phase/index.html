@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Moon Tonight · Curio</title>
+  <meta name="description" content="See the exact phase of the Moon for any date, drag it through time, find your birthday moon, see where it is in its orbit and test yourself on the phases.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="moon-phase">
+  <main class="c-wrap">
+    <div class="mn-hero">
+      <h1 class="c-title">Moon Tonight</h1>
+      <p class="c-sub">The Moon's exact phase for any date, worked out from its orbit. Drag the Moon to travel through time and watch it wax and wane.</p>
+      <div class="mn-tools">
+        <button class="c-btn c-btn--ghost" type="button" id="openQuiz">🌗 Name that phase</button>
+        <button class="c-btn c-btn--ghost" type="button" id="badgesBtn">🏅 <span id="badgeCount">0</span></button>
+      </div>
+    </div>
+
+    <section class="mn-sky" aria-live="polite">
+      <svg class="mn-stars" id="stars" aria-hidden="true"></svg>
+      <svg class="mn-land" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120 V80 Q80 60 160 78 T340 70 Q420 52 500 74 T700 66 Q800 50 880 72 T1000 64 V120Z" fill="#070a20"/><g fill="#070a20"><path d="M120 80 l8 -30 l8 30z"/><path d="M134 82 l7 -24 l7 24z"/><rect x="760" y="48" width="34" height="24"/><path d="M754 50 l23 -18 l23 18z"/></g><rect x="768" y="56" width="7" height="7" fill="#ffd27a" class="mn-win"/></svg>
+      <div class="mn-moonbox"><canvas id="moon" role="img" aria-label="The Moon. Drag sideways to move through time."></canvas><div class="mn-drag" id="dragHint">⟵ drag to travel ⟶</div></div>
+      <div class="mn-info">
+        <div class="mn-date" id="dateLabel"></div>
+        <div class="mn-name" id="phaseName"></div>
+        <p class="mn-blurb" id="blurb"></p>
+        <div class="mn-stats">
+          <div><b id="illum">0%</b><span>Lit</span></div>
+          <div><b id="age">0</b><span>Days old</span></div>
+          <div><b id="dist">0</b><span>km away</span></div>
+        </div>
+        <ul class="mn-next" id="next"></ul>
+      </div>
+    </section>
+
+    <div class="c-card mn-ctrl">
+      <div class="mn-scrub">
+        <small id="offLabel">Today</small>
+        <input type="range" id="scrub" min="-400" max="400" step="1" value="0" aria-label="Days from today">
+      </div>
+      <div class="mn-btns">
+        <button class="c-btn c-btn--ghost" type="button" id="prevDay" aria-label="Previous day">◀ Day</button>
+        <input class="c-input" type="date" id="dateIn" aria-label="Pick a date" min="1800-01-01" max="2200-12-31">
+        <button class="c-btn c-btn--ghost" type="button" id="nextDay" aria-label="Next day">Day ▶</button>
+        <button class="c-btn" type="button" id="today">Now</button>
+        <button class="c-btn c-btn--ghost" type="button" id="hemi" aria-pressed="false">Northern view</button>
+        <button class="c-btn" type="button" id="play" aria-pressed="false">▶ Play a month</button>
+      </div>
+      <p class="mn-keys c-muted">Keys: <span class="c-kbd">←</span> <span class="c-kbd">→</span> one day · <span class="c-kbd">Shift</span> + arrows one hour · <span class="c-kbd">Space</span> play · <span class="c-kbd">N</span> now</p>
+    </div>
+
+    <div class="mn-two">
+      <section class="c-card mn-orbit">
+        <h2 class="mn-h2">Where the Moon is right now</h2>
+        <svg viewBox="-120 -120 240 240" id="orbit" role="img" aria-label="Top-down view of the Sun, Earth and Moon"></svg>
+        <p class="c-muted" id="orbitTxt"></p>
+      </section>
+      <section class="c-card mn-bday">
+        <h2 class="mn-h2">Your birthday moon</h2>
+        <p class="c-muted">What did the Moon look like the night you were born?</p>
+        <div class="mn-bin"><input class="c-input" type="date" id="bday" aria-label="Your birthday" min="1800-01-01" max="2200-12-31"><button class="c-btn" type="button" id="bdayGo">Show me</button></div>
+        <div class="mn-bout" id="bdayOut"></div>
+      </section>
+    </div>
+    </div>
+
+    <h2 class="mn-h">The month in moons</h2>
+    <div class="c-card">
+      <div class="mn-calhead">
+        <button class="c-btn c-btn--ghost" type="button" id="prevMonth" aria-label="Previous month">◀</button>
+        <strong id="monthLabel"></strong>
+        <button class="c-btn c-btn--ghost" type="button" id="nextMonth" aria-label="Next month">▶</button>
+      </div>
+      <div class="mn-cal" id="cal"></div>
+    </div>
+
+    <h2 class="mn-h">The next 12 full moons</h2>
+    <div class="mn-full" id="fulls"></div>
+
+    <h2 class="mn-h">Famous nights</h2>
+    <p class="c-muted" style="margin-top:-4px">The Moon was watching. Tap one to jump there.</p>
+    <div class="mn-famous" id="famous"></div>
+
+    <h2 class="mn-h">Moon facts</h2>
+    <div class="mn-facts" id="mfacts"></div>
+
+    <h2 class="mn-h">Why the full moons have names</h2>
+    <p class="c-muted" style="margin-top:-4px">These popular names come mostly from North American traditions, collected and spread by the Old Farmer's Almanac. Many cultures have their own.</p>
+    <div class="mn-names" id="names"></div>
+
+    <section class="panel" id="quizPanel" hidden aria-label="Name that phase quiz">
+      <div class="panel__box">
+        <button class="panel__x" type="button" data-close aria-label="Close">✕</button>
+        <div id="qStart">
+          <h2>Name that phase</h2>
+          <p class="panel__lead">Ten moons from random nights. Pick the right phase name. Watch out for waxing versus waning: it depends on which side is lit.</p>
+          <div class="diffs" role="group" aria-label="Mode"><button type="button" class="diff" data-d="classic" aria-pressed="true"><b>Classic</b><span>Northern view</span></button><button type="button" class="diff" data-d="daily" aria-pressed="false"><b>Daily</b><span id="dailyLabel">Today</span></button></div>
+          <button class="c-btn" type="button" id="qGo">Start</button>
+          <p class="c-muted" id="qBest"></p>
+        </div>
+        <div id="qPlay" hidden>
+          <div class="qtop"><span id="qRound"></span><b id="qScore">0</b></div>
+          <div class="qmoon" id="qMoon"></div>
+          <div class="qopts" id="qOpts"></div>
+          <p class="qmsg" id="qMsg" aria-live="polite"></p>
+          <button class="c-btn" type="button" id="qNext" hidden>Next ›</button>
+        </div>
+        <div id="qEnd" hidden>
+          <div class="qmoon" id="qTrophy"></div>
+          <h2 id="qEndTitle"></h2>
+          <div class="c-row" style="justify-content:center"><div class="c-stat"><b id="qeScore">0</b><span>Correct</span></div><div class="c-stat"><b id="qeBest">0</b><span>Best</span></div></div>
+          <div class="c-row" style="justify-content:center;margin-top:12px"><button class="c-btn" type="button" id="qAgain">Play again</button><button class="c-btn c-btn--ghost" type="button" id="qShare">Copy result</button></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="c-muted mn-foot">Phases use Jean Meeus' lunar algorithms (Astronomical Algorithms, chapters 47 to 49), good to within a minute or two for centuries either side of today. Times are shown in your time zone. A supermoon here means a full moon closer than 362,000 km, a micromoon farther than 405,000 km.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="moon.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gravity Playground · Curio</title>
+  <meta name="description" content="Fling planets, stars and black holes into orbit, watch them collide, and beat twelve orbit challenges plus a daily puzzle.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="gravity">
+  <main class="c-wrap gp-main" id="main">
+    <canvas id="space" role="img" aria-label="Space. Press and drag to fling a new body; the dotted line shows its predicted path. Tap a body to inspect it."></canvas>
+
+    <div class="gp-hud-l">
+      <div class="gp-mode" id="modeLbl">Sandbox</div>
+      <div class="gp-goal" id="goal" hidden>
+        <b id="goalT"></b>
+        <div class="gp-prog"><i id="goalBar"></i></div>
+        <span id="goalS"></span>
+      </div>
+      <ul class="gp-feed" id="feed" aria-live="polite"></ul>
+    </div>
+
+    <div class="gp-hud-r">
+      <div class="gp-count"><span><b id="nb">0</b> bodies</span><span><b id="nm">0</b> crashes</span><span class="gp-dustn"><b id="nd">0</b> dust</span></div>
+      <div class="gp-icons">
+        <button type="button" id="helpBtn" aria-label="How to play" title="How to play">?</button>
+        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu (Esc)">☰</button>
+      </div>
+    </div>
+
+    <div class="gp-hint" id="hint">Press, drag and release to fling</div>
+
+    <div class="gp-info" id="info" hidden>
+      <div class="gp-info__head"><div><b id="infoName"></b><small id="infoType"></small></div><button type="button" id="infoClose" aria-label="Close">✕</button></div>
+      <div class="gp-info__stats" id="infoStats"></div>
+      <div class="gp-info__btns"><button type="button" id="infoFollow" aria-pressed="false">🎯 Follow</button><button type="button" id="infoDel">🧨 Delete</button></div>
+    </div>
+
+    <div class="gp-dock" id="dock" data-mode="sandbox" role="toolbar" aria-label="Gravity controls">
+      <div class="gp-row gp-row--sandbox">
+        <button type="button" class="gp-typebtn" id="typeBtn"></button>
+        <button type="button" id="bhBtn" class="gp-ic" aria-label="Black hole" title="Black hole (B)">🕳️</button>
+        <button type="button" id="eraseBtn" class="gp-ic" aria-label="Eraser" title="Eraser (E)" aria-pressed="false">🧽</button>
+        <button type="button" id="presetBtn" class="gp-presetbtn"><i>🗂️</i><span>Presets</span></button>
+        <button type="button" id="clearBtn" class="gp-ic" aria-label="Clear to one sun" title="Clear">🧹</button>
+      </div>
+      <div class="gp-row gp-row--challenge">
+        <div class="gp-shots" aria-label="Shots"><span>Shots</span><div id="shots"></div></div>
+        <button type="button" id="retryBtn" class="gp-pill" title="Retry shot (R)">↺ Retry</button>
+        <button type="button" id="cspeedBtn" class="gp-pill" title="Fast forward">1×</button>
+        <button type="button" id="levelsBtn" class="gp-pill">🗺️ Levels</button>
+      </div>
+      <div class="gp-row gp-row--view">
+        <button type="button" id="pauseBtn" class="gp-ic" aria-label="Pause" aria-pressed="false" title="Pause (Space)">⏸</button>
+        <button type="button" id="speedBtn" class="gp-ic gp-speed" aria-label="Simulation speed" title="Speed ([ and ])">1×</button>
+        <button type="button" id="trailBtn" class="gp-ic" aria-label="Trails" aria-pressed="true" title="Trails (T)">〰️</button>
+        <button type="button" id="zoutBtn" class="gp-ic" aria-label="Zoom out" title="Zoom out (-)">−</button>
+        <button type="button" id="homeBtn" class="gp-ic" aria-label="Reset view" title="Reset view">⌖</button>
+        <button type="button" id="zinBtn" class="gp-ic" aria-label="Zoom in" title="Zoom in (+)">+</button>
+      </div>
+    </div>
+
+    <div class="gp-start" id="start" hidden>
+      <div class="gp-start__card">
+        <svg class="gp-start__art" viewBox="0 0 240 150" aria-hidden="true">
+          <defs>
+            <radialGradient id="gsun" cx="40%" cy="40%"><stop offset="0" stop-color="#fffbe8"/><stop offset=".6" stop-color="#ffd36a"/><stop offset="1" stop-color="#f08a24"/></radialGradient>
+            <radialGradient id="gglow"><stop offset="0" stop-color="#ffc56a" stop-opacity=".6"/><stop offset="1" stop-color="#ffc56a" stop-opacity="0"/></radialGradient>
+            <linearGradient id="gplan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e6cc"/><stop offset=".3" stop-color="#c99a6b"/><stop offset=".5" stop-color="#ead6b4"/><stop offset=".7" stop-color="#a8693f"/><stop offset="1" stop-color="#e9d3ad"/></linearGradient>
+            <radialGradient id="gshade" cx="30%" cy="30%"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#03040e" stop-opacity=".85"/></radialGradient>
+            <radialGradient id="gblue" cx="35%" cy="35%"><stop offset="0" stop-color="#7cc4ff"/><stop offset="1" stop-color="#1b4b9a"/></radialGradient>
+          </defs>
+          <circle cx="120" cy="75" r="60" fill="url(#gglow)"/>
+          <ellipse cx="120" cy="75" rx="104" ry="34" fill="none" stroke="rgba(255,255,255,.18)" stroke-dasharray="2 5"/>
+          <ellipse cx="120" cy="75" rx="62" ry="20" fill="none" stroke="rgba(255,255,255,.14)" stroke-dasharray="2 5"/>
+          <circle cx="120" cy="75" r="20" fill="url(#gsun)"/>
+          <g><circle r="6" fill="url(#gblue)"/><circle r="6" fill="url(#gshade)"/><animateMotion dur="5s" repeatCount="indefinite" path="M182,75 a62,20 0 1,1 -124,0 a62,20 0 1,1 124,0"/></g>
+          <g>
+            <ellipse rx="21" ry="5" fill="none" stroke="#e6d6b4" stroke-width="2.5" opacity=".8"/>
+            <circle r="11" fill="url(#gplan)"/><circle r="11" fill="url(#gshade)"/>
+            <path d="M-21 0a21 5 0 0 0 42 0" fill="none" stroke="#efe2c4" stroke-width="2.5"/>
+            <animateMotion dur="11s" repeatCount="indefinite" path="M224,75 a104,34 0 1,1 -208,0 a104,34 0 1,1 208,0"/>
+          </g>
+          <g><circle r="2.5" fill="#d8ecf8"/><animateMotion dur="3s" repeatCount="indefinite" path="M148,75 a28,10 0 1,0 -56,0 a28,10 0 1,0 56,0"/></g>
+        </svg>
+        <h1>Gravity Playground</h1>
+        <p class="gp-start__sub">Fling worlds, build solar systems, feed black holes, and thread a probe through the stars.</p>
+        <div class="gp-start__modes">
+          <button type="button" class="gp-start__go" id="goSandbox"><i>🪐</i><b>Sandbox</b><small>Free play with 14 presets</small></button>
+          <button type="button" id="goLevels"><i>🎯</i><b>Orbit challenges</b><small id="stLevels">0 ★</small></button>
+          <button type="button" id="goDaily"><i>📅</i><b>Daily orbit</b><small id="stDaily">New today</small></button>
+        </div>
+        <p class="gp-start__fact"><b>Did you know?</b> <span id="stFact"></span></p>
+        <p class="gp-start__line"><span id="stLine"></span> · <button type="button" class="gp-link" id="goHelp">How to play</button></p>
+      </div>
+    </div>
+
+    <div class="gp-result" id="result" hidden>
+      <div class="gp-result__card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+        <div class="gp-result__emoji" id="resEmoji"></div>
+        <h2 id="resTitle"></h2>
+        <div class="gp-result__stars" id="resStars"></div>
+        <p id="resBody"></p>
+        <p class="gp-result__best" id="resBest"></p>
+        <div class="gp-result__btns">
+          <button type="button" class="c-btn" id="resNext">Next level →</button>
+          <button type="button" class="c-btn c-btn--ghost" id="resRetry">↺ Try again</button>
+          <button type="button" class="c-btn c-btn--ghost" id="resShare">📋 Share</button>
+          <button type="button" class="c-btn c-btn--ghost" id="resMenu">☰ Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="gp-sheet" id="sheet" hidden>
+      <div class="gp-sheet__box" role="dialog" aria-modal="true" aria-labelledby="sheetT">
+        <header><h2 id="sheetT"></h2><button type="button" class="gp-sheet__x" aria-label="Close">✕</button></header>
+        <div class="gp-sheet__body" id="sheetBody"></div>
+      </div>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

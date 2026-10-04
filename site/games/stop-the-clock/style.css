@@ -1,0 +1,78 @@
+.sc-head { text-align: center; }
+.sc-modebar { display: flex; justify-content: center; margin-bottom: 14px; }
+.sc-main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: center; }
+.sc-watchwrap {
+  position: relative; display: grid; place-items: center; padding: 6px; border-radius: 28px;
+  background: radial-gradient(70% 60% at 50% 55%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+}
+.sc-watch { width: min(100%, 440px); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; outline: none; }
+.sc-watch svg { width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 18px 24px rgba(40, 25, 10, .28)); }
+.sc-watch .crown { transition: transform .08s ease; }
+.sc-watch.is-press .crown { transform: translateY(7px); }
+.sc-watch .lid { transform-origin: 30px 262px; transform: scaleX(0); transition: transform .5s cubic-bezier(.5, 0, .2, 1); }
+.sc-watch.is-lid .lid { transform: scaleX(1); }
+.sc-watch .frost { opacity: 0; transition: opacity .7s ease; }
+.sc-watch.is-frost .frost { opacity: 1; }
+.sc-watch .tmark { transition: transform .6s cubic-bezier(.2, 1.3, .4, 1); transform-origin: 200px 262px; }
+.sc-watch.is-good .lcdbg { fill: #c8f5c0; }
+.sc-watch.is-bad .lcdbg { fill: #ffd0c8; }
+.sc-watch .glow { opacity: 0; transition: opacity .3s; }
+.sc-watch.is-run .glow { opacity: 1; animation: sc-pulse 1s ease-in-out infinite; }
+@keyframes sc-pulse { 50% { opacity: .35; } }
+
+.sc-panel { text-align: center; padding: 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 340px; justify-content: center; }
+.sc-label { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 900; color: var(--ink-3); }
+.sc-target { font: 900 clamp(40px, 7vw, 60px)/1 var(--mono); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.sc-target small { font-size: .45em; color: var(--ink-3); letter-spacing: 0; }
+.sc-desc { color: var(--ink-2); margin: 2px 0 6px; max-width: 360px; }
+.sc-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 6px; }
+.sc-chip { border: 2px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 5px 11px; font-weight: 800; font-size: 14px; cursor: pointer; color: var(--ink); font-family: var(--mono); }
+.sc-chip[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.sc-go {
+  width: min(100%, 300px); padding: 18px; font-size: 22px; margin-top: 8px; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent));
+}
+.sc-go.is-stop { background: linear-gradient(180deg, #ff6b6b, var(--bad)); box-shadow: 0 3px 0 color-mix(in srgb, var(--bad) 60%, #000); animation: sc-throb 1s ease-in-out infinite; }
+@keyframes sc-throb { 50% { transform: scale(1.03); } }
+.sc-hint { font-size: 13px; color: var(--ink-3); margin: 6px 0 0; }
+.sc-diff { font: 900 clamp(34px, 6vw, 50px)/1 var(--mono); letter-spacing: -.03em; animation: sc-pop .45s cubic-bezier(.2, 1.6, .4, 1); }
+.sc-diff.good { color: var(--good); }
+.sc-diff.ok { color: var(--warn); }
+.sc-diff.bad { color: var(--bad); }
+.sc-rate { font-weight: 800; font-size: 17px; }
+.sc-rate i { font-style: normal; font-size: 30px; display: block; line-height: 1.2; }
+.sc-meter { width: min(100%, 320px); margin: 6px 0; }
+.sc-meter text { font: 800 10px var(--font); fill: var(--ink-3); }
+.sc-tag { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 2px 10px; font-weight: 900; font-size: 12px; animation: sc-pop .5s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes sc-pop { from { transform: scale(.6); opacity: 0; } }
+.sc-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 4px; }
+.sc-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--line); }
+.sc-dots i.on { border-color: var(--accent); }
+.sc-dots i.done { background: var(--good); border-color: var(--good); }
+.sc-glist { display: grid; gap: 4px; width: min(100%, 320px); margin: 6px 0; }
+.sc-glist div { display: flex; justify-content: space-between; background: var(--surface-2); border-radius: 9px; padding: 5px 10px; font: 700 14px var(--mono); }
+.sc-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.sc-beat { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
+.sc-beat i { width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--line); transition: background .08s, transform .08s; }
+.sc-beat i.hit { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+.sc-beat i.goal { border-style: dashed; border-color: var(--accent); }
+
+.sc-options { display: flex; flex-wrap: wrap; gap: 12px 22px; justify-content: center; align-items: center; margin-top: 16px; }
+.sc-opt { display: flex; align-items: center; gap: 8px; }
+.sc-opt > span { font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.sc-tick input:disabled + * { opacity: .5; }
+.sc-chart { width: 100%; height: auto; display: block; }
+.sc-chart text { font-family: var(--font); font-size: 12px; font-weight: 700; fill: var(--ink-3); }
+.sc-histhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.sc-histhead h3 { margin: 0; }
+.sc-lean { margin: 8px 0 0; color: var(--ink-2); font-weight: 700; text-align: center; }
+.sc-modebar .fx-seg button { padding: 7px 11px; }
+
+@media (max-width: 760px) {
+  .sc-main { grid-template-columns: 1fr; gap: 10px; }
+  .sc-watch { width: min(100%, 272px); }
+  .sc-panel { min-height: 0; padding: 16px 14px; }
+  .sc-modebar .fx-seg button { padding: 6px 8px; font-size: 13px; }
+  .sc-chart text { font-size: 16px; }
+  .sc-opt { flex-direction: column; gap: 4px; }
+}

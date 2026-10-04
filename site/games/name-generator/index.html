@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Name Generator · Curio</title>
+  <meta name="description" content="Names for elves, dwarves, dragons, pirates, wizards, planets, spaceships, taverns, bands, pets and more, each with a little backstory and a crest. Plus a Real or Fake quiz.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="name-generator">
+  <main class="c-wrap">
+    <h1 class="c-title">Name Generator</h1>
+    <p class="c-sub">Need a name for a dwarf, a dragon, a tavern or a very fancy hamster? Pick a kind and press the button. Every name comes with a tiny backstory and a crest, free of charge.</p>
+    <section class="ng-stage" id="stage" aria-live="polite">
+      <div class="ng-big" id="big" aria-hidden="true"></div>
+      <div style="flex:1;min-width:0">
+        <h2 id="stageTitle"></h2>
+        <p id="stageTag"></p>
+        <form class="ng-mine" id="mine">
+          <input id="mineIn" maxlength="40" placeholder="Type your name for your very own version" aria-label="Your name" autocomplete="off">
+          <button class="c-btn" type="submit">🔮 Make it mine</button>
+        </form>
+      </div>
+    </section>
+    <div class="ng-cats" id="cats" role="group" aria-label="What are we naming?"></div>
+    <div class="ng-ctl">
+      <div class="ng-seg" id="gender" role="group" aria-label="Name style"></div>
+      <button class="c-btn ng-go" id="go" type="button">✨ Generate</button>
+    </div>
+    <section class="ng-list" id="list" aria-live="polite" aria-label="Generated names"></section>
+    <p class="ng-count" id="count"></p>
+    <section class="c-card ng-sec ng-quiz" aria-label="Real or Fake quiz">
+      <h2 style="justify-content:center"><span>🕵️ Real or Fake?</span></h2>
+      <p class="c-muted" style="margin:0 0 10px;font-size:14px">Some of these names belong to real things. Some were invented by this page five seconds ago. Ten rounds, can you tell?</p>
+      <div class="ng-seg" id="decks" role="group" aria-label="Quiz deck" style="display:inline-flex;flex-wrap:wrap;justify-content:center"></div>
+      <div class="ng-qname" id="qname" aria-live="polite"></div>
+      <div class="ng-qinfo" id="qinfo"></div>
+      <div class="ng-qbtns">
+        <button class="c-btn" id="qReal" type="button">✅ Real</button>
+        <button class="c-btn c-btn--ghost" id="qFake" type="button">🤖 Fake</button>
+      </div>
+      <div class="ng-qmeta" id="qmeta"></div>
+      <div class="ng-dots" id="qdots"></div>
+    </section>
+    <section class="c-card ng-sec" aria-label="Favourites">
+      <h2><span>❤️ Favourites</span><button class="c-btn c-btn--ghost" id="copyFavs" type="button" style="padding:6px 12px;font-size:13px">📋 Copy all</button></h2>
+      <div id="favs"></div>
+    </section>
+    <section class="c-card ng-sec" aria-label="Badges">
+      <h2><span>🏅 Badges</span><span class="c-muted" id="badgeCount" style="font-size:14px"></span></h2>
+      <div class="ng-badges" id="badges"></div>
+    </section>
+    <p class="c-muted" style="text-align:center;font-size:14px;margin-top:14px"><span class="c-kbd">Space</span> or <span class="c-kbd">Enter</span> for more names · <span class="c-kbd">←</span><span class="c-kbd">→</span> change kind · tap a crest for a name card · fantasy and planet names come from a little Markov chain trained on hand-picked examples, so they are new every time.</p>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="data2.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

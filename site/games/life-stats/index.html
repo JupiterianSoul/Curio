@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Life Stats · Curio</title>
+  <meta name="description" content="Your life so far in more than 40 live numbers: heartbeats, sunrises, kilometres through space, milestones to celebrate and your whole life in weeks.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="life-stats">
+  <main class="c-wrap ls">
+    <header class="ls-hero">
+      <svg class="ls-art" viewBox="0 0 360 150" aria-hidden="true">
+        <defs>
+          <linearGradient id="lsCake" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffd1e3"/><stop offset="1" stop-color="#f78fb3"/></linearGradient>
+          <linearGradient id="lsCake2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3d6"/><stop offset="1" stop-color="#f6d48f"/></linearGradient>
+          <radialGradient id="lsFlame" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#fff7c2"/><stop offset=".5" stop-color="#ffc233"/><stop offset="1" stop-color="#ff5a36" stop-opacity="0"/></radialGradient>
+        </defs>
+        <g class="ls-balloon b1"><path d="M58 100 q-6 20 4 40" stroke="#c9b8a6" fill="none"/><ellipse cx="58" cy="70" rx="22" ry="27" fill="#ff5a36"/><ellipse cx="50" cy="60" rx="6" ry="9" fill="#fff" opacity=".35"/><path d="M55 97h6l-3 4z" fill="#ff5a36"/></g>
+        <g class="ls-balloon b2"><path d="M300 92 q8 22 -2 48" stroke="#c9b8a6" fill="none"/><ellipse cx="300" cy="62" rx="20" ry="25" fill="#6c5ce7"/><ellipse cx="293" cy="53" rx="5" ry="8" fill="#fff" opacity=".35"/><path d="M297 87h6l-3 4z" fill="#6c5ce7"/></g>
+        <g class="ls-balloon b3"><path d="M330 110 q-4 16 2 30" stroke="#c9b8a6" fill="none"/><ellipse cx="330" cy="88" rx="15" ry="19" fill="#ffc233"/><path d="M327 107h6l-3 4z" fill="#ffc233"/></g>
+        <ellipse cx="180" cy="142" rx="92" ry="8" fill="#000" opacity=".08"/>
+        <rect x="104" y="96" width="152" height="44" rx="10" fill="url(#lsCake)"/>
+        <path d="M104 104 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0 q12 12 24 0 q4 4 8 2 v-6 h-152z" fill="#fff" opacity=".9"/>
+        <rect x="124" y="64" width="112" height="36" rx="9" fill="url(#lsCake2)"/>
+        <path d="M124 70 q10 10 20 0 q10 10 20 0 q10 10 20 0 q10 10 20 0 q10 10 20 0 q6 6 12 0 v-6 h-112z" fill="#ff8fb1"/>
+        <g fill="#e84393"><circle cx="140" cy="120" r="3"/><circle cx="170" cy="126" r="3"/><circle cx="200" cy="118" r="3"/><circle cx="232" cy="124" r="3"/></g>
+        <g><rect x="150" y="38" width="7" height="28" rx="2" fill="#4ea6ef"/><rect x="176" y="34" width="7" height="32" rx="2" fill="#2ecc71"/><rect x="202" y="38" width="7" height="28" rx="2" fill="#ffc233"/></g>
+        <g class="ls-flames"><ellipse cx="153.5" cy="30" rx="6" ry="10" fill="url(#lsFlame)"/><ellipse cx="179.5" cy="26" rx="6" ry="10" fill="url(#lsFlame)"/><ellipse cx="205.5" cy="30" rx="6" ry="10" fill="url(#lsFlame)"/></g>
+      </svg>
+      <h1 class="c-title">Life Stats</h1>
+      <p class="c-sub">Your life so far in more than 40 live numbers: heartbeats, sunrises, kilometres hurtling through space, milestones worth a party and every week you have lived.</p>
+      <form class="ls-form" id="form">
+        <label><span>Birthday</span><input class="c-input" type="date" id="dob" min="1900-01-01" required></label>
+        <label><span>Time <small>(optional)</small></span><input class="c-input" type="time" id="tob"></label>
+        <button class="c-btn" type="submit">Show my stats</button>
+      </form>
+      <p class="c-muted ls-privacy">Stored only on this device.</p>
+    </header>
+
+    <div id="out" hidden>
+      <section class="ls-big c-card" aria-live="off">
+        <small>You have been alive for</small>
+        <div class="ls-odo" id="odo" aria-label="seconds alive"></div>
+        <small>seconds, and counting</small>
+        <div class="ls-units" id="units"></div>
+      </section>
+
+      <section class="ls-bday c-card">
+        <div class="ls-ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="trk"/><circle cx="60" cy="60" r="52" class="prg" id="ring"/></svg>
+          <div><b id="ringPct">0%</b><span>of this year</span></div>
+        </div>
+        <div class="ls-bday__txt">
+          <strong id="nextTitle">Your next birthday</strong>
+          <span class="c-muted" id="nextAge"></span>
+          <div class="ls-count"><div><b id="cd">0</b><span>days</span></div><div><b id="ch">0</b><span>hours</span></div><div><b id="cm">0</b><span>min</span></div><div><b id="cs">0</b><span>sec</span></div></div>
+        </div>
+      </section>
+
+      <nav class="ls-tabs" role="tablist" id="tabs" aria-label="Stat categories"></nav>
+      <div class="ls-grid" id="grid" role="tabpanel"></div>
+
+      <section class="ls-sec">
+        <h2>Milestones worth a party</h2>
+        <p class="c-muted">Big round numbers you have passed and the ones still coming.</p>
+        <div class="c-card ls-miles">
+          <ol id="miles"></ol>
+          <div class="c-row" style="justify-content:flex-start"><button class="c-btn" type="button" id="ics">Add upcoming to my calendar</button></div>
+        </div>
+      </section>
+
+      <section class="ls-sec">
+        <h2>Your birthday, decoded</h2>
+        <div class="ls-decode" id="decode"></div>
+      </section>
+
+      <section class="ls-sec">
+        <h2>Your age around the solar system</h2>
+        <div class="ls-planets" id="planets"></div>
+        <p class="c-muted" style="font-size:14px">Want birthdays on Pluto? Try <a href="../planet-age/index.html">Age on Other Planets</a>.</p>
+      </section>
+
+      <section class="ls-sec">
+        <div class="ls-sec__head">
+          <h2>Your life in weeks</h2>
+          <label class="ls-exp">Life expectancy <input type="range" id="exp" min="60" max="100" step="1" value="73"> <b id="expV">73</b></label>
+        </div>
+        <p class="c-muted" style="margin:0 0 10px">Each square is one week; each row is one year. Tap or hover a square.</p>
+        <div class="c-card ls-weeks-wrap">
+          <div class="ls-wk-head"><span id="pctLabel"></span><span class="c-muted" id="weeksLabel"></span></div>
+          <div class="ls-progress" aria-hidden="true"><div id="pctBar"></div></div>
+          <div class="ls-weeks-box"><canvas id="weeks" role="img" aria-label="Grid of the weeks of a 90 year life, with the weeks you have lived filled in"></canvas><div class="ls-tip" id="tip" hidden></div></div>
+          <div class="ls-legend" id="legend"></div>
+        </div>
+      </section>
+
+      <section class="ls-sec ls-end">
+        <div class="c-card ls-badges"><h2>Badges</h2><div id="badges"></div></div>
+        <div class="c-card ls-share"><h2>Share your stats</h2><pre id="shareTxt"></pre><div class="c-row" style="justify-content:flex-start"><button class="c-btn" type="button" id="share">Copy</button><button class="c-btn c-btn--ghost" type="button" id="forget">Forget my birthday</button></div></div>
+      </section>
+
+      <p class="c-muted ls-foot">All figures are cheerful estimates: 70 heartbeats and 16 breaths a minute, 15 blinks a minute while awake, 8 hours of sleep, 3 meals and 2 litres of water a day, 5 litres of blood pumped a minute, about 16,000 words spoken a day from age 2 and 5,000 steps a day from age 1. Earth orbits at about 940 million km a year, the Moon drifts away 3.8 cm a year and there are about 44 lightning flashes a second worldwide. Population figures are rounded UN estimates.</p>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="planets.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

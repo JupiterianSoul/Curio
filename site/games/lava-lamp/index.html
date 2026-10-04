@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lava Lamp · Curio</title>
+  <meta name="description" content="A relaxing virtual lava lamp: 15 wax colors, 7 lamp shapes, six cozy rooms, a gentle soundscape, guided breathing and a sleep timer.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-game="lava-lamp">
+  <main class="c-wrap ll">
+    <div class="ll-head">
+      <div>
+        <h1 class="c-title">Lava Lamp</h1>
+        <p class="c-sub">Warm wax rises, cools off, sinks, repeats. Tap the glass to give a blob a little heat, tap the base to switch it.</p>
+      </div>
+      <div class="ll-icons">
+        <button type="button" id="libBtn" title="Lamp library (L)">📚 <span>Library</span></button>
+        <button type="button" id="shareBtn" aria-label="Copy a link to this setup" title="Copy a link to this setup">🔗</button>
+        <button type="button" id="trophyBtn" aria-label="Trophies and stats" title="Trophies and stats">🏆</button>
+        <button type="button" id="menuBtn" aria-label="Main menu" title="Main menu">☰</button>
+      </div>
+    </div>
+    <div class="ll-stage" id="stage">
+      <canvas id="lamp" role="img" aria-label="Glowing lava lamps with wax blobs slowly rising and sinking. Tap the glass to warm the wax, tap the base to switch a lamp on or off."></canvas>
+      <div class="ll-breathe" id="breathe" hidden aria-live="polite">
+        <div class="ll-breathe__ring" id="breathRing"></div>
+        <b id="breathLbl">Breathe in</b><span id="breathNum">4</span><small id="breathCount">0 breaths</small>
+      </div>
+    </div>
+    <div class="ll-bar">
+      <div class="ll-tabs" role="tablist" aria-label="Settings">
+        <button type="button" role="tab" data-tab="lamp" aria-label="Lamp">💡 <span>Lamp</span></button>
+        <button type="button" role="tab" data-tab="room" aria-label="Room">🏠 <span>Room</span></button>
+        <button type="button" role="tab" data-tab="sound" aria-label="Sound">🎧 <span>Sound</span></button>
+        <button type="button" role="tab" data-tab="breathe" aria-label="Breathe">🌬️ <span>Breathe</span></button>
+      </div>
+      <label class="ll-speed">Speed <input type="range" id="speed" min="0" max="100" value="40" aria-label="Speed"></label>
+      <button class="c-btn c-btn--ghost" type="button" id="breathBtn" aria-pressed="false">🌬️ Start breathing</button>
+      <button class="c-btn" type="button" id="ambient" title="Ambient mode (F)">🌙 Ambient</button>
+    </div>
+    <div class="ll-panel c-card" id="panel"></div>
+  </main>
+  <button type="button" class="ll-exit" id="exit">Exit ambient (Esc)</button>
+
+  <div class="ll-start" id="start" hidden>
+    <div class="ll-start__card">
+      <svg class="ll-start__art" viewBox="0 0 120 200" aria-hidden="true">
+        <defs>
+          <linearGradient id="lq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d0a1a"/><stop offset=".6" stop-color="#8a1a20"/><stop offset="1" stop-color="#d8421c"/></linearGradient>
+          <linearGradient id="mt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a3d44"/><stop offset=".35" stop-color="#f2f4f7"/><stop offset=".6" stop-color="#b7bcc5"/><stop offset="1" stop-color="#2c2f35"/></linearGradient>
+          <radialGradient id="gw"><stop offset="0" stop-color="#ff8a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff8a3c" stop-opacity="0"/></radialGradient>
+          <clipPath id="gc"><path d="M48 40 L72 40 L88 128 L32 128 Z"/></clipPath>
+                  </defs>
+        <circle cx="60" cy="90" r="70" fill="url(#gw)"/>
+        <path d="M50 14 Q60 10 70 14 L72 40 L48 40 Z" fill="url(#mt)"/>
+        <path d="M48 40 L72 40 L88 128 L32 128 Z" fill="url(#lq)"/>
+        <g clip-path="url(#gc)"><g fill="#ff9a2e">
+          <circle class="ll-b1" cx="58" cy="70" r="9"/><circle class="ll-b2" cx="64" cy="100" r="11"/><circle class="ll-b3" cx="54" cy="56" r="6"/><ellipse cx="60" cy="130" rx="30" ry="10"/>
+        </g></g>
+        <path d="M50 44 L46 120" stroke="rgba(255,255,255,.25)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M32 128 L88 128 Q76 150 78 160 Q80 178 94 190 L26 190 Q40 178 42 160 Q44 150 32 128 Z" fill="url(#mt)"/>
+        <circle cx="60" cy="172" r="3.5" fill="#ff8a3c"/>
+      </svg>
+      <h1>Lava Lamp</h1>
+      <p class="ll-start__sub">Pick a lamp, pick a room, turn on the soundscape, and let your brain go soft for a while.</p>
+      <div class="ll-start__btns">
+        <button type="button" class="c-btn" id="goRelax">🫠 Light it up</button>
+        <button type="button" class="c-btn c-btn--ghost" id="goLib">📚 Lamp library</button>
+        <button type="button" class="c-btn c-btn--ghost" id="goBreathe">🌬️ Breathe with me</button>
+      </div>
+      <p class="ll-start__fact" id="stFact"></p>
+      <p class="ll-start__line" id="stLine"></p>
+    </div>
+  </div>
+
+  <div class="ll-drawer" id="drawer" hidden>
+    <div class="ll-drawer__box" role="dialog" aria-modal="true" aria-labelledby="drawerT">
+      <header><h2 id="drawerT"></h2><button type="button" class="ll-drawer__x" aria-label="Close">✕</button></header>
+      <div class="ll-drawer__body" id="drawerBody"></div>
+    </div>
+  </div>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

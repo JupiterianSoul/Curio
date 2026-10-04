@@ -1,0 +1,15 @@
+{
+  "name": "curio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "npx --yes serve site",
+    "sweep": "node tools/sweep.mjs",
+    "smoke": "node tools/smoke.mjs",
+    "check": "node tools/sweep.mjs && node tools/smoke.mjs"
+  },
+  "devDependencies": {
+    "acorn": "^8.18.0",
+    "playwright": "1.49.1"
+  }
+}

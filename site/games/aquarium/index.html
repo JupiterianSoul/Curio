@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Aquarium · Curio</title>
+  <meta name="description" content="Fill your own fish tank with schooling tetras, grumpy pufferfish, swaying plants and a bubbling treasure chest. Feed them, tap the glass, change the light.">
+  <link rel="icon" href="thumb.svg">
+  <link rel="stylesheet" href="../../shared.css">
+  <style>
+    .c-wrap { padding-top: 10px; padding-bottom: 16px; width: min(100%, 1100px); }
+    .aq-head { text-align: center; }
+    .aq-head .c-title { margin: 0; font-size: clamp(26px, 4.5vw, 38px); }
+    .aq-head .c-sub { margin: 2px 0 10px; font-size: 15px; }
+    .aq-stage { position: relative; height: max(360px, calc(100dvh - var(--bar-h) - 270px)); border-radius: 18px; overflow: hidden; background: #0b4f6c; box-shadow: 0 0 0 6px #2b2a33, 0 0 0 8px #44434f, var(--shadow); margin: 8px 8px 0; }
+    #cv { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .aq-count { position: absolute; top: 10px; left: 12px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,.85); background: rgba(0,0,0,.22); padding: 3px 10px; border-radius: 999px; pointer-events: none; }
+    .aq-tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; }
+    .tab { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-weight: 800; font-size: 14px; color: var(--ink-2); touch-action: manipulation; }
+    .tab[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+    .aq-items { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; min-height: 52px; }
+    .it { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 3px 6px 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 800; color: var(--ink-2); touch-action: manipulation; min-width: 62px; }
+    .it canvas { width: 54px; height: 32px; }
+    .it[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--ink); }
+    .aq-note { font-size: 14px; color: var(--ink-2); font-weight: 700; align-self: center; text-align: center; }
+    .aq-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: center; margin-top: 10px; }
+    .aq-row select { padding: 7px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 700; }
+    .aq-row label { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; color: var(--ink-2); font-size: 14px; }
+    .aq-row .c-btn { padding: 8px 14px; font-size: 14px; }
+    @media (max-width: 560px) {
+      .aq-stage { height: max(330px, calc(100dvh - var(--bar-h) - 330px)); margin: 6px 6px 0; }
+      .tab { padding: 5px 9px; font-size: 13px; }
+      .it { min-width: 56px; }
+      .it canvas { width: 46px; height: 28px; }
+      .aq-row .c-btn { padding: 8px 11px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body data-game="aquarium">
+  <main class="c-wrap">
+    <div class="aq-head">
+      <h1 class="c-title">Aquarium</h1>
+      <p class="c-sub">Pick a fish, plant or ornament and click the tank to add it. Then sprinkle some food and watch the feeding frenzy.</p>
+    </div>
+    <div class="aq-stage" id="stage">
+      <canvas id="cv" role="img" aria-label="A fish tank with swimming fish, swaying plants and bubbles. Click to add the selected item. The Remove tab, right-click or long-press removes things."></canvas>
+      <div class="aq-count" id="count"></div>
+    </div>
+    <div class="aq-tabs" id="tabs" role="toolbar" aria-label="What to add">
+      <button class="tab" type="button" data-tab="fish" title="Fish (1)">🐟 Fish</button>
+      <button class="tab" type="button" data-tab="plant" title="Plants (2)">🌿 Plants</button>
+      <button class="tab" type="button" data-tab="decor" title="Decor (3)">🪨 Decor</button>
+      <button class="tab" type="button" data-tab="feed" title="Feed (4)">🍤 Feed</button>
+      <button class="tab" type="button" data-tab="tap" title="Tap glass (5)">👆 Tap glass</button>
+      <button class="tab" type="button" data-tab="remove" title="Remove (X)">🧽 Remove</button>
+    </div>
+    <div class="aq-items" id="items"></div>
+    <div class="aq-row">
+      <label>Light <select id="light" aria-label="Lighting"></select></label>
+      <button class="c-btn c-btn--ghost" type="button" id="undo" aria-label="Undo">↶ Undo</button>
+      <button class="c-btn c-btn--ghost" type="button" id="empty">🫧 Empty tank</button>
+      <button class="c-btn" type="button" id="png">📷 Save PNG</button>
+    </div>
+  </main>
+  <script src="../../games.js"></script>
+  <script src="../../shared.js"></script>
+  <script>
+  (() => {
+    const cv = document.getElementById('cv'), g = cv.getContext('2d');
+    const stage = document.getElementById('stage');
+    const bg = document.createElement('canvas'), bgx = bg.getContext('2d');
+    let W = 0, Hc = 0, dpr = 1, t = 0, sandTop = 0, FS = 1;
+    const R = (a, b) => a + Math.random() * (b - a);
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    const LIGHTS = {
+      day: { name: 'Sunny day', top: '#5fd0e6', bot: '#0d6e96', ray: 'rgba(255,255,230,', rayA: 0.13, sand: ['#f0d9a4', '#d9b97a'], shade: null, glow: 0.2 },
+      tropic: { name: 'Tropical', top: '#62e6d0', bot: '#0a7f8a', ray: 'rgba(255,255,210,', rayA: 0.16, sand: ['#f6e6bb', '#e2c88b'], shade: null, glow: 0.2 },
+      sunset: { name: 'Sunset', top: '#ff9e73', bot: '#3d2d6e', ray: 'rgba(255,200,150,', rayA: 0.15, sand: ['#e8b98e', '#a77b6a'], shade: 'rgba(80,30,60,.12)', glow: 0.4 },
+      deep: { name: 'Deep blue', top: '#1d6fa6', bot: '#061d3d', ray: 'rgba(170,220,255,', rayA: 0.08, sand: ['#a6a08a', '#6b6a5f'], shade: 'rgba(0,10,40,.2)', glow: 0.7 },
+      night: { name: 'Moonlight', top: '#16325c', bot: '#040a1c', ray: 'rgba(190,210,255,', rayA: 0.06, sand: ['#59607a', '#353a52'], shade: 'rgba(0,5,30,.38)', glow: 1 }
+    };
+    let light = 'day';
+
+    const SPECIES = [
+      { id: 'clown', name: 'Clownfish', L: 34, h: 0.5, body: '#ff7a1a', belly: '#ffa45c', fin: '#ff8d2e', edge: '#1b1b1b', tail: 'round', stripes: [[0.26, 0.09], [0.0, 0.1], [-0.3, 0.06]], stripeCol: '#ffffff', spd: 50, mode: 'hover', zone: [0.45, 0.85] },
+      { id: 'neon', name: 'Neon tetra', L: 20, h: 0.32, body: '#b8c6d8', belly: '#e9eef5', fin: 'rgba(220,230,240,.6)', tail: 'fork', neon: true, spd: 85, mode: 'school', school: 1, zone: [0.2, 0.7] },
+      { id: 'angel', name: 'Angelfish', L: 40, h: 0.62, body: '#d9c98e', belly: '#f7f1dc', fin: 'rgba(225,212,160,.85)', tail: 'fan', angel: true, spd: 34, mode: 'glide', zone: [0.2, 0.7] },
+      { id: 'tang', name: 'Blue tang', L: 42, h: 0.56, body: '#2f6fe0', belly: '#4f8cf0', fin: '#1d4fb8', tail: 'fork', tailCol: '#ffd43b', tang: true, spd: 95, mode: 'dart', zone: [0.15, 0.75] },
+      { id: 'gold', name: 'Goldfish', L: 38, h: 0.52, body: '#ff9c1a', belly: '#ffd27a', fin: 'rgba(255,160,60,.75)', tail: 'flow', spd: 42, mode: 'wander', zone: [0.15, 0.8] },
+      { id: 'puffer', name: 'Pufferfish', L: 36, h: 0.72, body: '#d9b25c', belly: '#f6ecc8', fin: 'rgba(220,190,110,.8)', tail: 'round', puffer: true, spd: 26, mode: 'wander', zone: [0.3, 0.85] },
+      { id: 'betta', name: 'Betta', L: 36, h: 0.42, body: '#7b2cbf', belly: '#c0392b', fin: 'rgba(170,40,120,.8)', tail: 'flow', betta: true, spd: 30, mode: 'glide', zone: [0.1, 0.5] },
+      { id: 'seahorse', name: 'Seahorse', L: 34, special: 'seahorse', body: '#f2a541', spd: 14, mode: 'bob', zone: [0.35, 0.85] },
+      { id: 'jelly', name: 'Jellyfish', L: 40, special: 'jelly', body: 'rgba(255,160,210,', spd: 18, mode: 'pulse', zone: [0.1, 0.75] },
+      { id: 'pleco', name: 'Catfish', L: 50, h: 0.3, body: '#6b5a45', belly: '#9b8a70', fin: '#5a4a38', tail: 'fork', spots: '#3b3025', whiskers: true, spd: 22, mode: 'bottom', zone: [0.95, 1] },
+      { id: 'guppy', name: 'Guppy', L: 22, h: 0.36, body: '#9fb6a8', belly: '#dfe8e0', fin: 'rgba(255,120,80,.85)', tail: 'flow', rainbow: true, spd: 60, mode: 'school', school: 0.5, zone: [0.1, 0.6] },
+      { id: 'danio', name: 'Zebra danio', L: 22, h: 0.26, body: '#e7e0c8', belly: '#f5f2e6', fin: 'rgba(230,225,200,.6)', tail: 'fork', hstripes: '#2f4b8f', spd: 110, mode: 'school', school: 1, zone: [0.1, 0.5] },
+      { id: 'shark', name: 'Tiny shark', L: 64, h: 0.26, body: '#7f93a3', belly: '#e8edf0', fin: '#6d8191', tail: 'shark', shark: true, spd: 70, mode: 'patrol', zone: [0.25, 0.75] }
+    ];
+    const SP = Object.fromEntries(SPECIES.map((s) => [s.id, s]));
+    const PLANTS = [
+      { id: 'weed', name: 'Seaweed' }, { id: 'kelp', name: 'Kelp' }, { id: 'grass', name: 'Grass' }, { id: 'coral', name: 'Coral' }, { id: 'anemone', name: 'Anemone' }
+    ];
+    const DECOR = [{ id: 'rock', name: 'Rock' }, { id: 'chest', name: 'Treasure' }, { id: 'bubbler', name: 'Bubbler' }, { id: 'castle', name: 'Castle' }, { id: 'shell', name: 'Shell' }];
+
+    let fish = [], plants = [], decor = [], bubbles = [], flakes = [], ripples = [];
+    let tab = 'fish', sel = { fish: 'clown', plant: 'weed', decor: 'rock' };
+    let undo = [], fed = 0;
+    const schoolTarget = {};
+
+    function bodyPath(c, L, Hh) {
+      c.beginPath(); c.moveTo(L * 0.5, 0);
+      c.bezierCurveTo(L * 0.42, -Hh * 0.62, -L * 0.12, -Hh * 0.62, -L * 0.42, -Hh * 0.13);
+      c.lineTo(-L * 0.42, Hh * 0.13);
+      c.bezierCurveTo(-L * 0.12, Hh * 0.62, L * 0.42, Hh * 0.62, L * 0.5, 0);
+      c.closePath();
+    }
+    function drawTail(c, s, L, Hh, w) {
+      c.save(); c.translate(-L * 0.4, 0); c.rotate(w);
+      c.fillStyle = s.tailCol || s.fin;
+      c.beginPath();
+      if (s.tail === 'fork') { c.moveTo(0, 0); c.lineTo(-L * 0.24, -Hh * 0.42); c.quadraticCurveTo(-L * 0.12, 0, -L * 0.24, Hh * 0.42); c.closePath(); }
+      else if (s.tail === 'round') { c.moveTo(0, -Hh * 0.08); c.quadraticCurveTo(-L * 0.28, -Hh * 0.45, -L * 0.24, 0); c.quadraticCurveTo(-L * 0.28, Hh * 0.45, 0, Hh * 0.08); c.closePath(); }
+      else if (s.tail === 'fan') { c.moveTo(0, 0); c.lineTo(-L * 0.26, -Hh * 0.3); c.lineTo(-L * 0.26, Hh * 0.3); c.closePath(); }
+      else if (s.tail === 'shark') { c.moveTo(0, 0); c.quadraticCurveTo(-L * 0.12, -Hh * 0.3, -L * 0.22, -Hh * 0.75); c.quadraticCurveTo(-L * 0.12, 0, -L * 0.16, Hh * 0.4); c.closePath(); }
+      else {
+        const w2 = Math.sin(t * 5 + L) * 0.15;
+        c.moveTo(0, -Hh * 0.05);
+        c.bezierCurveTo(-L * 0.2, -Hh * 0.7, -L * 0.55, -Hh * (0.8 + w2), -L * 0.62, -Hh * 0.2);
+        c.quadraticCurveTo(-L * 0.45, 0, -L * 0.62, Hh * (0.25 - w2));
+        c.bezierCurveTo(-L * 0.55, Hh * 0.85, -L * 0.2, Hh * 0.7, 0, Hh * 0.05);
+        c.closePath();
+      }
+      c.fill();
+      if (s.rainbow) {
+        const gr = c.createLinearGradient(0, -Hh, -L * 0.6, Hh);
+        gr.addColorStop(0, 'rgba(255,90,120,.85)'); gr.addColorStop(0.5, 'rgba(255,200,60,.85)'); gr.addColorStop(1, 'rgba(80,160,255,.85)');
+        c.fillStyle = gr; c.fill();
+      }
+      c.restore();
+    }
+    function drawGeneric(c, s, L, ph, puff = 0) {
+      let Hh = L * s.h;
+      if (s.puffer) Hh *= 1 + puff * 0.55;
+      const w = Math.sin(ph) * (s.tail === 'flow' ? 0.2 : 0.32);
+      if (s.angel || s.betta) {
+        c.fillStyle = s.fin;
+        c.beginPath(); c.moveTo(L * 0.18, -Hh * 0.42);
+        c.quadraticCurveTo(-L * 0.1, -Hh * (s.angel ? 1.5 : 1.0), -L * (s.angel ? 0.42 : 0.5), -Hh * (s.angel ? 1.25 : 0.75) + Math.sin(ph * 0.5) * 2);
+        c.quadraticCurveTo(-L * 0.25, -Hh * 0.3, -L * 0.32, -Hh * 0.2); c.closePath(); c.fill();
+        c.beginPath(); c.moveTo(L * 0.18, Hh * 0.42);
+        c.quadraticCurveTo(-L * 0.1, Hh * (s.angel ? 1.5 : 1.0), -L * (s.angel ? 0.42 : 0.5), Hh * (s.angel ? 1.25 : 0.75) - Math.sin(ph * 0.5) * 2);
+        c.quadraticCurveTo(-L * 0.25, Hh * 0.3, -L * 0.32, Hh * 0.2); c.closePath(); c.fill();
+      }
+      drawTail(c, s, L, Hh, w);
+      if (!s.angel && !s.betta) {
+        c.fillStyle = s.fin;
+        c.beginPath();
+        if (s.shark) { c.moveTo(L * 0.12, -Hh * 0.42); c.quadraticCurveTo(-L * 0.02, -Hh * 1.25, -L * 0.1, -Hh * 1.3); c.quadraticCurveTo(-L * 0.06, -Hh * 0.7, -L * 0.14, -Hh * 0.38); }
+        else { c.moveTo(L * 0.16, -Hh * 0.44); c.quadraticCurveTo(-L * 0.05, -Hh * 0.95, -L * 0.3, -Hh * 0.3); }
+        c.closePath(); c.fill();
+      }
+      bodyPath(c, L, Hh);
+      const gr = c.createLinearGradient(0, -Hh / 2, 0, Hh / 2);
+      gr.addColorStop(0, s.body); gr.addColorStop(1, s.belly);
+      c.fillStyle = gr; c.fill();
+      c.save(); bodyPath(c, L, Hh); c.clip();
+      if (s.stripes) {
+        for (const [x, wdt] of s.stripes) {
+          c.fillStyle = s.edge; c.fillRect(L * x - L * wdt / 2 - L * 0.025, -Hh, L * wdt + L * 0.05, Hh * 2);
+          c.fillStyle = s.stripeCol; c.fillRect(L * x - L * wdt / 2, -Hh, L * wdt, Hh * 2);
+        }
+      }
+      if (s.neon) {
+        c.fillStyle = '#26c6f0'; c.fillRect(-L * 0.42, -Hh * 0.18, L * 0.85, Hh * 0.2);
+        c.fillStyle = 'rgba(120,240,255,.6)'; c.fillRect(-L * 0.42, -Hh * 0.14, L * 0.85, Hh * 0.07);
+        c.fillStyle = '#e8304a'; c.fillRect(-L * 0.42, Hh * 0.04, L * 0.5, Hh * 0.4);
+      }
+      if (s.hstripes) { c.fillStyle = s.hstripes; for (const y of [-0.18, 0.02, 0.2]) c.fillRect(-L * 0.45, Hh * y, L * 0.85, Hh * 0.09); }
+      if (s.tang) {
+        c.fillStyle = '#10204a';
+        c.beginPath(); c.moveTo(L * 0.3, -Hh * 0.28); c.quadraticCurveTo(0, -Hh * 0.05, -L * 0.36, -Hh * 0.3); c.quadraticCurveTo(-L * 0.1, Hh * 0.25, L * 0.12, -Hh * 0.08); c.quadraticCurveTo(L * 0.2, -Hh * 0.2, L * 0.3, -Hh * 0.28); c.fill();
+      }
+      if (s.angel) { c.fillStyle = 'rgba(40,40,40,.75)'; for (const x of [0.22, 0.0, -0.22]) c.fillRect(L * x - L * 0.03, -Hh, L * 0.06, Hh * 2); }
+      if (s.betta) { const g2 = c.createLinearGradient(L * 0.4, 0, -L * 0.4, 0); g2.addColorStop(0, 'rgba(60,40,160,.0)'); g2.addColorStop(1, 'rgba(200,40,100,.6)'); c.fillStyle = g2; c.fillRect(-L, -Hh, 2 * L, 2 * Hh); }
+      if (s.spots) { c.fillStyle = s.spots; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(L * (0.3 - i * 0.08), Hh * (((i * 37) % 7) / 7 - 0.5) * 0.7, L * 0.022, 0, 7); c.fill(); } }
+      if (s.puffer) { c.fillStyle = 'rgba(90,70,30,.55)'; for (let i = 0; i < 12; i++) { c.beginPath(); c.arc(L * (0.28 - (i % 4) * 0.15), Hh * (-0.32 + Math.floor(i / 4) * 0.16), L * 0.025, 0, 7); c.fill(); } }
+      if (s.shark) { c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(-L, Hh * 0.05, 2 * L, Hh); }
+      c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.ellipse(L * 0.1, -Hh * 0.22, L * 0.28, Hh * 0.1, -0.05, 0, 7); c.fill();
+      c.restore();
+      if (s.puffer && puff > 0.05) {
+        c.strokeStyle = 'rgba(120,90,40,.8)'; c.lineWidth = 1.2;
+        for (let i = 0; i < 16; i++) {
+          const a = i / 16 * Math.PI * 2, rx = L * 0.46, ry = Hh * 0.5;
+          const x0 = Math.cos(a) * rx * 0.95, y0 = Math.sin(a) * ry * 0.95;
+          c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 + Math.cos(a) * 5 * puff, y0 + Math.sin(a) * 5 * puff); c.stroke();
+        }
+      }
+      if (s.whiskers) {
+        c.strokeStyle = s.belly; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(L * 0.46, Hh * 0.1); c.quadraticCurveTo(L * 0.6, Hh * 0.3, L * 0.62, Hh * 0.55 + Math.sin(ph) * 2);
+        c.moveTo(L * 0.46, Hh * 0.12); c.quadraticCurveTo(L * 0.55, Hh * 0.4, L * 0.5, Hh * 0.7 + Math.cos(ph) * 2); c.stroke();
+      }
+      c.fillStyle = s.fin;
+      c.save(); c.translate(L * 0.12, Hh * 0.12); c.rotate(0.5 + Math.sin(ph * 1.3) * 0.35);
+      c.beginPath(); c.ellipse(-L * 0.06, 0, L * 0.09, Hh * 0.09, 0, 0, 7); c.fill(); c.restore();
+      const er = Math.max(1.6, Hh * (s.puffer ? 0.12 : 0.11));
+      const ex = L * (s.puffer ? 0.3 : 0.33), ey = -Hh * 0.1;
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(ex, ey, er, 0, 7); c.fill();
+      c.fillStyle = '#111'; c.beginPath(); c.arc(ex + er * 0.2, ey, er * 0.62, 0, 7); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + er * 0.35, ey - er * 0.3, er * 0.22, 0, 7); c.fill();
+    }
+    function drawSeahorse(c, s, L, ph) {
+      const u = L / 34;
+      c.save(); c.scale(u, u);
+      c.strokeStyle = '#d88a2a'; c.lineWidth = 5; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(-2, 12); c.quadraticCurveTo(4, 22, -2, 26); c.quadraticCurveTo(-8, 28, -6, 22); c.stroke();
+      c.fillStyle = s.body;
+      c.beginPath(); c.moveTo(2, -16); c.quadraticCurveTo(10, -10, 7, 0); c.quadraticCurveTo(5, 10, -1, 14); c.quadraticCurveTo(-7, 8, -5, -2); c.quadraticCurveTo(-6, -10, -2, -14); c.closePath(); c.fill();
+      c.beginPath(); c.ellipse(2, -17, 6, 5, -0.2, 0, 7); c.fill();
+      c.beginPath(); c.moveTo(5, -19); c.lineTo(15, -16); c.lineTo(15, -12); c.lineTo(5, -14); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(255,220,140,.9)';
+      c.save(); c.translate(-5, -2); c.rotate(Math.sin(ph * 2) * 0.4); c.beginPath(); c.ellipse(-3, 0, 4, 2.5, 0, 0, 7); c.fill(); c.restore();
+      c.strokeStyle = 'rgba(160,90,20,.5)'; c.lineWidth = 1;
+      for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(-4 + i * 0.3, -8 + i * 4); c.lineTo(6 - i * 0.6, -8 + i * 4); c.stroke(); }
+      c.fillStyle = '#d88a2a'; c.beginPath(); c.moveTo(-2, -21); c.lineTo(0, -26); c.lineTo(3, -21); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(4, -18, 2.2, 0, 7); c.fill();
+      c.fillStyle = '#111'; c.beginPath(); c.arc(4.6, -18, 1.3, 0, 7); c.fill();
+      c.restore();
+    }
+    function drawJelly(c, s, L, ph, pulse, glow) {
+      const u = L / 40, sq = 1 - pulse * 0.25;
+      c.save(); c.scale(u, u);
+      if (glow > 0.3) { const gg = c.createRadialGradient(0, 0, 2, 0, 0, 40); gg.addColorStop(0, `rgba(255,140,220,${0.35 * glow})`); gg.addColorStop(1, 'rgba(255,140,220,0)'); c.fillStyle = gg; c.beginPath(); c.arc(0, 0, 40, 0, 7); c.fill(); }
+      c.strokeStyle = s.body + '0.55)'; c.lineWidth = 1.6;
+      for (let i = 0; i < 6; i++) {
+        const x0 = -12 + i * 4.8;
+        c.beginPath(); c.moveTo(x0 * sq, 4);
+        for (let j = 1; j <= 6; j++) c.lineTo(x0 * sq + Math.sin(ph + j * 0.9 + i) * 3, 4 + j * 6 * (1 + pulse * 0.2));
+        c.stroke();
+      }
+      c.strokeStyle = s.body + '0.8)'; c.lineWidth = 3;
+      for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(-5 + i * 5, 4); c.quadraticCurveTo(-5 + i * 5 + Math.sin(ph + i) * 5, 14, -5 + i * 5 + Math.sin(ph * 0.7 + i) * 3, 24); c.stroke(); }
+      const gr = c.createRadialGradient(0, -6, 2, 0, -2, 20);
+      gr.addColorStop(0, s.body + '0.95)'); gr.addColorStop(1, s.body + '0.45)');
+      c.fillStyle = gr;
+      c.beginPath(); c.moveTo(-18 * sq, 4); c.bezierCurveTo(-18 * sq, -20 / sq, 18 * sq, -20 / sq, 18 * sq, 4);
+      c.quadraticCurveTo(0, 0, -18 * sq, 4); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(-6 * sq, -8, 4, 6, -0.4, 0, 7); c.fill();
+      c.restore();
+    }
+    function drawSpecies(c, s, L, ph, extra = {}) {
+      if (s.special === 'seahorse') drawSeahorse(c, s, L, ph);
+      else if (s.special === 'jelly') drawJelly(c, s, L, ph, extra.pulse || 0, extra.glow || 0);
+      else drawGeneric(c, s, L, ph, extra.puff || 0);
+    }
+
+    const plantCols = [['#3f9b4c', '#64c06a'], ['#2f7d5a', '#5fb98a'], ['#6aa84f', '#9ccc65'], ['#4d8a3a', '#82b84e']];
+    function drawPlant(c, p, t) {
+      const base = sandY(p.x) + 4, gs = Math.min(1, p.grow);
+      const ease = 1 - Math.pow(1 - gs, 3);
+      if (p.type === 'weed' || p.type === 'kelp' || p.type === 'grass') {
+        const n = p.type === 'grass' ? 7 : p.type === 'kelp' ? 2 : 4;
+        for (let b = 0; b < n; b++) {
+          const hh = p.h * (p.type === 'grass' ? 0.35 + ((b * 37) % 10) / 22 : 0.7 + ((b * 53) % 10) / 30) * ease;
+          const ox = (b - (n - 1) / 2) * (p.type === 'grass' ? 4 : 9);
+          const segs = 10, cols = plantCols[p.v % plantCols.length];
+          let x = p.x + ox, y = base, a = -Math.PI / 2 + (b - (n - 1) / 2) * 0.08;
+          const pts = [[x, y]];
+          for (let i = 1; i <= segs; i++) {
+            a += Math.sin(t * 1.1 + p.ph + i * 0.45 + b) * 0.06 * (i / segs);
+            x += Math.cos(a) * hh / segs; y += Math.sin(a) * hh / segs;
+            pts.push([x, y]);
+          }
+          const w0 = p.type === 'kelp' ? 9 : p.type === 'grass' ? 3 : 6;
+          c.fillStyle = p.type === 'kelp' ? (b % 2 ? '#7a8a2e' : '#8d9a35') : cols[b % 2];
+          c.beginPath();
+          for (let i = 0; i <= segs; i++) { const w = w0 * (1 - i / segs * 0.85); c.lineTo(pts[i][0] - w / 2, pts[i][1]); }
+          for (let i = segs; i >= 0; i--) { const w = w0 * (1 - i / segs * 0.85); c.lineTo(pts[i][0] + w / 2 + Math.sin(i + b) * (p.type === 'weed' ? 2 : 0), pts[i][1]); }
+          c.closePath(); c.fill();
+          if (p.type === 'kelp') {
+            c.fillStyle = '#a3ae4a';
+            for (let i = 2; i < segs; i += 2) {
+              const [lx, ly] = pts[i]; const side = i % 4 ? 1 : -1;
+              c.beginPath(); c.ellipse(lx + side * 8, ly, 9 * ease, 3.5 * ease, side * 0.5 + Math.sin(t + i) * 0.2, 0, 7); c.fill();
+            }
+          }
+        }
+      } else if (p.type === 'coral') {
+        const col = ['#ff7f8f', '#ff9f5a', '#c77dff', '#ffb3c6'][p.v % 4];
+        c.strokeStyle = col; c.lineCap = 'round';
+        const branch = (x, y, a, len, w, d) => {
+          const x2 = x + Math.cos(a) * len, y2 = y + Math.sin(a) * len;
+          c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x2, y2); c.stroke();
+          if (d > 0) { branch(x2, y2, a - 0.45 + Math.sin(t * 0.8 + d) * 0.02, len * 0.75, w * 0.7, d - 1); branch(x2, y2, a + 0.4, len * 0.72, w * 0.7, d - 1); }
+          else { c.fillStyle = col; c.beginPath(); c.arc(x2, y2, w * 0.9, 0, 7); c.fill(); }
+        };
+        branch(p.x, base, -Math.PI / 2, p.h * 0.28 * ease, 7 * ease + 1, 3);
+      } else if (p.type === 'anemone') {
+        const col = ['#ff8fc7', '#b388ff', '#7fe0c0'][p.v % 3];
+        c.fillStyle = '#8a4b7a'; c.beginPath(); c.ellipse(p.x, base - 6, 16 * ease, 9 * ease, 0, 0, 7); c.fill();
+        c.strokeStyle = col; c.lineCap = 'round'; c.lineWidth = 4;
+        for (let i = 0; i < 14; i++) {
+          const a = -Math.PI + (i / 13) * Math.PI, len = (24 + (i % 3) * 6) * ease;
+          const sw = Math.sin(t * 1.6 + i * 0.6 + p.ph) * 0.25;
+          c.beginPath(); c.moveTo(p.x + Math.cos(a) * 10 * ease, base - 8);
+          c.quadraticCurveTo(p.x + Math.cos(a + sw) * len * 0.7, base - 8 + Math.sin(a) * len * 0.7, p.x + Math.cos(a + sw * 2) * len, base - 8 + Math.sin(a + sw) * len);
+          c.stroke();
+        }
+      }
+    }
+    function drawDecor(c, d) {
+      const base = sandY(d.x) + 6, s = d.s * Math.min(1, 1 - Math.pow(1 - Math.min(1, d.grow), 3));
+      if (d.type === 'rock') {
+        c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(d.x + 4, base, 34 * s, 7 * s, 0, 0, 7); c.fill();
+        const gr = c.createLinearGradient(d.x - 30 * s, base - 50 * s, d.x + 30 * s, base);
+        gr.addColorStop(0, ['#a7a2a0', '#9a8f84', '#8a96a0'][d.v % 3]); gr.addColorStop(1, ['#5f5a58', '#5b5048', '#4f5b66'][d.v % 3]);
+        c.fillStyle = gr;
+        c.beginPath(); c.moveTo(d.x - 34 * s, base);
+        c.bezierCurveTo(d.x - 38 * s, base - 30 * s, d.x - 14 * s, base - 50 * s, d.x + 4 * s, base - 46 * s);
+        c.bezierCurveTo(d.x + 26 * s, base - 44 * s, d.x + 38 * s, base - 22 * s, d.x + 32 * s, base); c.closePath(); c.fill();
+        c.fillStyle = 'rgba(255,255,255,.16)'; c.beginPath(); c.ellipse(d.x - 10 * s, base - 36 * s, 12 * s, 6 * s, -0.4, 0, 7); c.fill();
+        c.fillStyle = 'rgba(80,140,70,.5)'; c.beginPath(); c.ellipse(d.x + 10 * s, base - 4 * s, 14 * s, 4 * s, 0, 0, 7); c.fill();
+      } else if (d.type === 'chest') {
+        const op = d.open || 0;
+        c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(d.x + 3, base, 32 * s, 6 * s, 0, 0, 7); c.fill();
+        if (op > 0.05) {
+          const gg = c.createRadialGradient(d.x, base - 28 * s, 2, d.x, base - 28 * s, 50 * s);
+          gg.addColorStop(0, `rgba(255,220,100,${0.5 * op})`); gg.addColorStop(1, 'rgba(255,220,100,0)');
+          c.fillStyle = gg; c.beginPath(); c.arc(d.x, base - 28 * s, 50 * s, 0, 7); c.fill();
+          c.fillStyle = '#ffd34d';
+          for (let i = 0; i < 5; i++) { c.beginPath(); c.arc(d.x - 14 * s + i * 7 * s, base - 26 * s - (i % 2) * 3 * s, 4 * s, 0, 7); c.fill(); }
+        }
+        c.fillStyle = '#7a4a24'; c.fillRect(d.x - 26 * s, base - 26 * s, 52 * s, 26 * s);
+        c.fillStyle = '#5a3418'; c.fillRect(d.x - 26 * s, base - 14 * s, 52 * s, 3 * s);
+        c.fillStyle = '#c99a3a'; c.fillRect(d.x - 26 * s, base - 26 * s, 4 * s, 26 * s); c.fillRect(d.x + 22 * s, base - 26 * s, 4 * s, 26 * s);
+        c.save(); c.translate(d.x - 26 * s, base - 26 * s); c.rotate(-op * 0.9);
+        c.fillStyle = '#8a5530'; c.beginPath(); c.moveTo(0, 0); c.lineTo(52 * s, 0); c.quadraticCurveTo(52 * s, -16 * s, 26 * s, -18 * s); c.quadraticCurveTo(0, -16 * s, 0, 0); c.fill();
+        c.fillStyle = '#c99a3a'; c.fillRect(0, -3 * s, 52 * s, 3 * s); c.fillRect(23 * s, -6 * s, 6 * s, 8 * s);
+        c.restore();
+      } else if (d.type === 'bubbler') {
+        c.fillStyle = '#5c6670'; c.beginPath(); c.ellipse(d.x, base - 3, 12 * s, 5 * s, 0, 0, 7); c.fill();
+        c.fillStyle = '#8a96a0'; c.beginPath(); c.ellipse(d.x, base - 5, 9 * s, 3 * s, 0, 0, 7); c.fill();
+      } else if (d.type === 'castle') {
+        const stone = '#b9b2a6', dark = '#8d867b';
+        c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(d.x + 4, base, 44 * s, 7 * s, 0, 0, 7); c.fill();
+        c.fillStyle = stone;
+        c.fillRect(d.x - 40 * s, base - 50 * s, 18 * s, 50 * s); c.fillRect(d.x + 22 * s, base - 62 * s, 18 * s, 62 * s); c.fillRect(d.x - 24 * s, base - 36 * s, 48 * s, 36 * s);
+        for (const [x0, y0, w] of [[-40, -50, 18], [22, -62, 18], [-24, -36, 48]]) for (let i = 0; i < w / 6; i += 2) c.fillRect(d.x + (x0 + i * 6) * s, base + (y0 - 5) * s, 5 * s, 5 * s);
+        c.fillStyle = '#1d2a33'; c.beginPath(); c.moveTo(d.x - 9 * s, base); c.lineTo(d.x - 9 * s, base - 18 * s); c.arc(d.x, base - 18 * s, 9 * s, Math.PI, 0); c.lineTo(d.x + 9 * s, base); c.fill();
+        c.fillRect(d.x - 33 * s, base - 40 * s, 5 * s, 9 * s); c.fillRect(d.x + 29 * s, base - 50 * s, 5 * s, 9 * s);
+        c.fillStyle = dark; c.fillRect(d.x - 24 * s, base - 22 * s, 48 * s, 2 * s);
+        c.fillStyle = 'rgba(80,150,70,.55)'; c.beginPath(); c.ellipse(d.x - 30 * s, base - 4, 12 * s, 5 * s, 0, 0, 7); c.fill();
+      } else if (d.type === 'shell') {
+        c.fillStyle = 'rgba(0,0,0,.15)'; c.beginPath(); c.ellipse(d.x + 2, base, 16 * s, 4 * s, 0, 0, 7); c.fill();
+        c.fillStyle = ['#ffd1dc', '#ffe0b2', '#fff3e0'][d.v % 3];
+        c.beginPath(); c.moveTo(d.x - 16 * s, base - 2); c.quadraticCurveTo(d.x, base - 30 * s, d.x + 16 * s, base - 2); c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(190,120,110,.6)'; c.lineWidth = 1.2;
+        for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(d.x, base - 2); c.lineTo(d.x + i * 5 * s, base - 16 * s - (3 - Math.abs(i)) * 3 * s); c.stroke(); }
+      }
+    }
+
+    let sandPts = [];
+    const sandY = (x) => { const i = clamp(x / W * (sandPts.length - 1), 0, sandPts.length - 1); const a = Math.floor(i), b = Math.min(sandPts.length - 1, a + 1); return sandPts[a] + (sandPts[b] - sandPts[a]) * (i - a); };
+    function bakeBg() {
+      const L = LIGHTS[light];
+      bg.width = cv.width; bg.height = cv.height;
+      bgx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const gr = bgx.createLinearGradient(0, 0, 0, Hc);
+      gr.addColorStop(0, L.top); gr.addColorStop(1, L.bot);
+      bgx.fillStyle = gr; bgx.fillRect(0, 0, W, Hc);
+      bgx.fillStyle = 'rgba(255,255,255,.05)';
+      for (let i = 0; i < 4; i++) { bgx.beginPath(); bgx.ellipse(W * (0.2 + i * 0.22), Hc * 0.82, W * 0.18, Hc * 0.12, 0, Math.PI, 0); bgx.fill(); }
+      const sg = bgx.createLinearGradient(0, sandTop - 10, 0, Hc);
+      sg.addColorStop(0, L.sand[0]); sg.addColorStop(1, L.sand[1]);
+      bgx.fillStyle = sg;
+      bgx.beginPath(); bgx.moveTo(0, Hc);
+      for (let i = 0; i < sandPts.length; i++) bgx.lineTo(i / (sandPts.length - 1) * W, sandPts[i]);
+      bgx.lineTo(W, Hc); bgx.closePath(); bgx.fill();
+      let seed = 3;
+      const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      for (let i = 0; i < W * 0.9; i++) {
+        const x = rnd() * W, y = sandY(x) + 4 + rnd() * (Hc - sandY(x));
+        bgx.fillStyle = rnd() < 0.5 ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.18)';
+        bgx.beginPath(); bgx.arc(x, y, 0.6 + rnd() * 1.8, 0, 7); bgx.fill();
+      }
+      for (let i = 0; i < 18; i++) {
+        const x = rnd() * W, y = sandY(x) + 6 + rnd() * (Hc - sandY(x) - 10);
+        bgx.fillStyle = ['#c9b8a0', '#a89c8f', '#e8dcc8', '#b0a090'][i % 4];
+        bgx.beginPath(); bgx.ellipse(x, y, 3 + rnd() * 3, 2 + rnd() * 1.5, rnd(), 0, 7); bgx.fill();
+      }
+    }
+    function resize() {
+      const r = stage.getBoundingClientRect();
+      dpr = Math.min(2, devicePixelRatio || 1);
+      const oW = W, oH = Hc;
+      W = r.width; Hc = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(Hc * dpr);
+      sandTop = Hc * 0.82;
+      FS = clamp(Math.min(W / 850, Hc / 420), 0.7, 1.35);
+      sandPts = Array.from({ length: 33 }, (_, i) => sandTop + Math.sin(i * 0.55) * Hc * 0.018 + Math.sin(i * 1.7 + 1) * Hc * 0.008);
+      if (oW && oH) {
+        for (const f of fish) { f.x *= W / oW; f.y *= Hc / oH; }
+        for (const p of plants) p.x *= W / oW;
+        for (const d of decor) d.x *= W / oW;
+      }
+      bakeBg();
+    }
+
+    function zoneY(s, q) { const top = Hc * 0.08, bot = sandTop - 10; return top + (bot - top) * (s.zone[0] + (s.zone[1] - s.zone[0]) * q); }
+    function newFish(id, x, y) {
+      const s = SP[id];
+      return { sp: id, x, y, vx: R(-1, 1) * s.spd * 0.5, vy: 0, size: R(0.85, 1.15), ph: R(0, 6), dir: 1, face: 1, tx: x, ty: y, tt: 0, startle: 0, puff: 0, pulse: 0, pulseT: R(0, 2), born: t, full: 0 };
+    }
+    function stepFish(f, dt) {
+      const s = SP[f.sp];
+      const L = s.L * f.size * FS;
+      f.tt -= dt;
+      f.startle = Math.max(0, f.startle - dt);
+      f.puff = Math.max(0, f.puff - dt * 0.25);
+      f.full = Math.max(0, f.full - dt * 0.05);
+      let maxV = s.spd * (f.startle > 0 ? 3 : 1);
+      let ax = 0, ay = 0;
+      let food = null;
+      if (flakes.length && f.full < 1 && s.mode !== 'pulse') {
+        let bd = 1e9;
+        for (const fl of flakes) { if (fl.eaten) continue; const d = (fl.x - f.x) ** 2 + (fl.y - f.y) ** 2; if (d < bd) { bd = d; food = fl; } }
+        if (food && bd > 420 * 420) food = null;
+      }
+      if (s.mode === 'pulse') {
+        f.pulseT -= dt;
+        if (f.pulseT <= 0) { f.pulseT = R(1.4, 2.4); f.vy -= R(28, 44); f.vx += R(-10, 10); f.pulse = 1; }
+        f.pulse = Math.max(0, f.pulse - dt * 2.2);
+        f.vy += 9 * dt; f.vx *= 1 - dt * 0.6; f.vy *= 1 - dt * 0.9;
+        if (f.y < Hc * 0.12) f.vy += 30 * dt;
+        if (f.y > sandTop - 60) f.pulseT = Math.min(f.pulseT, 0.1);
+        if (f.startle > 0) f.vy -= 40 * dt;
+      } else {
+        if (food) {
+          f.tx = food.x; f.ty = food.y; maxV *= 1.6;
+          if (Math.hypot(food.x - f.x - f.face * L * 0.4, food.y - f.y) < L * 0.45 + 6) {
+            food.eaten = true; f.full += 0.34; f.chomp = 0.25; fed++; if (tab === 'feed' && itemsEl.firstChild) itemsEl.firstChild.textContent = feedNote();
+            tone(500 + 600 / s.L * 10 + Math.random() * 60, 0.07, 'sine', 0.05);
+          }
+        } else if (s.mode === 'school' && s.school) {
+          const st = schoolTarget[s.id] || (schoolTarget[s.id] = { x: W / 2, y: zoneY(s, 0.5), t: 0 });
+          f.tx = st.x + Math.sin(f.ph) * 30; f.ty = st.y + Math.cos(f.ph) * 20;
+        } else if (f.tt <= 0) {
+          f.tt = s.mode === 'hover' ? R(1, 3) : s.mode === 'dart' ? R(0.6, 2) : R(3, 7);
+          if (s.mode === 'hover') {
+            const home = plants.find((p) => p.type === 'anemone') || plants[0];
+            const hx = home ? home.x : f.x;
+            f.tx = clamp(hx + R(-90, 90), 30, W - 30); f.ty = zoneY(s, R(0, 1));
+          } else if (s.mode === 'patrol') {
+            f.tx = f.face > 0 ? W - 40 : 40; f.ty = zoneY(s, R(0, 1)); f.tt = 30;
+          } else if (s.mode === 'bottom') {
+            f.tx = clamp(f.x + R(-200, 200), 40, W - 40); f.ty = sandY(f.tx) - L * 0.15; if (Math.random() < 0.35) f.tt = R(2, 5), f.tx = f.x;
+          } else if (s.mode === 'bob') {
+            const home = plants.length ? Curio.pick(plants) : null;
+            f.tx = home && Math.random() < 0.6 ? clamp(home.x + R(-20, 20), 30, W - 30) : R(40, W - 40); f.ty = zoneY(s, R(0, 1));
+          } else { f.tx = R(40, W - 40); f.ty = zoneY(s, R(0, 1)); }
+          if (s.mode === 'dart') maxV *= 1.6;
+        }
+        if (s.mode === 'patrol' && Math.abs(f.tx - f.x) < 50) f.tt = 0, f.face = -f.face;
+        const dx = f.tx - f.x, dy = f.ty - f.y, d = Math.hypot(dx, dy) || 1;
+        const want = Math.min(maxV, d * 1.5 + (s.mode === 'hover' ? 5 : 15));
+        const stiff = s.mode === 'bob' ? 0.6 : 2.2;
+        ax += (dx / d * want - f.vx) * stiff; ay += (dy / d * want - f.vy) * stiff;
+        if (s.school) {
+          let cx = 0, cy = 0, avx = 0, avy = 0, n = 0, sx = 0, sy = 0;
+          for (const o of fish) {
+            if (o === f || o.sp !== f.sp) continue;
+            const ex = o.x - f.x, ey = o.y - f.y, dd = ex * ex + ey * ey;
+            if (dd > 110 * 110) continue;
+            n++; cx += o.x; cy += o.y; avx += o.vx; avy += o.vy;
+            if (dd < (L * 1.1) ** 2) { sx -= ex / (dd + 1) * 400; sy -= ey / (dd + 1) * 400; }
+          }
+          if (n) { ax += ((cx / n - f.x) * 0.8 + (avx / n - f.vx) * 1.2) * s.school; ay += ((cy / n - f.y) * 0.8 + (avy / n - f.vy) * 1.2) * s.school; }
+          ax += sx * 3; ay += sy * 3;
+        }
+        if (s.mode === 'bob') ay += Math.sin(t * 1.5 + f.ph) * 12;
+        f.vx += ax * dt; f.vy += ay * dt;
+        const sp = Math.hypot(f.vx, f.vy), cap = maxV * (f.startle > 0 ? 1.4 : 1.15);
+        if (sp > cap) { f.vx *= cap / sp; f.vy *= cap / sp; }
+      }
+      if (f.startle > 0 && f.flee) { f.vx += f.flee[0] * dt * 3; f.vy += f.flee[1] * dt * 3; }
+      f.x += f.vx * dt; f.y += f.vy * dt;
+      const top = Hc * 0.07 + L * 0.3, bot = (s.mode === 'bottom' ? sandY(f.x) - L * 0.1 : sandY(f.x) - L * 0.3);
+      if (f.x < L * 0.5) { f.x = L * 0.5; f.vx = Math.abs(f.vx); }
+      if (f.x > W - L * 0.5) { f.x = W - L * 0.5; f.vx = -Math.abs(f.vx); }
+      if (f.y < top) { f.y = top; f.vy = Math.abs(f.vy) * 0.5; }
+      if (f.y > bot) { f.y = bot; f.vy = -Math.abs(f.vy) * 0.3; }
+      if (s.mode !== 'pulse' && s.mode !== 'patrol' && Math.abs(f.vx) > 6) f.face = Math.sign(f.vx);
+      if (s.mode === 'patrol' && Math.abs(f.vx) > 10) f.face = Math.sign(f.vx);
+      f.dir += (f.face - f.dir) * Math.min(1, dt * 7);
+      const spd = Math.hypot(f.vx, f.vy);
+      f.ph += dt * (4 + spd / L * 6);
+      f.chomp = Math.max(0, (f.chomp || 0) - dt);
+      if (Math.random() < dt * 0.06) bubbles.push({ x: f.x + f.face * L * 0.5, y: f.y - 2, r: R(1.5, 3), vy: R(30, 50), ph: R(0, 6) });
+    }
+    function drawFish(f) {
+      const s = SP[f.sp], L = s.L * f.size * FS;
+      const born = Math.min(1, (t - f.born) / 0.4);
+      g.save(); g.translate(f.x, f.y);
+      const sc = 1 - Math.pow(1 - born, 3);
+      if (s.special === 'jelly') {
+        g.scale(sc, sc);
+        drawSpecies(g, s, L, f.ph, { pulse: f.pulse, glow: LIGHTS[light].glow });
+      } else if (s.special === 'seahorse') {
+        g.scale(f.dir * sc, sc);
+        g.rotate(Math.sin(t + f.ph) * 0.08);
+        drawSpecies(g, s, L, f.ph);
+      } else {
+        const tilt = clamp(Math.atan2(f.vy, Math.abs(f.vx) + 20), -0.5, 0.5);
+        g.scale(f.dir * sc * (1 + (f.chomp || 0) * 0.3), sc);
+        g.rotate(tilt);
+        drawSpecies(g, s, L, f.ph, { puff: f.puff });
+      }
+      g.restore();
+    }
+
+    function stepBubbles(dt) {
+      for (const d of decor) {
+        d.grow = (d.grow || 0) + dt * 2;
+        if (d.type === 'bubbler') { d.bt = (d.bt || 0) - dt; if (d.bt <= 0) { d.bt = R(0.05, 0.16); bubbles.push({ x: d.x + R(-3, 3), y: sandY(d.x) - 2, r: R(1.5, 4.5), vy: R(50, 90), ph: R(0, 6) }); } }
+        if (d.type === 'chest') {
+          d.ct = (d.ct == null ? R(2, 5) : d.ct) - dt;
+          if (d.ct <= 0) {
+            d.ct = R(6, 10); d.opening = 2.4;
+            for (let i = 0; i < 16; i++) setTimeout(() => bubbles.push({ x: d.x + R(-16, 16) * d.s, y: sandY(d.x) - 26 * d.s, r: R(2, 6), vy: R(40, 90), ph: R(0, 6) }), i * 60);
+            [520, 660, 780].forEach((fq, i) => setTimeout(() => bubbleSound(fq), 150 + i * 120));
+          }
+          d.opening = Math.max(0, (d.opening || 0) - dt);
+          const tgt = d.opening > 0.3 ? 1 : 0;
+          d.open = (d.open || 0) + (tgt - (d.open || 0)) * Math.min(1, dt * 5);
+        }
+      }
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        b.y -= b.vy * dt; b.ph += dt * 4; b.x += Math.sin(b.ph) * 12 * dt;
+        if (b.y < Hc * 0.06) { bubbles.splice(i, 1); if (Math.random() < 0.3) ripples.push({ x: b.x, y: Hc * 0.06, r: 2, a: 0.5, s: 30 }); }
+      }
+      if (bubbles.length > 400) bubbles.splice(0, bubbles.length - 400);
+      for (let i = flakes.length - 1; i >= 0; i--) {
+        const f = flakes[i];
+        if (f.eaten) { flakes.splice(i, 1); continue; }
+        const by = sandY(f.x) - 2;
+        if (f.y < by) { f.y += f.vy * dt; f.x += Math.sin(t * 2 + f.ph) * 10 * dt; f.rot += dt * f.vr; }
+        else { f.life -= dt; if (f.life <= 0) flakes.splice(i, 1); }
+      }
+      for (let i = ripples.length - 1; i >= 0; i--) { const r = ripples[i]; r.r += r.s * dt; r.a -= dt * 0.9; if (r.a <= 0) ripples.splice(i, 1); }
+    }
+
+    function render() {
+      const L = LIGHTS[light];
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.drawImage(bg, 0, 0);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 6; i++) {
+        const x = W * (i / 5) + Math.sin(t * 0.25 + i * 1.3) * 40;
+        const a = L.rayA * (0.5 + 0.5 * Math.sin(t * 0.6 + i * 2));
+        const gr = g.createLinearGradient(0, 0, 0, Hc * 0.9);
+        gr.addColorStop(0, L.ray + a + ')'); gr.addColorStop(1, L.ray + '0)');
+        g.fillStyle = gr;
+        g.beginPath(); g.moveTo(x - 20, 0); g.lineTo(x + 30, 0); g.lineTo(x + 30 + Hc * 0.35 + 50, Hc * 0.9); g.lineTo(x - 20 + Hc * 0.35 - 30, Hc * 0.9); g.closePath(); g.fill();
+      }
+      g.globalCompositeOperation = 'source-over';
+      g.fillStyle = L.ray + (L.rayA * 0.9) + ')';
+      for (let i = 0; i < 12; i++) {
+        const x = ((i * 97 + t * 14) % (W + 60)) - 30, y = sandY(x) + 8 + (i % 3) * 7;
+        g.beginPath(); g.ellipse(x, y, 16 + Math.sin(t + i) * 5, 3, 0, 0, 7); g.fill();
+      }
+      for (const p of plants) if (!p.front) drawPlant(g, p, t);
+      for (const d of decor) drawDecor(g, d);
+      const order = fish.slice().sort((a, b) => (SP[a.sp].special === 'jelly') - (SP[b.sp].special === 'jelly') || a.size * SP[a.sp].L - b.size * SP[b.sp].L);
+      for (const f of order) drawFish(f);
+      for (const p of plants) if (p.front) drawPlant(g, p, t);
+      for (const f of flakes) {
+        g.save(); g.translate(f.x, f.y); g.rotate(f.rot); g.fillStyle = f.c; g.globalAlpha = Math.min(1, f.life / 2);
+        g.fillRect(-2.5, -1.5, 5, 3); g.restore();
+      }
+      g.globalAlpha = 1;
+      for (const b of bubbles) {
+        g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = 1;
+        g.fillStyle = 'rgba(255,255,255,.12)';
+        g.beginPath(); g.arc(b.x, b.y, b.r, 0, 7); g.fill(); g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.28, 0, 7); g.fill();
+      }
+      const sy = Hc * 0.06;
+      g.fillStyle = 'rgba(255,255,255,.14)';
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(0, sy);
+      for (let x = 0; x <= W; x += 12) g.lineTo(x, sy + Math.sin(x * 0.03 + t * 1.6) * 2.5 + Math.sin(x * 0.011 - t) * 2);
+      g.lineTo(W, 0); g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = 1.5;
+      g.beginPath();
+      for (let x = 0; x <= W; x += 12) g.lineTo(x, sy + Math.sin(x * 0.03 + t * 1.6) * 2.5 + Math.sin(x * 0.011 - t) * 2);
+      g.stroke();
+      for (const r of ripples) { g.strokeStyle = `rgba(255,255,255,${r.a})`; g.lineWidth = 2; g.beginPath(); g.arc(r.x, r.y, r.r, 0, 7); g.stroke(); }
+      if (L.shade) { g.fillStyle = L.shade; g.fillRect(0, 0, W, Hc); }
+      if (L.glow > 0.5) {
+        g.globalCompositeOperation = 'lighter';
+        for (const f of fish) if (SP[f.sp].special === 'jelly' || SP[f.sp].neon) {
+          const rr = SP[f.sp].special === 'jelly' ? 34 : 14;
+          const gg = g.createRadialGradient(f.x, f.y, 0, f.x, f.y, rr);
+          gg.addColorStop(0, SP[f.sp].neon ? 'rgba(60,200,255,.35)' : 'rgba(255,120,210,.3)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = gg; g.beginPath(); g.arc(f.x, f.y, rr, 0, 7); g.fill();
+        }
+        g.globalCompositeOperation = 'source-over';
+      }
+      const vg = g.createRadialGradient(W / 2, Hc / 2, Math.min(W, Hc) * 0.4, W / 2, Hc / 2, Math.max(W, Hc) * 0.75);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,20,40,.25)');
+      g.fillStyle = vg; g.fillRect(0, 0, W, Hc);
+      g.fillStyle = 'rgba(255,255,255,.06)';
+      g.beginPath(); g.moveTo(W * 0.62, 0); g.lineTo(W * 0.7, 0); g.lineTo(W * 0.48, Hc); g.lineTo(W * 0.4, Hc); g.closePath(); g.fill();
+    }
+
+    function tone(f, d = 0.15, type = 'sine', v = 0.06, slide = 0) {
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const t0 = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0);
+      if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t0 + d);
+      gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.05);
+    }
+    const bubbleSound = (f = 600) => tone(f, 0.12, 'sine', 0.05, 2.2);
+    function thunk() {
+      tone(110, 0.25, 'sine', 0.2, 0.6);
+      if (Curio.muted || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+      const ac = Curio.audioContext(); if (!ac) return;
+      const len = Math.floor(ac.sampleRate * 0.08), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+      const src = ac.createBufferSource(), lp = ac.createBiquadFilter(), gn = ac.createGain();
+      src.buffer = buf; lp.type = 'lowpass'; lp.frequency.value = 900; gn.gain.value = 0.25;
+      src.connect(lp).connect(gn).connect(ac.destination); src.start();
+    }
+
+    function snapshot() {
+      undo.push(JSON.stringify(serial()));
+      if (undo.length > 60) undo.shift();
+    }
+    function serial() {
+      return {
+        f: fish.map((f) => [f.sp, Math.round(f.x / W * 1000), Math.round(f.y / Hc * 1000), +f.size.toFixed(2)]),
+        p: plants.map((p) => [p.type, Math.round(p.x / W * 1000), Math.round(p.h), p.v, p.front ? 1 : 0]),
+        d: decor.map((d) => [d.type, Math.round(d.x / W * 1000), +d.s.toFixed(2), d.v]),
+        l: light, tab, sel
+      };
+    }
+    function unserial(o, instant = true) {
+      fish = (o.f || []).filter((a) => SP[a[0]]).map(([sp, x, y, size]) => { const f = newFish(sp, x / 1000 * W, y / 1000 * Hc); f.size = size || 1; if (instant) f.born = -9; return f; });
+      plants = (o.p || []).map(([type, x, h, v, front]) => ({ type, x: x / 1000 * W, h, v, front: !!front, ph: R(0, 6), grow: instant ? 1 : 0 }));
+      decor = (o.d || []).map(([type, x, s, v]) => ({ type, x: x / 1000 * W, s, v, grow: instant ? 1 : 0 }));
+    }
+    let saveT = 0;
+    function save() { clearTimeout(saveT); saveT = setTimeout(() => Curio.store.set('aquarium', serial()), 500); }
+    setInterval(() => { if (!document.hidden) save(); }, 8000);
+
+    const countEl = document.getElementById('count');
+    function updateCount() {
+      const sp = new Set(fish.map((f) => f.sp)).size;
+      countEl.textContent = fish.length ? `${fish.length} ${fish.length === 1 ? 'creature' : 'creatures'} · ${sp} ${sp === 1 ? 'species' : 'species'}` : 'An empty tank. Add some fish!';
+    }
+
+    function addAt(x, y) {
+      if (tab === 'fish') {
+        if (fish.length >= 70) { Curio.toast('The tank is full. Fish need elbow room!'); return; }
+        snapshot();
+        const s = SP[sel.fish];
+        const n = s.school ? 5 : 1;
+        for (let i = 0; i < n; i++) fish.push(newFish(sel.fish, clamp(x + R(-20, 20) * (n > 1), 20, W - 20), clamp(s.mode === 'bottom' ? sandY(x) - 10 : y + R(-15, 15) * (n > 1), Hc * 0.1, sandY(x) - 10)));
+        for (let i = 0; i < 8; i++) bubbles.push({ x: x + R(-10, 10), y: y + R(-6, 6), r: R(1.5, 4), vy: R(40, 90), ph: R(0, 6) });
+        tone(420, 0.1, 'sine', 0.06, 1.8); setTimeout(() => bubbleSound(700), 80);
+        if (n > 1) Curio.toast(`A little school of ${s.name.toLowerCase()}s`);
+      } else if (tab === 'plant') {
+        snapshot();
+        plants.push({ type: sel.plant, x, h: R(0.5, 0.8) * (sandTop) * (sel.plant === 'kelp' ? 1.1 : sel.plant === 'grass' ? 0.6 : 0.75), v: Curio.randInt(0, 3), front: Math.random() < 0.3, ph: R(0, 6), grow: 0 });
+        tone(330, 0.3, 'triangle', 0.05, 1.5);
+      } else if (tab === 'decor') {
+        snapshot();
+        decor.push({ type: sel.decor, x, s: R(0.85, 1.2) * Math.min(1.2, Math.max(0.7, W / 900)), v: Curio.randInt(0, 2), grow: 0 });
+        tone(180, 0.2, 'sine', 0.1); setTimeout(() => bubbleSound(500), 120);
+        for (let i = 0; i < 6; i++) bubbles.push({ x: x + R(-14, 14), y: sandY(x) - 6, r: R(1.5, 3.5), vy: R(40, 70), ph: R(0, 6) });
+      } else if (tab === 'feed') {
+        const cols = ['#e2683c', '#f2b134', '#c94f3d', '#7a9a3a', '#e8c070'];
+        for (let i = 0; i < 9; i++) flakes.push({ x: clamp(x + R(-24, 24), 10, W - 10), y: Hc * 0.065 + R(-3, 3), vy: R(16, 30), ph: R(0, 6), rot: R(0, 6), vr: R(-2, 2), c: Curio.pick(cols), life: 6 });
+        for (let i = 0; i < 3; i++) ripples.push({ x: x + R(-14, 14), y: Hc * 0.06, r: 2, a: 0.6, s: 26 });
+        tone(900, 0.06, 'sine', 0.03); setTimeout(() => tone(1100, 0.06, 'sine', 0.03), 50);
+        return;
+      } else if (tab === 'remove') {
+        removeAt(x, y); return;
+      } else {
+        tapGlass(x, y); return;
+      }
+      updateCount(); save();
+    }
+    function tapGlass(x, y) {
+      ripples.push({ x, y, r: 4, a: 0.9, s: 180 }, { x, y, r: 2, a: 0.6, s: 110 });
+      thunk();
+      for (const f of fish) {
+        const dx = f.x - x, dy = f.y - y, d = Math.hypot(dx, dy) || 1;
+        if (d > 260) continue;
+        const k = (1 - d / 260);
+        f.startle = 0.6 + k * 0.9;
+        f.flee = [dx / d * 260 * k, dy / d * 200 * k];
+        f.vx += dx / d * 240 * k; f.vy += dy / d * 180 * k;
+        f.tt = 0;
+        if (SP[f.sp].puffer && k > 0.2) { f.puff = 1; tone(240, 0.25, 'sine', 0.06, 2); }
+      }
+      for (const d of decor) if (d.type === 'chest' && Math.abs(d.x - x) < 50 && y > sandTop - 60) d.ct = 0;
+    }
+    function removeAt(x, y) {
+      let best = null, bd = 50 * 50, kind = '';
+      for (const f of fish) { const d = (f.x - x) ** 2 + (f.y - y) ** 2; if (d < bd) { bd = d; best = f; kind = 'f'; } }
+      if (!best) {
+        bd = 40 * 40;
+        for (const d of decor) { const dd = (d.x - x) ** 2 + ((sandY(d.x) - 20) - y) ** 2; if (dd < bd) { bd = dd; best = d; kind = 'd'; } }
+        bd = Math.min(bd, 36 * 36);
+        for (const p of plants) { if (Math.abs(p.x - x) < 26 && y > sandY(p.x) - p.h * 0.9) { const dd = (p.x - x) ** 2; if (dd < bd) { bd = dd; best = p; kind = 'p'; } } }
+      }
+      if (!best) return;
+      snapshot();
+      if (kind === 'f') fish.splice(fish.indexOf(best), 1);
+      else if (kind === 'd') decor.splice(decor.indexOf(best), 1);
+      else plants.splice(plants.indexOf(best), 1);
+      for (let i = 0; i < 8; i++) bubbles.push({ x: x + R(-10, 10), y: y + R(-10, 10), r: R(1.5, 4), vy: R(50, 100), ph: R(0, 6) });
+      tone(500, 0.15, 'sine', 0.05, 0.5);
+      updateCount(); save();
+    }
+
+    const tabsEl = document.getElementById('tabs'), itemsEl = document.getElementById('items');
+    function iconFor(kind, id) {
+      const c = document.createElement('canvas'); c.width = 108; c.height = 64;
+      const x = c.getContext('2d'); x.scale(2, 2);
+      x.translate(27, 16);
+      if (kind === 'fish') {
+        const s = SP[id];
+        const L = s.special ? 24 : Math.min(40, 46 / (s.tail === 'flow' ? 1.25 : 1.05));
+        if (s.special === 'seahorse') { x.scale(0.75, 0.75); x.translate(-2, 2); }
+        if (s.special === 'jelly') { x.translate(0, -4); }
+        if (s.angel) { x.scale(0.7, 0.7); }
+        drawSpecies(x, s, s.special ? (s.special === 'jelly' ? 26 : 30) : L, 0.6, {});
+      } else if (kind === 'plant') {
+        x.translate(-27, -16);
+        const saveW = W, saveS = sandPts;
+        sandPts = [28, 28]; W = 54;
+        drawPlant(x, { type: id, x: 27, h: id === 'grass' ? 50 : 90, v: 0, ph: 0, grow: 1 }, 0.5);
+        sandPts = saveS; W = saveW;
+      } else {
+        x.translate(-27, -16);
+        const saveW = W, saveS = sandPts;
+        sandPts = [24, 24]; W = 54;
+        drawDecor(x, { type: id, x: 27, s: id === 'castle' ? 0.42 : 0.55, v: 0, grow: 1, open: 0 });
+        sandPts = saveS; W = saveW;
+      }
+      return c;
+    }
+    const feedNote = () => `${Curio.touchpad ? 'Click to start sprinkling, move around, click again to stop.' : 'Click or drag to sprinkle flakes.'} ${fed ? fed + (fed === 1 ? ' flake' : ' flakes') + ' gobbled so far.' : 'Everyone is peckish.'}`;
+    function paintTabs() {
+      tabsEl.querySelectorAll('.tab').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+      itemsEl.innerHTML = '';
+      const list = tab === 'fish' ? SPECIES : tab === 'plant' ? PLANTS : tab === 'decor' ? DECOR : null;
+      if (!list) {
+        const p = document.createElement('div'); p.className = 'aq-note';
+        p.textContent = tab === 'feed' ? feedNote() : tab === 'remove' ? 'Click a fish, plant or ornament to scoop it out. Undo puts it back.' : 'Click the glass to give everyone a fright. The pufferfish takes it personally.';
+        itemsEl.append(p);
+        cv.style.cursor = tab === 'feed' ? 'cell' : tab === 'remove' ? 'not-allowed' : 'pointer';
+        return;
+      }
+      cv.style.cursor = 'crosshair';
+      for (const it of list) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'it'; b.setAttribute('aria-pressed', String(sel[tab] === it.id)); b.title = it.name;
+        b.append(iconFor(tab, it.id));
+        const lab = document.createElement('span'); lab.textContent = it.name; b.append(lab);
+        b.addEventListener('click', () => { sel[tab] = it.id; itemsEl.querySelectorAll('.it').forEach((q) => q.setAttribute('aria-pressed', String(q === b))); tone(660, 0.06); save(); });
+        itemsEl.append(b);
+      }
+    }
+    function setTab(id) { tab = id; paintTabs(); tone(520, 0.06); save(); }
+    tabsEl.addEventListener('click', (e) => { const b = e.target.closest('.tab'); if (!b) return; setTab(b.dataset.tab); });
+    const lightSel = document.getElementById('light');
+    for (const [id, l] of Object.entries(LIGHTS)) { const o = document.createElement('option'); o.value = id; o.textContent = l.name; lightSel.append(o); }
+    lightSel.addEventListener('change', () => { light = lightSel.value; bakeBg(); save(); tone(440, 0.3, 'sine', 0.05, 1.5); });
+    function doUndo() { if (!undo.length) { Curio.toast('Nothing to undo'); return; } unserial(JSON.parse(undo.pop())); updateCount(); save(); tone(330, 0.1); }
+    document.getElementById('undo').addEventListener('click', doUndo);
+    document.getElementById('empty').addEventListener('click', () => {
+      if (!fish.length && !plants.length && !decor.length) return;
+      snapshot();
+      for (const f of fish) for (let i = 0; i < 3; i++) bubbles.push({ x: f.x, y: f.y, r: R(2, 5), vy: R(60, 120), ph: R(0, 6) });
+      fish = []; plants = []; decor = []; flakes = [];
+      updateCount(); save();
+      tone(600, 0.6, 'sine', 0.06, 0.4);
+      Curio.toast('Tank emptied. Undo puts everyone back.');
+    });
+    document.getElementById('png').addEventListener('click', () => {
+      cv.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'my-aquarium.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        Curio.toast('Tank snapshot saved');
+      });
+    });
+    const TABKEYS = { 1: 'fish', 2: 'plant', 3: 'decor', 4: 'feed', 5: 'tap', 6: 'remove', x: 'remove' };
+    addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input,select,textarea'))) return;
+      const k = e.key.toLowerCase();
+      if (TABKEYS[k]) { setTab(TABKEYS[k]); return; }
+      if ((k === '[' || k === ']') && sel[tab]) {
+        const list = tab === 'fish' ? SPECIES : tab === 'plant' ? PLANTS : DECOR;
+        const i = list.findIndex((q) => q.id === sel[tab]);
+        sel[tab] = list[(i + (k === ']' ? 1 : list.length - 1)) % list.length].id;
+        paintTabs(); tone(660, 0.06); save();
+      }
+    });
+
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    let pressT = 0, downP = null, longDone = false, feeding = false, feedT = 0;
+    cv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cv.addEventListener('pointerdown', (e) => {
+      if (feeding) return;
+      const p = pos(e);
+      if (e.button === 2) { e.stopImmediatePropagation(); removeAt(p[0], p[1]); return; }
+      if (e.button !== 0 || tab === 'feed') return;
+      e.stopImmediatePropagation();
+      downP = p; longDone = false;
+      clearTimeout(pressT);
+      if (tab === 'remove') return;
+      pressT = setTimeout(() => { longDone = true; removeAt(downP[0], downP[1]); if (navigator.vibrate) try { navigator.vibrate(12); } catch {} }, 500);
+    });
+    Curio.drag(cv, {
+      start: (q) => { feeding = true; feedT = 0; addAt(q.x, q.y); },
+      move: (q) => { if (!feeding || tab !== 'feed') return; feedT += 1; if (feedT % 6 === 0 && q.x >= 0 && q.y >= 0 && q.x <= W && q.y <= Hc) addAt(q.x, q.y); },
+      end: () => { feeding = false; }
+    });
+    cv.addEventListener('pointermove', (e) => {
+      if (feeding) return;
+      const p = pos(e);
+      if (downP && Math.hypot(p[0] - downP[0], p[1] - downP[1]) > 10) clearTimeout(pressT);
+    });
+    cv.addEventListener('pointerup', (e) => {
+      clearTimeout(pressT);
+      if (feeding || !downP) return;
+      if (!longDone && e.button === 0) addAt(downP[0], downP[1]);
+      downP = null;
+    });
+    cv.addEventListener('pointercancel', () => { clearTimeout(pressT); downP = null; });
+    addEventListener('curio:touchpad', (e) => { if (e.detail) Curio.toast('Touchpad mode: in Feed, click to start sprinkling and click again to stop. Remove tab (X) takes things out', 3800); if (tab === 'feed') paintTabs(); });
+    if (!Curio.touchpad && !Curio.store.get('tp-hint-aquarium', false) && matchMedia('(pointer: fine)').matches) { Curio.store.set('tp-hint-aquarium', true); setTimeout(() => Curio.toast('Tip: on a laptop touchpad, turn on Touchpad mode in the top bar: click to start sprinkling food, click again to stop', 4200), 1800); }
+
+    let last = performance.now(), raf = 0;
+    function frame(now) {
+      raf = 0;
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
+      for (const id in schoolTarget) {
+        const st = schoolTarget[id]; st.t -= dt;
+        if (st.t <= 0) { st.t = R(3, 6); st.x = R(W * 0.12, W * 0.88); st.y = zoneY(SP[id], R(0, 1)); }
+      }
+      for (const p of plants) p.grow = Math.min(1, (p.grow || 0) + dt * 1.6);
+      for (const f of fish) stepFish(f, dt);
+      stepBubbles(dt);
+      render();
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); } });
+    addEventListener('resize', resize);
+
+    resize();
+    const saved = Curio.store.get('aquarium', null);
+    if (saved && Array.isArray(saved.f)) {
+      light = LIGHTS[saved.l] ? saved.l : 'day';
+      if (saved.sel) Object.assign(sel, saved.sel);
+      if (['fish', 'plant', 'decor', 'feed', 'tap', 'remove'].includes(saved.tab)) tab = saved.tab;
+      unserial(saved);
+    } else {
+      unserial({
+        f: [['clown', 300, 650, 1], ['clown', 340, 690, 0.9], ['neon', 600, 300, 1], ['neon', 620, 320, 0.9], ['neon', 640, 290, 1.1], ['neon', 610, 340, 1], ['neon', 650, 310, 0.95], ['neon', 590, 280, 1],
+          ['angel', 450, 400, 1.1], ['gold', 750, 500, 1], ['puffer', 200, 500, 1], ['tang', 800, 250, 1], ['seahorse', 120, 600, 1], ['jelly', 880, 200, 1], ['pleco', 500, 900, 1]],
+        p: [['weed', 90, 280, 0, 0], ['kelp', 160, 380, 1, 0], ['anemone', 300, 90, 0, 0], ['grass', 560, 160, 2, 1], ['coral', 680, 260, 0, 0], ['weed', 930, 300, 3, 1], ['grass', 980, 140, 0, 0]],
+        d: [['rock', 420, 1.1, 0], ['chest', 780, 1, 0], ['bubbler', 870, 1, 0], ['shell', 250, 1, 0]]
+      });
+      for (const p of plants) p.h = p.h / 380 * sandTop * 0.9;
+    }
+    lightSel.value = light;
+    paintTabs(); updateCount(); bakeBg();
+    raf = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>
