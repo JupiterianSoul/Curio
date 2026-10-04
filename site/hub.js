@@ -19,7 +19,7 @@
   const ORDER = ['classic', 'gym', 'puzzle', 'brain', 'toy', 'make', 'draw', 'explore', 'life', 'absurd', 'skill', 'arcade', 'versus'];
   TAGS.sort((a, b) => (ORDER.indexOf(a) + 99) % 99 - (ORDER.indexOf(b) + 99) % 99);
 
-  window.ZobleDesktop = { version: '98' };
+  window.ZobleDesktop = { version: 'zobos' };
 
   let played = store.get('played', {});
   let favs = store.get('hub:favs', {});
@@ -66,8 +66,11 @@
   }
 
   const tbEl = $('taskbar');
-  const tbH = () => tbEl.offsetHeight || 28;
+  const tbH = () => (phone() ? 0 : tbEl.offsetHeight);
+  const screenEl = $('screen');
+  const room = $('room');
   const desk = $('desktop');
+  C.setStage({ mount: screenEl, bounds: () => screenEl.getBoundingClientRect() });
   const layer = $('windows');
   const tasks = $('tasks');
 
@@ -76,7 +79,7 @@
   let zTop = 20, wins = [], active = null, cascade = 0, uid = 0;
   const dragging = (on) => desk.classList.toggle('is-dragging', on);
 
-  function deskArea() { return { w: innerWidth, h: Math.max(200, innerHeight - tbH()) }; }
+  function deskArea() { return { w: screenEl.clientWidth, h: Math.max(200, screenEl.clientHeight - tbH()) }; }
   function zoom(from, to, done) {
     if (calm() || !from || !to) { done?.(); return; }
     const z = el('div', 'zw-zoom');
@@ -126,7 +129,22 @@
     w.iconEl = node.querySelector('.zw-ico');
     w.titleEl.textContent = o.title;
     w.iconEl.src = w.icon;
-    if (o.menus) { const mrow = el('div', 'zw-menu'); node.append(mrow); w.mb = C.menubar(mrow, o.menus(w), { label: `${o.title} menu`, reserve: 0 }); }
+    if (o.menus) { const mrow = el('div', 'zw-menu'); node.append(mrow); w.menuDefs = o.menus(w); w.mb = C.menubar(mrow, w.menuDefs, { label: `${o.title} menu`, reserve: 0 }); }
+    const backB = el('button', 'zw-back');
+    backB.type = 'button';
+    backB.setAttribute('aria-label', 'Back');
+    backB.innerHTML = '<i aria-hidden="true"></i>';
+    backB.addEventListener('click', () => closeWin(w));
+    backB.addEventListener('pointerdown', (e) => e.stopPropagation());
+    node.querySelector('.title-bar').prepend(backB);
+    if (w.menuDefs) {
+      const moreB = el('button', 'zw-more');
+      moreB.type = 'button';
+      moreB.setAttribute('aria-label', 'Menu');
+      moreB.innerHTML = '<i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>';
+      moreB.addEventListener('click', () => { C.sfx('menu'); C.menu.open(w.menuDefs.map((m) => ({ label: m.label.replace('&', ''), sub: m.items })), { anchor: moreB.getBoundingClientRect(), opener: moreB, label: 'Menu' }); });
+      node.querySelector('.title-bar-controls').prepend(moreB);
+    }
     w.body = el('div', `zw-body${o.bodyCls ? ` ${o.bodyCls}` : ''}`);
     node.append(w.body);
     if (o.status) { w.statusEl = el('div', 'status-bar'); node.append(w.statusEl); }
@@ -249,7 +267,18 @@
     wins.forEach((x) => { x.el.classList.remove('is-active'); x.el.querySelector('.title-bar').classList.add('inactive'); });
     paintTasks();
   }
+  function relayout() {
+    wins.forEach((w) => {
+      if (phone() && w.state === 'normal') maximize(w, true);
+      if (w.state === 'max') layoutMax(w);
+      else if (w.state === 'normal') setRect(w, w.rect);
+      w.onResize?.();
+    });
+    layoutIcons();
+  }
   function paintTasks() {
+    const app = phone() && wins.some((x) => x.state !== 'min');
+    if (room.classList.contains('has-app') !== app) { room.classList.toggle('has-app', app); relayout(); }
     wins.forEach((x) => x.task.setAttribute('aria-pressed', String(x === active && x.state !== 'min')));
     tasks.classList.toggle('is-crowded', wins.length > 4);
   }
@@ -323,15 +352,7 @@
       { label: '&Close', accel: 'Alt+X', action: () => closeWin(w) }
     ], { x: at.x, y: at.y, reserve: tbH() });
   }
-  window.addEventListener('resize', () => {
-    wins.forEach((w) => {
-      if (phone() && w.state === 'normal') maximize(w, true);
-      if (w.state === 'max') layoutMax(w);
-      else if (w.state === 'normal') setRect(w, w.rect);
-      w.onResize?.();
-    });
-    layoutIcons();
-  });
+  window.addEventListener('resize', () => relayout());
 
   function saveSession() {
     if (!C.prefs.restore) return;
@@ -353,6 +374,7 @@
       if (kind === 'game' && bySlug(arg)) w = openGame(arg, opts);
       else if (kind === 'folder') w = openFolder(arg, opts);
       else if (kind === 'readme') w = openReadme(opts);
+      else if (kind === 'explorer') w = openExplorer(opts);
       else if (kind === 'page') w = openPage(arg, opts);
       if (s.a) act = w;
     });
@@ -490,7 +512,7 @@
         ] },
         { label: '&Help', items: () => [
           { label: '&Help Topics', icon: px('help', 16), action: () => openHelp('desktop') },
-          { label: '&About Zoble 98', action: aboutZoble }
+          { label: '&About ZobOS', action: aboutZoble }
         ] }
       ],
       build: (win) => {
@@ -792,7 +814,7 @@
     let frame, info = { modes: false, mode: C.store.get(`mode:${slug}`, null) || C.store.get('modeDefault', 'simple') };
     const A = deskArea();
     const w = openWindow({
-      key: `game:${slug}`, kind: 'game', title: g.title, icon: C.px('app', 16), w: Math.min(860, A.w - 40), h: Math.min(640, A.h - 30), minW: 280, minH: 220, status: true, from: opts.from, rect: opts.rect, minimized: opts.minimized, max: opts.max, cls: 'zw-game',
+      key: `game:${slug}`, kind: 'game', title: g.title, icon: C.px('app', 16), w: Math.min(860, A.w - 40), h: Math.min(640, A.h - 30), minW: 280, minH: 220, status: true, from: opts.from, rect: opts.rect, minimized: opts.minimized, max: opts.max ?? (C.prefs.gameWindow !== 'window'), cls: 'zw-game',
       help: () => post('help'),
       menus: (win) => [
         { label: '&Game', items: () => [
@@ -853,7 +875,9 @@
     modeBox.hidden = true;
     modeBox.innerHTML = '<button type="button" data-mode="simple" title="Simple: quick and easy">Simple</button><button type="button" data-mode="advanced" title="Advanced: more content, longer games">Advanced</button>';
     modeBox.addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode); });
-    w.el.querySelector('.zw-menu')?.append(modeBox);
+    modeBox.addEventListener('pointerdown', (e) => e.stopPropagation());
+    modeBox.addEventListener('dblclick', (e) => e.stopPropagation());
+    w.el.querySelector('.title-bar-controls').before(modeBox);
     C.gameIcon(slug, 16).then((u) => w.setIcon(u));
     if (w.state !== 'min') w.load();
     function post(cmd, extra = {}) { try { frame.contentWindow.postMessage({ zoble: cmd, ...extra }, location.origin); } catch {} }
@@ -942,7 +966,7 @@
     void wrap;
     return w;
   }
-  const README = () => `ZOBLE 98 README\r\n===============\r\n\r\nWelcome to Zoble 98, a whole desktop full of small games,\r\ntoys and odd corners of the internet. There are ${games.length} of them.\r\nEverything is free. Nothing to sign up for. No ads.\r\n\r\nGETTING STARTED\r\n---------------\r\n* Open "My Games" to see everything, or one of the folders.\r\n* The Start button has every game sorted by folder, plus Run,\r\n  Find, Help and the Control Panel.\r\n* Games open in their own windows. Open a few at once.\r\n  Drag them by the title bar, resize them from the edges,\r\n  minimize them to the taskbar.\r\n* Every game has a Simple and an Advanced version. Simple is\r\n  quick fun. Advanced has everything. Switch from the View menu\r\n  of the game window.\r\n\r\nTOUCHPAD?\r\n---------\r\nTurn on Touchpad mode (the little pad in the corner of the\r\ntaskbar). Then every drag becomes click to grab, click to drop.\r\n\r\nKEYBOARD\r\n--------\r\nCtrl+Esc      Start menu\r\nAlt+X         Close the window you are in\r\nArrows        Move between icons\r\nEnter         Open\r\nEsc           Close menus\r\nF10           The menu bar of the active window\r\n\r\nPRIVACY\r\n-------\r\nScores, favourites and settings live in this browser only.\r\nNo cookies, no tracking, no accounts. Zob checked.\r\n\r\nSECRETS\r\n-------\r\nThere are ${C.secrets.length} of them. Zob will not tell you where.\r\n(He might give you a hint if you open Secrets.)\r\n`;
+  const README = () => `ZOBOS README\r\n============\r\n\r\nHello! You are sitting at Zob's desk, and this is Zob's computer.\r\nIt runs ZobOS. There are ${games.length} games, toys and odd corners on it.\r\nEverything is free. Nothing to sign up for. No ads.\r\n\r\nGETTING STARTED\r\n---------------\r\n* Zoble Explorer shows every game with a picture. Search it,\r\n  browse by kind, or press Surprise me.\r\n* The Zob button (bottom left of the screen) has every game sorted\r\n  by folder, plus Run, Find, Help and the Control Panel.\r\n* Games fill the screen. Open a few at once and switch between\r\n  them on the taskbar. Double-click a title bar to put a game in\r\n  a window you can move (Control Panel, Games makes it the default).\r\n* Every game has a Simple and an Advanced version. Simple is\r\n  quick fun. Advanced has everything.\r\n\r\nTHE DESK\r\n--------\r\nThe desk is real too (well, as real as Zob). Click the lamp, the\r\nmug, the plant, the sticky notes, the drawer, the window...\r\n\r\nTOUCHPAD?\r\n---------\r\nTurn on Touchpad mode (the little pad in the corner of the\r\ntaskbar). Then every drag becomes click to grab, click to drop.\r\n\r\nKEYBOARD\r\n--------\r\nCtrl+Esc      Zob menu\r\nAlt+X         Close the window you are in\r\nArrows        Move between icons\r\nEnter         Open\r\nEsc           Close menus\r\nF10           The menu bar of the active window\r\n/             Find a game\r\n\r\nPRIVACY\r\n-------\r\nScores, favourites and settings live in this browser only.\r\nNo cookies, no tracking, no accounts. Zob checked.\r\n\r\nSECRETS\r\n-------\r\nThere are ${C.secrets.length} of them, on the screen and on the desk.\r\nZob will not tell you where. (The drawer might.)\r\n`;
   function openReadme(opts = {}) { const w = openNotepad('Readme.txt', README(), { key: 'readme', ...opts }); w.restoreKind = 'readme'; return w; }
 
   function openBinFile(b) {
@@ -1059,7 +1083,7 @@
   }
   function runCommand(q) {
     const s = q.toLowerCase().trim();
-    if (/^(format|del|deltree|rm)\b/.test(s)) { C.modal({ icon: 'error', caption: 'Zoble 98', title: '', body: 'Nice try.\n\nZob has hidden the hard drive under his bed.', buttons: [{ label: 'OK', value: 'ok' }] }); return true; }
+    if (/^(format|del|deltree|rm)\b/.test(s)) { C.modal({ icon: 'error', caption: 'ZobOS', title: '', body: 'Nice try.\n\nZob has hidden the hard drive under his bed.', buttons: [{ label: 'OK', value: 'ok' }] }); return true; }
     if (/^(cmd|command|prompt|dos|zoble prompt|terminal|shell)(\.exe|\.com)?$/.test(s)) { openPrompt(); return true; }
     if (/^(readme|readme\.txt|notepad)/.test(s)) { openReadme(); return true; }
     if (/^(control|control panel|settings)$/.test(s)) { openFolder('control'); return true; }
@@ -1126,7 +1150,7 @@
       C.unlock('prompt');
       if (h === 'help' || h === '?') print('Commands:\n  DIR            list the games in this folder\n  CD <folder>    change folder (CD .. to go up)\n  PLAY <game>    open a game\n  RANDOM         open a random game\n  CLS            clear the screen\n  VER            show the version\n  DATE, TIME     what it says\n  ZOB            say hello\n  SECRETS        how many you found\n  EXIT           close this window');
       else if (h === 'cls') { lines.length = 0; out.textContent = ''; }
-      else if (h === 'ver') print('\nZoble 98 [Version 4.10.1998]\n');
+      else if (h === 'ver') print('\nZobOS [Version 2.0, Zob\'s edition]\n');
       else if (h === 'date') print(`The current date is: ${new Date().toDateString()}`);
       else if (h === 'time') print(`The current time is: ${new Date().toLocaleTimeString()}`);
       else if (h === 'zob') print('  (o)  hi! I live in here too. Mind the cables.');
@@ -1149,7 +1173,7 @@
         if (parts.length === 1) rows = ['MY GAMES     <DIR>', 'RECYCLED     <DIR>', 'README   TXT      2,048', 'NOTHING  EXE          0'];
         else if (parts.length === 2) rows = TAGS.map((t) => `${fname(t).toUpperCase().padEnd(16)} <DIR>`);
         else { const tag = TAGS.find((t) => fname(t) === parts[2]); rows = games.filter((g) => g.tag === tag).map((g) => `${g.slug.toUpperCase().slice(0, 8).padEnd(9)}EXE   ${g.title}`); }
-        print(` Volume in drive C is ZOBLE98\n Directory of ${cwd}\n\n${rows.join('\n')}\n       ${rows.length} file(s)`);
+        print(` Volume in drive C is ZOBS DISK\n Directory of ${cwd}\n\n${rows.join('\n')}\n       ${rows.length} file(s)`);
       } else if (h === 'play' || h === 'start' || h === 'run') {
         const g = findGame(arg);
         if (g) { print(`Starting ${g.title}...`); openGame(g.slug); } else print(`Bad command or file name: ${arg}`);
@@ -1160,20 +1184,20 @@
         else print('Bad command or file name');
       }
     }
-    if (!out.textContent) print('Zoble 98 Prompt\n(C) Zob 1998. Type HELP for a list of commands.\n');
+    if (!out.textContent) print('ZobOS Prompt\n(C) Zob, all rights reserved. Type HELP for a list of commands.\n');
     setTimeout(() => w.focusTarget?.()?.focus(), 40);
     return w;
   }
 
   const HELP = {
-    welcome: ['Welcome to Zoble 98', `Zoble 98 is a desktop full of small games and toys. There are ${games.length} of them, sorted into folders. Everything is free, there are no accounts and no ads.\n\nStart with My Games on the desktop, or press Start and open Programs.`],
+    welcome: ['Welcome to ZobOS', `ZobOS runs on Zob\'s computer, the one on the desk. There are ${games.length} games and toys on it. Everything is free, there are no accounts and no ads.\n\nStart with Zoble Explorer: every game with its picture, a pick of the day, search and kinds. Or press the Zob button and open Programs.`],
     desktop: ['Using the desktop', 'Click an icon to open it. (You can switch to double-click in Control Panel, Mouse.)\n\nDrag a window by its title bar, resize it from its edges and corners, minimize it to the taskbar or maximize it to fill the screen. Double-click a title bar to maximize it.\n\nRight-click works too, but everything it does is also in the menus.'],
-    games: ['Playing games', 'Games open in their own window. You can have several open at once. The Game menu restarts a game, picks a random one or adds it to your Favourites.\n\nWant a game to fill the whole browser? Choose Game, Open in its own tab.'],
+    games: ['Playing games', 'Games fill Zob\'s screen. You can have several open at once and switch on the taskbar. Double-click the title bar (or press the middle button) to put a game in a window you can move and resize. Control Panel, Games makes windows the default.\n\nThe Game menu restarts a game, picks a random one or adds it to your Favourites. Want a game to fill the whole browser? Choose Game, Open in its own tab.'],
     modes: ['Simple and Advanced', 'Every game has two versions. Simple is quick and easy to pick up. Advanced has every mode, stat and setting.\n\nSwitch in a game window from View, Simple or Advanced. Pick what new games start in from Control Panel, Games.'],
     touchpad: ['Touchpad mode', 'Turn on Touchpad mode from the little pad icon in the taskbar, or Control Panel, Mouse.\n\nThen any drag works as click to grab, move, click to drop. Window title bars and edges work that way too. Esc lets go.'],
-    keys: ['Keyboard shortcuts', 'Ctrl+Esc: open the Start menu\nAlt+X: close the active window\nF10: the menu bar of the active window\nArrows and Enter: move between icons and open them\nBackspace: up one folder\nEsc: close a menu'],
+    keys: ['Keyboard shortcuts', 'Ctrl+Esc: open the Zob menu\nAlt+X: close the active window\nF10: the menu bar of the active window\nArrows and Enter: move between icons and open them\nBackspace: up one folder\nEsc: close a menu'],
     find: ['Finding a game', 'Open Start, then Find. Type part of a name or a word like "space", "draw" or "puzzle". Results appear as you type.\n\nYou can also use Run and type a game name.'],
-    secrets: ['Secrets', `There are ${C.secrets.length} secrets hidden around Zoble 98. Open Control Panel, Secrets, to see the ones you found and a hint for each of the rest.`],
+    secrets: ['Secrets', `There are ${C.secrets.length} secrets hidden on Zob\'s screen and around his desk. Open the desk drawer, or Control Panel, Secrets, to see the ones you found and a hint for each of the rest.`],
     privacy: ['Privacy', 'Scores, favourites, settings and secrets are kept in this browser only. Nothing is sent anywhere. Clearing your browser data, or Control Panel, Data, wipes it.']
   };
   function openHelp(topic = 'welcome') {
@@ -1243,7 +1267,7 @@
 
   function aboutZoble() {
     const n = Object.keys(C.found()).length;
-    C.modal({ icon: 'info', caption: 'About Zoble 98', title: 'Zoble 98', body: `Version 4.10.1998\n\n${games.length} games and toys, ${TAGS.length} folders, one Zob.\n${n} of ${C.secrets.length} secrets found.\n\nMade by hand. No ads, no accounts, no tracking. This product is licensed to: you.`, buttons: [{ label: 'OK', value: 'ok' }] });
+    C.modal({ icon: 'info', caption: 'About ZobOS', title: 'ZobOS', body: `Version 2.0, Zob\'s edition\n\n${games.length} games and toys, ${TAGS.length} folders, one Zob.\n${n} of ${C.secrets.length} secrets found.\n\nMade by hand. No ads, no accounts, no tracking. This product is licensed to: you.`, buttons: [{ label: 'OK', value: 'ok' }] });
   }
 
   async function zobleUpdate() {
@@ -1256,7 +1280,7 @@
     for (let i = 0; i <= 20 && !done; i++) { bar.style.width = `${i * 5}%`; if (i === 8) box.querySelector('p').textContent = 'Checking for updates...'; if (i === 15) box.querySelector('p').textContent = 'Asking Zob...'; await new Promise((r) => setTimeout(r, calm() ? 20 : 110)); }
     if (done) return;
     document.querySelector('.curio-modal')?.remove();
-    C.modal({ icon: 'info', caption: 'Zoble Update', title: 'Zoble 98 is up to date.', body: 'It has been up to date since 1998. New games arrive in the New Arrivals folder all by themselves.', buttons: [{ label: 'OK', value: 'ok' }] });
+    C.modal({ icon: 'info', caption: 'Zoble Update', title: 'ZobOS is up to date.', body: 'It has been up to date since Zob last dusted it. New games arrive in the New Arrivals folder all by themselves.', buttons: [{ label: 'OK', value: 'ok' }] });
   }
 
   let rolling = false;
@@ -1298,6 +1322,7 @@
 
   function deskItems() {
     const sys = [
+      { id: 'd:explorer', name: 'Zoble Explorer', kind: 'app', icon: () => px('globe', 32), icon16: () => px('globe', 16), open: (f) => openExplorer({ from: f }) },
       { id: 'd:games', name: 'My Games', kind: 'folder', path: 'games', icon: () => px('computer', 32), icon16: () => px('computer', 16), open: (f) => openFolder('games', { from: f }) },
       { id: 'd:favs', name: 'Favourites', kind: 'folder', path: 'favs', icon: () => px('favs', 32), icon16: () => px('favs', 16), open: (f) => openFolder('favs', { from: f }) },
       { id: 'd:recent', name: 'Recently Played', kind: 'folder', path: 'recent', icon: () => px('recent', 32), icon16: () => px('recent', 16), open: (f) => openFolder('recent', { from: f }) },
@@ -1356,8 +1381,9 @@
     if (!quiet) b.focus({ preventScroll: true });
   }
   function layoutIcons() {
-    const h = innerHeight - tbH() - 8;
-    iconsEl.style.setProperty('--rows', String(Math.max(3, Math.floor(h / 78))));
+    const h = screenEl.clientHeight - tbH() - 16;
+    const row = html.dataset.skin === 'classic' ? 78 : 86;
+    iconsEl.style.setProperty('--rows', String(Math.max(3, Math.floor(h / row))));
   }
   iconsEl.addEventListener('keydown', (e) => {
     const all = [...iconsEl.querySelectorAll('.di')];
@@ -1401,7 +1427,7 @@
       { sep: true },
       { label: '&Refresh', accel: 'F5', action: () => refreshAll() },
       { sep: true },
-      { label: 'Ne&w', sub: () => [{ label: '&Folder', icon: px('folder', 16), action: () => C.modal({ icon: 'warn', caption: 'New Folder', title: '', body: 'Zob tried to make a new folder here once. It ended up full of crumbs. Folders are made by hand in Zoble 98.', buttons: [{ label: 'OK', value: 'ok' }] }) }, { label: '&Text Document', icon: px('doc', 16), action: () => openNotepad('New Text Document.txt', '') }] },
+      { label: 'Ne&w', sub: () => [{ label: '&Folder', icon: px('folder', 16), action: () => C.modal({ icon: 'warn', caption: 'New Folder', title: '', body: 'Zob tried to make a new folder here once. It ended up full of crumbs. Folders are made by hand in ZobOS.', buttons: [{ label: 'OK', value: 'ok' }] }) }, { label: '&Text Document', icon: px('doc', 16), action: () => openNotepad('New Text Document.txt', '') }] },
       { sep: true },
       { label: 'P&roperties', action: () => C.settings(null, { tab: 'desk' }) }
     ], { x: e.clientX, y: e.clientY, reserve: tbH() });
@@ -1422,7 +1448,7 @@
 
   const startBtn = $('start');
   $('startlogo').src = px('start', 16);
-  if (M === 3 && D === 1) { $('startword').textContent = 'Stop'; }
+  if (M === 3 && D === 1) { $('startword').textContent = 'Boz'; }
   let startOpen = false;
   function startItems() {
     refreshData();
@@ -1431,7 +1457,8 @@
     const favList = games.filter((g) => favs[g.slug]).sort((a, b) => favs[b.slug] - favs[a.slug]);
     const def = store.get('modeDefault', 'simple') === 'advanced' ? 'advanced' : 'simple';
     return [
-      { label: 'Zoble &Update', icon: px('globe', 32), action: zobleUpdate },
+      { label: 'Zoble &Explorer', icon: px('globe', 32), action: () => openExplorer() },
+      { label: 'Zoble &Update', icon: px('star', 32), action: zobleUpdate },
       { sep: true },
       { label: '&Programs', icon: px('programs', 32), sub: () => [
         ...TAGS.map((t) => ({ label: fname(t).replace(/&/g, '&&'), icon: C.folderIcon(t, 16), sub: () => gameList(games.filter((g) => g.tag === t).sort((a, b) => a.title.localeCompare(b.title))) })),
@@ -1471,7 +1498,7 @@
     ];
   }
   let tune = [];
-  function toggleStart(force, kb) {
+  function toggleStart(force, kb, from) {
     const want = force ?? !startOpen;
     if (!want) { C.menu.closeAll(); return; }
     startOpen = true;
@@ -1479,13 +1506,13 @@
     startBtn.classList.add('is-on');
     C.sfx('menu');
     const rec = C.menu.open(startItems(), {
-      anchor: startBtn.getBoundingClientRect(), side: 'up', opener: startBtn, big: true, label: 'Start menu', focus: !!kb,
-      banner: 'Zoble<b>98</b>', className: 'z-start', reserve: tbH(),
+      anchor: (from || startBtn).getBoundingClientRect(), side: 'up', opener: from || startBtn, big: true, label: 'Zob menu', focus: !!kb,
+      banner: 'Zoble<b>OS</b>', className: 'z-start', reserve: tbH(),
       onClose: () => { startOpen = false; startBtn.setAttribute('aria-expanded', 'false'); startBtn.classList.remove('is-on'); }
     });
     const ban = rec.el.querySelector('.z-menu__banner span');
     if (ban) {
-      ban.innerHTML = '<i>Z</i><i>o</i><i>b</i><i>l</i><i>e</i><b>98</b>';
+      ban.innerHTML = '<i>Z</i><i>o</i><i>b</i><i>l</i><i>e</i><b>OS</b>';
       ban.parentElement.removeAttribute('aria-hidden');
       ban.parentElement.setAttribute('role', 'presentation');
       ban.querySelectorAll('i').forEach((s, i) => {
@@ -1504,7 +1531,7 @@
   startBtn.addEventListener('click', () => { if (startOpen) { C.menu.closeAll(); } else toggleStart(true); });
 
   const quick = $('quick');
-  [['computer', 'Show Desktop', focusDesktop], ['folder', 'My Games', () => openFolder('games')], ['die', 'Surprise me', () => rollGame()]].forEach(([ic, label, fn]) => {
+  [['computer', 'Show Desktop', focusDesktop], ['globe', 'Zoble Explorer', () => openExplorer()], ['die', 'Surprise me', () => rollGame()]].forEach(([ic, label, fn]) => {
     const b = el('button', 'qb');
     b.type = 'button';
     b.innerHTML = `<img alt="" width="16" height="16" src="${px(ic, 16)}">`;
@@ -1578,18 +1605,32 @@
 
   const deskBg = $('deskbg');
   const WALLS = [
-    ['none', '(None)'], ['zigzag', 'Zig Zag'], ['bricks', 'Bricks'], ['checks', 'Checkers'], ['weave', 'Weave'], ['dots', 'Polka'], ['zobs', 'Zob Tiles'], ['stars', 'Starry Night'], ['waves', 'Waves'], ['clouds', 'Puffy Clouds']
+    ['none', '(None)'], ['sprinkles', 'Sprinkles'], ['doodles', 'Zob Doodles'], ['zigzag', 'Zig Zag'], ['bricks', 'Bricks'], ['checks', 'Checkers'], ['weave', 'Weave'], ['dots', 'Polka'], ['zobs', 'Zob Tiles'], ['stars', 'Starry Night'], ['waves', 'Waves'], ['clouds', 'Puffy Clouds']
   ];
   function wallpaper(id, desk0) {
     const c = document.createElement('canvas');
     const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; r = Math.max(0, Math.min(255, Math.round(r * f))); g = Math.max(0, Math.min(255, Math.round(g * f))); b = Math.max(0, Math.min(255, Math.round(b * f))); return `rgb(${r},${g},${b})`; };
     const dk = shade(desk0, 0.78), lt = shade(desk0, 1.22);
-    const sz = { zigzag: 16, bricks: 16, checks: 16, weave: 8, dots: 12, zobs: 48, stars: 96, waves: 32, clouds: 128 }[id] || 8;
+    const sz = { sprinkles: 48, doodles: 96, zigzag: 16, bricks: 16, checks: 16, weave: 8, dots: 12, zobs: 48, stars: 96, waves: 32, clouds: 128 }[id] || 8;
     c.width = c.height = sz;
     const g = c.getContext('2d');
     g.fillStyle = desk0; g.fillRect(0, 0, sz, sz);
     const p = (x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
-    if (id === 'zigzag') for (let x = 0; x < 16; x++) { const y = x < 8 ? x : 15 - x; p(x, y, dk); p(x, y + 8 > 15 ? y - 8 : y + 8, lt); }
+    if (id === 'sprinkles') {
+      const cols = ['#ff86b2', '#ffcf3a', '#7fd9b0', '#ffffff', '#9ab0ff'];
+      [[6, 8, 0], [30, 4, 1], [18, 22, 2], [40, 28, 3], [8, 38, 4], [26, 40, 0], [44, 14, 2], [14, 30, 1]].forEach(([x, y, c], i) => { g.fillStyle = cols[c]; g.globalAlpha = 0.75; if (i % 2) { g.fillRect(x, y, 4, 2); g.fillRect(x + 1, y + 1, 4, 2); } else { g.fillRect(x, y, 2, 4); g.fillRect(x + 1, y + 1, 2, 4); } });
+      g.globalAlpha = 1;
+    }
+    else if (id === 'doodles') {
+      g.strokeStyle = lt; g.lineWidth = 2; g.lineCap = 'round';
+      g.beginPath(); g.arc(24, 24, 9, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.arc(24, 25, 3, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.moveTo(24, 15); g.lineTo(28, 8); g.stroke();
+      g.beginPath(); g.moveTo(62, 64); g.lineTo(70, 72); g.moveTo(70, 64); g.lineTo(62, 72); g.stroke();
+      g.beginPath(); g.moveTo(10, 76); for (let x = 0; x < 30; x += 6) g.lineTo(10 + x + 3, 76 + (x % 12 ? -4 : 4)); g.stroke();
+      g.beginPath(); g.moveTo(70, 18); g.lineTo(74, 26); g.lineTo(82, 27); g.lineTo(76, 32); g.lineTo(78, 40); g.lineTo(70, 36); g.lineTo(62, 40); g.lineTo(64, 32); g.lineTo(58, 27); g.lineTo(66, 26); g.closePath(); g.stroke();
+    }
+    else if (id === 'zigzag') for (let x = 0; x < 16; x++) { const y = x < 8 ? x : 15 - x; p(x, y, dk); p(x, y + 8 > 15 ? y - 8 : y + 8, lt); }
     else if (id === 'bricks') { g.fillStyle = dk; g.fillRect(0, 7, 16, 1); g.fillRect(0, 15, 16, 1); g.fillRect(7, 0, 1, 7); g.fillRect(15, 8, 1, 7); g.fillStyle = lt; g.fillRect(0, 0, 7, 1); g.fillRect(8, 8, 7, 1); }
     else if (id === 'checks') { g.fillStyle = dk; g.fillRect(0, 0, 8, 8); g.fillRect(8, 8, 8, 8); }
     else if (id === 'weave') { [[0, 0], [1, 1], [2, 2], [3, 3], [4, 0], [5, 7], [6, 6], [7, 5]].forEach(([x, y]) => p(x, y, dk)); [[0, 4], [1, 5], [2, 6], [3, 7]].forEach(([x, y]) => p(x, y, lt)); }
@@ -1609,7 +1650,7 @@
     deskBg.style.backgroundImage = id === 'none' ? '' : `url("${wallpaper(id, look.pal.desk)}")`;
     deskBg.dataset.wall = id;
   }
-  window.addEventListener('curio:theme', () => { applyDesk(); wins.forEach((w) => w.refresh?.()); });
+  window.addEventListener('curio:theme', () => { applyDesk(); layoutIcons(); wins.forEach((w) => w.refresh?.()); });
   applyDesk();
 
   const SAVERS = [['none', '(None)'], ['zobs', 'Flying Zobs'], ['pipes', 'Pixel Pipes'], ['marquee', 'Marquee'], ['stars', 'Starfield']];
@@ -1622,7 +1663,7 @@
       return `<div class="zdp"><div class="zdp-mon" aria-hidden="true"><div class="zdp-scr"></div></div></div>
         <fieldset><legend>Wallpaper</legend><span class="z-select"><select data-dsel="wallpaper" aria-label="Wallpaper">${WALLS.map(([v, l]) => `<option value="${v}" ${p.wallpaper === v ? 'selected' : ''}>${l}</option>`).join('')}</select></span></fieldset>
         <fieldset><legend>Screen saver</legend><div class="field-row"><span class="z-select"><select data-dsel="saver" aria-label="Screen saver">${SAVERS.map(([v, l]) => `<option value="${v}" ${p.saver === v ? 'selected' : ''}>${l}</option>`).join('')}</select></span><button type="button" data-dact="preview">Preview</button></div><div class="field-row" style="margin-top:6px"><label for="dwait">Wait:</label><input id="dwait" type="number" min="1" max="60" value="${p.saverWait || 3}" data-dnum="saverWait" style="width:56px"><label for="dwait">minutes</label></div></fieldset>
-        <fieldset><legend>Desktop</legend>${chk('restore', 'Remember open windows', p.restore, 'Whatever you leave open comes back next time.')}${chk('zob', 'Show Zob, the desktop helper', p.zob !== false)}${chk('welcome', 'Show the Welcome screen at start-up', p.welcome !== false)}</fieldset>`;
+        <fieldset><legend>Desktop</legend>${chk('restore', 'Remember open windows', p.restore, 'Whatever you leave open comes back next time.')}${chk('zob', 'Show Zob, the desktop helper', p.zob !== false)}${chk('welcome', 'Open Zoble Explorer at start-up', p.welcome !== false)}</fieldset>`;
     },
     mount: (panel) => {
       const scr = panel.querySelector('.zdp-scr');
@@ -1654,9 +1695,10 @@
     const cv = el('canvas', 'zsaver');
     cv.setAttribute('aria-label', 'Screen saver. Move the mouse or press a key to return.');
     cv.setAttribute('role', 'img');
-    document.body.append(cv);
+    screenEl.append(cv);
+    room.classList.add('is-saver');
     const S = 4;
-    const resize = () => { cv.width = Math.ceil(innerWidth / S); cv.height = Math.ceil(innerHeight / S); };
+    const resize = () => { cv.width = Math.ceil(screenEl.clientWidth / S); cv.height = Math.ceil(screenEl.clientHeight / S); };
     resize();
     const g = cv.getContext('2d');
     const W = () => cv.width, Hh = () => cv.height;
@@ -1674,7 +1716,7 @@
         g.fillStyle = '#000'; g.fillRect(0, 0, W(), Hh());
         const k = Math.floor(t / 5000);
         g.fillStyle = '#c0c0c0'; g.font = '700 12px "Zoble 98", monospace';
-        g.fillText('Zoble 98', 10 + (k * 53) % Math.max(10, W() - 70), 20 + (k * 31) % Math.max(10, Hh() - 30));
+        g.fillText('ZobOS', 10 + (k * 53) % Math.max(10, W() - 70), 20 + (k * 31) % Math.max(10, Hh() - 30));
       } else if (kind === 'zobs') {
         g.fillStyle = '#000'; g.fillRect(0, 0, W(), Hh());
         zobs.sort((a, b) => b.z - a.z).forEach((z) => {
@@ -1691,7 +1733,7 @@
       } else if (kind === 'marquee') {
         g.fillStyle = '#000'; g.fillRect(0, 0, W(), Hh());
         g.font = '700 24px "Zoble 98 Display", monospace';
-        const msg = 'Zoble 98  *  Zob is having a little nap  *  Move the mouse to wake him';
+        const msg = 'ZobOS  *  Zob is having a little nap  *  Move the mouse to wake him';
         const tw = g.measureText(msg).width;
         mx = (mx - dt * 0.03); if (mx < -tw) mx = W();
         const cols = ['#ff0', '#0ff', '#f0f', '#0f0'];
@@ -1724,6 +1766,7 @@
       if (e.type === 'pointermove') { if (sx == null) { sx = e.clientX; sy = e.clientY; return; } if (Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return; }
       cancelAnimationFrame(raf);
       cv.remove();
+      room.classList.remove('is-saver');
       saverOn = false;
       ['pointermove', 'pointerdown', 'keydown', 'wheel'].forEach((t) => window.removeEventListener(t, stop, true));
       window.removeEventListener('resize', resize);
@@ -1736,6 +1779,7 @@
     void preview;
   }
 
+  let offWake = null;
   async function shutDown() {
     const box = el('div', 'zsd');
     box.innerHTML = `<div class="zsd-row"><img alt="" src="${px('shutdown', 32)}" class="z-px"><div><p>What do you want Zoble to do?</p><span class="curio-opt"><input type="radio" id="sd1" name="sd" value="off" checked><label for="sd1">Shut down</label></span><span class="curio-opt"><input type="radio" id="sd2" name="sd" value="restart"><label for="sd2">Restart</label></span><span class="curio-opt"><input type="radio" id="sd3" name="sd" value="nap"><label for="sd3">Stand by (Zob takes a nap)</label></span></div></div>`;
@@ -1749,26 +1793,28 @@
     C.sfx('shutdown');
     await new Promise((r) => setTimeout(r, calm() ? 200 : 1300));
     const scr = el('div', 'zboot zboot--down');
-    scr.innerHTML = splashHTML(what === 'restart' ? 'Zoble is restarting...' : 'Zoble is shutting down...');
-    document.body.append(scr);
+    scr.innerHTML = splashHTML(what === 'restart' ? 'ZobOS is restarting...' : 'ZobOS is shutting down...');
+    screenEl.append(scr);
     await new Promise((r) => setTimeout(r, calm() ? 400 : 1800));
     if (what === 'restart') { sessionStorage.removeItem('zoble:booted'); location.reload(); return; }
     scr.className = 'zboot zboot--safe';
-    scr.innerHTML = '<p>It is now safe to turn off<br>your computer.</p><small>(or click anywhere to start Zoble again)</small>';
+    scr.innerHTML = '<p>It is now safe to turn off<br>Zob\'s computer.</p><small>(click anywhere, or press the power button, to start ZobOS again)</small>';
+    room.classList.add('is-off');
     scr.tabIndex = 0;
     scr.focus();
     C.unlock('shutdown');
-    const wake = () => { scr.removeEventListener('click', wake); scr.removeEventListener('keydown', wake); scr.className = 'zboot'; scr.innerHTML = splashHTML('Starting Zoble 98...'); C.sfx('startup'); setTimeout(() => { scr.remove(); desk.classList.remove('is-fading'); }, calm() ? 300 : 2200); };
+    const wake = () => { offWake = null; room.classList.remove('is-off'); scr.removeEventListener('click', wake); scr.removeEventListener('keydown', wake); scr.className = 'zboot'; scr.innerHTML = splashHTML('Starting ZobOS...'); C.sfx('startup'); setTimeout(() => { scr.remove(); desk.classList.remove('is-fading'); }, calm() ? 300 : 2200); };
+    offWake = wake;
     setTimeout(() => { scr.addEventListener('click', wake); scr.addEventListener('keydown', wake); }, 600);
   }
   function splashHTML(msg) {
-    return `<div class="zboot-sky" aria-hidden="true"></div><div class="zboot-logo"><span class="zboot-zob">${C.pim('pim--boot')}</span><b>Zoble<i>98</i></b></div><p class="zboot-msg">${esc(msg)}</p><div class="zboot-bar" aria-hidden="true"><i></i></div>`;
+    return `<div class="zboot-sky" aria-hidden="true"></div><div class="zboot-logo"><span class="zboot-zob">${C.pim('pim--boot')}</span><b>Zob<i>OS</i></b></div><p class="zboot-msg">${esc(msg)}</p><div class="zboot-bar" aria-hidden="true"><i></i></div>`;
   }
 
   const zobEl = el('div', 'zob');
-  zobEl.innerHTML = `<div class="zob-bubble" role="status" aria-live="polite" hidden><p></p><div class="zob-btns"></div><button type="button" class="zob-x" aria-label="Close the tip"></button></div><button type="button" class="zob-body" aria-label="Zob, the desktop helper. Click to poke.">${C.pim('pim--zob')}<span class="zob-zzz" aria-hidden="true">z<i>z</i><b>z</b></span></button>`;
-  desk.append(zobEl);
-  const zobBody = zobEl.querySelector('.zob-body'), zobSvg = zobEl.querySelector('.pim'), bub = zobEl.querySelector('.zob-bubble');
+  zobEl.innerHTML = `<div class="zob-bubble" role="status" aria-live="polite" hidden><p></p><div class="zob-btns"></div><button type="button" class="zob-x" aria-label="Close the tip"></button></div><button type="button" class="zob-body" aria-label="Zob, who owns this computer. Click to poke.">${window.ZobleArt.zob()}<span class="zob-zzz" aria-hidden="true">z<i>z</i><b>z</b></span></button>`;
+  ($('zobhome') || room).append(zobEl);
+  const zobBody = zobEl.querySelector('.zob-body'), zobSvg = zobEl.querySelector('.zobv'), bub = zobEl.querySelector('.zob-bubble');
   let zobT = 0, sleeping = false, pokes = store.get('hub:pokes', 0), pokeTimes = [];
   function zobSay(text, ms = 3000, buttons = []) {
     if (C.prefs.zob === false || saverOn) return;
@@ -1786,12 +1832,12 @@
   function showZob(on) {
     C.setPref('zob', !!on);
     syncZob();
-    if (on) zobSay(C.pick(['hello again! I was behind the Recycle Bin.', 'ta-da! I\'m back.', 'did you miss me?']), 2600);
+    if (on) zobSay(C.pick(['hello again! I was behind the monitor.', 'ta-da! I\'m back.', 'did you miss me?']), 2600);
   }
   function syncZob() { zobEl.hidden = C.prefs.zob === false; paintTray(); }
   syncZob();
-  const LINES = ['hi! I\'m Zob. I live in your taskbar now.', 'that tickles', 'have you tried the one with the sand?', 'I\'ve played every single one. twice.', 'boop. right back at you.', 'I am made of pixels and one eye', 'psst. there are secrets everywhere.', 'my favourite is the button. obviously.', 'is it lunch yet? it feels like lunch.', 'I dusted the Arcade Classics folder this morning', 'ok, ok, that\'s plenty of poking'];
-  const greet = H >= 22 || H < 5 ? 'it\'s late. shouldn\'t you be asleep?' : H < 11 ? 'morning! I made coffee. well, I looked at it.' : 'oh hello! I\'m Zob. I keep the desktop tidy.';
+  const LINES = ['hi! I\'m Zob. this is my computer. you can borrow it.', 'that tickles', 'have you tried the one with the sand?', 'I\'ve played every single one. twice.', 'boop. right back at you.', 'I am made of felt-tip pen and one eye', 'psst. there are secrets everywhere.', 'my favourite is the button. obviously.', 'is it lunch yet? it feels like lunch.', 'careful with the mug. it is my favourite mug.', 'the plant is called Gerald', 'I dusted the Arcade Classics folder this morning', 'ok, ok, that\'s plenty of poking'];
+  const greet = H >= 22 || H < 5 ? 'it\'s late. shouldn\'t you be asleep?' : H < 11 ? 'morning! I made coffee. well, I looked at it.' : 'oh hello! I\'m Zob. welcome to my desk.';
   function zobPoke() {
     wakeZob();
     pokes++; store.set('hub:pokes', pokes);
@@ -1811,22 +1857,7 @@
     zobSay(pokes === 1 ? greet : LINES[pokes % LINES.length], 2800);
   }
   zobEl.addEventListener('animationend', () => zobEl.classList.remove('is-squish', 'is-dizzy', 'is-wave', 'is-giggle'));
-  let zobDrag = null;
-  C.drag(zobBody, {
-    start: (p) => { const r = zobEl.getBoundingClientRect(); zobDrag = { x: p.clientX, y: p.clientY, l: r.left, t: r.top, moved: false }; },
-    move: (p) => {
-      if (!zobDrag) return;
-      const dx = p.clientX - zobDrag.x, dy = p.clientY - zobDrag.y;
-      if (!zobDrag.moved && Math.hypot(dx, dy) < 5) return;
-      zobDrag.moved = true;
-      const W0 = zobEl.offsetWidth, H0 = zobEl.offsetHeight;
-      zobEl.style.left = `${Math.max(0, Math.min(innerWidth - W0, zobDrag.l + dx))}px`;
-      zobEl.style.top = `${Math.max(0, Math.min(innerHeight - tbH() - H0, zobDrag.t + dy))}px`;
-      zobEl.style.right = 'auto'; zobEl.style.bottom = 'auto';
-    },
-    end: () => { if (zobDrag && !zobDrag.moved) zobPoke(); zobDrag = null; }
-  });
-  zobBody.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zobPoke(); } });
+  zobBody.addEventListener('click', () => zobPoke());
   let tickleT = 0;
   zobBody.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'touch') return;
@@ -1859,13 +1890,13 @@
   wakeZob(true);
   const TIPS = [
     ['It looks like you\'re trying to have fun. Would you like help with that?', [['Surprise me', () => rollGame()], ['No thanks', () => {}]]],
-    ['Tip: Ctrl+Esc opens the Start menu. So does clicking Start. I prefer clicking.', []],
-    ['Tip: every game has a Simple and an Advanced version. Look in the game\'s View menu.', []],
+    ['Tip: Ctrl+Esc opens my menu. So does the button with my face on it. I prefer the face.', []],
+    ['Tip: every game has a Simple and an Advanced version. The switch is in the game\'s title strip.', []],
     ['Tip: on a touchpad? Turn on Touchpad mode in the taskbar. Click to grab, click to drop.', [['Turn it on', () => { C.setTouchpad(true); }]]],
     ['The Recycle Bin is not empty. It is never empty. I have checked.', [['Have a look', () => openFolder('bin')]]],
     ['You can have lots of games open at once. I usually have nine.', []],
     ['Did you know? There are secrets hidden all over this desktop.', [['Show me the list', () => C.secretsWindow()]]],
-    ['Bored of teal? Right-click the desktop, Properties, Wallpaper.', [['Open Desktop settings', () => C.settings(null, { tab: 'desk' })]]]
+    ['Bored of blueberry? Right-click the desktop, Properties, Wallpaper. Or click my lamp.', [['Open Desktop settings', () => C.settings(null, { tab: 'desk' })]]]
   ];
   let tipN = 0;
   setInterval(() => {
@@ -1893,6 +1924,7 @@
 
   function party() {
     desk.classList.add('is-party');
+    room.classList.add('is-party');
     zobSvg.classList.add('hat-party');
     zobEl.classList.add('is-wave');
     C.sfx('success');
@@ -1900,7 +1932,7 @@
     C.balloon('Bonus round! Everything is dancing.', { title: 'Party mode', icon: 'star', ms: 3000 });
     zobSay('it\'s a party and I didn\'t even bring snacks', 3600);
     C.unlock('konami');
-    setTimeout(() => { desk.classList.remove('is-party'); if (!hats.includes('hat-party')) zobSvg.classList.remove('hat-party'); }, 6500);
+    setTimeout(() => { desk.classList.remove('is-party'); room.classList.remove('is-party'); if (!hats.includes('hat-party')) zobSvg.classList.remove('hat-party'); }, 6500);
   }
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let keys = [], typed = '', metaAlone = false;
@@ -1916,7 +1948,7 @@
     if (e.key === 'F10' && !e.shiftKey && active?.mb) { e.preventDefault(); active.mb.focus(); return; }
     const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
     if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === '/' && !document.querySelector('.curio-modal')) { e.preventDefault(); openFind(); return; }
+    if (e.key === '/' && !document.querySelector('.curio-modal')) { e.preventDefault(); if (phone() && launcher) launcher.view.focusSearch(); else if (active?.kind === 'explorer' && explorer.view) explorer.view.focusSearch(); else openFind(); return; }
     if (e.key === '?' && !document.querySelector('.curio-modal')) { openHelp('keys'); return; }
     if (k.length === 1 && /[a-z]/.test(k)) {
       typed = (typed + k).slice(-8);
@@ -1962,7 +1994,7 @@
   let away = 0;
   const docTitle = document.title;
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { away = Date.now(); document.title = 'Zob misses you - Zoble 98'; }
+    if (document.hidden) { away = Date.now(); document.title = 'Zob misses you - ZobOS'; }
     else {
       document.title = docTitle;
       if (away && Date.now() - away > 8000) { C.unlock('missed'); zobSay('you\'re back! I kept your seat warm.', 2600); }
@@ -1981,33 +2013,58 @@
     C.sfx('startup');
   }
 
-  function welcome() {
-    if (C.prefs.welcome === false) return;
-    const first = !store.get('hub:welcomed', 0);
-    if (!first && booted) return;
-    store.set('hub:welcomed', Date.now());
-    const w = openWindow({
-      key: 'welcome', kind: 'welcome', title: 'Welcome', icon: px('zob', 16), w: 520, h: 330, minW: 300, minH: 260, resizable: false, noMin: false,
-      build: (win) => {
-        const box = el('div', 'zwel');
-        box.innerHTML = `<div class="zwel-side" aria-hidden="true"><span>Welcome to</span><b>Zoble<i>98</i></b></div><div class="zwel-main"><p class="zwel-lead">${first ? 'Hello! This is your new desktop.' : 'Welcome back!'} It has ${games.length} games and toys in it, sorted into folders. Here are a few places to start:</p><div class="zwel-btns"><button type="button" data-w="games"><img alt="" src="${px('computer', 16)}"> Open My Games</button><button type="button" data-w="roll"><img alt="" src="${px('die', 16)}"> Surprise me</button><button type="button" data-w="readme"><img alt="" src="${px('notepad', 16)}"> Read me first</button><button type="button" data-w="pad"><img alt="" src="${px('touchpad', 16)}"> I use a touchpad</button></div><div class="zwel-foot"><span class="curio-opt"><input type="checkbox" id="welc" ${C.prefs.welcome !== false ? 'checked' : ''}><label for="welc">Show this screen each time Zoble starts</label></span><button type="button" class="default" data-w="close">Close</button></div></div>`;
-        win.body.append(box);
-        box.addEventListener('click', (e) => {
-          const b = e.target.closest('[data-w]'); if (!b) return;
-          const k = b.dataset.w;
-          chime();
-          if (k === 'close') { closeWin(win); return; }
-          if (k === 'games') openFolder('games');
-          else if (k === 'roll') rollGame();
-          else if (k === 'readme') openReadme();
-          else if (k === 'pad') { C.setTouchpad(true); C.balloon('Touchpad mode on: click a title bar to grab a window, click again to drop it.', { title: 'Touchpad', icon: 'touchpad', ms: 3600 }); }
-          closeWin(win);
-        });
-        box.querySelector('#welc').addEventListener('change', (e) => C.setPref('welcome', e.target.checked));
-        win.focusTarget = () => box.querySelector('[data-w="games"]');
-      }
+  const api = {
+    C, games, tags, TAGS, fname, bySlug, isNew, phone, deskArea, refreshData,
+    played: () => played, favs: () => favs,
+    openGame: (slug, o) => openGame(slug, o || {}), openFolder: (p, o) => openFolder(p, o || {}), openWindow, openHelp, openReadme, rollGame, toggleFav,
+    about: () => aboutZoble(), zobSay: (t, ms, b) => zobSay(t, ms, b), zobWave: () => { zobEl.classList.add('is-wave'); C.sfx('squeak'); },
+    isOpen: (w) => wins.includes(w), raise: (w) => { if (w.state === 'min') restore(w); focus(w); },
+    powerOn: () => { if (offWake) offWake(); },
+    searchEgg: (q) => { if (q === '42') { C.unlock('answer'); zobSay('forty-two! but what was the question?', 2600); } else if (q === 'zob') zobSay('you were looking for me? I\'m right here!', 2400); }
+  };
+  const explorer = window.ZobleExplorer(api);
+  api.explorer = explorer;
+  const deskScene = window.ZobleDesk(api);
+  function openExplorer(o = {}) { return explorer.open(o); }
+
+  let launcher = null;
+  function buildLauncher() {
+    if (launcher) return launcher;
+    const box = el('div', 'pocket');
+    box.id = 'launcher';
+    const host = el('div', 'pocket-home');
+    const dock = el('nav', 'pocket-dock');
+    dock.setAttribute('aria-label', 'Dock');
+    const D = [['home', 'Home', 'computer'], ['kinds', 'Kinds', 'folder'], ['search', 'Search', 'find'], ['roll', 'Surprise', 'die'], ['zob', 'Zob', 'zob']];
+    dock.innerHTML = D.map(([k, l, ic]) => `<button type="button" data-d="${k}"><img alt="" class="z-px" width="32" height="32" src="${px(ic, 32)}"><span>${l}</span></button>`).join('');
+    box.append(host, dock);
+    screenEl.insertBefore(box, tbEl);
+    const view = explorer.mountPhone(host);
+    dock.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-d]'); if (!b) return;
+      C.sfx('click');
+      const k = b.dataset.d;
+      if (k === 'home') view.setTab('home');
+      else if (k === 'search') view.focusSearch();
+      else if (k === 'roll') rollGame();
+      else if (k === 'kinds') C.menu.open(TAGS.map((t) => ({ label: fname(t).replace(/&/g, '&&'), icon: C.folderIcon(t, 16), action: () => view.setTab(`tag:${t}`) })).concat([{ sep: true }, { label: '&Favourites', icon: px('favs', 16), action: () => view.setTab('favs') }, { label: '&Recent', icon: px('recent', 16), action: () => view.setTab('recent') }, { label: '&New', icon: px('star', 16), action: () => view.setTab('new') }]), { anchor: b.getBoundingClientRect(), side: 'up', opener: b, label: 'Kinds' });
+      else if (k === 'zob') toggleStart(true, false, b);
     });
-    return w;
+    launcher = { box, view };
+    return launcher;
+  }
+  function syncPhone() {
+    const on = phone();
+    room.classList.toggle('is-phone', on);
+    if (on) buildLauncher();
+    room.classList.toggle('has-app', on && wins.some((w) => w.state !== 'min'));
+  }
+  window.addEventListener('resize', syncPhone);
+
+  function tipOnce() {
+    if (store.get('hub:tip1', 0)) return;
+    store.set('hub:tip1', Date.now());
+    setTimeout(() => zobSay(phone() ? 'hi! this is my pocket computer. tap a game to play. the dock has kinds, search and my menu.' : 'hi, I\'m Zob! this is my computer. pick any game, or close the Explorer to see my desktop. my desk has secrets too...', 7000), 1600);
   }
 
   function boot() {
@@ -2018,29 +2075,24 @@
       html.classList.remove('z-wait');
       restoreSession();
       if (hashOpen && bySlug(hashOpen) && !wins.some((w) => w.key === `game:${hashOpen}`)) openGame(hashOpen, { minimized: true, quiet: true });
-      if (!wins.some((w) => w.state !== 'min')) welcome();
+      syncPhone();
+      if (!phone() && C.prefs.welcome !== false && !wins.some((w) => w.state !== 'min')) openExplorer({ max: true });
+      syncPhone();
+      tipOnce();
       bumpIdle();
       setTimeout(peek, 20000 + Math.random() * 20000);
-      setTimeout(() => { if (!sleeping && !wins.length) zobSay(greet, 3200); }, 2400);
+      setTimeout(() => { if (!sleeping && bub.hidden && Date.now() - store.get('hub:tip1', 0) > 15000) zobSay(greet, 3200); }, 2400);
       const unlockChime = () => { chime(); window.removeEventListener('pointerdown', unlockChime, true); window.removeEventListener('keydown', unlockChime, true); };
       if (!booted) {
         try { const ac = C.audioContext(); if (ac && ac.state === 'running') chime(); } catch {}
         if (!chimed) { window.addEventListener('pointerdown', unlockChime, true); window.addEventListener('keydown', unlockChime, true); setTimeout(() => { window.removeEventListener('pointerdown', unlockChime, true); window.removeEventListener('keydown', unlockChime, true); }, 20000); }
       }
       sessionStorage.setItem('zoble:booted', '1');
-      iconsEl.querySelector('.di')?.focus({ preventScroll: true });
+      if (!wins.length && !phone()) iconsEl.querySelector('.di')?.focus({ preventScroll: true });
     };
-    if (booted || calm()) { finish(); return; }
-    const scr = el('div', 'zboot');
-    scr.innerHTML = splashHTML('Starting Zoble 98...');
-    scr.setAttribute('role', 'status');
-    document.body.append(scr);
-    let done = false;
-    const go = () => { if (done) return; done = true; scr.classList.add('is-out'); setTimeout(() => scr.remove(), 300); finish(); };
-    scr.addEventListener('click', go);
-    window.addEventListener('keydown', go, { once: true });
-    setTimeout(go, 1700);
+    if (!booted && !calm()) { $('crt').classList.add('is-boot'); setTimeout(() => $('crt').classList.remove('is-boot'), 900); }
+    finish();
   }
   boot();
-  console.log('%cZoble 98%c  booted. Psst: type zob() and press enter.', 'font: 700 16px monospace; color:#fff; background:#000080; padding:2px 6px', 'color:#888');
+  console.log('%cZobOS%c  booted. Psst: type zob() and press enter.', 'font: 700 16px monospace; color:#fff; background:#000080; padding:2px 6px', 'color:#888');
 })();

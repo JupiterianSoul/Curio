@@ -287,6 +287,7 @@ const Pipes = (() => {
     $('revMode').setAttribute('aria-pressed', String(revMode));
     const cr = svg.querySelector('#cur');
     if (cr) cr.setAttribute('transform', `translate(${(cur % n) * 100} ${Math.floor(cur / n) * 100})`);
+    paintStatus();
     return wet;
   }
   function renderTime() {
@@ -302,6 +303,10 @@ const Pipes = (() => {
       $('time').textContent = fmtT(elapsed);
       $('taps').parentElement.querySelector('span').textContent = S.theme === 'garden' ? 'Plants' : 'Outlets';
     }
+  }
+  function paintStatus() {
+    $('stMode').textContent = mode === 'simple' ? `Job ${sL}` : mode === 'campaign' ? `Level ${level} of ${CAMP}` : mode === 'daily' ? `Daily ${today()}` : mode === 'rush' ? `Rush, board ${rushCount + 1}` : 'Free play';
+    $('stSize').textContent = `${n} x ${n}${wrap ? ', wrap-around' : ''}`;
   }
   function tapsTotal() { let t = 0; for (let i = 0; i < n * n; i++) if (Pipes.deg(base[i]) === 1 && i !== src) t++; return t; }
   function turn(i, d, record = true) {
@@ -421,9 +426,10 @@ const Pipes = (() => {
     setTimeout(() => {
       if (gid !== gameId) return;
       $('rStars').innerHTML = [1, 2, 3].map((i) => starSvg(i <= st)).join('');
+      $('result').querySelector('.zapp-result__kicker').textContent = st === 3 ? 'perfect plumbing!' : S.theme === 'garden' ? 'water works!' : 'all flowing!';
       $('rTitle').textContent = mode === 'simple' ? `Job ${sL} done!` : mode === 'daily' ? 'Daily puzzle plumbed!' : mode === 'campaign' ? `Level ${level} flowing!` : 'Water works!';
       $('rBody').textContent = `${n}×${n}${wrap ? ' wrap-around' : ''} in ${fmtT(secs)} with ${moves} turns (about ${opt} needed)${hints ? ` and ${hints} hint${hints > 1 ? 's' : ''}` : ''}. ${bt.isNew ? 'New best time!' : bt.best != null ? `Best: ${fmtT(bt.best)}.` : ''}`;
-      $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
+      $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="zapp-badge on new" title="${a.d}">★ ${a.name}</span>`; }).join('');
       const nx = $('rNext');
       nx.hidden = mode === 'daily' || (mode === 'campaign' && level >= CAMP);
       nx.textContent = mode === 'simple' ? 'Next job' : mode === 'campaign' ? `Level ${level + 1}` : 'Next puzzle';
@@ -442,9 +448,10 @@ const Pipes = (() => {
     if (rushCount > prev && rushCount > 0) Curio.confetti();
     [659, 523, 392].forEach((f, k) => setTimeout(() => Curio.beep(f, 0.14, 'triangle', 0.08), k * 120));
     $('rStars').innerHTML = [1, 2, 3].map((i) => starSvg(rushCount >= [3, 6, 10][i - 1])).join('');
+    $('result').querySelector('.zapp-result__kicker').textContent = 'tools down!';
     $('rTitle').textContent = 'Time!';
     $('rBody').textContent = `You plumbed ${rushCount} board${rushCount === 1 ? '' : 's'} in three minutes. ${rushCount > prev ? 'New best rush!' : `Best: ${prev}.`}`;
-    $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="badge on new">★ ${a.name}</span>`; }).join('');
+    $('rBadges').innerHTML = fresh.map((id) => { const a = ACH.find((x) => x.id === id); return `<span class="zapp-badge on new">★ ${a.name}</span>`; }).join('');
     $('rNext').hidden = false;
     $('rNext').textContent = 'Rush again';
     $('result').hidden = false;
@@ -482,12 +489,14 @@ const Pipes = (() => {
   $('nextL').addEventListener('click', () => { if (level < CAMP && level + 1 <= campUnlocked()) { level++; S.level = level; save(); newGame(); } });
   function paintProgress() {
     const st = S.stats;
-    $('stats').innerHTML = `<div class="c-stat"><b>${st.solved}</b><span>Solved</span></div><div class="c-stat"><b>${campDone()}/${CAMP}</b><span>Campaign</span></div><div class="c-stat"><b>${st.turns}</b><span>Turns</span></div><div class="c-stat"><b>${st.rushBest || 0}</b><span>Best rush</span></div><div class="c-stat"><b>${st.hints}</b><span>Hints</span></div>`;
-    $('badges').innerHTML = ACH.map((a) => `<span class="badge${S.ach[a.id] ? ' on' : ''}" title="${a.d}">${S.ach[a.id] ? '★' : '☆'} ${a.name}</span>`).join('');
+    $('stats').innerHTML = `<div class="zapp-stat"><b>${st.solved}</b><span>Solved</span></div><div class="zapp-stat"><b>${campDone()}/${CAMP}</b><span>Campaign</span></div><div class="zapp-stat"><b>${st.turns}</b><span>Turns</span></div><div class="zapp-stat"><b>${st.rushBest || 0}</b><span>Best rush</span></div><div class="zapp-stat"><b>${st.hints}</b><span>Hints</span></div>`;
+    $('badges').innerHTML = ACH.map((a) => `<span class="zapp-badge${S.ach[a.id] ? ' on' : ''}" title="${a.d}">${S.ach[a.id] ? '★' : '☆'} ${a.name}</span>`).join('');
     $('badgeCount').textContent = `(${ACH.filter((a) => S.ach[a.id]).length}/${ACH.length} badges)`;
   }
   function paintTheme() {
-    document.querySelector('.play').className = `play theme-${S.theme}`;
+    const pl = document.querySelector('.play');
+    pl.classList.remove('theme-garden', 'theme-lab', 'theme-copper');
+    pl.classList.add(`theme-${S.theme}`);
     document.querySelectorAll('[data-theme-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themePick === S.theme)));
   }
   function tick() {
@@ -570,10 +579,23 @@ const Pipes = (() => {
     Curio.beep(660, 0.05, 'triangle', 0.06);
   }));
 
+  const how = $('howto');
+  function showHow(on = true, kb = false) {
+    how.hidden = !on;
+    if (on) { Curio.sfx?.('paper'); $('howOk').focus({ preventScroll: true }); }
+    else { Curio.store.set('pipes:how', 1); if (kb) svg.focus({ preventScroll: true }); }
+  }
+  $('howBtn').addEventListener('click', () => showHow(how.hidden));
+  $('howOk').addEventListener('click', (e) => showHow(false, e.detail === 0));
+  how.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); showHow(false, true); } });
+  how.addEventListener('pointerdown', (e) => { if (e.target === how) showHow(false); });
+  Curio.howTo(() => showHow(true));
+
   paintTheme();
   setMode(mode);
   if (SIMPLE) { $('freeOpts').hidden = true; $('campOpts').hidden = true; }
   newGame({ fresh: true });
   paintProgress();
+  if (!Curio.store.get('pipes:how', 0)) setTimeout(() => showHow(true), 400);
   window.__pipes = { engine: Pipes, get base() { return base; }, get rots() { return rots; }, get src() { return src; }, get status() { return status; }, turn, newGame, get n() { return n; }, setMode, setLevel: (L) => { level = L; }, solveAll: () => { for (let i = 0; i < n * n; i++) { let r = 0; while (Pipes.rot(base[i], rots[i] + r) !== base[i]) r++; for (let k = 0; k < r; k++) turn(i, 1); } }, get rush() { return { rushLeft, rushCount }; } };
 })();

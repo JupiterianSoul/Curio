@@ -10,75 +10,113 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-game="pipes" data-modes>
-  <main class="c-wrap">
-    <header class="g-head">
-      <p class="pp-kicker"><span>Drawing no. P-60</span><span>Scale 1:1</span></p>
-      <h1 class="c-title">Pipes</h1>
-      <p class="c-sub pp-adv">Work order: the plumbing is all installed, just spun around. Rotate fittings until water from the pump reaches every thirsty plant, with no leaks and no loops.</p>
-      <p class="c-sub pp-simp">Tap a pipe to turn it. Connect them all so water from the pump reaches every plant.</p>
-    </header>
-    <div class="modes"><div class="seg" role="group" aria-label="Mode" id="modes">
-      <button type="button" data-mode="campaign">Campaign</button>
-      <button type="button" data-mode="free">Free play</button>
-      <button type="button" data-mode="daily">Daily</button>
-      <button type="button" data-mode="rush">Rush</button>
-    </div></div>
-    <div class="opts" id="freeOpts">
-      <div class="seg seg--small" role="group" aria-label="Grid size" id="seg"></div>
-      <div class="seg seg--small" role="group" aria-label="Edges"><button type="button" id="mWall" aria-pressed="true">Walls</button><button type="button" id="mWrap" aria-pressed="false">Wrap-around</button></div>
-    </div>
-    <div class="opts" id="campOpts">
-      <div class="lvl">
-        <button type="button" class="arrow" id="prev" aria-label="Previous level">‹</button>
-        <button type="button" class="name" id="lvlName" aria-expanded="false" aria-controls="picker">Level 1</button>
-        <button type="button" class="arrow" id="nextL" aria-label="Next level">›</button>
+  <div class="zapp pp">
+    <header class="zapp-head">
+      <div class="zapp-id">
+        <span class="zapp-icon"><img src="thumb.svg" alt=""></span>
+        <div>
+          <h1 class="zapp-title">Pipes <span class="pp-tag" aria-hidden="true">dwg P-60</span></h1>
+          <p class="zapp-sub zapp-simple">Tap a pipe to turn it. Join them all so water from the pump reaches every plant.</p>
+          <p class="zapp-sub zapp-adv">Work order: the plumbing is all installed, just spun around. Turn every fitting until water reaches each plant, with no leaks.</p>
+        </div>
       </div>
-      <div class="picker" id="picker"></div>
-    </div>
-    <div class="hud">
-      <div class="c-stat"><b id="moves">0</b><span>Turns</span></div>
-      <div class="c-stat"><b id="taps">0/0</b><span>Plants</span></div>
-      <div class="c-stat"><b id="time">0:00</b><span id="timeLbl">Time</span></div>
-      <div class="c-stat"><b id="best">-</b><span id="bestLbl">Best</span></div>
-    </div>
-    <div class="play">
-      <div class="board-wrap" id="wrapEl">
-        <svg class="board" id="board" tabindex="0" role="application" aria-label="Pipe grid. Arrow keys to move, space to rotate."></svg>
-        <div class="result" id="result" hidden>
-          <div class="result-card">
-            <div class="stars" id="rStars" aria-hidden="true"></div>
-            <h2 id="rTitle">Water works!</h2>
-            <p id="rBody"></p>
-            <div class="badges" id="rBadges"></div>
-            <div class="c-row">
-              <button class="c-btn" type="button" id="rNext">Next</button>
-              <button class="c-btn c-btn--ghost" type="button" id="rAgain">Admire it</button>
-              <button class="c-btn c-btn--ghost" type="button" id="rShare">Share</button>
+      <div class="zapp-actions">
+        <div class="zapp-tabs zapp-adv" role="group" aria-label="Mode" id="modes">
+          <button type="button" data-mode="campaign">Campaign</button>
+          <button type="button" data-mode="free">Free play</button>
+          <button type="button" data-mode="daily">Daily</button>
+          <button type="button" data-mode="rush">Rush</button>
+        </div>
+        <button type="button" class="c-btn c-btn--ghost pp-howbtn" id="howBtn" data-howto>How to play</button>
+      </div>
+    </header>
+    <main class="zapp-main">
+      <section class="zapp-play" aria-label="Puzzle">
+        <div class="zapp-bar zapp-adv" id="freeOpts">
+          <div class="zapp-tabs zapp-tabs--small" role="group" aria-label="Grid size" id="seg"></div>
+          <div class="zapp-tabs zapp-tabs--small" role="group" aria-label="Edges"><button type="button" id="mWall" aria-pressed="true">Walls</button><button type="button" id="mWrap" aria-pressed="false">Wrap-around</button></div>
+        </div>
+        <div class="zapp-bar zapp-adv pp-camp" id="campOpts">
+          <div class="pp-lvl">
+            <button type="button" class="pp-arrow" id="prev" aria-label="Previous level">&lsaquo;</button>
+            <button type="button" class="pp-lname" id="lvlName" aria-expanded="false" aria-controls="picker">Level 1</button>
+            <button type="button" class="pp-arrow" id="nextL" aria-label="Next level">&rsaquo;</button>
+          </div>
+          <div class="picker" id="picker"></div>
+        </div>
+        <div class="zapp-stats hud">
+          <div class="zapp-stat"><b id="moves">0</b><span>Turns</span></div>
+          <div class="zapp-stat"><b id="taps">0/0</b><span>Plants</span></div>
+          <div class="zapp-stat"><b id="time">0:00</b><span id="timeLbl">Time</span></div>
+          <div class="zapp-stat is-best"><b id="best">-</b><span id="bestLbl">Best</span></div>
+        </div>
+        <div class="zapp-stage play">
+          <div class="board-wrap" id="wrapEl">
+            <svg class="board" id="board" tabindex="0" role="application" aria-label="Pipe grid. Arrow keys to move, space to rotate."></svg>
+          </div>
+          <div class="zapp-result" id="result" hidden>
+            <div class="zapp-result__card">
+              <span class="zapp-result__kicker">water works!</span>
+              <div class="stars" id="rStars" aria-hidden="true"></div>
+              <h2 class="zapp-result__title" id="rTitle">Water works!</h2>
+              <p class="zapp-result__text" id="rBody"></p>
+              <div class="zapp-badges pp-rbadges" id="rBadges"></div>
+              <div class="zapp-result__btns">
+                <button class="c-btn" type="button" id="rNext">Next</button>
+                <button class="c-btn c-btn--ghost" type="button" id="rAgain">Admire it</button>
+                <button class="c-btn c-btn--ghost zapp-adv" type="button" id="rShare">Share</button>
+              </div>
+            </div>
+          </div>
+          <div class="zapp-howto" id="howto" hidden>
+            <div class="zapp-howto__card" role="dialog" aria-modal="false" aria-labelledby="howTitle">
+              <h2 id="howTitle">How to plumb</h2>
+              <ol class="zapp-steps">
+                <li><span>Tap a tile to turn it a quarter clockwise.</span></li>
+                <li><span>Water starts at the blue pump. Every pipe end has to meet another pipe end.</span></li>
+                <li><span>When every plant drinks and nothing leaks, the job is done.</span></li>
+                <li class="zapp-adv"><span>Turn back spins tiles the other way. Lock pins tiles you are sure of. Hint fixes one tile.</span></li>
+              </ol>
+              <div class="zapp-keys"><span><span class="c-kbd">&larr;</span><span class="c-kbd">&rarr;</span><span class="c-kbd">&uarr;</span><span class="c-kbd">&darr;</span> move</span><span><span class="c-kbd">Space</span> turn</span><span class="zapp-adv"><span class="c-kbd">Q</span> turn back</span><span class="zapp-adv"><span class="c-kbd">L</span> lock</span><span><span class="c-kbd">Z</span> undo</span><span><span class="c-kbd">H</span> hint</span></div>
+              <div class="zapp-result__btns"><button class="c-btn" type="button" id="howOk">Got it</button></div>
             </div>
           </div>
         </div>
-      </div>
-      <p class="msg" id="msg" aria-live="polite"></p>
-      <div class="tools">
-        <button class="tool" type="button" id="undo"><i>↶</i>Undo</button>
-        <button class="tool" type="button" id="hint"><i>💡</i>Hint</button>
-        <button class="tool" type="button" id="revMode" aria-pressed="false"><i>↺</i>Turn back</button>
-        <button class="tool" type="button" id="lockMode" aria-pressed="false"><i>🔒</i>Lock mode</button>
-        <button class="tool" type="button" id="new"><i>✦</i>New</button>
-      </div>
-      <div class="themes"><span class="lbl">Theme</span><div class="seg seg--small" role="group" aria-label="Theme" id="themes">
-        <button type="button" data-theme-pick="garden">🌱 Garden</button>
-        <button type="button" data-theme-pick="lab">🧪 Lab</button>
-        <button type="button" data-theme-pick="copper">🔧 Copper</button>
-      </div></div>
-    </div>
-    <details class="c-card prog">
-      <summary>Stats and badges <span id="badgeCount"></span></summary>
-      <div class="stats" id="stats"></div>
-      <div class="badges" id="badges"></div>
-    </details>
-    <p class="g-help c-muted">Tap a tile to turn it clockwise. Switch on Turn back (or right-click, or press Q) to turn tiles the other way. Long-press or use lock mode to pin tiles you are sure of. Leaky open ends drip. In wrap-around mode pipes can leave one edge and come back on the other. Keyboard: arrows, <span class="c-kbd">Space</span> rotate, <span class="c-kbd">Q</span> rotate back, <span class="c-kbd">L</span> lock, <span class="c-kbd">Z</span> undo, <span class="c-kbd">H</span> hint.</p>
-  </main>
+        <div class="zapp-controls tools">
+          <button class="zapp-tool" type="button" id="undo"><i aria-hidden="true">&#8630;</i>Undo</button>
+          <button class="zapp-tool" type="button" id="hint"><i aria-hidden="true">&#9675;</i>Hint</button>
+          <button class="zapp-tool zapp-adv" type="button" id="revMode" aria-pressed="false"><i aria-hidden="true">&#8634;</i>Turn back</button>
+          <button class="zapp-tool zapp-adv" type="button" id="lockMode" aria-pressed="false"><i aria-hidden="true">&#9635;</i>Lock</button>
+          <button class="zapp-tool zapp-adv" type="button" id="new"><i aria-hidden="true">&#10022;</i>New</button>
+        </div>
+      </section>
+      <aside class="zapp-side zapp-adv" aria-label="Workshop">
+        <section class="zapp-panel">
+          <h2 class="zapp-panel__title">Pipe finish</h2>
+          <div class="zapp-tabs zapp-tabs--small" role="group" aria-label="Theme" id="themes">
+            <button type="button" data-theme-pick="garden">Garden</button>
+            <button type="button" data-theme-pick="lab">Lab</button>
+            <button type="button" data-theme-pick="copper">Copper</button>
+          </div>
+        </section>
+        <details class="zapp-panel prog" open>
+          <summary class="zapp-panel__title">Stats and badges <span id="badgeCount"></span></summary>
+          <div class="stats" id="stats"></div>
+          <div class="zapp-badges" id="badges"></div>
+        </details>
+        <section class="zapp-panel pp-tips">
+          <h2 class="zapp-panel__title">Shop notes</h2>
+          <p>Right-click, or press Q, turns a tile back. Long-press locks it. Leaky ends drip, so follow the drops.</p>
+          <p>In wrap-around mode a pipe that leaves one edge comes back on the other.</p>
+        </section>
+      </aside>
+    </main>
+    <footer class="zapp-status">
+      <p class="zapp-status__msg msg" id="msg" aria-live="polite"></p>
+      <span class="zapp-status__field is-keep" id="stMode">Simple</span>
+      <span class="zapp-status__field" id="stSize">5x5</span>
+    </footer>
+  </div>
   <script src="../../games.js"></script>
   <script src="../../shared.js"></script>
   <script src="game.js"></script>

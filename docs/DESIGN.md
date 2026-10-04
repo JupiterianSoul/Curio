@@ -1,259 +1,310 @@
-# Zoble 98 design system
+# Zoble design system: Zob's computer
 
-Zoble looks and behaves like a late-90s desktop OS called **Zoble 98**. The hub (`site/index.html`) is a desktop with icons, windows, a taskbar and a Start menu. Every game page wears the same skin: a title bar and a menubar on top, grey bevelled controls, pixel type.
+Zoble is set inside a world. The home page is **Zob's desk**, drawn from the front in a warm, hand-made style: striped wallpaper, a window, a pin board, a wooden desk with a lamp, a plant called Gerald, a mug, a keyboard and a mouse. On the desk sits Zob's chunky cream CRT monitor with stickers, sticky notes, a power LED and a pink **ZOBLE** brand plate. Zob himself, the pink one-eyed owner, peeks around the side of the monitor. The operating system running inside the screen is **ZobOS**: rounded, outlined, toy-like windows, Zob's own colours and pixel icons. Every game is an app on Zob's computer.
 
-Everything is original: our own pixel font, our own pixel icons (drawn in code at runtime), our own sounds (WebAudio), our own Zoble logo (Zob's head). Never use another company's logo, fonts, sound files or icon files, and never name an operating system or its maker in the UI.
+The style has two layers and they never mix:
+
+| Layer | Where | Look |
+| --- | --- | --- |
+| The room | Wall, desk, monitor shell, Zob, sticky notes | Hand-drawn ink outlines (`#2b2347`, 3 to 5px, round joins), flat warm fills, halftone dot shading, paper grain, the hand-lettered font. Lit by the time of day. |
+| ZobOS | Everything inside the screen, and every game page | Pixel font for chrome, chunky 2px ink outlines, rounded corners, hard drop shadows, scheme tokens. Crisp, never blurred. |
+
+Everything is original: our own pixel font, our own hand-lettered font, pixel icons drawn in code, sounds synthesised with WebAudio, Zob drawn by hand in SVG. Never use another company's logo, font, sound file or icon, and never name an operating system or its maker in the UI.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `site/shared.css` | Tokens, colour schemes, base styles, the kit (`.c-*`), the shared components (menus, chrome bar, dialog, balloon, Control Panel, Secrets). Loaded by every page. |
-| `site/shared.js` | `window.Curio`: store, sounds, schemes, pixel icons, menus, chrome bar, dialogs, balloons, Control Panel, secrets, drag. Loaded by every page. |
-| `site/vendor/98css/` | 98.css (MIT, with its LICENSE). `98.css` is the untouched upstream file, `zoble98.css` is the build we load. |
-| `tools/build-98.mjs` | Rebuilds `zoble98.css` from `98.css`: drops its font faces and scrollbar rules, scopes every selector under `.z98`, renames its variables to `--w-*` and swaps its fixed colours for our tokens. Run it after updating 98.css. |
-| `site/zoble-98.woff2`, `site/zoble-98-bold.woff2` | The Zoble 98 pixel font (243 glyphs: ASCII, Latin-1 accents, arrows, card suits, stars, checks, fractions). |
-| `tools/zoble98-font/` | Font source (`glyphs.py` bitmaps, `build.py` builder, needs `pip install fonttools brotli`) and `cursors.mjs` (cursor and glyph data URIs pasted into `shared.css`). |
-| `site/index.html`, `site/hub.css`, `site/hub.js` | The desktop and its window manager. |
-| `site/backroom.html`, `site/lost.html` | Secret pages, restyled as Zoble 98 windows. |
+| `site/index.html` | The room: `#room` holds `.crt` (the monitor, with `#screen` inside), `#wall`, `#front` (the desk) and `#zobhome`. |
+| `site/desk.css`, `site/desk.js` | The room: layout, illustrations, lighting, desk easter eggs, the phone handheld header. `window.ZobleArt.zob()` returns the drawn Zob SVG; `window.ZobleDesk(api)` builds the scene. |
+| `site/explorer.js` | Zoble Explorer, the game showcase (`window.ZobleExplorer(api)`): a window on desktop, the home screen on phones. |
+| `site/hub.js`, `site/hub.css` | ZobOS: window manager, taskbar, Zob menu, folders, Find, Run, Prompt, Help, screen savers, the Zob assistant, the phone launcher and dock. |
+| `site/shared.css`, `site/shared.js` | Tokens, colour schemes, both skins (toy and classic), the shared components, the game title strip and the **ZobOS app kit** (`.zapp-*`). Loaded by every page. |
+| `site/vendor/98css/` | 98.css (MIT, with its LICENSE). `98.css` is upstream, `zoble98.css` is the scoped build we load (all selectors under `.z98`). Rebuilt by `tools/build-98.mjs`. |
+| `site/zoble-98.woff2`, `site/zoble-98-bold.woff2`, `site/zoble-hand.woff2` | The ZobOS pixel font (regular and bold) and Zob's hand-lettered font. Sources in `tools/zoble98-font/`. |
+| `site/backroom.html`, `site/lost.html` | Secret pages, drawn as ZobOS windows. |
 
-98.css ships "Pixelated MS Sans Serif" font files under CC BY-SA. They are not covered by the MIT licence and imitate a system font, so they are not vendored. Our own pixel font replaces them.
+## The room
 
-## Tokens
+### Layout
 
-All tokens live on `:root` inside `:where()` so a game can still override any of them with a plain `:root { }` rule.
+The scene is sized with CSS custom properties on `.room` (no JS layout): `--top` (wall above the monitor), `--bez` (bezel), `--chin` (monitor chin), `--deskh` (visible desk), `--side` (room left beside the monitor), then `--scr-h` and `--scr-w` (screen size, at most 1.72:1), `--crt-w`, `--crt-l`, `--crt-r`. The screen fills as much of the window as the desk allows: about 910x600 at 1280x800, 1020x690 at 1440x900 and 1350x880 at 1920x1080. Everything on the wall and desk is placed from those variables, so objects slide in and out as the window changes.
 
-### Scheme tokens (`--z-*`)
+Layers (`z-index`): wall objects 1, desk surface and lamp light 2, monitor 3, desk objects 5, Zob 6. The `.z98` class sits on `#screen` only, so the OS styles never leak onto the room.
 
-| Token | Standard | Meaning |
-| --- | --- | --- |
-| `--z-face` | `#c0c0c0` | Button and window face |
-| `--z-hilite` | `#ffffff` | Bevel highlight (top and left, outer) |
-| `--z-light` | `#dfdfdf` | Bevel light (inner) |
-| `--z-shadow` | `#808080` | Bevel shadow (inner, bottom and right) |
-| `--z-dark` | `#0a0a0a` | Bevel dark shadow (outer) |
-| `--z-desk` | `#008080` | Desktop |
-| `--z-t1`, `--z-t2` | `#000080`, `#1084d0` | Active title bar gradient |
-| `--z-it1`, `--z-it2` | `#808080`, `#b5b5b5` | Inactive title bar gradient |
-| `--z-ttext`, `--z-ittext` | `#fff`, `#c0c0c0` | Title text, active and inactive |
-| `--z-win`, `--z-text` | `#fff`, `#000` | Content area (fields, lists) and its text |
-| `--z-sel`, `--z-seltext` | `#000080`, `#fff` | Selection |
-| `--z-info`, `--z-infotext` | `#ffffe1`, `#000` | Tooltips and balloons |
-| `--z-gray` | `#808080` | Disabled text |
-| `--z-link` | `#0000ee` | Links |
+### The monitor
 
-Derived shadows: `--z-raised` (button), `--z-raised-win` (window frame), `--z-sunken` (pressed button), `--z-field` (text field, list), `--z-thin-up` / `--z-thin-down` (1px hover and status fields), `--z-default` / `--z-default-down` (default button with black outline), `--z-dither` (checkered pressed toggle).
+`.crt-shell` is the cream plastic case (halftone texture, ink outline, chunky drop shadow). `.crt-recess` is the dark frame around the glass. `#screen` (`.crt-screen`) is the OS: it is the window manager's whole world. `.crt-glass` lays a vignette, a soft glare and scanlines over the screen, masked so they only show near the edges; it never blurs or covers the middle, and takes no clicks. The chin holds vents, the **ZOBLE / ZobOS inside** plate, a colour knob, a dummy knob, the power LED and the power button. Stickers (star, heart, Zob, bolt) sit on the bezel; three sticky notes (`.r-note`) hang off its left edge and the chin.
 
-Pixel glyph images: `--zi-min --zi-max --zi-restore --zi-close --zi-help --zi-up --zi-down --zi-left --zi-right --zi-check --zi-sub --zi-dot` (they switch to white glyphs in dark schemes). Cursors: `--z-cur-arrow`, `--z-cur-hand`, `--z-cur-wait`.
+First visit in a session: the screen switches on with a quick CRT line animation (`.crt.is-boot`), no splash. Shut Down and Restart still show the ZobOS splash inside the screen.
 
-### Game tokens (kept from the old kit, every scheme defines them)
+### Time of day
 
-`--bg --surface --surface-2 --ink --ink-2 --ink-3 --line --accent --accent-ink --good --bad --warn --radius --radius-sm --shadow --font --mono --bar-h` plus `--c-hand --c-type --c-pop --c-sun --c-edge --c-shade --c-focus --c-tape --c-dot --c-wob --c-wob-sm --c-grain --c-lines`.
+`.room[data-time]` is `dawn` (5 to 8), `day` (8 to 17), `dusk` (17 to 20) or `night`, from the visitor's clock (or `?time=night` in the URL). It changes the wallpaper colour, the sky, sun or moon and stars in the window, the sun beam on the wall, and dims the room objects through `--obj-f`. At night the screen glows onto the wall (`.crt::before`). `.room.lamp-on` follows the colour scheme: a light scheme means the lamp is on.
 
-- `--bg` is the window face, `--surface` the white content area, `--surface-2` the light face.
-- `--accent` is the selection colour (navy in Standard), `--accent-ink` its text.
-- `--radius`, `--radius-sm`, `--c-wob`, `--c-wob-sm` are `0px`: everything is square now.
-- `--shadow` is the raised bevel (inset box-shadows), so any card that used it becomes a 3D panel.
-- `--font` is `"Zoble 98"` then `"MS Sans Serif", Tahoma, Geneva, Verdana, sans-serif` (local fallbacks only). `--c-hand` is the bold display cut `"Zoble 98 Display"`. `--mono` and `--c-type` are `"Courier New", Courier, monospace`.
-- `--bar-h` is `52px` on direct game pages and `0px` inside a desktop window.
+### Zob
 
-The pixel font is drawn on a 12px grid (cap height 8, x-height 6). It is sharpest at 12, 24, 36 and 48px.
+Zob is drawn in SVG (`ZobleArt.zob()`, class `.zobv`): pink body with halftone shading, one big eye whose pupil follows the pointer, a yellow antenna bulb, cheeks, a waving arm and four hats (`hat-party`, `hat-witch`, `hat-night`, `hat-scarf`). States: `.zobv.is-sleep` (eye closed, zzz), and on the wrapper `.zob.is-squish`, `.is-dizzy`, `.is-wave`, `.is-giggle`. On desktop he peeks around the right edge of the monitor (his left side is clipped as if behind it); his speech bubble is a hand-lettered paper bubble. On phones his head sits in the handheld header and the bubble drops under it.
 
-### Colour schemes
+He speaks through `zobSay(text, ms, buttons)` in `hub.js`. He gives one welcome tip on the first visit (no popup), quips when a game opens, reacts to the desk, naps after a minute alone and wakes when you move.
 
-`html[data-look]` holds the scheme, `html[data-theme]` is `light` or `dark`. `Curio.isDark()` is true for the dark ones.
+## ZobOS (inside the screen)
 
-| id | Name | Desktop | Title bar |
-| --- | --- | --- | --- |
-| `standard` | Zoble Standard (default) | teal | navy to blue |
-| `rainy` | Rainy Day | slate blue | slate |
-| `desert` | Desert | sand | teal |
-| `marine` | Marine | deep sea | petrol |
-| `lilac` | Lilac | purple | violet |
-| `brick` | Brick | brick red | maroon |
-| `pumpkin` | Pumpkin | burnt orange | orange |
-| `eggplant` | Eggplant | aubergine, sage windows | plum |
-| `contrast` | High Contrast Black (dark) | black | purple, inactive green |
-| `midnight` | Midnight (dark) | ink blue | violet |
-| `auto` | Match my device | `standard` or `midnight` | |
+### Skins and colour schemes
 
-Old theme names migrate once (`prefs.v98`): `midnight` stays, everything else becomes `standard`.
+`html[data-look]` holds the scheme, `html[data-theme]` is `light` or `dark`, and `html[data-skin]` is `toy` or `classic`. `Curio.isDark()` is true for dark schemes.
 
-Wallpapers (desktop only, `prefs.wallpaper`): none, Zig Zag, Bricks, Checkers, Weave, Polka, Zob Tiles, Starry Night, Waves, Puffy Clouds. They are drawn on a canvas in the current desktop colour, so they follow the scheme.
+| id | Name | Skin | Desktop | Title bars |
+| --- | --- | --- | --- | --- |
+| `zob` | ZobOS (default) | toy | blueberry, Sprinkles wallpaper | bubblegum pink |
+| `mint` | Mint Choc | toy | chocolate | mint |
+| `sherbet` | Sherbet | toy | orange | grape |
+| `zobnight` | Zob After Dark (dark) | toy | ink | pink |
+| `standard` | Zoble Classic | classic | teal | navy |
+| `rainy`, `desert`, `marine`, `lilac`, `brick`, `pumpkin`, `eggplant` | the classic set | classic | | |
+| `contrast` | High Contrast Black (dark) | classic | | |
+| `midnight` | Midnight (dark) | classic | | |
+| `auto` | Match my device | | `zob` or `zobnight` | |
 
-## Components
+The default `:root` values are the ZobOS scheme, so a page looks right before scripts run. The toy skin is applied with `:where(:root:not([data-skin="classic"]))`, so it has no specificity and a game can still override anything with a plain `:root { }` rule. One-time migration (`prefs.vzob`): the old default `standard` becomes `zob`.
 
-Most components come from 98.css and only work inside an element with the class `z98` (the hub `body`, the game chrome, dialogs and menus already have it). The kit classes (`.c-*`) work anywhere.
+### Tokens
 
-### Window
+Scheme tokens: `--z-face --z-hilite --z-light --z-shadow --z-dark --z-desk --z-t1 --z-t2 --z-it1 --z-it2 --z-ttext --z-ittext --z-win --z-text --z-sel --z-seltext --z-info --z-infotext --z-gray --z-link`, plus `--z-ink` (the outline colour, equal to `--z-dark`), `--z-pop` (sticker yellow), `--z-mint`, `--z-coral`.
 
-```html
-<div class="window z98">
-  <div class="title-bar">
-    <div class="title-bar-text"><img class="curio-bar__icon" src="..." alt=""><span>Title</span></div>
-    <div class="title-bar-controls">
-      <button class="minimize" aria-label="Minimize"></button>
-      <button class="maximize" aria-label="Maximize"></button>
-      <button class="close" aria-label="Close"></button>
-    </div>
-  </div>
-  <div class="window-body">...</div>
-  <div class="status-bar"><p class="status-bar-field">Ready</p></div>
-</div>
-```
+Derived: `--z-raised` (button), `--z-raised-win` (window and panel), `--z-sunken` (pressed), `--z-field` (text field and list), `--z-thin-up` / `--z-thin-down`, `--z-default` / `--z-default-down` (primary button), `--z-dither` (latched toggle), `--z-drop` (hard drop shadow). In the toy skin they are 2px ink rings with a 3px darker band at the bottom and a highlight at the top; in the classic skin they are the old four-colour bevels.
 
-`.title-bar.inactive` greys the bar. `button.restore` and `button.help` exist too. Desktop windows (`.zw`) add `.zw-menu` (menubar row), `.zw-body`, resize handles `.zw-h--n/s/e/w/ne/nw/se/sw` and the status bar grip `.zw-grip`.
+Game tokens (every scheme defines them): `--bg --surface --surface-2 --ink --ink-2 --ink-3 --line --accent --accent-ink --good --bad --warn --radius --radius-sm --shadow --font --mono --bar-h --c-hand --c-type --c-pop --c-sun --c-edge --c-shade --c-focus --c-tape --c-dot --c-wob --c-wob-sm --c-grain --c-lines`. New: `--read` (a readable rounded system font for body text) and `--zob-hand` (Zob's hand-lettered font).
 
-### Menubar and menus
+- `--radius` is 12px and `--radius-sm` 8px in the toy skin, 0 in classic.
+- `--shadow` is a raised outlined panel with a drop shadow.
+- `--font` is the ZobOS pixel font (sharp at 12, 24, 36, 48px), `--c-hand` its bold display cut, `--mono` and `--c-type` Courier.
+- `--bar-h` is 52px on a direct game page and 0px inside a ZobOS window.
 
-Built in JS, never by hand:
+### Components
 
-```js
-const bar = Curio.menubar(container, [
-  { label: '&File', items: () => [
-    { label: '&Restart', accel: 'F5', action: restart },
-    { sep: true },
-    { label: '&Sound', checked: true, action: toggle },
-    { label: '&Simple', radio: true, checked: true, action: () => {} },
-    { label: '&Colour scheme', sub: Curio.schemeItems },
-    { label: 'Dimmed', disabled: true }
-  ] }
-]);
-Curio.menu.open(items, { x, y });
-Curio.menu.open(items, { anchor: rect, side: 'down' | 'right' | 'up', big: true, banner: 'Zoble<b>98</b>' });
-```
+Most components come from 98.css and need an ancestor with class `z98` (the screen, the game strip, dialogs and menus have it). The toy skin restyles all of them:
 
-`&` marks the keyboard accelerator (`&&` for a literal ampersand). Items take `icon` (16px url, or 32px with `big`), `iconAsync` (a promise of a url), `title`, `accel`. Keyboard: arrows, Home, End, Enter, Space, Esc, letter accelerators, Alt+letter and F10 for the menubar. Classes: `.z-menubar`, `.z-menubar__item`, `.z-menu`, `.z-menu__item`, `.z-menu__sep`, `.z-menu__banner`.
+- **Window** (`.window`, `.title-bar`, `.title-bar-text`, `.title-bar-controls` with `.minimize .maximize .restore .help .close`, `.window-body`, `.status-bar`): 14px corners, 2px ink outline, hard drop shadow; the title bar is a rounded pill with candy stripes on its right half; control buttons are 20px rounded squares, close is coral.
+- **Buttons**: `<button>` is a rounded outlined face button; `.default` and `.c-btn` are the pink primary button; `.c-btn--ghost` the plain one; `aria-pressed="true"` latches.
+- **Fields**: text inputs, selects (wrap in `.z-select`), textareas: 8px corners, inset ring. Checkboxes and radios: ink outlined, checked boxes turn sticker yellow, radio dots pink. Sliders: pill track, pink knob.
+- **Group box** (`fieldset` + `legend`): rounded outline, the legend is an ink pill.
+- **Tabs** (`menu[role=tablist]` + `li[role=tab]`): rounded top tabs, the selected one bold.
+- **Menus** (`Curio.menu`, `Curio.menubar`): rounded panel, pill highlight, dashed separators; the Zob menu has a vertical **Zoble OS** banner whose letters play notes.
+- **Dialog** (`Curio.modal`, same API): a ZobOS window with a little pop. The title uses the display font.
+- **Balloon** (`Curio.toast`, `Curio.balloon`): a sticky yellow note with an ink outline and tail. On the hub it comes from the tray inside the screen.
+- **Taskbar**: a dotted cream bar inside the screen with the **Zob button** (Zob's face in a pink pill; it opens the Zob menu), quick launch (Show desktop, Zoble Explorer, Surprise me), task pills and a rounded tray (Zob, touchpad mode, volume, clock).
+- **Desktop icons** (`.di`): 32px pixel icons with bold shadowed labels, a pink pill when selected.
+- **Explorer folders** (`.zx`), **Find**, **Run**, **Prompt**, **Help**, **Date/Time**, **Notepad**: as before, restyled by the skin.
 
-### Buttons
+Pixel icons: `Curio.px(name, size)` for system icons, `Curio.gameIcon(slug, size)` for a game's dithered icon, `Curio.folderIcon(tag, size)`.
 
-```html
-<button>Cancel</button>            <!-- inside .z98: raised push button -->
-<button class="default">OK</button> <!-- default button, black outline -->
-<button class="c-btn">Play</button>                <!-- anywhere: default button -->
-<button class="c-btn c-btn--ghost">Menu</button>   <!-- anywhere: plain push button -->
-```
+### Zoble Explorer
 
-Pressed buttons sink, focus shows a dotted rectangle inside the button, disabled text is grey with a white emboss. `aria-pressed="true"` on a `.c-btn` makes a latched toggle (sunken and checkered).
+The first thing a visitor sees: on arrival a maximized **Zoble Explorer** window opens inside the screen (no welcome popup). It shows real thumbnails (`games/<slug>/thumb.svg`) as big rounded cards:
 
-### Fields, checkboxes, radios, selects, sliders
+- a hello line, a search box (live, by title, blurb, kind and slug) and a **Surprise me** button,
+- tabs: Home, New, Favourites, Recent and one per kind,
+- Home: **Zob's pick of the day** (seeded by the date, with a sticky note from Zob), a **New on Zob's computer** row, **Pick up where you left off**, **Your favourites**, then **Everything**,
+- each card: thumbnail, name, blurb, a star to favourite it, a NEW sticker and a played tick.
 
-```html
-<input type="text" class="c-input">
-<input type="checkbox" id="a"><label for="a">Label</label>
-<input type="radio" id="b" name="g"><label for="b">Label</label>
-<span class="z-select"><select>...</select></span>
-<input type="range">
-```
+Closing or minimizing it reveals the desktop (icons, folders, easter eggs). It is also on the desktop, in quick launch and at the top of the Zob menu. View, Big pictures switches to smaller cards. It comes back with Remember open windows.
 
-Checkbox, radio and range styling comes from 98.css and needs the input followed by its `label`. Wrap a `select` in `.z-select` to get the grey arrow button.
+### Games on the desktop
 
-### Group box, tabs, tree, list, table, progress, tooltips
+Games open **maximized inside the screen** by default; Control Panel, Games, Opening games switches to windowed. The maximize button or a double-click on the title bar toggles. Several games can be open; the taskbar switches. The title bar carries the Simple and Advanced switch; the menu row has Game, View and Help. A maximized game hides its status bar to give the game more room.
 
-```html
-<fieldset><legend>Sound</legend>...</fieldset>
+### Phones (640px and narrower)
 
-<menu role="tablist"><li role="tab" aria-selected="true"><a href="#a">Appearance</a></li></menu>
-<div class="window" role="tabpanel">...</div>
+No fake desktop. The room becomes **ZobOS pocket edition**, a handheld:
 
-<ul class="tree-view">...</ul>
-<div class="sunken-panel"><table>...</table></div>
+- a 60px header: Zob's head, the ZobOS wordmark, the power LED and a sun or moon button (the lamp),
+- the screen is a home screen (the Explorer in its phone layout): search, Surprise, kind tabs, a compact pick of the day, a New row and a grid of big rounded app tiles (square thumbnails, three per row),
+- a dock: Home, Kinds (menu of kinds plus Favourites, Recent, New), Search, Surprise, Zob (the Zob menu),
+- every window opens full screen with a 48px strip: back arrow, title, Simple and Advanced, and a menu button with the window's menus; the header hides while an app is open.
 
-<div class="progress-indicator segmented"><span class="progress-indicator-bar" style="width:40%"></span></div>
-```
+No sideways scroll at 360 or 390px.
 
-`Curio.tooltip(el, text)` adds a yellow tooltip after a short hover. The Explorer list view (`.zx-list.is-large`, `.is-list`, `.is-details`, items `.zi`) and the desktop icons (`.di`) live in `hub.css`.
+## Game pages (opened directly)
 
-### Scrollbars
+`shared.js` adds the **ZobOS title strip**, `header.curio-bar.z98`, exactly `var(--bar-h)` = 52px, and `body.curio-has-bar` gets `padding-top: 52px`. One row:
 
-Grey 16px scrollbars with arrow buttons and a checkered track, drawn with `::-webkit-scrollbar` and tokens. Browsers without it get `scrollbar-color`.
+- `.curio-bar__home`: Zob's face, back to Zob's desk (the game is reopened there),
+- `.curio-bar__title`: the game's pixel icon and title in a pink pill (double-click for full screen),
+- `.curio-bar__row`: the File, View, Help menubar (File: Restart, Random game, Back to Zob's desk; View: Simple and Advanced, Colour scheme, Touchpad mode, Sound, Full screen, Control Panel; Help: How to play, Secrets, About),
+- `.curio-mode`: the Simple / Advanced switch (only with `data-modes`),
+- `.curio-bar__tray`: touchpad mode, sound, Control Panel,
+- `.curio-bar__win`: full screen and close.
 
-### Dialog (`Curio.modal`)
+At 640px and narrower the menubar folds into a three-dot `.curio-bar__more` menu and the window buttons hide; under 400px the Control Panel button and the title icon hide. `data-nobar` on `body` removes the strip. No Zob or other overlay is ever added to a game page.
 
-```js
-const v = await Curio.modal({ emoji: '🏆', title: 'You win!', body: 'Score 1200', buttons: [{ label: 'Play again', value: 'again' }, { label: 'Menu', value: 'menu' }] });
-```
-
-Same API as before. It renders a draggable `.window` inside `.curio-modal` with the game name as caption, a 32px icon and the buttons centred (the first is the default button). The icon is picked from `icon: 'info' | 'warn' | 'question' | 'error'` or guessed from the emoji and title (skulls and explosions are errors, warning signs are exclamations, a question with two buttons is a question); any other emoji is shown as is. `caption` overrides the title bar text, `wide: true` makes it wider, `body` can be a DOM node. Enter picks the default button, Esc and the close box pick the last button. Each kind plays its own sound.
-
-### Balloon (`Curio.toast`)
-
-`Curio.toast(text, ms)` shows a yellow balloon with a tail, from the tray on the desktop or the bottom right on a game page. It never takes clicks and goes away after `ms` (at most 6 s). `Curio.balloon(text, { title, icon, ms })` adds a bold title with a 16px icon.
-
-### Taskbar and Start menu (desktop only)
-
-`.taskbar` holds the Start button (`.start`, Zob's head plus bold "Start"), quick launch (`.quick`: Show Desktop, My Games, Surprise me), task buttons (`.zt`, pressed and bold for the active window) and the tray (`.tray`: Zob, touchpad mode, volume, clock). The Start menu is a big `Curio.menu` with the vertical "Zoble 98" banner: Zoble Update, Programs (one submenu per folder, plus Accessories), Favourites, Documents, Settings, Find, Help, Run, Shut Down.
-
-### Kit classes for games
-
-`.c-wrap`, `.c-center`, `.c-row`, `.c-title` (bold pixel, 36px, 24px on phones), `.c-sub`, `.c-muted`, `.c-card` (raised grey panel), `.c-stat` (`<div class="c-stat"><b>12</b><span>Score</span></div>`, transparent so it sits on any art), `.c-btn`, `.c-btn--ghost`, `.c-input` (sunken field), `.c-kbd` (raised key cap). Confetti is chunky 16-colour pixels.
-
-## JavaScript API
-
-`window.Curio` keeps everything it had:
-
-`store`, `beep`, `toast`, `modal`, `confetti`, `best`, `getBest`, `isDark`, `muted`, `touchpad`, `setTouchpad`, `setMuted`, `drag`, `audioContext`, `rand`, `randInt`, `pick`, `shuffle`, `fmt`, `slug`, `game`, `mode`, `simple`, `advanced`, `setMode`, `look`, `looks`, `setLook`, `prefs`, `calm`, `sfx`, `icon`, `pim`, `unlock`, `found`, `secrets`, `settings`, `closeSettings`, `stickerBook`, `trail`.
-
-New:
-
-| API | What it does |
-| --- | --- |
-| `Curio.px(name, size, opts)` | Data URL of a system pixel icon (16 or 32): `folder computer bin doc notepad app control display sound mouse touchpad find run shutdown help trophy lock star clock die info warn question error door box globe zob start programs documents settings favs recent nothing prompt gamepad back fwd upf views coin dumbbell shortcut saver wallpaper keyboard`. |
-| `Curio.gameIcon(slug, size)` | Promise of a game icon: the game's `thumb.svg` cropped square around the centre, shrunk, quantised to a 256-colour palette with 4x4 ordered dithering, framed. Cached in memory, four at a time. |
-| `Curio.folderIcon(tag, size)` | Folder with the category emblem (32px) or tint (16px). |
-| `Curio.menu`, `Curio.menubar`, `Curio.tooltip`, `Curio.schemeItems` | See Components. |
-| `Curio.windowFrame({ title, iconUrl, controls })`, `Curio.draggable(box, handle)` | A bare window frame and Curio.drag based moving, for custom dialogs. |
-| `Curio.balloon(text, { title, icon, ms })` | Balloon with a title. |
-| `Curio.secretsWindow()` | The Secrets window (33 secrets, progress bar, hints). |
-| `Curio.howTo(fn or text)` | Tells the chrome what Help, How to play should do. Without it the chrome clicks the game's own "How to play" or "Rules" button, or shows the blurb. |
-| `Curio.help()`, `Curio.about()` | Run How to play, show the About box. |
-| `Curio.setPref(key, value)`, `Curio.settingsTabs` | Change a pref (fires `curio:prefs`), add a Control Panel tab (`{ id, label, before, render(), mount(panel) }`). |
-| `Curio.framed` | True inside a desktop window. |
-
-Sounds (`Curio.sfx(name)`, all synthesised, muted by `Curio.muted` or the System sounds setting, scaled by the volume): the old names (`tap hover on off open close success error stamp pop unpop roll squeak paper whoosh note snore coin blip lift flip`) plus `click menu max min restore ding chord question critical notify startup shutdown crumple`.
-
-Events: `curio:theme`, `curio:touchpad`, `curio:mode`, `curio:sound` as before, plus `curio:prefs`, `curio:secret`, `curio:settings`, `curio:reset`. Changes made in one tab or window reach the others through the `storage` event, so a game in a desktop window repaints when the scheme changes on the desktop.
-
-Store keys are unchanged (`theme`, `prefs`, `muted`, `touchpad`, `played`, `hub:favs`, `hub:secrets`, `mode:<slug>`, `modeDefault`, `best:*`). New: `hub:session` (open windows), `hub:folderview`, `hub:bin`, `hub:welcomed`, `hub:lastrun`.
-
-### Window manager (`hub.js`)
-
-`openWindow({ key, kind, title, icon, w, h, minW, minH, menus, status, build, help, resizable, max, minimized, from, rect, onClose })` creates a window and its task button and returns `w` with `setTitle`, `setIcon`, `setStatus(...fields)`, `close`. Windows drag by the title bar and resize from every edge and the grip through `Curio.drag`, so Touchpad mode works (click to grab, click to drop, Esc lets go); iframes stop catching the pointer while a drag is on. Double-click the title bar to maximize, click the title bar icon for the window menu. Minimize and restore animate an outline to and from the task button. Built on it: `openFolder(path)`, `openGame(slug)`, `openNotepad`, `openFind`, `openRun`, `openPrompt`, `openHelp`, `openClock`, `openPage('backroom' | 'lost')`.
-
-Keyboard on the desktop: Ctrl+Esc or the Zob key (Meta, alone) opens Start, Alt+X or Alt+F4 closes the active window, Alt+letter and F10 open its menus, arrows and Enter move between and open icons, Backspace goes up a folder, `/` opens Find, `?` opens the shortcuts help.
-
-## Games and the desktop
-
-**Direct game page** (`games/<slug>/index.html` opened in a tab): `shared.js` adds `header.curio-bar.z98`, exactly `var(--bar-h)` = 52px tall, and `body.curio-has-bar` gets `padding-top: 52px`.
-
-- Title bar: the game's 16px pixel icon, "Game Title - Zoble 98", minimize (back to the desktop), maximize (browser full screen), close (back to the desktop). Double-click toggles full screen.
-- Menubar: File (Restart, Random game, Back to desktop), View (Simple and Advanced as radio items when the game has `data-modes`, Colour scheme, Touchpad mode, Sound, Full screen, Control Panel), Help (How to play, Secrets, About).
-- On the right: the `.curio-mode` Simple / Advanced toggle buttons (only with `data-modes`) and two tray buttons (touchpad, sound).
-- `data-nobar` on `body` still removes the whole thing.
-- No Zob or any other overlay is ever added to a game page.
-
-**Inside a desktop window** (an iframe whose parent is the Zoble desktop, same origin): no bar is added, `--bar-h` is `0px` and `html.curio-framed` is set. The page talks to the desktop with `postMessage`:
+Inside a ZobOS window (an iframe whose parent is the hub) no strip is added, `--bar-h` is `0px` and `html.curio-framed` is set. The page and the desktop talk with `postMessage`:
 
 | Direction | Message |
 | --- | --- |
-| game to desktop | `{ zoble: 'hello', slug, title, modes, live, mode, help }`, `{ zoble: 'mode', mode }`, `{ zoble: 'activate' }` on any click, `{ zoble: 'activity' }` (keeps the screen saver away), `{ zoble: 'key', key: 'start' or 'close' }`, `{ zoble: 'balloon', title, text, icon }` (secrets show from the desktop tray) |
+| game to desktop | `{ zoble: 'hello', slug, title, modes, live, mode, help }`, `{ zoble: 'mode', mode }`, `{ zoble: 'activate' }`, `{ zoble: 'activity' }`, `{ zoble: 'key', key: 'start' or 'close' }`, `{ zoble: 'balloon', title, text, icon }` |
 | desktop to game | `{ zoble: 'setMode', mode }`, `{ zoble: 'restart' }`, `{ zoble: 'help' }`, `{ zoble: 'about' }`, `{ zoble: 'ping' }` |
 
-The game window shows the title and icon, View has Simple and Advanced, and the menubar row carries the same two toggle buttons. The mode API is unchanged: `Curio.mode`, `Curio.simple`, `Curio.advanced`, `Curio.setMode`, the `curio:mode` event, `html[data-mode]`, store key `mode:<slug>` plus `modeDefault`, and a reload unless `data-modes="live"`.
+Games that check `document.querySelector('.curio-modal')`, `.curio-sheet.is-open` or `.closest('.curio-bar')` keep working.
 
-Games that check `document.querySelector('.curio-modal')`, `.curio-sheet.is-open` or `.closest('.curio-bar')` keep working: the dialog wrapper is still `.curio-modal`, the Control Panel is `.curio-sheet.is-open[open]` and the chrome is `.curio-bar`.
+## ZobOS app guidelines
 
-## Responsive rules
+Every game is an app on Zob's computer. It should feel like it belongs to ZobOS (same frame, same controls, same feel in every scheme) and still look like itself (its own art, palette, type accents, sounds and voice). The rule of thumb: **ZobOS dresses the edges, the game owns the middle.**
 
-- Phones (640px and narrower): every desktop window opens maximized above the taskbar, keeps its title bar (no maximize box), cannot be dragged or resized. Desktop icons form a 4-column grid. The taskbar is 40px with Start, task buttons (icon only when crowded) and a short tray. Menus and submenus are clamped to the screen and cascade over each other. Zob shrinks.
-- Coarse pointers get taller menu items (32px), bigger title bar buttons and taller list rows.
-- Game chrome on phones: menubar, compact mode toggles, tray hidden under 360px. It never scrolls sideways at 360 or 390px.
-- Reduced motion (the system setting or Control Panel, Display, Reduce motion): no window zooms, no boot splash, a still screen saver, no confetti.
+### App layout
+
+```
+.zapp
+  .zapp-head        icon, title, one-line intro, mode tabs and actions
+  .zapp-main        two columns on wide screens, one on narrow
+    .zapp-play      the playing column, centred, as wide as --stage-w
+      .zapp-bar       optional row of options (sizes, levels)
+      .zapp-stats     score readouts
+      .zapp-stage     THE GAME: board, canvas or scene, plus overlays
+        .zapp-result    result screen (inside the stage)
+        .zapp-howto     how-to-play card (inside the stage)
+      .zapp-controls  tool buttons under the stage
+    .zapp-side      panels: settings, stats, badges, notes (Advanced)
+  .zapp-status      status bar: one live message and small fields
+```
+
+- The page under the title strip is the app. Do not add your own top bar, logo or mascot.
+- **Fit the screen.** Size the stage so head, stats, stage and controls fit in `100dvh - var(--bar-h)` at 1280x800 and inside a maximized ZobOS window (about 900x520). Use `--stage-w: clamp(300px, calc(100dvh - var(--bar-h) - <chrome>px), 560px)`.
+- Simple mode is usually one column: `.zapp-side` and most options are Advanced only.
+- Canvas games that want the whole area can skip `.zapp-main` and make `.zapp-stage` `flex: 1`; keep `.zapp-status` and the Simple / Advanced behaviour.
+
+### The kit (`shared.css`)
+
+| Class | Use |
+| --- | --- |
+| `.zapp` | App root. Sets `--zapp-w` (max width, 1080px), `--stage-w` (560px), `--stage-bg`, `--stage-ink`; `--zapp-bg` paints the app background. |
+| `.zapp-head`, `.zapp-id`, `.zapp-icon`, `.zapp-title`, `.zapp-sub`, `.zapp-actions` | Header strip. `.zapp-icon` holds `thumb.svg`; `.zapp-sub` is the readable one-line intro. |
+| `.zapp-tabs` (+ `.zapp-tabs--small`) | Segmented control of buttons with `aria-pressed` or `aria-selected`. Modes, sizes, themes. |
+| `.zapp-main` (+ `.zapp-main--solo`), `.zapp-play`, `.zapp-side`, `.zapp-bar` | Layout. |
+| `.zapp-stage` | The game area: outlined, rounded, `isolation: isolate`, own background. Put the result and how-to overlays inside it. |
+| `.zapp-stats`, `.zapp-stat` (+ `.is-best`, `.is-hot`, `b.bump`, `b.urgent`) | Score readouts: `<div class="zapp-stat"><b>12</b><span>Score</span></div>`. |
+| `.zapp-controls`, `.zapp-tool` | Tool buttons with an icon (`<i>`) and a label; `aria-pressed="true"` for modes like Lock. |
+| `.c-btn`, `.c-btn--ghost` | Primary and secondary buttons (pink and plain in the toy skin). |
+| `.zapp-toggle` | Switch: `<label class="zapp-toggle"><input type="checkbox"><span class="zapp-toggle__track"></span>Sound</label>`. |
+| `.zapp-slider` | `input[type=range]` in the scheme colour. |
+| `.zapp-panel`, `.zapp-panel__title` | Side panels; on a `details`, put the title on the `summary` for a folding panel. |
+| `.zapp-badges`, `.zapp-badge` (+ `.on`, `.new`) | Achievements. |
+| `.zapp-status`, `.zapp-status__msg`, `.zapp-status__field` (+ `.is-keep`) | Sticky status bar. One message at a time (what just happened, or what to do next). Fields hide on phones unless `.is-keep`. |
+| `.zapp-result`, `.zapp-result__card`, `__kicker`, `__title`, `__score`, `__best`, `__text`, `__btns` | Result screen over the stage: a sticker kicker ("water works!"), a title, the big number, a NEW BEST pill, one line of detail, then Play again (primary) and secondary buttons. |
+| `.zapp-howto`, `.zapp-howto__card`, `.zapp-steps`, `.zapp-keys` | How-to-play card: a yellow note over the stage with three or four numbered steps, the keys (`.c-kbd`) and one "Got it" button. Show it on the first visit and from Help, How to play (`Curio.howTo(fn)`). |
+| `.zapp-hint` | A small yellow pill for tips such as "Tip: turn on Touchpad mode". |
+| `.zapp-simple`, `.zapp-adv` | Show only in Simple or only in Advanced. |
+
+Example:
+
+```html
+<body data-game="my-game" data-modes>
+  <div class="zapp">
+    <header class="zapp-head">
+      <div class="zapp-id"><span class="zapp-icon"><img src="thumb.svg" alt=""></span>
+        <div><h1 class="zapp-title">My Game</h1><p class="zapp-sub">One line that says what to do.</p></div></div>
+      <div class="zapp-actions">
+        <div class="zapp-tabs zapp-adv" role="group" aria-label="Mode"><button aria-pressed="true">Classic</button><button>Daily</button></div>
+        <button class="c-btn c-btn--ghost" data-howto>How to play</button>
+      </div>
+    </header>
+    <main class="zapp-main">
+      <section class="zapp-play">
+        <div class="zapp-stats"><div class="zapp-stat"><b id="score">0</b><span>Score</span></div><div class="zapp-stat is-best"><b id="best">-</b><span>Best</span></div></div>
+        <div class="zapp-stage"><canvas aria-label="Game board"></canvas>
+          <div class="zapp-result" hidden><div class="zapp-result__card"><span class="zapp-result__kicker">nice!</span><h2 class="zapp-result__title">Round over</h2><div class="zapp-result__score">1,200</div><div class="zapp-result__btns"><button class="c-btn">Play again</button></div></div></div>
+        </div>
+        <div class="zapp-controls"><button class="zapp-tool"><i>&#8630;</i>Undo</button></div>
+      </section>
+      <aside class="zapp-side zapp-adv"><section class="zapp-panel"><h2 class="zapp-panel__title">Settings</h2>...</section></aside>
+    </main>
+    <footer class="zapp-status"><p class="zapp-status__msg" aria-live="polite">Your move.</p><span class="zapp-status__field is-keep">Level 3</span></footer>
+  </div>
+</body>
+```
+
+### Typography
+
+- **Chrome and labels**: `var(--font)`, the pixel font, 12px (or 24, 36, 48). Buttons, tabs, stats labels, status bar, menus.
+- **Display**: `var(--c-hand)` bold pixel for titles and numbers; `var(--zob-hand)` (Zob's hand-lettering, all caps) for stickers, kickers, notes and anything Zob would write.
+- **Reading**: `var(--read)` at 14 to 16px for intros, how-to steps, result text and any paragraph. Never set long text in the pixel font.
+- Inside the stage use any type that fits the game (a blueprint stencil, a chalk hand, a cafe serif), from local fonts or your own drawn letters.
+
+### Colour
+
+- Chrome (head, tabs, stats, tools, panels, status, result and how-to cards) uses scheme tokens only: `--z-face`, `--z-win`, `--z-light`, `--z-ink`, `--z-sel`, `--z-pop`, `--z-text`, `--ink-2`, `--ink-3`, `--good`, `--bad`. It then works in all 14 schemes, light and dark, toy and classic.
+- The stage has a free palette: the game's own art lives there. Set `--stage-bg` and draw what you like, but give it a dark version (`:root[data-theme="dark"] .myapp { ... }`) or a palette that works on both, and repaint canvases on `curio:theme` (`Curio.isDark()`).
+- Accents from Zob's world are welcome inside the stage: bubblegum `#e8457c`, sticker yellow `#ffcf3a`, mint `#7fd9b0`, coral `#ff7b6b`, ink `#2b2347`.
+
+### Iconography
+
+- Chrome icons are pixel icons (`Curio.px(name, 16 or 32)`) or simple text glyphs in `.zapp-tool i`. Prefer them to emoji in chrome; emoji are fine inside the stage when they suit the game.
+- The app icon is the game's `thumb.svg`; keep its subject centred (it is cropped square on phones and for pixel icons).
+- Illustrations in the stage follow the room's rules when they want to feel like Zob's: ink outlines, flat fills, halftone shading.
+
+### Sounds
+
+`Curio.sfx(name)` for interface sounds (`click`, `tap`, `pop`, `paper`, `success`, `error`, `ding`, `coin`, `whoosh`), `Curio.beep()` or `Curio.audioContext()` for the game's own sounds. Always respect `Curio.muted` and the volume; short, soft, no long loops without a mute button. A win gets a small rising arpeggio and `Curio.confetti()`; a mistake a short low blip, never a harsh buzzer.
+
+### Motion
+
+Pops use `cubic-bezier(.2, 1.4, .4, 1)` (a little overshoot), 150 to 350ms. Buttons sink 1px when pressed. Result and how-to cards pop in; stats bump (`b.bump`) when they change. No motion longer than a second without a reason, and everything stops under `prefers-reduced-motion` or Control Panel, Reduce motion (`Curio.calm`).
+
+### Simple and Advanced
+
+- Simple: one screen, the stage and two or three big tools, no side panels, a short intro line, a how-to card with three steps. Mark extras `.zapp-adv`.
+- Advanced: mode tabs in the head, options in `.zapp-bar`, stats, badges and notes in `.zapp-side`, share buttons on the result card.
+- Keep separate bests per mode. The switch lives in the title strip; use `data-modes="live"` and `curio:mode` if you can switch without reloading.
+
+### Phones
+
+- At 860px the side panels move under the stage; at 560px the head stacks, the actions centre, tools share the width and only `.is-keep` status fields stay.
+- The stage comes first and fills the width. Minimum touch target 40px. No sideways scroll at 360 or 390px.
+- Never rely on hover, right-click or a keyboard: every action has a visible button.
+
+### Touchpad
+
+Use `Curio.drag(el, { start, move, end })` for every drag so Touchpad mode works (click to grab, click to drop). Offer keyboard play and list the keys in the how-to card. Show a `.zapp-hint` the first time a drag is needed: "Tip: turn on Touchpad mode in the title strip".
+
+### Reference implementation: Pipes
+
+`site/games/pipes/` is the reference app:
+
+- `index.html` uses the whole layout: a head with the thumb icon, the title, a "dwg P-60" blueprint tag, an intro line per mode, mode tabs (Advanced) and How to play; a `.zapp-bar` for grid size and edges (Free play) or the level picker (Campaign); four `.zapp-stat` readouts; the stage; five `.zapp-tool` buttons (Undo, Hint, Turn back, Lock, New; the last three Advanced only); a side column with the pipe finish tabs, a folding Stats and badges panel and shop notes; a status bar with the live message, the job or level and the board size.
+- `style.css` keeps the game's identity inside the stage only: blueprint paper with a 20px and 100px grid, a riveted metal plate, the pipe art and its three finishes (Garden, Lab, Copper), each with a dark version. The app background is a faint grid drawn from scheme tokens, and the stage size follows the screen height.
+- `game.js` changes were small: the how-to card (`Curio.howTo`, shown on the first visit, Esc or Got it closes it), status fields (`paintStatus`), badges and stats on the kit classes, a kicker line on the result card, and the theme switch uses `classList` instead of replacing `className`.
+
+## JavaScript API
+
+`window.Curio` keeps everything it had: `store`, `beep`, `toast`, `modal`, `confetti`, `best`, `getBest`, `isDark`, `muted`, `touchpad`, `setTouchpad`, `setMuted`, `drag`, `audioContext`, `rand`, `randInt`, `pick`, `shuffle`, `fmt`, `slug`, `game`, `mode`, `simple`, `advanced`, `setMode`, `look`, `looks`, `setLook`, `prefs`, `calm`, `sfx`, `icon`, `pim`, `unlock`, `found`, `secrets`, `settings`, `closeSettings`, `stickerBook`, `trail`, `px`, `gameIcon`, `folderIcon`, `menu`, `menubar`, `tooltip`, `windowFrame`, `draggable`, `balloon`, `secretsWindow`, `howTo`, `help`, `about`, `setPref`, `settingsTabs`, `framed`.
+
+New: `Curio.setStage({ mount, bounds })` (the hub mounts dialogs, the Control Panel and balloons inside the screen and keeps menus within it), `Curio.stage` (where overlays are mounted), `Curio.looks[].toy`, the pref `gameWindow` (`'max'` or `'window'`).
+
+Events: `curio:theme`, `curio:touchpad`, `curio:mode`, `curio:sound`, `curio:prefs`, `curio:secret`, `curio:settings`, `curio:reset`. Store keys are unchanged (`theme`, `prefs`, `muted`, `touchpad`, `played`, `hub:favs`, `hub:secrets`, `mode:<slug>`, `modeDefault`, `best:*`, `hub:*`). New: `hub:tip1` (Zob's first tip shown), `hub:water` (Gerald), `hub:lightlook` (the scheme to return to when the lamp goes back on), `hub:xsmall` (Explorer small cards).
+
+Sounds (`Curio.sfx(name)`, all synthesised, muted by `Curio.muted` or the System sounds setting, scaled by the volume): `tap hover on off open close success error stamp pop unpop roll squeak paper whoosh note snore coin blip lift flip click menu max min restore ding chord question critical notify startup shutdown crumple`.
+
+### Window manager (`hub.js`)
+
+`openWindow({ key, kind, title, icon, w, h, minW, minH, menus, status, build, help, resizable, max, minimized, from, rect, onClose })` creates a window inside `#screen` and its task button. Windows drag by the title bar and resize from every edge through `Curio.drag`. On phones each window gets a back button and a menu button in its strip. Built on it: `openExplorer`, `openFolder(path)`, `openGame(slug)`, `openNotepad`, `openFind`, `openRun`, `openPrompt`, `openHelp`, `openClock`, `openPage('backroom' | 'lost')`.
+
+`hub.js` passes an `api` object to `ZobleExplorer(api)` and `ZobleDesk(api)`: games and kinds, `openGame`, `openFolder`, `openWindow`, `rollGame`, `toggleFav`, `played()`, `favs()`, `zobSay`, `zobWave`, `powerOn`, `deskArea`, `phone`.
+
+Keyboard on the desktop: Ctrl+Esc or the Zob key opens the Zob menu, Alt+X or Alt+F4 closes the active window, Alt+letter and F10 open its menus, arrows and Enter move between icons, Backspace goes up a folder, `/` opens Find, `?` the shortcuts help.
+
+## Responsive and comfort
+
+- Desktop scene at 900px and wider. Narrow desktops keep the room but the sides get tight; everything stays clickable.
+- Phones (640px and narrower): the handheld described above.
+- Coarse pointers get taller menu items and bigger title bar buttons.
+- Reduced motion (system or Control Panel, Display, Reduce motion): no CRT switch-on, no window zooms, a still screen saver, no confetti, Zob and the room stop idling.
 
 ## Desktop contents and easter eggs
 
-Desktop icons: My Games (every game plus folders, Not Played Yet and New Arrivals), Favourites, Recently Played, Recycle Bin, Readme.txt (Notepad), Control Panel (Display, Desktop, Sounds, Mouse, Games, Secrets, Date/Time, Data), Secrets, Surprise Me, Zob, Zoble Prompt, Nothing.exe, and one folder per category (Arcade Classics, Noggin Gym, Puzzles, Brain Teasers, Toys, Make Things, Drawing, Explore, Money & Life, Absurd, Skill Tests, Arcade).
+Desktop icons: Zoble Explorer, My Games, Favourites, Recently Played, Recycle Bin, Readme.txt, Control Panel (Display, Desktop, Sounds, Mouse, Games, Secrets, Date/Time, Data), Secrets, Surprise Me, Zob, Zoble Prompt, Nothing.exe, and one folder per kind. Wallpapers: Sprinkles (default), Zob Doodles, and the classic patterns.
 
-Folders open as Explorer windows: menubar, toolbar (Back, Forward, Up, Views, Favourite, Surprise me, plus Insert Coin in Arcade Classics and Lift in Noggin Gym), address bar (type a path or a game name), folder tree on wide windows, Large icons, List or Details (sortable columns), status bar with the object count.
+Secrets (39, listed in the Secrets window, which the desk drawer also opens):
 
-Easter eggs: Konami code (party mode), `zob()` in the console, Zob the helper (poke him, poke him fast, hover until he giggles, leave him alone until he naps, drag him around, tips and quips), Zob peeking from behind an icon, the playable Start banner (Z, O, B, L, E), triple-click the clock, Find "42", "lost", "secrets", "konami", Run "format c:", Nothing.exe, the Recycle Bin (funny files, a fake delete that Zob rescues, shortcuts to the back room and the lost and found), Zoble Prompt commands, Zoble Update, the screen savers (Flying Zobs, Pixel Pipes, Marquee, Starfield), Shut Down with the orange "It is now safe" screen (click to boot again), date surprises (New Year, Zob's birthday on 14 March, Halloween hats and bats all October, December snow and scarf, a black cat on the taskbar on Friday the 13th, Stop instead of Start on 1 April) and 33 secrets in the Secrets window.
+- **On the screen** (the original 33): the Konami code, `zob()` in the console, poking Zob, poking him fast, tickling, letting him nap, Zob peeking from behind an icon, the playable Zob menu banner, triple-clicking the clock, Find "42", "lost", "secrets", Run "format c:", Nothing.exe, the Recycle Bin, the Prompt, Zoble Update, the screen savers, Shut Down and the orange "It is now safe" screen, flinging a window, five windows at once, the Arcade coin slot, the Noggin Gym dumbbell, every colour scheme, date surprises (New Year, Zob's birthday on 14 March, Halloween hats and bats in October, December snow and scarf, a black cat on Friday the 13th, Boz instead of Zob on 1 April).
+- **On the desk** (new): **Lights out** (click the lamp: it switches light and dark schemes and the room lighting), **Caffeinated** (five sips from the mug; it steams, empties and refills a minute later), **Green thumb** (water Gerald; he grows with visits and waterings and blooms at the end), **Sticky fingers** (read every line of every sticky note; they peel to the next line), **Off and on again** (the monitor power button switches the screen off and back on; it also wakes ZobOS after Shut Down), **Bird watcher** (Pip the bird visits the window sill now and then; wave at him).
+- More desk play without a badge: the colour knob cycles the ZobOS schemes, the sun or moon in the window fast-forwards the time of day, the desk keyboard's keys press (type Z, O, B on them), the mouse wiggles, the pin board's polaroids open their games, the drawer opens the Secrets sticker book, Zob's eye follows the pointer.

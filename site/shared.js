@@ -8,6 +8,9 @@
   })();
   if (framed) { html.classList.add('curio-framed'); html.style.setProperty('--bar-h', '0px'); }
   const isHub = !!document.body?.classList.contains('hub');
+  const stage = { mount: null, bounds: null };
+  const host = () => (stage.mount && stage.mount.isConnected ? stage.mount : document.body);
+  const area = () => { const b = stage.bounds?.(); return b || { left: 0, top: 0, right: innerWidth, bottom: innerHeight }; };
 
   const store = {
     get(key, fallback = null) {
@@ -26,7 +29,11 @@
 
   const P = (face, hilite, light, shadow, desk, t1, t2, it1, it2, ttext, ittext, win, text, sel, seltext) => ({ face, hilite, light, shadow, desk, t1, t2, it1, it2, ttext, ittext, win, text, sel, seltext });
   const LOOKS = [
-    { id: 'standard', name: 'Zoble Standard', dark: false, note: 'Teal desk, navy titles', pal: P('#c0c0c0', '#ffffff', '#dfdfdf', '#808080', '#008080', '#000080', '#1084d0', '#808080', '#b5b5b5', '#ffffff', '#c0c0c0', '#ffffff', '#000000', '#000080', '#ffffff') },
+    { id: 'zob', name: 'ZobOS', toy: true, dark: false, note: 'Blueberry desk, bubblegum titles', pal: P('#fbf1e1', '#ffffff', '#fff8ec', '#d9c3a3', '#4a42a6', '#e23d74', '#f0628f', '#e9dccb', '#f2e8db', '#ffffff', '#8c7a6a', '#fffdf8', '#2b2347', '#e8457c', '#ffffff') },
+    { id: 'mint', name: 'Mint Choc', toy: true, dark: false, note: 'Mint windows on a chocolate desk', pal: P('#e9f5ec', '#ffffff', '#f5fbf6', '#a9cdb5', '#6b4a35', '#23866a', '#47b08a', '#d3e5d8', '#e0ede4', '#ffffff', '#6f8a78', '#ffffff', '#2d1f17', '#23866a', '#ffffff') },
+    { id: 'sherbet', name: 'Sherbet', toy: true, dark: false, note: 'Orange fizz with grape titles', pal: P('#fff0e0', '#ffffff', '#fff8ef', '#efbf96', '#ef7a4c', '#6c3fc9', '#9470ea', '#f1dccb', '#f7e8da', '#ffffff', '#8f7466', '#fffaf4', '#3a1e3c', '#6c3fc9', '#ffffff') },
+    { id: 'zobnight', name: 'Zob After Dark', toy: true, dark: true, note: 'Lamp off, screen glowing', pal: P('#2f2a4f', '#5d5590', '#3a3460', '#1d1936', '#17142f', '#c2386c', '#e2588a', '#3a3460', '#474070', '#ffffff', '#a49cc8', '#221e3d', '#f2ecff', '#e2588a', '#ffffff') },
+    { id: 'standard', name: 'Zoble Classic', dark: false, note: 'Teal desk, navy titles', pal: P('#c0c0c0', '#ffffff', '#dfdfdf', '#808080', '#008080', '#000080', '#1084d0', '#808080', '#b5b5b5', '#ffffff', '#c0c0c0', '#ffffff', '#000000', '#000080', '#ffffff') },
     { id: 'rainy', name: 'Rainy Day', dark: false, note: 'Slate blue and puddles', pal: P('#bcc5cf', '#ffffff', '#dde3ea', '#6f7d8c', '#4f6c86', '#2c4a66', '#6d93b6', '#7f8a95', '#b3bcc5', '#ffffff', '#dde3ea', '#ffffff', '#000000', '#2c4a66', '#ffffff') },
     { id: 'desert', name: 'Desert', dark: false, note: 'Sand, with a teal oasis', pal: P('#d8cdb5', '#fffdf6', '#ece4d2', '#8f8264', '#a8916a', '#00706b', '#3fa79d', '#9b9078', '#c9bea3', '#ffffff', '#ece4d2', '#fffdf6', '#000000', '#00706b', '#ffffff') },
     { id: 'marine', name: 'Marine', dark: false, note: 'Sea foam and deep water', pal: P('#b8cfcc', '#ffffff', '#dbe8e6', '#5f7a77', '#00505f', '#00454f', '#2b8c98', '#789692', '#aac2bf', '#ffffff', '#dbe8e6', '#ffffff', '#000000', '#00454f', '#ffffff') },
@@ -40,7 +47,7 @@
   const lookById = (id) => LOOKS.find((l) => l.id === id);
 
   const legacy = store.get('theme', 'auto');
-  const DEFAULT_PREFS = { look: 'standard', ui: true, volume: 0.8, calm: false, cursor: 'normal', big: false, contrast: false, wallpaper: 'none', saver: 'zobs', saverWait: 3, restore: false, clicks: 'single', zob: true, trails: false, welcome: true };
+  const DEFAULT_PREFS = { look: 'zob', ui: true, volume: 0.8, calm: false, cursor: 'normal', big: false, contrast: false, wallpaper: 'sprinkles', saver: 'zobs', saverWait: 3, restore: false, clicks: 'single', zob: true, trails: false, welcome: true, gameWindow: 'max' };
   let prefs = Object.assign({}, DEFAULT_PREFS, store.get('prefs', {}));
   if (!prefs.v98) {
     const old = prefs.look;
@@ -48,16 +55,23 @@
     prefs.v98 = 1;
     store.set('prefs', prefs);
   }
+  if (!prefs.vzob) {
+    if (prefs.look === 'standard') prefs.look = 'zob';
+    if (prefs.wallpaper === 'none' && prefs.look === 'zob') prefs.wallpaper = 'sprinkles';
+    prefs.vzob = 1;
+    store.set('prefs', prefs);
+  }
   const savePrefs = () => store.set('prefs', prefs);
   const osDark = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
   const osCalm = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-  const resolved = () => (prefs.look === 'auto' || !lookById(prefs.look)) ? (prefs.look === 'auto' && osDark() ? 'midnight' : 'standard') : prefs.look;
+  const resolved = () => (prefs.look === 'auto' || !lookById(prefs.look)) ? (prefs.look === 'auto' && osDark() ? 'zobnight' : 'zob') : prefs.look;
   let shownLook = '';
   function applyLook(silent) {
     const id = resolved();
     const l = lookById(id);
     html.dataset.look = id;
     html.dataset.theme = l.dark ? 'dark' : 'light';
+    html.dataset.skin = l.toy ? 'toy' : 'classic';
     const changed = shownLook && shownLook !== id;
     shownLook = id;
     if (changed && !silent) window.dispatchEvent(new CustomEvent('curio:theme', { detail: l.dark ? 'dark' : 'light' }));
@@ -775,26 +789,29 @@
     }
     function closeAll(refocus) { closeFrom(0, refocus); }
     function place(el, opts) {
+      const B = area();
+      el.style.maxHeight = `${Math.max(120, B.bottom - B.top - (opts.reserve || 0) - 8)}px`;
       const r = el.getBoundingClientRect();
-      const W = innerWidth, H = innerHeight - (opts.reserve || 0);
+      const W = B.right, H = B.bottom - (opts.reserve || 0), L = B.left + 2, T = B.top + 2;
       let x = opts.x ?? 0, y = opts.y ?? 0;
       const a = opts.anchor;
       if (a && opts.side === 'right') {
         x = a.right - 3; y = a.top - 3;
         if (x + r.width > W - 2) x = a.left - r.width + 3;
-        if (x < 2) x = Math.max(2, Math.min(W - r.width - 2, a.left + 16));
-        if (y + r.height > H - 2) y = Math.max(2, H - r.height - 2);
+        if (x < L) x = Math.max(L, Math.min(W - r.width - 2, a.left + 16));
+        if (y + r.height > H - 2) y = Math.max(T, H - r.height - 2);
       } else if (a && opts.side === 'up') {
         x = a.left; y = a.top - r.height;
-        if (y < 2) y = 2;
-        if (x + r.width > W - 2) x = Math.max(2, W - r.width - 2);
+        if (y < T) y = T;
+        if (x + r.width > W - 2) x = Math.max(L, W - r.width - 2);
       } else if (a) {
         x = a.left; y = a.bottom;
-        if (y + r.height > H - 2) y = a.top - r.height >= 2 ? a.top - r.height : Math.max(2, H - r.height - 2);
-        if (x + r.width > W - 2) x = Math.max(2, W - r.width - 2);
+        if (y + r.height > H - 2) y = a.top - r.height >= T ? a.top - r.height : Math.max(T, H - r.height - 2);
+        if (x + r.width > W - 2) x = Math.max(L, W - r.width - 2);
       } else {
-        if (x + r.width > W - 2) x = Math.max(2, x - r.width);
-        if (y + r.height > H - 2) y = Math.max(2, y - r.height);
+        if (x + r.width > W - 2) x = Math.max(L, x - r.width);
+        if (y + r.height > H - 2) y = Math.max(T, y - r.height);
+        x = Math.max(L, x); y = Math.max(T, y);
       }
       el.style.left = `${Math.round(x)}px`;
       el.style.top = `${Math.round(y)}px`;
@@ -1022,7 +1039,13 @@
     ['bin', 'Bin diving', 'Tried to empty the Recycle Bin.'],
     ['saver', 'Screen saved', 'Watched the screen saver kick in.'],
     ['juggler', 'Juggler', 'Had five windows open at once.'],
-    ['prompt', 'Command line hero', 'Typed a command into the Zoble Prompt.']
+    ['prompt', 'Command line hero', 'Typed a command into the Zoble Prompt.'],
+    ['lamp', 'Lights out', 'Clicked the desk lamp and changed the mood.'],
+    ['coffee', 'Caffeinated', 'Took five sips from Zob\'s mug.'],
+    ['plant', 'Green thumb', 'Watered the plant on Zob\'s desk.'],
+    ['notes', 'Sticky fingers', 'Read every sticky note on the monitor.'],
+    ['power', 'Off and on again', 'Pressed the power button on the monitor.'],
+    ['bird', 'Bird watcher', 'Waved at the bird outside the window.']
   ];
   const BOOK = {
     konami: 'An old cheat code. Arrows, then two letters.', poke: 'Say hello to the little guy.', dizzy: 'Say hello. A lot. Quickly.',
@@ -1035,7 +1058,9 @@
     missed: 'Leave, then come back.', roller: 'Let the die decide. Often.', peek: 'Someone is hiding behind an icon.',
     coin: 'The arcade takes coins. Quickly.', gains: 'The gym has equipment. Use it.', switch: 'Some games have two minds.', tickle: 'Hover where it tickles.',
     shutdown: 'Everything has to sleep sometime.', bin: 'Try to take the rubbish out.', saver: 'Leave the desktop alone for a while.',
-    juggler: 'Open, open, open, open, open.', prompt: 'Run the prompt and type something.'
+    juggler: 'Open, open, open, open, open.', prompt: 'Run the prompt and type something.',
+    lamp: 'Every desk has a lamp. Every lamp has a switch.', coffee: 'Zob left his coffee out. Have a sip. Or five.', plant: 'Plants get thirsty too.',
+    notes: 'Someone has been leaving notes on the monitor.', power: 'Every monitor has a button. Every button wants pressing.', bird: 'Look out of the window. Someone is visiting.'
   };
   function unlock(id) {
     const got = store.get('hub:secrets', {});
@@ -1061,7 +1086,7 @@
       toastEl.className = 'curio-toast';
       toastEl.setAttribute('role', 'status');
       toastEl.setAttribute('aria-live', 'polite');
-      document.body.append(toastEl);
+      host().append(toastEl);
     }
     toastEl.innerHTML = `${title ? `<div class="curio-toast__title">${ic ? `<img alt="" src="${px(ic, 16)}">` : ''}<span></span></div>` : ''}<div class="curio-toast__body"></div>`;
     if (title) toastEl.querySelector('.curio-toast__title span').textContent = title;
@@ -1170,7 +1195,7 @@
       };
       document.addEventListener('keydown', onKey, true);
       wrap.append(box);
-      document.body.append(wrap);
+      host().append(wrap);
       draggable(box, box.querySelector('.title-bar'));
       sfx(k === 'error' ? 'critical' : k === 'warn' ? 'chord' : k === 'question' ? 'question' : 'ding');
       row.querySelector('button')?.focus();
@@ -1350,7 +1375,7 @@
       display: () => {
         const cur = lookById(resolved());
         return `<div class="curio-set"><div class="curio-preview" style="${pal(cur)}"><div class="curio-preview__win is-back"><div class="curio-preview__title">Inactive window</div></div><div class="curio-preview__win"><div class="curio-preview__title">Active window</div><div class="curio-preview__body">Window text <i>Selected</i></div></div></div>
-          <fieldset><legend>Colour scheme</legend><div class="curio-schemes z-sunken" role="radiogroup" aria-label="Colour scheme">${LOOKS.map((l) => `<button type="button" role="radio" data-look="${l.id}" aria-checked="${prefs.look === l.id}">${l.name}${l.dark ? ' (dark)' : ''}</button>`).join('')}<button type="button" role="radio" data-look="auto" aria-checked="${prefs.look === 'auto'}">Match my device</button></div></fieldset></div>
+          <fieldset><legend>Colour scheme</legend><div class="curio-schemes z-sunken" role="radiogroup" aria-label="Colour scheme">${LOOKS.map((l, i) => `${i === 0 ? '<div class="curio-schemes__head" aria-hidden="true">ZobOS</div>' : !l.toy && LOOKS[i - 1].toy ? '<div class="curio-schemes__head" aria-hidden="true">Classic</div>' : ''}<button type="button" role="radio" data-look="${l.id}" aria-checked="${prefs.look === l.id}">${l.name}${l.dark ? ' (dark)' : ''}</button>`).join('')}<button type="button" role="radio" data-look="auto" aria-checked="${prefs.look === 'auto'}">Match my device</button></div></fieldset></div>
           <fieldset><legend>Comfort</legend>${check('calm', 'Reduce motion', prefs.calm, 'Fewer animations, no window zooms, calmer screen saver.')}${check('big', 'Bigger text', prefs.big)}${check('contrast', 'Stronger text', prefs.contrast)}</fieldset>`;
       },
       sound: () => `<div class="curio-set curio-danger"><img alt="" src="${px('sound', 32)}"><p>Sounds are made on the spot by your computer. Nothing is downloaded.</p></div>
@@ -1360,7 +1385,7 @@
           <fieldset><legend>Touchpad</legend>${check('touchpad', 'Touchpad mode', touchpad, 'Click once to grab or draw, click again to let go. Esc lets go too.')}</fieldset>
           <fieldset><legend>Pointer</legend>${radio('cursor', 'normal', 'Classic arrow', prefs.cursor === 'normal')}${radio('cursor', 'big', 'Big arrow', prefs.cursor === 'big')}${radio('cursor', 'pencil', 'Pencil', prefs.cursor === 'pencil')}${check('trails', 'Show pointer trails', prefs.trails)}</fieldset>
           ${isHub ? `<fieldset><legend>Opening things</legend>${radio('clicks', 'single', 'Single-click to open an item', prefs.clicks !== 'double')}${radio('clicks', 'double', 'Double-click to open an item (single-click selects)', prefs.clicks === 'double')}</fieldset>` : ''}`,
-      games: () => `<fieldset><legend>New games start in</legend><p style="margin:0 0 6px">Simple is quick to pick up. Advanced has every mode, stat and setting.</p>${radio('defmode', 'simple', 'Simple', def() === 'simple')}${radio('defmode', 'advanced', 'Advanced', def() === 'advanced')}</fieldset>
+      games: () => `${isHub ? `<fieldset><legend>Opening games</legend>${radio('gwin', 'max', 'Fill Zob\'s screen (maximized)', prefs.gameWindow !== 'window')}${radio('gwin', 'window', 'In a window I can move around', prefs.gameWindow === 'window')}</fieldset>` : ''}<fieldset><legend>New games start in</legend><p style="margin:0 0 6px">Simple is quick to pick up. Advanced has every mode, stat and setting.</p>${radio('defmode', 'simple', 'Simple', def() === 'simple')}${radio('defmode', 'advanced', 'Advanced', def() === 'advanced')}</fieldset>
           ${hasModes() ? `<fieldset><legend>This game: ${esc(game?.title || '')}</legend><p style="margin:0 0 6px">Switching may restart the game.</p>${radio('thismode', 'simple', 'Simple', mode === 'simple')}${radio('thismode', 'advanced', 'Advanced', mode === 'advanced')}</fieldset>` : ''}
           <fieldset><legend>Secrets</legend><p style="margin:0 0 8px">${Object.keys(found()).length} of ${SECRETS.length} secrets found.</p><button type="button" data-act="book">Open Secrets...</button></fieldset>`,
       data: () => `<div class="curio-set curio-danger"><img alt="" src="${px('warn', 32)}"><p>Everything Zoble remembers lives in this browser only: scores, favourites, what you played, secrets. No accounts, no tracking.</p></div>
@@ -1404,6 +1429,7 @@
       } else if (t.type === 'radio') {
         if (t.name === 'cursor') setPref('cursor', t.value);
         else if (t.name === 'clicks') setPref('clicks', t.value);
+        else if (t.name === 'gwin') setPref('gameWindow', t.value);
         else if (t.name === 'defmode') { store.set('modeDefault', t.value); toast(`New games will open in ${t.value === 'advanced' ? 'Advanced' : 'Simple'} mode`, 1800); }
         else if (t.name === 'thismode') { const keepDef = store.get('modeDefault', 'simple'); setMode(t.value); store.set('modeDefault', keepDef); }
         else settingsTabs.find((x) => x.id === tab)?.change?.(t);
@@ -1436,7 +1462,7 @@
     box.querySelector('.title-bar-controls .help').addEventListener('click', () => toast('Pick a tab, change a thing. Changes apply straight away and are remembered in this browser.', 3600));
     wrap.addEventListener('pointerdown', (e) => { if (e.target === wrap) { sfx('error'); box.animate?.([{ filter: 'none' }, { filter: 'invert(1)' }, { filter: 'none' }], { duration: 160, iterations: 2 }); } });
     wrap.append(box);
-    document.body.append(wrap);
+    host().append(wrap);
     draggable(box, box.querySelector('.title-bar'));
     sheet = wrap;
     document.addEventListener('keydown', sheetKeys, true);
@@ -1494,8 +1520,8 @@
       return out;
     })();
     const tags = window.CURIO_TAGS || {};
-    const body = game ? `${game.blurb}.\n\nFolder: ${tags[game.tag] || game.tag}\nMode: ${hasModes() ? (mode === 'advanced' ? 'Advanced' : 'Simple') : 'One size fits all'}${best0 != null ? `\nYour best: ${fmt(best0, best0 % 1 ? 2 : 0)}` : ''}\n\nPart of Zoble 98. Made by hand, no ads, nothing to sign up for.` : 'Zoble 98. A desktop full of small games and toys. Made by hand, no ads, nothing to sign up for.';
-    return modal({ icon: 'info', caption: `About ${game ? game.title : 'Zoble'}`, title: game ? game.title : 'Zoble 98', body, buttons: [{ label: 'OK', value: 'ok' }] });
+    const body = game ? `${game.blurb}.\n\nFolder: ${tags[game.tag] || game.tag}\nMode: ${hasModes() ? (mode === 'advanced' ? 'Advanced' : 'Simple') : 'One size fits all'}${best0 != null ? `\nYour best: ${fmt(best0, best0 % 1 ? 2 : 0)}` : ''}\n\nPart of Zoble, running on ZobOS. Made by hand, no ads, nothing to sign up for.` : 'ZobOS, the operating system on Zob\'s computer. A desk full of small games and toys. Made by hand, no ads, nothing to sign up for.';
+    return modal({ icon: 'info', caption: `About ${game ? game.title : 'Zoble'}`, title: game ? game.title : 'ZobOS', body, buttons: [{ label: 'OK', value: 'ok' }] });
   }
   const fmt = (n, d = 0) => Number(n).toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d });
   function randomGame() {
@@ -1513,7 +1539,7 @@
   const goHome = () => { sfx('min'); location.href = `${root}index.html${slug ? `#open=${slug}` : ''}`; };
 
   function schemeItems() {
-    return [...LOOKS.map((l) => ({ label: l.name, radio: true, checked: prefs.look === l.id, action: () => { setLook(l.id); toast(`${l.name}: ${l.note.toLowerCase()}`, 1600); } })), { sep: true }, { label: 'Match my device', radio: true, checked: prefs.look === 'auto', action: () => setLook('auto') }];
+    return [...LOOKS.flatMap((l, i) => [...(i && !l.toy && LOOKS[i - 1].toy ? [{ sep: true }] : []), { label: l.name, radio: true, checked: prefs.look === l.id, action: () => { setLook(l.id); toast(`${l.name}: ${l.note.toLowerCase()}`, 1600); } }]), { sep: true }, { label: 'Match my device', radio: true, checked: prefs.look === 'auto', action: () => setLook('auto') }];
   }
 
   function bar() {
@@ -1522,18 +1548,19 @@
     const el = document.createElement('header');
     el.className = 'curio-bar z98';
     const title = game ? game.title : (document.body.dataset.title || document.title.replace(/\s*·.*$/, ''));
-    el.innerHTML = `<div class="title-bar"><div class="title-bar-text"><img class="curio-bar__icon" alt="" src="${px('app', 16)}"><span></span></div><div class="title-bar-controls"><button type="button" class="minimize" aria-label="Minimize" title="Minimize: back to the desktop"></button><button type="button" class="maximize" aria-label="Maximize" title="Full screen"></button><button type="button" class="close" aria-label="Close" title="Close: back to the desktop"></button></div></div><div class="curio-bar__row"></div>`;
-    el.querySelector('.title-bar-text span').textContent = `${title} - Zoble 98`;
+    el.innerHTML = `<button type="button" class="curio-bar__home" aria-label="Back to Zob's desk" title="Back to Zob's desk"><img alt="" width="32" height="32" src="${px('zob', 32)}"></button><div class="curio-bar__title"><img class="curio-bar__icon" alt="" width="16" height="16" src="${px('app', 16)}"><span></span></div><div class="curio-bar__row"></div><button type="button" class="curio-bar__more" aria-haspopup="menu" aria-label="Menu" title="Menu"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i></button><div class="curio-bar__end"></div><div class="title-bar-controls curio-bar__win"><button type="button" class="maximize" aria-label="Maximize" title="Full screen"></button><button type="button" class="close" aria-label="Close" title="Close: back to Zob's desk"></button></div>`;
+    el.querySelector('.curio-bar__title span').textContent = title;
     if (slug) gameIcon(slug, 16).then((u) => { el.querySelector('.curio-bar__icon').src = u; });
     else el.querySelector('.curio-bar__icon').src = px(document.body.dataset.icon || 'zob', 16);
     const row = el.querySelector('.curio-bar__row');
+    const end = el.querySelector('.curio-bar__end');
     const modes = hasModes();
-    const mb = menubar(row, [
+    const menus = [
       { label: '&File', items: () => [
         { label: '&Restart', accel: 'F5', action: () => location.reload() },
         { label: 'Random &game', icon: px('die', 16), action: randomGame },
         { sep: true },
-        { label: '&Back to desktop', icon: px('computer', 16), action: goHome }
+        { label: '&Back to Zob\'s desk', icon: px('computer', 16), action: goHome }
       ] },
       { label: '&View', items: () => [
         ...(modes ? [{ label: '&Simple', radio: true, checked: mode === 'simple', action: () => setMode('simple') }, { label: '&Advanced', radio: true, checked: mode === 'advanced', action: () => setMode('advanced') }, { sep: true }] : []),
@@ -1550,7 +1577,14 @@
         { sep: true },
         { label: `&About ${title.replace(/&/g, '&&')}`, action: about }
       ] }
-    ], { label: `${title} menu` });
+    ];
+    const mb = menubar(row, menus, { label: `${title} menu` });
+    const more = el.querySelector('.curio-bar__more');
+    more.addEventListener('click', () => {
+      sfx('menu');
+      const flat = menus.map((m) => ({ label: m.label.replace('&', ''), sub: m.items }));
+      Menus.open(flat, { anchor: more.getBoundingClientRect(), opener: more, label: 'Menu' });
+    });
     if (modes) {
       const box = document.createElement('div');
       box.className = 'curio-mode';
@@ -1567,15 +1601,16 @@
         paintMode();
       });
       window.addEventListener('curio:mode', paintMode);
-      row.append(box);
+      end.append(box);
       el.classList.add('has-mode');
     }
     const tray = document.createElement('div');
     tray.className = 'curio-bar__tray';
-    tray.innerHTML = '<button type="button" class="curio-bar__tbtn" data-act="touchpad"><img alt=""></button><button type="button" class="curio-bar__tbtn" data-act="sound"><img alt=""></button>';
-    row.append(tray);
+    tray.innerHTML = '<button type="button" class="curio-bar__tbtn" data-act="touchpad"><img alt=""></button><button type="button" class="curio-bar__tbtn" data-act="sound"><img alt=""></button><button type="button" class="curio-bar__tbtn" data-act="settings" aria-label="Control Panel" title="Control Panel"><img alt=""></button>';
+    end.append(tray);
     const sound = tray.querySelector('[data-act="sound"]');
     const pad = tray.querySelector('[data-act="touchpad"]');
+    tray.querySelector('[data-act="settings"] img').src = px('settings', 16);
     const paintTray = () => {
       sound.querySelector('img').src = px('sound', 16, { muted });
       sound.setAttribute('aria-label', muted ? 'Sound is off. Turn on' : 'Sound is on. Mute');
@@ -1588,15 +1623,16 @@
     paintTray();
     sound.addEventListener('click', () => { setMuted(!muted); sfx('on'); });
     pad.addEventListener('click', () => { setTouchpad(!touchpad); sfx(touchpad ? 'on' : 'off'); toast(touchpad ? 'Touchpad mode on: click to start a drag, click again to let go' : 'Touchpad mode off', 2600); });
+    tray.querySelector('[data-act="settings"]').addEventListener('click', (e) => openSettings(e.currentTarget));
     window.addEventListener('curio:sound', paintTray);
     window.addEventListener('curio:touchpad', paintTray);
-    const ctr = el.querySelectorAll('.title-bar-controls button');
+    const ctr = el.querySelectorAll('.curio-bar__win button');
     ctr.forEach((b) => b.addEventListener('pointerdown', (e) => e.stopPropagation()));
-    ctr[0].addEventListener('click', goHome);
-    ctr[1].addEventListener('click', () => { sfx('max'); toggleFull(); });
-    ctr[2].addEventListener('click', () => { sfx('close'); location.href = `${root}index.html`; });
-    el.querySelector('.title-bar').addEventListener('dblclick', (e) => { if (!e.target.closest('button')) toggleFull(); });
-    document.addEventListener('fullscreenchange', () => ctr[1].classList.toggle('restore', !!document.fullscreenElement));
+    el.querySelector('.curio-bar__home').addEventListener('click', goHome);
+    ctr[0].addEventListener('click', () => { sfx('max'); toggleFull(); });
+    ctr[1].addEventListener('click', () => { sfx('close'); location.href = `${root}index.html`; });
+    el.querySelector('.curio-bar__title').addEventListener('dblclick', toggleFull);
+    document.addEventListener('fullscreenchange', () => ctr[0].classList.toggle('restore', !!document.fullscreenElement));
     document.addEventListener('keydown', (e) => {
       if (e.defaultPrevented) return;
       if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.length === 1 && /[fvh]/i.test(e.key)) { if (mb.open(e.key.toLowerCase())) e.preventDefault(); }
@@ -1656,6 +1692,8 @@
     looks: LOOKS.map((l) => ({ ...l, pal: { ...l.pal } })),
     audioContext: ctx,
     sfx, icon, pim, unlock, found, secrets: SECRETS.map(([id, name, text]) => ({ id, name, text, hint: BOOK[id] })),
+    setStage: (o = {}) => { if ('mount' in o) stage.mount = o.mount; if ('bounds' in o) stage.bounds = o.bounds; },
+    get stage() { return host(); },
     settings: openSettings, closeSettings, stickerBook: openBook, secretsWindow: openBook, trail, howTo, help: runHelp, about,
     balloon, px, gameIcon, folderIcon, overlayShortcut, menu: Menus, menubar, tooltip, windowFrame, draggable, schemeItems, settingsTabs, zobDraw: ZOB.draw,
     rand: (a, b) => a + Math.random() * (b - a),
@@ -1667,7 +1705,7 @@
   applyPrefs();
 
   window.zob = () => {
-    console.log('%c (o) %c hi! I am Zob. I live inside Zoble 98. You found my secret door.', 'background:#dc2f6c;color:#fff;font-size:16px;padding:4px 6px', 'font-size:14px');
+    console.log('%c (o) %c hi! I am Zob. I live inside this computer. It is mine, actually. You found my secret door.', 'background:#dc2f6c;color:#fff;font-size:16px;padding:4px 6px', 'font-size:14px');
     unlock('console');
     return 'squeak';
   };
