@@ -222,6 +222,9 @@ body.is-touch .t-hint-t { display: inline; }
 .seg button { appearance: none; border: 0; font: inherit; font-family: var(--px-font); padding: 2px 8px; cursor: pointer; background: var(--panel2); color: var(--text); box-shadow: 0 0 0 2px var(--ink); }
 .seg button[aria-pressed="true"] { background: var(--acc); color: var(--acc-ink); }
 .seg button:focus-visible, .keybtn:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+.set-range { display: inline-flex; align-items: center; gap: 10px; width: min(240px, 55%); min-width: 150px; }
+.set-range input { flex: 1; min-width: 0; accent-color: var(--acc); cursor: pointer; }
+.set-range output { min-width: 58px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
 .keybtn { appearance: none; border: 0; font: inherit; font-family: var(--px-font); min-width: 90px; padding: 2px 8px; cursor: pointer; background: var(--panel2); color: var(--text); box-shadow: 0 0 0 2px var(--ink); }
 .keybtn.is-wait { background: var(--gold); color: #1a1226; animation: wtp-blink .6s steps(1) infinite; }
 

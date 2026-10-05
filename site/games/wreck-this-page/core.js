@@ -65,7 +65,7 @@
   const SAVE_KEY = 'wtp3-save';
   const SAVE_V = 4;
   const HOTBAR_N = 10;
-  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false, radial: false, touchSize: 1, touchAlpha: 0.55, touchAim: 'auto', touchSwap: false };
+  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false, radial: false, touchSize: 1, touchAlpha: 0.55, touchAim: 'auto', touchSwap: false, nukeRadius: 100 };
   const DEFAULT_KEYS = {
     left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'], jump: ['KeyW', 'Space', 'ArrowUp'], down: ['KeyS', 'ArrowDown'],
     dash: ['ShiftLeft', 'ShiftRight'], fire: ['KeyF'], alt: ['KeyG'], melee: ['KeyC'], gadget: ['KeyX'], prev: ['KeyQ'], next: ['KeyE'], wheel: ['Tab', 'KeyB'], reset: ['KeyR'], pause: ['Escape', 'KeyP']
@@ -109,6 +109,8 @@
     if (!['auto', 'stick'].includes(out.settings.touchAim)) out.settings.touchAim = 'auto';
     if (![0.8, 1, 1.25].includes(out.settings.touchSize)) out.settings.touchSize = 1;
     if (typeof out.settings.touchAlpha !== 'number' || !isFinite(out.settings.touchAlpha)) out.settings.touchAlpha = 0.55;
+    const nukeRadius = Number(out.settings.nukeRadius);
+    out.settings.nukeRadius = Number.isFinite(nukeRadius) ? Math.max(100, Math.min(2000, Math.round(nukeRadius / 100) * 100)) : 100;
     const keys = JSON.parse(JSON.stringify(DEFAULT_KEYS));
     if (isObj(s.keys)) for (const a in keys) if (Array.isArray(s.keys[a]) && s.keys[a].every((c) => typeof c === 'string')) keys[a] = s.keys[a].slice(0, 3);
     if (s.v === 3) { for (const a of ['melee', 'gadget']) { const want = DEFAULT_KEYS[a][0]; const clash = Object.keys(keys).some((b) => b !== a && keys[b].includes(want)); keys[a] = clash ? [] : [want]; } if (!keys.wheel.includes('KeyB') && !Object.values(keys).some((l) => l.includes('KeyB'))) keys.wheel.push('KeyB'); }

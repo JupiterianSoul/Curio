@@ -1736,17 +1736,19 @@
     A('glitch');
   }
   function nuke(x, y) {
+    const radiusScale = Math.max(100, Math.min(2000, WTP.save.settings.nukeRadius || 100)) / 100;
+    const radius = 64 * radiusScale;
     G()?.stat?.('nukes', 1);
-    explode(x, y, 64, { back: 0.95, letters: 30, fire: 0.3, sound: 'nuke', dmg: 999 });
+    explode(x, y, radius, { back: 0.95, letters: 30, fire: 0.3, sound: 'nuke', dmg: 999 });
     G()?.slowmo?.(0.25, 1.6);
     FX().flash(1, '#ffffff');
     G()?.chroma?.(1);
     G()?.event?.('KABOOM!', x, y - 40, 3);
     for (let k = 0; k < 40; k++) FX().smoke(x + rand(-14, 14), y - k * 2.5, 1, k < 20 ? P32.a : P32['4']);
     for (let k = 0; k < 30; k++) FX().smoke(x + rand(-40, 40), y - 60 + rand(-10, 10), 1, P32['5']);
-    FX().anim('ring', 128, x, y, 0.6);
-    setTimeout(() => { explode(x + rand(-30, 30), y + rand(-20, 20), 20, { letters: 10, noPush: true }); }, 250);
-    setTimeout(() => { explode(x + rand(-40, 40), y + rand(-30, 30), 18, { letters: 10, noPush: true }); }, 500);
+    FX().anim('ring', radius * 2, x, y, 0.6);
+    setTimeout(() => { explode(x + rand(-30, 30) * radiusScale, y + rand(-20, 20) * radiusScale, 20 * radiusScale, { letters: 10, noPush: true }); }, 250);
+    setTimeout(() => { explode(x + rand(-40, 40) * radiusScale, y + rand(-30, 30) * radiusScale, 18 * radiusScale, { letters: 10, noPush: true }); }, 500);
   }
 
   function draw(ctx) {

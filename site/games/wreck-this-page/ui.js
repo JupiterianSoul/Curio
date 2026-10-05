@@ -522,6 +522,7 @@
       <div class="px-panel set-group"><h3 class="px-h3">Weapons</h3>
         <div class="set-row"><label>Tab opens</label>${seg('radial', [[false, 'Grid menu'], [true, 'Radial wheel']])}</div>
         <div class="set-row"><label>Switch weapons</label><span>Q / E, mouse wheel, 1 to 0</span></div>
+        <div class="set-row"><label for="nukeRadius">Nuke damage radius</label><span class="set-range"><input id="nukeRadius" type="range" min="100" max="2000" step="100" value="${st.nukeRadius}" aria-label="Nuke damage radius"><output id="nukeRadiusValue">${st.nukeRadius}%</output></span></div>
       </div>
       <div class="px-panel set-group"><h3 class="px-h3">Touch controls</h3>
         <div class="set-row"><label>Aiming</label>${seg('touchAim', [['auto', 'Auto + drag'], ['stick', 'Twin stick']])}</div>
@@ -559,6 +560,11 @@
       const again = $('setsBody').querySelector(`[data-set="${k}"][data-v="${b.dataset.v}"]`);
       again && again.focus({ preventScroll: true });
     }));
+    $('nukeRadius').addEventListener('input', (event) => {
+      st.nukeRadius = Number(event.currentTarget.value);
+      $('nukeRadiusValue').textContent = `${st.nukeRadius}%`;
+      WTP.persist();
+    });
     $('unlockAll').addEventListener('click', () => {
       const save = S();
       for (const weapon of WP.DEFS) {
