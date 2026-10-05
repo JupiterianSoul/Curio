@@ -441,6 +441,16 @@
     Wd.chunkLimit = [30, 50, 80][q];
     Wd.componentLimit = [500, 750, 1000][q];
   }
+  G.settingsChanged = (key) => {
+    const settings = WTP.save.settings;
+    if (key === 'particles' || key === 'adaptive') {
+      if (key === 'particles' || !settings.adaptive || quality > settings.particles) setQuality(settings.particles);
+    }
+    if (key === 'flashes' && !settings.flashes) {
+      chromaT = 0;
+      cv.style.filter = '';
+    }
+  };
   G.quality = () => quality;
   G.frameMs = () => frameMs;
   setQuality(2);

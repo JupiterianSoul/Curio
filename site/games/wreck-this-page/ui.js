@@ -536,6 +536,9 @@
         <div class="set-row"><label>Keyboard aim</label><span><span class="key">I</span><span class="key">J</span><span class="key">K</span><span class="key">L</span> or auto</span></div>
         <div class="set-row"><label>Lock fire on/off</label><span class="key">V</span></div>
       </div>
+      <div class="px-panel set-group"><h3 class="px-h3">Progress</h3>
+        <div class="set-row"><label>Unlock all weapons, upgrades and skins</label><button class="px-btn px-btn--gold" type="button" id="unlockAll">${ico('star')}<span>UNLOCK ALL</span></button></div>
+      </div>
       <div class="px-panel set-group"><h3 class="px-h3">Keys</h3>
         ${Object.keys(KEY_LABELS).map((a) => `<div class="set-row"><label>${KEY_LABELS[a]}</label><button class="keybtn" type="button" data-key="${a}">${esc(keyName(S().keys[a]?.[0]))}</button></div>`).join('')}
         <div class="set-row"><span></span><button class="px-btn px-btn--ghost" type="button" id="keysReset">${ico('reset')}<span>Default keys</span></button></div>
@@ -546,6 +549,7 @@
       v = v === 'true' ? true : v === 'false' ? false : isNaN(Number(v)) ? v : Number(v);
       st[k] = v;
       WTP.persist();
+      G.settingsChanged?.(k);
       AU.setVolumes();
       applyTheme();
       applyTouch();
@@ -555,6 +559,20 @@
       const again = $('setsBody').querySelector(`[data-set="${k}"][data-v="${b.dataset.v}"]`);
       again && again.focus({ preventScroll: true });
     }));
+    $('unlockAll').addEventListener('click', () => {
+      const save = S();
+      for (const weapon of WP.DEFS) {
+        save.owned[weapon.id] = true;
+        save.upg[weapon.id] = 3;
+      }
+      for (const skin of SP.SKINS) save.skins[skin.id] = true;
+      WTP.persist();
+      PG.check();
+      if (G.run) U.hudWeapons(G.slots(), WP.st.cur);
+      AU.play('unlock');
+      if (C.confetti) C.confetti(80);
+      toastAch({ name: 'Full arsenal unlocked', desc: 'Every weapon maxed. Every skin unlocked.', icon: 'star' });
+    });
     $('setsBody').querySelectorAll('[data-key]').forEach((b) => b.addEventListener('click', () => {
       b.classList.add('is-wait'); b.textContent = 'Press a key';
       I.capture = (code) => {
