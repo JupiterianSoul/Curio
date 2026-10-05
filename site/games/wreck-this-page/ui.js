@@ -387,6 +387,7 @@
     const cat = WP.CATS.find((c) => c.id === d.cat);
     const pips = (n) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
     const lv = WP.upg(d.id);
+    const power = WP.powerPct(d.id);
     const slot = S().hotbar.indexOf(d.id);
     const box = $('armDetail');
     const up = own && lv < 3 ? WP.upCost(d.id, lv) : 0;
@@ -396,8 +397,15 @@
       <p>${esc(d.tip)}</p>
       <div class="statbar"><span>Power</span>${pips(Math.min(5, d.st[0] + (lv >= 2 ? 1 : 0)))}</div><div class="statbar"><span>Rate</span>${pips(Math.min(5, d.st[1] + (lv >= 3 ? 1 : 0)))}</div><div class="statbar"><span>Range</span>${pips(d.st[2])}</div><div class="statbar"><span>Chaos</span>${pips(d.st[3])}</div>
       ${own ? `<div class="upg"><b>Level ${lv + 1} of 4</b><small>${lv < 3 ? 'Each level: bigger holes, +25% damage, faster cooldown.' : 'Fully upgraded. Maximum mayhem.'}</small></div>` : ''}
+      <div class="upg arm-power"><div class="power-head"><label for="weaponPower">Weapon power</label><output id="weaponPowerValue">${power}%</output></div><input id="weaponPower" type="range" min="100" max="2000" step="100" value="${power}" aria-label="${esc(d.name)} power"><small>Scales destruction and damage for this weapon.</small></div>
       <div class="px-row">${own ? `${lv < 3 ? `<button class="px-btn px-btn--gold${S().scrap >= up ? '' : ' is-off'}" type="button" data-act="upg">${ico('up')}<span>Upgrade ${fmtInt(up)}</span></button>` : ''}<button class="px-btn px-btn--ghost" type="button" data-act="hot">${ico(slot >= 0 ? 'cross' : 'check')}<span>${slot >= 0 ? `Remove from slot ${(slot + 1) % 10}` : 'Add to hotbar'}</span></button>` : `<button class="px-btn px-btn--gold${S().scrap >= d.price ? '' : ' is-off'}" type="button" data-act="buy">${ico('scrap')}<span>Buy ${fmtInt(d.price)}</span></button>`}<button class="px-btn px-btn--sec" type="button" data-act="try">${ico('target')}<span>Try it</span></button></div>`;
     paintIcons(box);
+    box.querySelector('#weaponPower').addEventListener('input', (event) => {
+      const value = Number(event.currentTarget.value);
+      S().weaponPower[d.id] = value;
+      box.querySelector('#weaponPowerValue').textContent = `${value}%`;
+      WTP.persist();
+    });
     box.querySelector('[data-act="try"]').addEventListener('click', () => {
       launch({ mode: 'free', page: WTP.rangePage, weapons: [d.id], allWeapons: false, practice: true, first: d.id, params: { goal: 101 } });
     });
@@ -522,7 +530,6 @@
       <div class="px-panel set-group"><h3 class="px-h3">Weapons</h3>
         <div class="set-row"><label>Tab opens</label>${seg('radial', [[false, 'Grid menu'], [true, 'Radial wheel']])}</div>
         <div class="set-row"><label>Switch weapons</label><span>Q / E, mouse wheel, 1 to 0</span></div>
-        <div class="set-row"><label for="nukeRadius">Nuke damage radius</label><span class="set-range"><input id="nukeRadius" type="range" min="100" max="2000" step="100" value="${st.nukeRadius}" aria-label="Nuke damage radius"><output id="nukeRadiusValue">${st.nukeRadius}%</output></span></div>
       </div>
       <div class="px-panel set-group"><h3 class="px-h3">Touch controls</h3>
         <div class="set-row"><label>Aiming</label>${seg('touchAim', [['auto', 'Auto + drag'], ['stick', 'Twin stick']])}</div>
@@ -560,11 +567,6 @@
       const again = $('setsBody').querySelector(`[data-set="${k}"][data-v="${b.dataset.v}"]`);
       again && again.focus({ preventScroll: true });
     }));
-    $('nukeRadius').addEventListener('input', (event) => {
-      st.nukeRadius = Number(event.currentTarget.value);
-      $('nukeRadiusValue').textContent = `${st.nukeRadius}%`;
-      WTP.persist();
-    });
     $('unlockAll').addEventListener('click', () => {
       const save = S();
       for (const weapon of WP.DEFS) {

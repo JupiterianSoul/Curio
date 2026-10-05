@@ -93,12 +93,15 @@
   D.forEach((d, i) => { d.idx = i; d.sprite = SP.WEAPON[d.id] || SP.WEAPON.pistol; BY[d.id] = d; });
   const upg = (id) => WTP.save.upg?.[id] | 0;
   const upCost = (id, lv) => { const d = BY[id]; return Math.round((Math.max(300, d.price * 0.55) * [1, 1.8, 3][lv]) / 50) * 50; };
+  const powerPct = (id) => { const n = Number(WTP.save.weaponPower?.[id]); return Number.isFinite(n) ? Math.max(100, Math.min(2000, Math.round(n / 100) * 100)) : 100; };
+  const powerScale = (id) => powerPct(id) / 100;
   let curLv = 0;
   const R = { dmgMul: 1 };
-  function setPow(lv) { curLv = lv | 0; W().powMul = 1 + 0.15 * curLv; R.dmgMul = 1 + 0.25 * curLv; }
+  function setPow(lv, weaponId = null) { curLv = lv | 0; const scale = weaponId ? powerScale(weaponId) : 1; W().powMul = (1 + 0.15 * curLv) * scale; R.dmgMul = (1 + 0.25 * curLv) * scale; }
 
   const st = { whip: null, latch: null, cut: null, tank: 0, tankCols: [], blowing: 0, ink: 1, penLast: null, zones: [], glove: 0, kickCd: 0, thermals: [], cur: 'pistol', cd: 0, spin: 0, charge: 0, mag: {}, reload: 0, held: null, heldT: 0, ball: null, portals: [], portalNext: 0, stickies: [], mines: [], boomers: 0, dualSide: 0, katanaDir: 1, was: false, quakeT: 0, tornados: [], beam: null, orb: [], paintIdx: 0, ammo: null, nukeT: 0 };
   const shots = [];
+  let effectWeaponId = null;
   const owned = (id) => WTP.game?.allWeapons?.() || BY[id].price === 0 || !!WTP.save.owned[id];
 
   function aimPoint(o) {
@@ -111,6 +114,7 @@
     s.age = 0;
     if (s.lv == null) s.lv = curLv;
     s.from = s.from || 'p';
+    if (s.from === 'p') s.weaponId = s.weaponId || effectWeaponId || st.cur;
     shots.push(s);
     if (shots.length > 700) shots.shift();
     return s;
@@ -127,7 +131,12 @@
 
   function explode(x, y, r, o = {}) {
     const Wd = W();
-    const n = Wd.carve(x, y, r, { debris: 0.45, force: 110 + r * 3, scorch: o.scorch !== false, back: r >= 9 ? (o.back ?? 0.72) : 0.4, code: r >= 30 ? 0.6 : r >= 16 ? 0.35 : 0, letters: o.letters ?? Math.min(16, r * 0.7), ignite: o.fire ?? 0.12, cause: o.cause || 'boom', crumbleR: 6 + r * 0.25, pow: 2 + r * 0.25 });
+    const weaponId = o.weaponId || effectWeaponId;
+    const baseRadius = r, level = weaponId ? upg(weaponId) : 0, scale = weaponId ? powerScale(weaponId) : 1;
+    const previousPow = Wd.powMul, previousDmg = R.dmgMul, previousLv = curLv;
+    if (weaponId) setPow(level, weaponId);
+    r *= scale * (weaponId ? 1 + 0.075 * level : 1);
+    const n = Wd.carve(x, y, r, { debris: 0.45, force: 110 + baseRadius * 3, scorch: o.scorch !== false, back: r >= 9 ? (o.back ?? 0.72) : 0.4, code: r >= 30 ? 0.6 : r >= 16 ? 0.35 : 0, letters: o.letters ?? Math.min(16, r * 0.7), ignite: o.fire ?? 0.12, cause: o.cause || 'boom', crumbleR: 6 + r * 0.25, pow: 2 + baseRadius * 0.25, noPow: !!weaponId });
     st.thermals.push({ x, y, r, k: Math.min(1, r / 20) });
     if (st.thermals.length > 12) st.thermals.shift();
     WTP.props?.damageAt?.(x, y, r, r * 3);
@@ -146,11 +155,12 @@
       const qx = c.x - x, qy = c.y - y, qd = Math.hypot(qx, qy) || 1;
       if (qd < r * 3) { const f = (1 - qd / (r * 3)) * 300; c.vx += (qx / qd) * f; c.vy += (qy / qd) * f - 60; c.va += rand(-3, 3); c.rest = 0; }
     }
-    EN()?.damageCircle?.(x, y, r * 1.35, o.dmg ?? r * 4, 'boom');
+    EN()?.damageCircle?.(x, y, r * 1.35, o.dmg ?? baseRadius * 4, 'boom');
     for (const m of st.mines) if (!m.dead && Math.hypot(m.x - x, m.y - y) < r + 6) m.trig = Math.min(m.trig ?? 0.12, 0.12);
     A(o.sound || 'boom', r);
     g?.stat?.('explosions', 1);
     WTP.vibe(Math.min(120, 20 + r * 2));
+    if (weaponId) { Wd.powMul = previousPow; R.dmgMul = previousDmg; curLv = previousLv; }
     return n;
   }
 
@@ -249,7 +259,7 @@
     },
     tornado(o) {
       const tp = aimPoint(o);
-      st.tornados.push({ x: tp.x, y: tp.y, dir: o.ax >= 0 ? 1 : -1, t: 0, life: 5.5 });
+      st.tornados.push({ x: tp.x, y: tp.y, dir: o.ax >= 0 ? 1 : -1, t: 0, life: 5.5, weaponId: st.cur });
       G()?.event?.('TORNADO!', tp.x, tp.y - 30);
     },
     whip(o) {
@@ -349,7 +359,7 @@
     },
     termites(o) { lob(o, 'jar', 260, { life: 4, spr: 'jar', g: 520 }); },
     antigrav(o) { lob(o, 'agrav', 250, { fuse: 1.1, spr: 'agrav', g: 520, bounce: 0.45 }); },
-    quake() { st.quakeT = 2.8; A('quake'); G()?.event?.('EARTHQUAKE!', PL().x, PL().y - 30); }
+    quake() { st.quakeT = 2.8; st.quakeWeaponId = st.cur; A('quake'); G()?.event?.('EARTHQUAKE!', PL().x, PL().y - 30); }
   };
 
   const HOLD = {
@@ -692,7 +702,7 @@
   }
   function soundWave(o) {
     st.waves = st.waves || [];
-    st.waves.push({ x: o.x, y: o.y, a: Math.atan2(o.ay, o.ax), t: 0, r: 0 });
+    st.waves.push({ x: o.x, y: o.y, a: Math.atan2(o.ay, o.ax), t: 0, r: 0, weaponId: st.cur });
     FX().beam([o.x, o.y, Math.atan2(o.ay, o.ax)], { kind: 'wave', life: 0.4, r: 120, spread: 0.6 });
     FX().blast(o.x + o.ax * 40, o.y + o.ay * 40, 70, 300);
   }
@@ -779,7 +789,7 @@
     FX().anims.push({ kick: true, x: o.x + ax * 5, y: o.y + ay * 5, a: Math.atan2(ay, ax), t: 0, dur: 0.14 });
     if (n || hit) { G()?.shake?.(3.5); G()?.hitstop?.(0.035); A('kickHit'); WTP.vibe(18); } else A('kick');
     G()?.stat?.('kicks', 1);
-    setPow(lv);
+    setPow(lv, st.cur);
   }
   function updateWhip(dt, o) {
     const w = st.whip;
@@ -802,7 +812,7 @@
     w.pts = pts;
     const tip = pts[N];
     const Wd = W();
-    setPow(w.lv);
+    setPow(w.lv, 'whip');
     if (k > 0.18 && k < 0.75) {
       for (let i = 4; i <= N; i += 2) {
         const p = pts[i];
@@ -859,6 +869,7 @@
     const Wd = W();
     for (let k = st.zones.length - 1; k >= 0; k--) {
       const z = st.zones[k];
+      if (z.weaponId) setPow(upg(z.weaponId), z.weaponId);
       z.t += dt;
       const slam = z.t > z.life;
       for (const c of Wd.chunks) { const d = Math.hypot(c.x - z.x, c.y - z.y); if (d < z.r) { if (slam) { c.vy = 520; c.thrown = c.n < 400; } else { c.vy = c.vy * 0.9 - 700 * dt; c.vx *= 0.97; c.va += rand(-1, 1) * dt * 4; } c.rest = 0; } }
@@ -875,6 +886,7 @@
       if (Math.random() < 0.6) { const a = Math.random() * 6.283; FX().pix(z.x + Math.cos(a) * z.r, z.y + Math.sin(a) * z.r, 0, -30, P32.m, 0.5); }
       if (slam) { st.zones.splice(k, 1); FX().blast(z.x, z.y, z.r * 1.5, -300); A('slam'); G()?.shake?.(8); G()?.event?.('SLAM!', z.x, z.y - 10, 2); }
     }
+    setPow(0);
   }
   function tryFire(d, o) {
     if (st.ammo) {
@@ -901,7 +913,7 @@
   function update(dt, want, alt, o) {
     const d = BY[st.cur];
     const lv = upg(d.id);
-    setPow(lv);
+    setPow(lv, d.id);
     st.cd = Math.max(0, st.cd - dt);
     st.kickCd = Math.max(0, st.kickCd - dt);
     st.glove = Math.max(0, st.glove - dt);
@@ -1016,6 +1028,7 @@
     const Wd = W();
     for (let k = st.waves.length - 1; k >= 0; k--) {
       const w = st.waves[k];
+      if (w.weaponId) setPow(upg(w.weaponId), w.weaponId);
       const r0 = w.r;
       w.t += dt; w.r = w.t * 300;
       if (w.r > 120) { st.waves.splice(k, 1); continue; }
@@ -1033,11 +1046,13 @@
       for (const c of Wd.chunks) { const d = Math.hypot(c.x - mx, c.y - my); if (d < 30) { c.vx += Math.cos(w.a) * 200; c.vy += Math.sin(w.a) * 200 - 80; } }
       if (n) G()?.shake?.(3);
     }
+    setPow(0);
   }
   function updateTornados(dt) {
     const Wd = W();
     for (let k = st.tornados.length - 1; k >= 0; k--) {
       const T = st.tornados[k];
+      if (T.weaponId) setPow(upg(T.weaponId), T.weaponId);
       T.t += dt;
       if (T.t > T.life) { st.tornados.splice(k, 1); if (!st.tornados.length) WTP.audio.loop('wind', false); FX().smoke(T.x, T.y - 10, 8, P32['5']); continue; }
       WTP.audio.loop('wind', true);
@@ -1075,9 +1090,11 @@
       EN()?.damageCircle?.(T.x, T.y - 30, 30, 40 * dt, 'tornado');
       G()?.shake?.(1.5);
     }
+    setPow(0);
   }
   function updateQuake(dt) {
     if (st.quakeT <= 0) return;
+    if (st.quakeWeaponId) setPow(upg(st.quakeWeaponId), st.quakeWeaponId);
     st.quakeT -= dt;
     WTP.audio.loop('rumble', st.quakeT > 0);
     const g = G(); if (!g) return;
@@ -1094,7 +1111,8 @@
     if (Math.random() < 0.25) Wd.crumble(v.x + Math.random() * v.w, v.y + Math.random() * v.h, 0, 40);
     for (const c of Wd.chunks) if (Math.random() < 0.05) { c.vy -= 120; c.vx += rand(-60, 60); c.rest = 0; }
     EN()?.damageCircle?.(PL().x, PL().y, 500, 8 * dt, 'quake');
-    if (st.quakeT <= 0) WTP.audio.loop('rumble', false);
+    if (st.quakeT <= 0) { WTP.audio.loop('rumble', false); st.quakeWeaponId = null; }
+    setPow(0);
   }
   function updatePortals(dt) {
     if (st.portals.length < 2) return;
@@ -1181,7 +1199,8 @@
     for (let k = shots.length - 1; k >= 0; k--) {
       const s = shots[k];
       if (s.delay > 0) { s.delay -= dt; continue; }
-      if (s.from === 'p') setPow(s.lv | 0); else setPow(0);
+      effectWeaponId = s.from === 'p' ? (s.weaponId || st.cur) : null;
+      if (effectWeaponId) setPow(s.lv | 0, effectWeaponId); else setPow(0);
       s.age += dt; s.life -= dt;
       let dead = s.life <= 0;
       switch (s.t) {
@@ -1403,7 +1422,7 @@
           s.vy += (s.g || 0) * dt;
           if (Math.random() < 0.6) FX().smoke(s.x, s.y, 1);
           if (((s.age * 6) | 0) !== ((s.age * 6 - dt * 6) | 0)) A('beep');
-          const boom = () => nuke(s.x, s.y);
+          const boom = () => nuke(s.x, s.y, s.weaponId);
           if (dead) { boom(); break; }
           dead = travel(s, dt, () => { boom(); return true; });
           break;
@@ -1487,7 +1506,7 @@
             s.fired = true; s.life = 1.7; A('orbital');
             G()?.event?.('ORBITAL STRIKE!', s.x, s.y - 20);
             setTimeout(() => { A('beam'); WTP.audio.loop('beam', true); }, 250);
-            st.orb.push({ x: s.x, t: -0.25, life: 1.5 });
+            st.orb.push({ x: s.x, t: -0.25, life: 1.5, weaponId: s.weaponId });
           }
           if (s.life <= 0) dead = true;
           break;
@@ -1645,7 +1664,7 @@
           if (s.fuse <= 0) {
             dead = true;
             const r = 42 + s.lv * 6;
-            st.zones.push({ x: s.x, y: s.y, r, t: 0, life: 2.6 });
+            st.zones.push({ x: s.x, y: s.y, r, t: 0, life: 2.6, weaponId: s.weaponId });
             A('warp');
             FX().anim('ring', r * 2, s.x, s.y, 0.35);
             Wd.crumble(s.x, s.y, 0, r * 0.8);
@@ -1658,12 +1677,14 @@
         default: break;
       }
       if (dead) { const ix = shots.indexOf(s); if (ix >= 0) shots.splice(ix, 1); }
+      effectWeaponId = null;
     }
     for (let k = st.orb.length - 1; k >= 0; k--) {
       const O = st.orb[k];
       O.t += dt;
       if (O.t > O.life) { st.orb.splice(k, 1); if (!st.orb.length) WTP.audio.loop('beam', false); continue; }
       if (O.t < 0) continue;
+      if (O.weaponId) setPow(upg(O.weaponId), O.weaponId);
       const top = (G()?.camTop?.() ?? 0) - 40;
       const depth = Math.min(Wd.h - 4, top + (O.t / 0.5) * (Wd.h - top));
       FX().beam([O.x, depth], { kind: 'column', life: 0.03, w: 7 });
@@ -1678,6 +1699,7 @@
       for (let q = 0; q < 3; q++) FX().spark(O.x + rand(-8, 8), depth, rand(-160, 160), rand(-200, -40), Math.random() < 0.5 ? P32.C : P32['7'], 0.4);
       if (n > 0 && Math.random() < 0.1) G()?.chroma?.(0.3);
     }
+    setPow(0);
   }
   function blackHole(s, dt) {
     const Wd = W();
@@ -1735,20 +1757,19 @@
     G()?.shake?.(4); G()?.chroma?.(0.4);
     A('glitch');
   }
-  function nuke(x, y) {
-    const radiusScale = Math.max(100, Math.min(2000, WTP.save.settings.nukeRadius || 100)) / 100;
-    const radius = 64 * radiusScale;
+  function nuke(x, y, weaponId = 'nuke') {
+    const radiusScale = powerScale(weaponId) * (1 + 0.075 * upg(weaponId));
     G()?.stat?.('nukes', 1);
-    explode(x, y, radius, { back: 0.95, letters: 30, fire: 0.3, sound: 'nuke', dmg: 999 });
+    explode(x, y, 64, { back: 0.95, letters: 30, fire: 0.3, sound: 'nuke', dmg: 999, weaponId });
     G()?.slowmo?.(0.25, 1.6);
     FX().flash(1, '#ffffff');
     G()?.chroma?.(1);
     G()?.event?.('KABOOM!', x, y - 40, 3);
     for (let k = 0; k < 40; k++) FX().smoke(x + rand(-14, 14), y - k * 2.5, 1, k < 20 ? P32.a : P32['4']);
     for (let k = 0; k < 30; k++) FX().smoke(x + rand(-40, 40), y - 60 + rand(-10, 10), 1, P32['5']);
-    FX().anim('ring', radius * 2, x, y, 0.6);
-    setTimeout(() => { explode(x + rand(-30, 30) * radiusScale, y + rand(-20, 20) * radiusScale, 20 * radiusScale, { letters: 10, noPush: true }); }, 250);
-    setTimeout(() => { explode(x + rand(-40, 40) * radiusScale, y + rand(-30, 30) * radiusScale, 18 * radiusScale, { letters: 10, noPush: true }); }, 500);
+    FX().anim('ring', 128 * radiusScale, x, y, 0.6);
+    setTimeout(() => { explode(x + rand(-30, 30) * radiusScale, y + rand(-20, 20) * radiusScale, 20, { letters: 10, noPush: true, weaponId }); }, 250);
+    setTimeout(() => { explode(x + rand(-40, 40) * radiusScale, y + rand(-30, 30) * radiusScale, 18, { letters: 10, noPush: true, weaponId }); }, 500);
   }
 
   function draw(ctx) {
@@ -1930,7 +1951,7 @@
     G()?.shake?.(8);
   }
   WTP.weapons = {
-    CATS, DEFS: D, BY, st, shots, update, draw, reset, select, owned, explode, impactChunk, melee, glitchAt, shockwave, conduct, upg, upCost,
+    CATS, DEFS: D, BY, st, shots, update, draw, reset, select, owned, explode, impactChunk, melee, glitchAt, shockwave, conduct, upg, upCost, powerPct,
     get dmgMul() { return R.dmgMul; },
     heldChunk: () => st.held || st.cut,
     magnetOn: () => st.cur === 'magnet' && WTP.input.wantFire(),

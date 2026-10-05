@@ -468,6 +468,9 @@ body.is-touch .toasts { bottom: auto; top: 120px; }
 :root[data-theme="dark"] .does { color: var(--acc-hi); }
 .upg { display: flex; flex-direction: column; margin: 8px 0; padding: 8px 10px; background: var(--panel2); }
 .upg small { color: var(--muted); line-height: 20px; }
+.arm-power .power-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.arm-power .power-head output { color: var(--text); font-variant-numeric: tabular-nums; }
+.arm-power input { display: block; width: 100%; margin: 8px 0 2px; accent-color: var(--acc); cursor: pointer; }
 .best-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
 .bst { display: flex; gap: 10px; align-items: flex-start; }
 .bst img { image-rendering: pixelated; max-width: 96px; max-height: 72px; flex: none; }

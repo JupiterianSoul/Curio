@@ -65,14 +65,14 @@
   const SAVE_KEY = 'wtp3-save';
   const SAVE_V = 4;
   const HOTBAR_N = 10;
-  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false, radial: false, touchSize: 1, touchAlpha: 0.55, touchAim: 'auto', touchSwap: false, nukeRadius: 100 };
+  const DEFAULT_SETTINGS = { shake: 1, particles: 2, music: 0.6, sfx: 0.8, colorblind: false, flashes: true, fps: false, adaptive: true, aimAssist: 1, haptics: true, toggleFire: false, radial: false, touchSize: 1, touchAlpha: 0.55, touchAim: 'auto', touchSwap: false };
   const DEFAULT_KEYS = {
     left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'], jump: ['KeyW', 'Space', 'ArrowUp'], down: ['KeyS', 'ArrowDown'],
     dash: ['ShiftLeft', 'ShiftRight'], fire: ['KeyF'], alt: ['KeyG'], melee: ['KeyC'], gadget: ['KeyX'], prev: ['KeyQ'], next: ['KeyE'], wheel: ['Tab', 'KeyB'], reset: ['KeyR'], pause: ['Escape', 'KeyP']
   };
   const freshSave = () => ({
     v: SAVE_V, scrap: 0, owned: {}, skin: 'hero', skins: { hero: true }, hotbar: new Array(HOTBAR_N).fill(null), achievements: {}, bests: {}, campaign: {}, daily: {}, puzzles: {}, seenPages: {},
-    upg: {}, gadgets: { boots: true }, gadget: 'boots', secrets: {},
+    upg: {}, weaponPower: {}, gadgets: { boots: true }, gadget: 'boots', secrets: {},
     stats: { pixels: 0, time: 0, shots: 0, explosions: 0, letters: 0, chunks: 0, burned: 0, iced: 0, glass: 0, kills: 0, deaths: 0, jumps: 0, dashes: 0, walljumps: 0, runs: 0, wins: 0, bestCombo: 0, painted: 0, portals: 0, throws: 0, bees: 0, nukes: 0, slowmos: 0, zenTime: 0, dailies: 0, scrapEarned: 0, weaponUse: {}, distance: 0, bestWave: 0, eaten: 0, kicks: 0, gadgetUse: 0, secrets: 0, buttons: 0, props: 0, cracks: 0 },
     settings: { ...DEFAULT_SETTINGS }, keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), intro: false
   });
@@ -104,19 +104,21 @@
     if (!isObj(out.stats.weaponUse)) out.stats.weaponUse = {};
     for (const k in out.stats) if (k !== 'weaponUse' && (typeof out.stats[k] !== 'number' || !isFinite(out.stats[k]))) out.stats[k] = 0;
     out.settings = Object.assign({ ...DEFAULT_SETTINGS }, isObj(s.settings) ? s.settings : {});
+    const legacyNukePower = out.settings.nukeRadius;
+    delete out.settings.nukeRadius;
     const aa = out.settings.aimAssist;
     out.settings.aimAssist = aa === true ? 1 : aa === false ? 0 : [0, 1, 2].includes(aa) ? aa : 1;
     if (!['auto', 'stick'].includes(out.settings.touchAim)) out.settings.touchAim = 'auto';
     if (![0.8, 1, 1.25].includes(out.settings.touchSize)) out.settings.touchSize = 1;
     if (typeof out.settings.touchAlpha !== 'number' || !isFinite(out.settings.touchAlpha)) out.settings.touchAlpha = 0.55;
-    const nukeRadius = Number(out.settings.nukeRadius);
-    out.settings.nukeRadius = Number.isFinite(nukeRadius) ? Math.max(100, Math.min(2000, Math.round(nukeRadius / 100) * 100)) : 100;
     const keys = JSON.parse(JSON.stringify(DEFAULT_KEYS));
     if (isObj(s.keys)) for (const a in keys) if (Array.isArray(s.keys[a]) && s.keys[a].every((c) => typeof c === 'string')) keys[a] = s.keys[a].slice(0, 3);
     if (s.v === 3) { for (const a of ['melee', 'gadget']) { const want = DEFAULT_KEYS[a][0]; const clash = Object.keys(keys).some((b) => b !== a && keys[b].includes(want)); keys[a] = clash ? [] : [want]; } if (!keys.wheel.includes('KeyB') && !Object.values(keys).some((l) => l.includes('KeyB'))) keys.wheel.push('KeyB'); }
     out.keys = keys;
-    for (const k of ['owned', 'skins', 'achievements', 'bests', 'campaign', 'daily', 'puzzles', 'seenPages', 'upg', 'gadgets', 'secrets']) if (!isObj(out[k])) out[k] = {};
+    for (const k of ['owned', 'skins', 'achievements', 'bests', 'campaign', 'daily', 'puzzles', 'seenPages', 'upg', 'weaponPower', 'gadgets', 'secrets']) if (!isObj(out[k])) out[k] = {};
     for (const k in out.upg) { const n = out.upg[k]; out.upg[k] = typeof n === 'number' && isFinite(n) ? Math.max(0, Math.min(3, n | 0)) : 0; }
+    if (out.weaponPower.nuke == null && Number.isFinite(Number(legacyNukePower))) out.weaponPower.nuke = Number(legacyNukePower);
+    for (const id in out.weaponPower) { const n = Number(out.weaponPower[id]); out.weaponPower[id] = Number.isFinite(n) ? Math.max(100, Math.min(2000, Math.round(n / 100) * 100)) : 100; }
     out.gadgets.boots = true;
     if (typeof out.gadget !== 'string' || !out.gadgets[out.gadget]) out.gadget = 'boots';
     out.hotbar = normHotbar(s.hotbar);
